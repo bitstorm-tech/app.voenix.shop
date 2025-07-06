@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Voenix Shop is a full-stack e-commerce application for creating custom mugs with AI-generated images. The codebase is split into two main applications:
 
-- **Backend**: Java Spring Boot REST API (`/backend`)
+- **Backend**: Kotlin Spring Boot REST API (`/backend`)
 - **Frontend**: React TypeScript SPA with Vite (`/frontend`)
 
 ## Common Development Commands
@@ -39,7 +39,7 @@ bun run preview          # Preview production build
 The backend follows Domain-Driven Design with feature packages:
 
 ```
-backend/src/main/java/com/app/voenixshop/
+backend/src/main/kotlin/com/jotoai/voenix/shop/
 ├── common/              # Shared DTOs and exception handling
 │   ├── dto/            # ErrorResponse, ValidationError DTOs
 │   └── exception/      # GlobalExceptionHandler, custom exceptions
@@ -58,7 +58,7 @@ backend/src/main/java/com/app/voenixshop/
 - Global exception handling with proper HTTP status codes
 - Builder pattern for entities
 - Spring Data JPA for database access
-- Liquibase for database migrations (auto-run on startup)
+- Flyway for database migrations (auto-run on startup)
 
 **Database Configuration:**
 - PostgreSQL on localhost:5432
@@ -106,7 +106,7 @@ frontend/src/
 ## Important Development Notes
 
 1. **Package Manager**: Frontend uses Bun (bun.lock present) but npm also works
-2. **Java Version**: Backend requires Java 24
+2. **Kotlin/Java Version**: Backend requires JDK 21+ with Kotlin 2.1.0
 3. **TypeScript**: Strict mode enabled - ensure proper typing
 4. **API Communication**: Frontend expects backend on http://localhost:8080
 5. **Database**: Ensure PostgreSQL is running before starting backend
@@ -131,4 +131,4 @@ frontend/src/
 
 ## Migration Context
 
-This project was migrated from Laravel to Spring Boot (per git history). The frontend appears to be newly created with modern React patterns.
+This project was migrated from Laravel to Spring Boot, and then from Java to Kotlin (per git history). The frontend appears to be newly created with modern React patterns.
