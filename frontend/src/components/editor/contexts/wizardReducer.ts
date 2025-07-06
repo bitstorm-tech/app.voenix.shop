@@ -2,7 +2,7 @@ import { WIZARD_STEPS, WizardStep } from '../constants';
 import { WizardState } from '../types';
 import { WIZARD_ACTIONS, WizardAction } from './wizardActions';
 
-export function createInitialWizardState(isAuthenticated: boolean): WizardState {
+export function createInitialWizardState(): WizardState {
   const state = {
     currentStep: 'image-upload' as WizardStep,
     uploadedImage: null,
@@ -16,10 +16,6 @@ export function createInitialWizardState(isAuthenticated: boolean): WizardState 
     generatedImageCropData: null,
     isProcessing: false,
     error: null,
-    // Authentication state
-    isAuthenticated,
-    isRegistering: false,
-    registrationError: null,
     // Prompts state
     prompts: [],
     promptsLoading: true,
@@ -36,7 +32,7 @@ export function createInitialWizardState(isAuthenticated: boolean): WizardState 
   return state;
 }
 
-export const initialWizardState = createInitialWizardState(false);
+export const initialWizardState = createInitialWizardState();
 
 export function canProceedFromStep(state: WizardState, step: WizardStep): boolean {
   switch (step) {
@@ -66,28 +62,18 @@ function updateNavigationState(state: WizardState): WizardState {
   };
 }
 
-function getNextStep(currentStep: WizardStep, skipUserData: boolean): WizardStep | null {
+function getNextStep(currentStep: WizardStep): WizardStep | null {
   const currentIndex = WIZARD_STEPS.indexOf(currentStep);
   if (currentIndex === -1 || currentIndex === WIZARD_STEPS.length - 1) return null;
 
-  let nextStep = WIZARD_STEPS[currentIndex + 1];
-  if (nextStep === 'user-data' && skipUserData) {
-    nextStep = 'image-generation';
-  }
-
-  return nextStep;
+  return WIZARD_STEPS[currentIndex + 1];
 }
 
-function getPreviousStep(currentStep: WizardStep, skipUserData: boolean): WizardStep | null {
+function getPreviousStep(currentStep: WizardStep): WizardStep | null {
   const currentIndex = WIZARD_STEPS.indexOf(currentStep);
   if (currentIndex <= 0) return null;
 
-  let previousStep = WIZARD_STEPS[currentIndex - 1];
-  if (previousStep === 'user-data' && skipUserData) {
-    previousStep = 'mug-selection';
-  }
-
-  return previousStep;
+  return WIZARD_STEPS[currentIndex - 1];
 }
 
 export function wizardReducer(state: WizardState, action: WizardAction): WizardState {
@@ -170,7 +156,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
       if (state.uploadedImageUrl) {
         URL.revokeObjectURL(state.uploadedImageUrl);
       }
-      newState = createInitialWizardState(state.isAuthenticated);
+      newState = createInitialWizardState();
       break;
 
     case WIZARD_ACTIONS.GO_NEXT: {
@@ -178,7 +164,7 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
         return state; // Can't proceed, return unchanged
       }
 
-      const nextStep = getNextStep(state.currentStep, state.isAuthenticated);
+      const nextStep = getNextStep(state.currentStep);
       if (!nextStep) return state;
 
       newState = { ...state, currentStep: nextStep };
@@ -186,25 +172,12 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
     }
 
     case WIZARD_ACTIONS.GO_PREVIOUS: {
-      const previousStep = getPreviousStep(state.currentStep, state.isAuthenticated);
+      const previousStep = getPreviousStep(state.currentStep);
       if (!previousStep) return state;
 
       newState = { ...state, currentStep: previousStep };
       break;
     }
-
-    // Authentication actions
-    case WIZARD_ACTIONS.SET_AUTHENTICATED:
-      newState = { ...state, isAuthenticated: action.payload };
-      break;
-
-    case WIZARD_ACTIONS.SET_REGISTERING:
-      newState = { ...state, isRegistering: action.payload };
-      break;
-
-    case WIZARD_ACTIONS.SET_REGISTRATION_ERROR:
-      newState = { ...state, registrationError: action.payload };
-      break;
 
     // Prompts actions
     case WIZARD_ACTIONS.SET_PROMPTS:

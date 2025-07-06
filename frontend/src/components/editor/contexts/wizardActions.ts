@@ -18,10 +18,6 @@ export const WIZARD_ACTIONS = {
   RESET: 'RESET',
   GO_NEXT: 'GO_NEXT',
   GO_PREVIOUS: 'GO_PREVIOUS',
-  // Authentication actions
-  SET_AUTHENTICATED: 'SET_AUTHENTICATED',
-  SET_REGISTERING: 'SET_REGISTERING',
-  SET_REGISTRATION_ERROR: 'SET_REGISTRATION_ERROR',
   // Prompts actions
   SET_PROMPTS: 'SET_PROMPTS',
   SET_PROMPTS_LOADING: 'SET_PROMPTS_LOADING',
@@ -44,10 +40,6 @@ export type WizardAction =
   | { type: typeof WIZARD_ACTIONS.RESET }
   | { type: typeof WIZARD_ACTIONS.GO_NEXT }
   | { type: typeof WIZARD_ACTIONS.GO_PREVIOUS }
-  // Authentication actions
-  | { type: typeof WIZARD_ACTIONS.SET_AUTHENTICATED; payload: boolean }
-  | { type: typeof WIZARD_ACTIONS.SET_REGISTERING; payload: boolean }
-  | { type: typeof WIZARD_ACTIONS.SET_REGISTRATION_ERROR; payload: string | null }
   // Prompts actions
   | { type: typeof WIZARD_ACTIONS.SET_PROMPTS; payload: Prompt[] }
   | { type: typeof WIZARD_ACTIONS.SET_PROMPTS_LOADING; payload: boolean }
@@ -124,22 +116,6 @@ export const wizardActions = {
 
   goPrevious: (): WizardAction => ({
     type: WIZARD_ACTIONS.GO_PREVIOUS,
-  }),
-
-  // Authentication action creators
-  setAuthenticated: (isAuthenticated: boolean): WizardAction => ({
-    type: WIZARD_ACTIONS.SET_AUTHENTICATED,
-    payload: isAuthenticated,
-  }),
-
-  setRegistering: (isRegistering: boolean): WizardAction => ({
-    type: WIZARD_ACTIONS.SET_REGISTERING,
-    payload: isRegistering,
-  }),
-
-  setRegistrationError: (error: string | null): WizardAction => ({
-    type: WIZARD_ACTIONS.SET_REGISTRATION_ERROR,
-    payload: error,
   }),
 
   // Prompts action creators

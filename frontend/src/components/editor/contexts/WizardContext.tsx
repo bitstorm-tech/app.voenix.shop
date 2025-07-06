@@ -1,5 +1,3 @@
-import { apiFetch } from '@/lib/utils';
-import type { Auth } from '@/types';
 import { Prompt } from '@/types/prompt';
 import { ReactNode, createContext, useContext, useEffect, useReducer } from 'react';
 import { WizardStep } from '../constants';
@@ -8,9 +6,6 @@ import { wizardActions } from './wizardActions';
 import { createInitialWizardState, wizardReducer } from './wizardReducer';
 
 interface WizardContextValue extends WizardState {
-  // Additional context-only values
-  auth: Auth;
-
   // Navigation actions
   goToStep: (step: WizardStep) => void;
   goNext: () => void;
@@ -34,10 +29,6 @@ interface WizardContextValue extends WizardState {
   setProcessing: (isProcessing: boolean) => void;
   setError: (error: string | null) => void;
 
-  // Complex handlers (keep these as they contain business logic)
-  handleNext: () => Promise<void>;
-  handleUserRegistration: () => Promise<boolean>;
-
   // Computed values
   getCompletedSteps: () => WizardStep[];
 }
@@ -46,11 +37,10 @@ const WizardContext = createContext<WizardContextValue | undefined>(undefined);
 
 interface WizardProviderProps {
   children: ReactNode;
-  auth: Auth;
 }
 
-export function WizardProvider({ children, auth }: WizardProviderProps) {
-  const [state, dispatch] = useReducer(wizardReducer, createInitialWizardState(!!auth.user));
+export function WizardProvider({ children }: WizardProviderProps) {
+  const [state, dispatch] = useReducer(wizardReducer, createInitialWizardState());
 
   // Fetch prompts on mount
   useEffect(() => {
@@ -58,7 +48,7 @@ export function WizardProvider({ children, auth }: WizardProviderProps) {
     dispatch(wizardActions.setPromptsLoading(true));
     dispatch(wizardActions.setPromptsError(null));
 
-    apiFetch('/api/prompts', { signal: controller.signal })
+    fetch('/api/prompts', { signal: controller.signal })
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to fetch prompts');
@@ -86,12 +76,6 @@ export function WizardProvider({ children, auth }: WizardProviderProps) {
     window.scrollTo(0, 0);
   }, [state.currentStep]);
 
-  // If user is not authenticated and tries to access image generation step, redirect back
-  useEffect(() => {
-    if (!state.isAuthenticated && state.currentStep === 'image-generation') {
-      dispatch(wizardActions.setStep('user-data'));
-    }
-  }, [state.currentStep, state.isAuthenticated]);
 
   // Action functions that encapsulate dispatch calls
   const goToStep = (step: WizardStep) => dispatch(wizardActions.setStep(step));
@@ -113,69 +97,18 @@ export function WizardProvider({ children, auth }: WizardProviderProps) {
   const setProcessing = (isProcessing: boolean) => dispatch(wizardActions.setProcessing(isProcessing));
   const setError = (error: string | null) => dispatch(wizardActions.setError(error));
 
-  // Complex handlers with business logic
-  const handleUserRegistration = async (): Promise<boolean> => {
-    if (state.currentStep !== 'user-data' || !state.userData) {
-      return true; // Not on user data step, proceed normally
-    }
-
-    dispatch(wizardActions.setRegistering(true));
-    dispatch(wizardActions.setRegistrationError(null));
-
-    try {
-      const response = await apiFetch('/api/register-or-login', {
-        method: 'POST',
-        body: JSON.stringify({
-          email: state.userData.email,
-          first_name: state.userData.firstName || null,
-          last_name: state.userData.lastName || null,
-          phone_number: state.userData.phoneNumber || null,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Registration failed');
-      }
-
-      const data = await response.json();
-      dispatch(wizardActions.setAuthenticated(data.authenticated));
-
-      return data.authenticated;
-    } catch (error) {
-      dispatch(wizardActions.setRegistrationError(error instanceof Error ? error.message : 'An error occurred during registration'));
-      return false; // Error, prevent navigation
-    } finally {
-      dispatch(wizardActions.setRegistering(false));
-    }
-  };
-
-  const handleNext = async () => {
-    // Only handle registration if on user-data step and not authenticated
-    if (state.currentStep === 'user-data' && !state.isAuthenticated) {
-      const success = await handleUserRegistration();
-      if (success) {
-        goNext();
-      }
-    } else {
-      goNext();
-    }
-  };
-
   const getCompletedSteps = (): WizardStep[] => {
     const completed: WizardStep[] = [];
     if (state.uploadedImage && state.cropData) completed.push('image-upload');
     if (state.selectedPrompt) completed.push('prompt-selection');
     if (state.selectedMug) completed.push('mug-selection');
-    // Mark user-data as completed if user is authenticated OR if userData is filled
-    if (state.isAuthenticated || state.userData) completed.push('user-data');
+    if (state.userData) completed.push('user-data');
     if (state.selectedGeneratedImage) completed.push('image-generation');
     return completed;
   };
 
   const value: WizardContextValue = {
     ...state,
-    auth,
     // Navigation actions
     goToStep,
     goNext,
@@ -195,9 +128,6 @@ export function WizardProvider({ children, auth }: WizardProviderProps) {
     updateGeneratedImageCropData,
     setProcessing,
     setError,
-    // Complex handlers
-    handleNext,
-    handleUserRegistration,
     getCompletedSteps,
   };
 

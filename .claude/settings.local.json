@@ -3,7 +3,9 @@
     "allow": [
       "Bash(gradle wrapper:*)",
       "WebFetch(domain:repo1.maven.org)",
-      "Bash(/Users/joe/.bun/bin/bun install)"
+      "Bash(/Users/joe/.bun/bin/bun install)",
+      "Bash(npx tsc:*)",
+      "Bash(pushd:*)"
     ],
     "deny": []
   }

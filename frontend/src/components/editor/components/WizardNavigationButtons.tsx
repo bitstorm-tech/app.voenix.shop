@@ -1,5 +1,4 @@
 import { Button } from '@/components/ui/Button';
-import { apiFetch } from '@/lib/utils';
 import { router } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, Loader2, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
@@ -10,10 +9,9 @@ export default function WizardNavigationButtons() {
     currentStep,
     canGoNext,
     canGoPrevious,
-    handleNext: proceedToNextStep,
+    goNext,
     goPrevious,
     isProcessing,
-    isRegistering,
     selectedMug,
     selectedGeneratedImage,
     userData,
@@ -38,7 +36,7 @@ export default function WizardNavigationButtons() {
           throw new Error('Generated image must be saved before adding to cart');
         }
 
-        const response = await apiFetch('/api/cart/items', {
+        const response = await fetch('/api/cart/items', {
           method: 'POST',
           body: JSON.stringify({
             mug_id: selectedMug?.id,
@@ -67,7 +65,7 @@ export default function WizardNavigationButtons() {
         setIsAddingToCart(false);
       }
     } else {
-      proceedToNextStep();
+      goNext();
     }
   };
 
@@ -76,7 +74,7 @@ export default function WizardNavigationButtons() {
       <Button
         variant="outline"
         onClick={goPrevious}
-        disabled={!canGoPrevious || isProcessing || isRegistering}
+        disabled={!canGoPrevious || isProcessing}
         size="default"
         className="sm:h-12 sm:px-6"
       >
@@ -86,11 +84,11 @@ export default function WizardNavigationButtons() {
 
       <Button
         onClick={handleNextStep}
-        disabled={!canGoNext || isProcessing || isRegistering || isAddingToCart}
+        disabled={!canGoNext || isProcessing || isAddingToCart}
         className="gap-2 sm:h-12 sm:px-6"
         size="default"
       >
-        {isProcessing || isRegistering || isAddingToCart ? (
+        {isProcessing || isAddingToCart ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin sm:h-5 sm:w-5" />
             <span className="hidden sm:inline">{isAddingToCart ? 'Adding to Cart...' : 'Processing...'}</span>

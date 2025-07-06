@@ -53,3 +53,9 @@ application-*.properties
 # Virtual machine crash logs
 hs_err_pid*
 replay_pid*
+
+# Custom stuff
+.idea
+node_modules
+_new_prompt.md
+dist

@@ -5,8 +5,8 @@ import { useWizardContext } from '../../contexts/WizardContext';
 
 export default function MugSelectionStep() {
   const { selectedMug, selectMug } = useWizardContext();
-  const { mugs, isLoading, error } = useMugs();
-  if (isLoading) {
+  const { mugs, loading, error } = useMugs();
+  if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-gray-400" />

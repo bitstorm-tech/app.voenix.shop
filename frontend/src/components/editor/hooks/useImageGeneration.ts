@@ -1,4 +1,3 @@
-import { apiFetch } from '@/lib/utils';
 import { useState } from 'react';
 
 interface UseImageGenerationReturn {
@@ -22,7 +21,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
       formData.append('store_images', 'true');
       formData.append('n', '4');
 
-      const response = await apiFetch('/api/upload-image', {
+      const response = await fetch('/api/upload-image', {
         method: 'POST',
         body: formData,
       });

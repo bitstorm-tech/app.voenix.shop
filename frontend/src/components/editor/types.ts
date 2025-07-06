@@ -64,9 +64,6 @@ export interface WizardState {
   generatedImageCropData: GeneratedImageCropData | null;
   isProcessing: boolean;
   error: string | null;
-  isAuthenticated: boolean;
-  isRegistering: boolean;
-  registrationError: string | null;
   prompts: Prompt[];
   promptsLoading: boolean;
   promptsError: string | null;

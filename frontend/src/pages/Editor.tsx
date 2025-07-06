@@ -52,16 +52,7 @@ function EditorContent() {
 
           {wizard.currentStep === 'mug-selection' && <MugSelectionStep />}
 
-          {wizard.currentStep === 'user-data' && (
-            <>
-              <UserDataStep />
-              {wizard.registrationError && (
-                <div className="mt-4 rounded-md bg-red-50 p-4">
-                  <p className="text-sm text-red-800">{wizard.registrationError}</p>
-                </div>
-              )}
-            </>
-          )}
+          {wizard.currentStep === 'user-data' && <UserDataStep />}
 
           {wizard.currentStep === 'image-generation' && <ImageGenerationStep />}
 
@@ -76,23 +67,13 @@ function EditorContent() {
         </div>
       </div>
 
-      {wizard.isRegistering && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="rounded-lg bg-white p-6 shadow-xl">
-            <div className="flex items-center gap-3">
-              <div className="h-5 w-5 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
-              <p className="text-sm font-medium">Creating your account...</p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
 export default function EditorPage() {
   return (
-    <WizardProvider auth={auth}>
+    <WizardProvider>
       <Head title="Editor" />
       <EditorContent />
     </WizardProvider>
