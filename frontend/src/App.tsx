@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, } from 'react-router-dom'
-import Home from './pages/Home'
-import About from './pages/About'
 import Editor from '@/pages/Editor';
+import AdminLayout from '@/components/admin/AdminLayout';
+import AdminPrompts from '@/components/admin/AdminPrompts';
 
 export default function App() {
   return (
@@ -17,9 +17,13 @@ export default function App() {
         
         <main className="app-main">
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
+            <Route path="/" element={<Editor />} />
             <Route path="/editor" element={<Editor />} />
+
+            {/* 3. Shop Group Routes (uses ShopLayout with MenuTwo) */}
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route path="prompts" element={<AdminPrompts />} />
+            </Route>
           </Routes>
         </main>
         
