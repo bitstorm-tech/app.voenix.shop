@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(gradle wrapper:*)"
+      "Bash(gradle wrapper:*)",
+      "WebFetch(domain:repo1.maven.org)",
+      "Bash(/Users/joe/.bun/bin/bun install)"
     ],
     "deny": []
   }
