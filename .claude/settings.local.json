@@ -11,7 +11,8 @@
       "Bash(./backend/gradlew:*)",
       "Bash(/Users/joe/projects/joto-ai/app.voenix.shop/backend/gradlew clean build -p /Users/joe/projects/joto-ai/app.voenix.shop/backend)",
       "Bash(java:*)",
-      "Bash(sh:*)"
+      "Bash(sh:*)",
+      "Bash(/Users/joe/projects/joto-ai/app.voenix.shop/backend/gradlew -p /Users/joe/projects/joto-ai/app.voenix.shop/backend clean build)"
     ],
     "deny": []
   }
