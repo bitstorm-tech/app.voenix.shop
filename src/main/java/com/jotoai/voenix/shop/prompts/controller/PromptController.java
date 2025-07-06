@@ -5,7 +5,6 @@ import com.jotoai.voenix.shop.prompts.dto.PromptDto;
 import com.jotoai.voenix.shop.prompts.dto.UpdatePromptRequest;
 import com.jotoai.voenix.shop.prompts.service.PromptService;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,10 +13,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/prompts")
-@RequiredArgsConstructor
 public class PromptController {
     
     private final PromptService promptService;
+    
+    public PromptController(PromptService promptService) {
+        this.promptService = promptService;
+    }
     
     @GetMapping
     public ResponseEntity<List<PromptDto>> getAllPrompts() {

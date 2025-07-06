@@ -7,7 +7,6 @@ import com.jotoai.voenix.shop.users.dto.UpdateUserRequest;
 import com.jotoai.voenix.shop.users.dto.UserDto;
 import com.jotoai.voenix.shop.users.entity.User;
 import com.jotoai.voenix.shop.users.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,11 +14,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class UserService {
     
     private final UserRepository userRepository;
+    
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
     
     public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream()

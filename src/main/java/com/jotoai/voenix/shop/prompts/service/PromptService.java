@@ -6,7 +6,6 @@ import com.jotoai.voenix.shop.prompts.dto.PromptDto;
 import com.jotoai.voenix.shop.prompts.dto.UpdatePromptRequest;
 import com.jotoai.voenix.shop.prompts.entity.Prompt;
 import com.jotoai.voenix.shop.prompts.repository.PromptRepository;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,11 +13,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class PromptService {
     
     private final PromptRepository promptRepository;
+    
+    public PromptService(PromptRepository promptRepository) {
+        this.promptRepository = promptRepository;
+    }
     
     public List<PromptDto> getAllPrompts() {
         return promptRepository.findAll().stream()
