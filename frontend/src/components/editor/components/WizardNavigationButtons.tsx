@@ -1,10 +1,11 @@
 import { Button } from '@/components/ui/Button';
-import { router } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, Loader2, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useWizardContext } from '../contexts/WizardContext';
 
 export default function WizardNavigationButtons() {
+  const navigate = useNavigate();
   const {
     currentStep,
     canGoNext,
@@ -57,7 +58,7 @@ export default function WizardNavigationButtons() {
         }
 
         // Navigate to cart page
-        router.visit('/cart');
+        navigate('/cart');
       } catch (error) {
         console.error('Error adding to cart:', error);
         alert('Failed to add item to cart. Please try again.');

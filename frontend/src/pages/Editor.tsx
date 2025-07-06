@@ -7,7 +7,7 @@ import UserDataStep from '@/components/editor/components/steps/4-UserDataStep';
 import ImageGenerationStep from '@/components/editor/components/steps/5-ImageGenerationStep';
 import PreviewStep from '@/components/editor/components/steps/6-PreviewStep';
 import { WizardProvider, useWizardContext } from '@/components/editor/contexts/WizardContext';
-import { Head } from '@inertiajs/react';
+import { useEffect } from 'react';
 
 function EditorContent() {
   const wizard = useWizardContext();
@@ -71,10 +71,13 @@ function EditorContent() {
   );
 }
 
-export default function EditorPage() {
+export default function Editor() {
+  useEffect(() => {
+    document.title = 'Editor - Voenix Shop';
+  }, []);
+
   return (
     <WizardProvider>
-      <Head title="Editor" />
       <EditorContent />
     </WizardProvider>
   );
