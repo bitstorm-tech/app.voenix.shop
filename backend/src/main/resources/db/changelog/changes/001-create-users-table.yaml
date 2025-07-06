@@ -14,35 +14,48 @@ databaseChangeLog:
                     primaryKey: true
                     nullable: false
               - column:
-                  name: username
-                  type: varchar(100)
-                  constraints:
-                    nullable: false
-                    unique: true
-              - column:
                   name: email
                   type: varchar(255)
                   constraints:
                     nullable: false
                     unique: true
               - column:
+                  name: first_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: last_name
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: phone_number
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: password
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: one_time_password
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
                   name: created_at
-                  type: timestamp
+                  type: timestamptz
                   defaultValueComputed: CURRENT_TIMESTAMP
                   constraints:
                     nullable: false
               - column:
                   name: updated_at
-                  type: timestamp
+                  type: timestamptz
                   defaultValueComputed: CURRENT_TIMESTAMP
                   constraints:
-                    nullable: false
-        - createIndex:
-            indexName: idx_users_username
-            tableName: users
-            columns:
-              - column:
-                  name: username
+                    nullable: true
         - createIndex:
             indexName: idx_users_email
             tableName: users

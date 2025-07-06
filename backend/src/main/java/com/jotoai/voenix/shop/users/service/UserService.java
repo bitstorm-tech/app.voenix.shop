@@ -35,25 +35,24 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
     }
     
-    public UserDto getUserByUsername(String username) {
-        return userRepository.findByUsername(username)
+    public UserDto getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
                 .map(this::toDto)
-                .orElseThrow(() -> new ResourceNotFoundException("User", "username", username));
+                .orElseThrow(() -> new ResourceNotFoundException("User", "email", email));
     }
     
     @Transactional
     public UserDto createUser(CreateUserRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new ResourceAlreadyExistsException("User", "username", request.getUsername());
-        }
-        
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ResourceAlreadyExistsException("User", "email", request.getEmail());
         }
         
         User user = User.builder()
-                .username(request.getUsername())
                 .email(request.getEmail())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .phoneNumber(request.getPhoneNumber())
+                .password(request.getPassword())
                 .build();
         
         User savedUser = userRepository.save(user);
@@ -65,18 +64,31 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         
-        if (request.getUsername() != null && !request.getUsername().equals(user.getUsername())) {
-            if (userRepository.existsByUsername(request.getUsername())) {
-                throw new ResourceAlreadyExistsException("User", "username", request.getUsername());
-            }
-            user.setUsername(request.getUsername());
-        }
-        
         if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
             if (userRepository.existsByEmail(request.getEmail())) {
                 throw new ResourceAlreadyExistsException("User", "email", request.getEmail());
             }
             user.setEmail(request.getEmail());
+        }
+        
+        if (request.getFirstName() != null) {
+            user.setFirstName(request.getFirstName());
+        }
+        
+        if (request.getLastName() != null) {
+            user.setLastName(request.getLastName());
+        }
+        
+        if (request.getPhoneNumber() != null) {
+            user.setPhoneNumber(request.getPhoneNumber());
+        }
+        
+        if (request.getPassword() != null) {
+            user.setPassword(request.getPassword());
+        }
+        
+        if (request.getOneTimePassword() != null) {
+            user.setOneTimePassword(request.getOneTimePassword());
         }
         
         User updatedUser = userRepository.save(user);
@@ -94,8 +106,10 @@ public class UserService {
     private UserDto toDto(User user) {
         return UserDto.builder()
                 .id(user.getId())
-                .username(user.getUsername())
                 .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .phoneNumber(user.getPhoneNumber())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();

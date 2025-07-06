@@ -2,30 +2,39 @@ package com.jotoai.voenix.shop.users.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.util.Objects;
 
 public class CreateUserRequest {
     
-    @NotBlank(message = "Username is required")
-    @Size(min = 3, max = 100, message = "Username must be between 3 and 100 characters")
-    @Pattern(regexp = "^[a-zA-Z0-9_]+$", message = "Username can only contain letters, numbers, and underscores")
-    private String username;
-    
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     @Size(max = 255, message = "Email must not exceed 255 characters")
     private String email;
+    
+    @Size(max = 255, message = "First name must not exceed 255 characters")
+    private String firstName;
+    
+    @Size(max = 255, message = "Last name must not exceed 255 characters")
+    private String lastName;
+    
+    @Size(max = 255, message = "Phone number must not exceed 255 characters")
+    private String phoneNumber;
+    
+    @Size(max = 255, message = "Password must not exceed 255 characters")
+    private String password;
 
     // Constructors
     public CreateUserRequest() {
     }
 
-    public CreateUserRequest(String username, String email) {
-        this.username = username;
+    public CreateUserRequest(String email, String firstName, String lastName, String phoneNumber, String password) {
         this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.password = password;
     }
 
     // Builder pattern
@@ -34,14 +43,6 @@ public class CreateUserRequest {
     }
 
     // Getters and Setters
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -50,41 +51,77 @@ public class CreateUserRequest {
         this.email = email;
     }
 
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     // equals and hashCode
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         CreateUserRequest that = (CreateUserRequest) o;
-        return Objects.equals(username, that.username) &&
-                Objects.equals(email, that.email);
+        return Objects.equals(email, that.email) &&
+                Objects.equals(firstName, that.firstName) &&
+                Objects.equals(lastName, that.lastName) &&
+                Objects.equals(phoneNumber, that.phoneNumber) &&
+                Objects.equals(password, that.password);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(username, email);
+        return Objects.hash(email, firstName, lastName, phoneNumber, password);
     }
 
     // toString
     @Override
     public String toString() {
         return "CreateUserRequest{" +
-                "username='" + username + '\'' +
-                ", email='" + email + '\'' +
+                "email='" + email + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", password='" + (password != null ? "[PROTECTED]" : null) + '\'' +
                 '}';
     }
 
     // Builder class
     public static class CreateUserRequestBuilder {
-        private String username;
         private String email;
+        private String firstName;
+        private String lastName;
+        private String phoneNumber;
+        private String password;
 
         CreateUserRequestBuilder() {
-        }
-
-        public CreateUserRequestBuilder username(String username) {
-            this.username = username;
-            return this;
         }
 
         public CreateUserRequestBuilder email(String email) {
@@ -92,8 +129,28 @@ public class CreateUserRequest {
             return this;
         }
 
+        public CreateUserRequestBuilder firstName(String firstName) {
+            this.firstName = firstName;
+            return this;
+        }
+
+        public CreateUserRequestBuilder lastName(String lastName) {
+            this.lastName = lastName;
+            return this;
+        }
+
+        public CreateUserRequestBuilder phoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public CreateUserRequestBuilder password(String password) {
+            this.password = password;
+            return this;
+        }
+
         public CreateUserRequest build() {
-            return new CreateUserRequest(username, email);
+            return new CreateUserRequest(email, firstName, lastName, phoneNumber, password);
         }
     }
 }

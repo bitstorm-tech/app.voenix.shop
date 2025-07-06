@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 @Entity
@@ -15,28 +15,45 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    @Column(nullable = false, unique = true, length = 100)
-    private String username;
-    
     @Column(nullable = false, unique = true, length = 255)
     private String email;
     
+    @Column(name = "first_name", length = 255)
+    private String firstName;
+    
+    @Column(name = "last_name", length = 255)
+    private String lastName;
+    
+    @Column(name = "phone_number", length = 255)
+    private String phoneNumber;
+    
+    @Column(length = 255)
+    private String password;
+    
+    @Column(name = "one_time_password", length = 255)
+    private String oneTimePassword;
+    
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    private OffsetDateTime createdAt;
     
     @UpdateTimestamp
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    @Column(name = "updated_at", columnDefinition = "timestamptz")
+    private OffsetDateTime updatedAt;
 
     // Constructors
     public User() {
     }
 
-    public User(Long id, String username, String email, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public User(Long id, String email, String firstName, String lastName, String phoneNumber, 
+                String password, String oneTimePassword, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         this.id = id;
-        this.username = username;
         this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.password = password;
+        this.oneTimePassword = oneTimePassword;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -55,14 +72,6 @@ public class User {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -71,19 +80,59 @@ public class User {
         this.email = email;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getOneTimePassword() {
+        return oneTimePassword;
+    }
+
+    public void setOneTimePassword(String oneTimePassword) {
+        this.oneTimePassword = oneTimePassword;
+    }
+
+    public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public OffsetDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
+    public void setUpdatedAt(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 
@@ -94,15 +143,19 @@ public class User {
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
         return Objects.equals(id, user.id) &&
-                Objects.equals(username, user.username) &&
                 Objects.equals(email, user.email) &&
+                Objects.equals(firstName, user.firstName) &&
+                Objects.equals(lastName, user.lastName) &&
+                Objects.equals(phoneNumber, user.phoneNumber) &&
+                Objects.equals(password, user.password) &&
+                Objects.equals(oneTimePassword, user.oneTimePassword) &&
                 Objects.equals(createdAt, user.createdAt) &&
                 Objects.equals(updatedAt, user.updatedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, email, createdAt, updatedAt);
+        return Objects.hash(id, email, firstName, lastName, phoneNumber, password, oneTimePassword, createdAt, updatedAt);
     }
 
     // toString
@@ -110,8 +163,12 @@ public class User {
     public String toString() {
         return "User{" +
                 "id=" + id +
-                ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", password='" + (password != null ? "[PROTECTED]" : null) + '\'' +
+                ", oneTimePassword='" + (oneTimePassword != null ? "[PROTECTED]" : null) + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
@@ -120,10 +177,14 @@ public class User {
     // Builder class
     public static class UserBuilder {
         private Long id;
-        private String username;
         private String email;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
+        private String firstName;
+        private String lastName;
+        private String phoneNumber;
+        private String password;
+        private String oneTimePassword;
+        private OffsetDateTime createdAt;
+        private OffsetDateTime updatedAt;
 
         UserBuilder() {
         }
@@ -133,28 +194,48 @@ public class User {
             return this;
         }
 
-        public UserBuilder username(String username) {
-            this.username = username;
-            return this;
-        }
-
         public UserBuilder email(String email) {
             this.email = email;
             return this;
         }
 
-        public UserBuilder createdAt(LocalDateTime createdAt) {
+        public UserBuilder firstName(String firstName) {
+            this.firstName = firstName;
+            return this;
+        }
+
+        public UserBuilder lastName(String lastName) {
+            this.lastName = lastName;
+            return this;
+        }
+
+        public UserBuilder phoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public UserBuilder password(String password) {
+            this.password = password;
+            return this;
+        }
+
+        public UserBuilder oneTimePassword(String oneTimePassword) {
+            this.oneTimePassword = oneTimePassword;
+            return this;
+        }
+
+        public UserBuilder createdAt(OffsetDateTime createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
-        public UserBuilder updatedAt(LocalDateTime updatedAt) {
+        public UserBuilder updatedAt(OffsetDateTime updatedAt) {
             this.updatedAt = updatedAt;
             return this;
         }
 
         public User build() {
-            return new User(id, username, email, createdAt, updatedAt);
+            return new User(id, email, firstName, lastName, phoneNumber, password, oneTimePassword, createdAt, updatedAt);
         }
     }
 }

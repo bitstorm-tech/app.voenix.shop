@@ -1,23 +1,28 @@
 package com.jotoai.voenix.shop.users.dto;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Objects;
 
 public class UserDto {
     private Long id;
-    private String username;
     private String email;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String firstName;
+    private String lastName;
+    private String phoneNumber;
+    private OffsetDateTime createdAt;
+    private OffsetDateTime updatedAt;
 
     // Constructors
     public UserDto() {
     }
 
-    public UserDto(Long id, String username, String email, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public UserDto(Long id, String email, String firstName, String lastName, String phoneNumber, 
+                   OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         this.id = id;
-        this.username = username;
         this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -36,14 +41,6 @@ public class UserDto {
         this.id = id;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public String getEmail() {
         return email;
     }
@@ -52,19 +49,43 @@ public class UserDto {
         this.email = email;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDateTime getUpdatedAt() {
+    public OffsetDateTime getUpdatedAt() {
         return updatedAt;
     }
 
-    public void setUpdatedAt(LocalDateTime updatedAt) {
+    public void setUpdatedAt(OffsetDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
 
@@ -75,15 +96,17 @@ public class UserDto {
         if (o == null || getClass() != o.getClass()) return false;
         UserDto userDto = (UserDto) o;
         return Objects.equals(id, userDto.id) &&
-                Objects.equals(username, userDto.username) &&
                 Objects.equals(email, userDto.email) &&
+                Objects.equals(firstName, userDto.firstName) &&
+                Objects.equals(lastName, userDto.lastName) &&
+                Objects.equals(phoneNumber, userDto.phoneNumber) &&
                 Objects.equals(createdAt, userDto.createdAt) &&
                 Objects.equals(updatedAt, userDto.updatedAt);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, username, email, createdAt, updatedAt);
+        return Objects.hash(id, email, firstName, lastName, phoneNumber, createdAt, updatedAt);
     }
 
     // toString
@@ -91,8 +114,10 @@ public class UserDto {
     public String toString() {
         return "UserDto{" +
                 "id=" + id +
-                ", username='" + username + '\'' +
                 ", email='" + email + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
@@ -101,10 +126,12 @@ public class UserDto {
     // Builder class
     public static class UserDtoBuilder {
         private Long id;
-        private String username;
         private String email;
-        private LocalDateTime createdAt;
-        private LocalDateTime updatedAt;
+        private String firstName;
+        private String lastName;
+        private String phoneNumber;
+        private OffsetDateTime createdAt;
+        private OffsetDateTime updatedAt;
 
         UserDtoBuilder() {
         }
@@ -114,28 +141,38 @@ public class UserDto {
             return this;
         }
 
-        public UserDtoBuilder username(String username) {
-            this.username = username;
-            return this;
-        }
-
         public UserDtoBuilder email(String email) {
             this.email = email;
             return this;
         }
 
-        public UserDtoBuilder createdAt(LocalDateTime createdAt) {
+        public UserDtoBuilder firstName(String firstName) {
+            this.firstName = firstName;
+            return this;
+        }
+
+        public UserDtoBuilder lastName(String lastName) {
+            this.lastName = lastName;
+            return this;
+        }
+
+        public UserDtoBuilder phoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public UserDtoBuilder createdAt(OffsetDateTime createdAt) {
             this.createdAt = createdAt;
             return this;
         }
 
-        public UserDtoBuilder updatedAt(LocalDateTime updatedAt) {
+        public UserDtoBuilder updatedAt(OffsetDateTime updatedAt) {
             this.updatedAt = updatedAt;
             return this;
         }
 
         public UserDto build() {
-            return new UserDto(id, username, email, createdAt, updatedAt);
+            return new UserDto(id, email, firstName, lastName, phoneNumber, createdAt, updatedAt);
         }
     }
 }
