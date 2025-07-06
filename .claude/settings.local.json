@@ -6,7 +6,12 @@
       "Bash(/Users/joe/.bun/bin/bun install)",
       "Bash(npx tsc:*)",
       "Bash(pushd:*)",
-      "Bash(bun install:*)"
+      "Bash(bun install:*)",
+      "Bash(./gradlew:*)",
+      "Bash(./backend/gradlew:*)",
+      "Bash(/Users/joe/projects/joto-ai/app.voenix.shop/backend/gradlew clean build -p /Users/joe/projects/joto-ai/app.voenix.shop/backend)",
+      "Bash(java:*)",
+      "Bash(sh:*)"
     ],
     "deny": []
   }
