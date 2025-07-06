@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.users.entity
 
+import com.jotoai.voenix.shop.users.dto.UserDto
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -45,3 +46,13 @@ data class User(
                "createdAt=$createdAt, updatedAt=$updatedAt)"
     }
 }
+
+fun User.toDto(): UserDto = UserDto(
+    id = requireNotNull(this.id) { "User ID cannot be null when converting to DTO" },
+    email = this.email,
+    firstName = this.firstName,
+    lastName = this.lastName,
+    phoneNumber = this.phoneNumber,
+    createdAt = this.createdAt,
+    updatedAt = this.updatedAt
+)

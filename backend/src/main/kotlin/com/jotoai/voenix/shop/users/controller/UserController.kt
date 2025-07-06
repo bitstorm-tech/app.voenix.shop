@@ -16,19 +16,15 @@ class UserController(
 ) {
     
     @GetMapping
-    fun getAllUsers(): ResponseEntity<List<UserDto>> {
-        return ResponseEntity.ok(userService.getAllUsers())
-    }
+    fun getAllUsers(): ResponseEntity<List<UserDto>> = ResponseEntity.ok(userService.getAllUsers())
     
     @GetMapping("/{id}")
-    fun getUserById(@PathVariable id: Long): ResponseEntity<UserDto> {
-        return ResponseEntity.ok(userService.getUserById(id))
-    }
+    fun getUserById(@PathVariable id: Long): ResponseEntity<UserDto> = 
+        ResponseEntity.ok(userService.getUserById(id))
     
     @GetMapping("/email/{email}")
-    fun getUserByEmail(@PathVariable email: String): ResponseEntity<UserDto> {
-        return ResponseEntity.ok(userService.getUserByEmail(email))
-    }
+    fun getUserByEmail(@PathVariable email: String): ResponseEntity<UserDto> = 
+        ResponseEntity.ok(userService.getUserByEmail(email))
     
     @PostMapping
     fun createUser(@Valid @RequestBody request: CreateUserRequest): ResponseEntity<UserDto> {
@@ -40,9 +36,7 @@ class UserController(
     fun updateUser(
         @PathVariable id: Long,
         @Valid @RequestBody request: UpdateUserRequest
-    ): ResponseEntity<UserDto> {
-        return ResponseEntity.ok(userService.updateUser(id, request))
-    }
+    ): ResponseEntity<UserDto> = ResponseEntity.ok(userService.updateUser(id, request))
     
     @DeleteMapping("/{id}")
     fun deleteUser(@PathVariable id: Long): ResponseEntity<Void> {

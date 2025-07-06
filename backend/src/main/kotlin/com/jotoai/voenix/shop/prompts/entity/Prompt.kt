@@ -1,9 +1,10 @@
 package com.jotoai.voenix.shop.prompts.entity
 
+import com.jotoai.voenix.shop.prompts.dto.PromptDto
 import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "prompts")
@@ -19,10 +20,18 @@ data class Prompt(
     var content: String? = null,
     
     @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    val createdAt: LocalDateTime? = null,
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    val createdAt: OffsetDateTime? = null,
     
     @UpdateTimestamp
-    @Column(nullable = false)
-    var updatedAt: LocalDateTime? = null
+    @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
+    var updatedAt: OffsetDateTime? = null
+)
+
+fun Prompt.toDto(): PromptDto = PromptDto(
+    id = requireNotNull(this.id) { "Prompt ID cannot be null when converting to DTO" },
+    title = this.title,
+    content = this.content,
+    createdAt = this.createdAt,
+    updatedAt = this.updatedAt
 )

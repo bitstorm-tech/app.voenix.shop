@@ -16,19 +16,15 @@ class PromptController(
 ) {
     
     @GetMapping
-    fun getAllPrompts(): ResponseEntity<List<PromptDto>> {
-        return ResponseEntity.ok(promptService.getAllPrompts())
-    }
+    fun getAllPrompts(): ResponseEntity<List<PromptDto>> = ResponseEntity.ok(promptService.getAllPrompts())
     
     @GetMapping("/{id}")
-    fun getPromptById(@PathVariable id: Long): ResponseEntity<PromptDto> {
-        return ResponseEntity.ok(promptService.getPromptById(id))
-    }
+    fun getPromptById(@PathVariable id: Long): ResponseEntity<PromptDto> = 
+        ResponseEntity.ok(promptService.getPromptById(id))
     
     @GetMapping("/search")
-    fun searchPrompts(@RequestParam title: String): ResponseEntity<List<PromptDto>> {
-        return ResponseEntity.ok(promptService.searchPromptsByTitle(title))
-    }
+    fun searchPrompts(@RequestParam title: String): ResponseEntity<List<PromptDto>> = 
+        ResponseEntity.ok(promptService.searchPromptsByTitle(title))
     
     @PostMapping
     fun createPrompt(@Valid @RequestBody request: CreatePromptRequest): ResponseEntity<PromptDto> {
@@ -40,9 +36,7 @@ class PromptController(
     fun updatePrompt(
         @PathVariable id: Long,
         @Valid @RequestBody request: UpdatePromptRequest
-    ): ResponseEntity<PromptDto> {
-        return ResponseEntity.ok(promptService.updatePrompt(id, request))
-    }
+    ): ResponseEntity<PromptDto> = ResponseEntity.ok(promptService.updatePrompt(id, request))
     
     @DeleteMapping("/{id}")
     fun deletePrompt(@PathVariable id: Long): ResponseEntity<Void> {

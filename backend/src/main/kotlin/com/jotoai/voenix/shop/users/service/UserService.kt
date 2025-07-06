@@ -6,6 +6,7 @@ import com.jotoai.voenix.shop.users.dto.CreateUserRequest
 import com.jotoai.voenix.shop.users.dto.UpdateUserRequest
 import com.jotoai.voenix.shop.users.dto.UserDto
 import com.jotoai.voenix.shop.users.entity.User
+import com.jotoai.voenix.shop.users.entity.toDto
 import com.jotoai.voenix.shop.users.repository.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -16,19 +17,17 @@ class UserService(
     private val userRepository: UserRepository
 ) {
     
-    fun getAllUsers(): List<UserDto> {
-        return userRepository.findAll().map { toDto(it) }
-    }
+    fun getAllUsers(): List<UserDto> = userRepository.findAll().map { it.toDto() }
     
     fun getUserById(id: Long): UserDto {
         return userRepository.findById(id)
-            .map { toDto(it) }
+            .map { it.toDto() }
             .orElseThrow { ResourceNotFoundException("User", "id", id) }
     }
     
     fun getUserByEmail(email: String): UserDto {
         return userRepository.findByEmail(email)
-            .map { toDto(it) }
+            .map { it.toDto() }
             .orElseThrow { ResourceNotFoundException("User", "email", email) }
     }
     
@@ -47,7 +46,7 @@ class UserService(
         )
         
         val savedUser = userRepository.save(user)
-        return toDto(savedUser)
+        return savedUser.toDto()
     }
     
     @Transactional
@@ -69,7 +68,7 @@ class UserService(
         request.oneTimePassword?.let { user.oneTimePassword = it }
         
         val updatedUser = userRepository.save(user)
-        return toDto(updatedUser)
+        return updatedUser.toDto()
     }
     
     @Transactional
@@ -78,17 +77,5 @@ class UserService(
             throw ResourceNotFoundException("User", "id", id)
         }
         userRepository.deleteById(id)
-    }
-    
-    private fun toDto(user: User): UserDto {
-        return UserDto(
-            id = user.id!!,
-            email = user.email,
-            firstName = user.firstName,
-            lastName = user.lastName,
-            phoneNumber = user.phoneNumber,
-            createdAt = user.createdAt,
-            updatedAt = user.updatedAt
-        )
     }
 }

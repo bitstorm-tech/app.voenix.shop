@@ -5,6 +5,7 @@ import com.jotoai.voenix.shop.prompts.dto.CreatePromptRequest
 import com.jotoai.voenix.shop.prompts.dto.PromptDto
 import com.jotoai.voenix.shop.prompts.dto.UpdatePromptRequest
 import com.jotoai.voenix.shop.prompts.entity.Prompt
+import com.jotoai.voenix.shop.prompts.entity.toDto
 import com.jotoai.voenix.shop.prompts.repository.PromptRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,19 +16,16 @@ class PromptService(
     private val promptRepository: PromptRepository
 ) {
     
-    fun getAllPrompts(): List<PromptDto> {
-        return promptRepository.findAll().map { toDto(it) }
-    }
+    fun getAllPrompts(): List<PromptDto> = promptRepository.findAll().map { it.toDto() }
     
     fun getPromptById(id: Long): PromptDto {
         return promptRepository.findById(id)
-            .map { toDto(it) }
+            .map { it.toDto() }
             .orElseThrow { ResourceNotFoundException("Prompt", "id", id) }
     }
     
-    fun searchPromptsByTitle(title: String): List<PromptDto> {
-        return promptRepository.findByTitleContainingIgnoreCase(title).map { toDto(it) }
-    }
+    fun searchPromptsByTitle(title: String): List<PromptDto> = 
+        promptRepository.findByTitleContainingIgnoreCase(title).map { it.toDto() }
     
     @Transactional
     fun createPrompt(request: CreatePromptRequest): PromptDto {
@@ -37,7 +35,7 @@ class PromptService(
         )
         
         val savedPrompt = promptRepository.save(prompt)
-        return toDto(savedPrompt)
+        return savedPrompt.toDto()
     }
     
     @Transactional
@@ -49,7 +47,7 @@ class PromptService(
         request.content?.let { prompt.content = it }
         
         val updatedPrompt = promptRepository.save(prompt)
-        return toDto(updatedPrompt)
+        return updatedPrompt.toDto()
     }
     
     @Transactional
@@ -58,15 +56,5 @@ class PromptService(
             throw ResourceNotFoundException("Prompt", "id", id)
         }
         promptRepository.deleteById(id)
-    }
-    
-    private fun toDto(prompt: Prompt): PromptDto {
-        return PromptDto(
-            id = prompt.id!!,
-            title = prompt.title,
-            content = prompt.content,
-            createdAt = prompt.createdAt,
-            updatedAt = prompt.updatedAt
-        )
     }
 }
