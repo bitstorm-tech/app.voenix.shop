@@ -2,26 +2,18 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Button } from '@/components/ui/Button';
 import { Coffee, FileText, FlaskConical, LogOut, Package, Palette } from 'lucide-react';
 import { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 
-interface AdminSidebarProps {
-  onNavigate?: () => void;
-}
-
-export default function AdminSidebar({ onNavigate }: AdminSidebarProps) {
+export default function AdminSidebar() {
   const [openItems, setOpenItems] = useState<string[]>(['prompts', 'mugs', 'orders']);
 
+  const navigate = useNavigate();
+
   const handleLogout = () => {
+    // TODO: Implement logout API call
     // router.post('/logout');
+    navigate('/');
   };
-
-  const handleNavigate = (_route: string) => {
-    // router.visit(route);
-    if (onNavigate) {
-      onNavigate();
-    }
-  };
-
-  const isActive = (_path: string) => false; //url === path;
 
   return (
     <aside className="flex h-full w-64 flex-col border-r bg-gray-50 md:h-screen">
@@ -40,22 +32,26 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps) {
               </div>
             </AccordionTrigger>
             <AccordionContent className="ml-4 space-y-1">
-              <button
-                onClick={() => handleNavigate('/admin/prompts')}
-                className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
-                  isActive('/admin/prompts') || isActive('/admin') ? 'bg-gray-200 font-medium' : ''
-                }`}
+              <NavLink
+                to="/admin/prompts"
+                className={({ isActive }) =>
+                  `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
+                    isActive ? 'bg-gray-200 font-medium' : ''
+                  }`
+                }
               >
                 All Prompts
-              </button>
-              <button
-                onClick={() => handleNavigate('/admin/prompt-categories')}
-                className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
-                  isActive('/admin/prompt-categories') ? 'bg-gray-200 font-medium' : ''
-                }`}
+              </NavLink>
+              <NavLink
+                to="/admin/prompt-categories"
+                className={({ isActive }) =>
+                  `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
+                    isActive ? 'bg-gray-200 font-medium' : ''
+                  }`
+                }
               >
                 Categories
-              </button>
+              </NavLink>
             </AccordionContent>
           </AccordionItem>
 
@@ -68,22 +64,26 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps) {
               </div>
             </AccordionTrigger>
             <AccordionContent className="ml-4 space-y-1">
-              <button
-                onClick={() => handleNavigate('/admin/mugs')}
-                className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
-                  isActive('/admin/mugs') ? 'bg-gray-200 font-medium' : ''
-                }`}
+              <NavLink
+                to="/admin/mugs"
+                className={({ isActive }) =>
+                  `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
+                    isActive ? 'bg-gray-200 font-medium' : ''
+                  }`
+                }
               >
                 All Mugs
-              </button>
-              <button
-                onClick={() => handleNavigate('/admin/mug-categories')}
-                className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
-                  isActive('/admin/mug-categories') ? 'bg-gray-200 font-medium' : ''
-                }`}
+              </NavLink>
+              <NavLink
+                to="/admin/mug-categories"
+                className={({ isActive }) =>
+                  `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
+                    isActive ? 'bg-gray-200 font-medium' : ''
+                  }`
+                }
               >
                 Categories
-              </button>
+              </NavLink>
             </AccordionContent>
           </AccordionItem>
 
@@ -96,37 +96,43 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps) {
               </div>
             </AccordionTrigger>
             <AccordionContent className="ml-4 space-y-1">
-              <button
-                onClick={() => handleNavigate('/admin/orders/open')}
-                className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
-                  isActive('/admin/orders/open') ? 'bg-gray-200 font-medium' : ''
-                }`}
+              <NavLink
+                to="/admin/orders/open"
+                className={({ isActive }) =>
+                  `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
+                    isActive ? 'bg-gray-200 font-medium' : ''
+                  }`
+                }
               >
                 Open Orders
-              </button>
-              <button
-                onClick={() => handleNavigate('/admin/orders/completed')}
-                className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
-                  isActive('/admin/orders/completed') ? 'bg-gray-200 font-medium' : ''
-                }`}
+              </NavLink>
+              <NavLink
+                to="/admin/orders/completed"
+                className={({ isActive }) =>
+                  `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
+                    isActive ? 'bg-gray-200 font-medium' : ''
+                  }`
+                }
               >
                 Completed Orders
-              </button>
+              </NavLink>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
 
         {/* Prompt Tester - Outside accordion */}
         <div className="mt-4">
-          <button
-            onClick={() => handleNavigate('/admin/prompt-tester')}
-            className={`flex w-full items-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-gray-100 ${
-              isActive('/admin/prompt-tester') ? 'bg-gray-200 font-medium' : ''
-            }`}
+          <NavLink
+            to="/admin/prompt-tester"
+            className={({ isActive }) =>
+              `flex w-full items-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-gray-100 ${
+                isActive ? 'bg-gray-200 font-medium' : ''
+              }`
+            }
           >
             <FlaskConical className="h-4 w-4" />
             <span>Prompt Tester</span>
-          </button>
+          </NavLink>
         </div>
 
         {/* Editor - Opens in new tab */}
