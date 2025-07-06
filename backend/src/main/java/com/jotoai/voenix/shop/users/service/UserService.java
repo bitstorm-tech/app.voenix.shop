@@ -43,55 +43,55 @@ public class UserService {
     
     @Transactional
     public UserDto createUser(CreateUserRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new ResourceAlreadyExistsException("User", "email", request.getEmail());
+        if (userRepository.existsByEmail(request.email())) {
+            throw new ResourceAlreadyExistsException("User", "email", request.email());
         }
         
-        User user = User.builder()
-                .email(request.getEmail())
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .phoneNumber(request.getPhoneNumber())
-                .password(request.getPassword())
+        var user = User.builder()
+                .email(request.email())
+                .firstName(request.firstName())
+                .lastName(request.lastName())
+                .phoneNumber(request.phoneNumber())
+                .password(request.password())
                 .build();
         
-        User savedUser = userRepository.save(user);
+        var savedUser = userRepository.save(user);
         return toDto(savedUser);
     }
     
     @Transactional
     public UserDto updateUser(Long id, UpdateUserRequest request) {
-        User user = userRepository.findById(id)
+        var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
         
-        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
-            if (userRepository.existsByEmail(request.getEmail())) {
-                throw new ResourceAlreadyExistsException("User", "email", request.getEmail());
+        if (request.email() != null && !request.email().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.email())) {
+                throw new ResourceAlreadyExistsException("User", "email", request.email());
             }
-            user.setEmail(request.getEmail());
+            user.setEmail(request.email());
         }
         
-        if (request.getFirstName() != null) {
-            user.setFirstName(request.getFirstName());
+        if (request.firstName() != null) {
+            user.setFirstName(request.firstName());
         }
         
-        if (request.getLastName() != null) {
-            user.setLastName(request.getLastName());
+        if (request.lastName() != null) {
+            user.setLastName(request.lastName());
         }
         
-        if (request.getPhoneNumber() != null) {
-            user.setPhoneNumber(request.getPhoneNumber());
+        if (request.phoneNumber() != null) {
+            user.setPhoneNumber(request.phoneNumber());
         }
         
-        if (request.getPassword() != null) {
-            user.setPassword(request.getPassword());
+        if (request.password() != null) {
+            user.setPassword(request.password());
         }
         
-        if (request.getOneTimePassword() != null) {
-            user.setOneTimePassword(request.getOneTimePassword());
+        if (request.oneTimePassword() != null) {
+            user.setOneTimePassword(request.oneTimePassword());
         }
         
-        User updatedUser = userRepository.save(user);
+        var updatedUser = userRepository.save(user);
         return toDto(updatedUser);
     }
     

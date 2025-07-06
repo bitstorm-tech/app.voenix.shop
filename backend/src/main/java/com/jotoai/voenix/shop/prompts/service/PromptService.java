@@ -42,28 +42,28 @@ public class PromptService {
     
     @Transactional
     public PromptDto createPrompt(CreatePromptRequest request) {
-        Prompt prompt = Prompt.builder()
-                .title(request.getTitle())
-                .content(request.getContent())
+        var prompt = Prompt.builder()
+                .title(request.title())
+                .content(request.content())
                 .build();
         
-        Prompt savedPrompt = promptRepository.save(prompt);
+        var savedPrompt = promptRepository.save(prompt);
         return toDto(savedPrompt);
     }
     
     @Transactional
     public PromptDto updatePrompt(Long id, UpdatePromptRequest request) {
-        Prompt prompt = promptRepository.findById(id)
+        var prompt = promptRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Prompt", "id", id));
         
-        if (request.getTitle() != null) {
-            prompt.setTitle(request.getTitle());
+        if (request.title() != null) {
+            prompt.setTitle(request.title());
         }
-        if (request.getContent() != null) {
-            prompt.setContent(request.getContent());
+        if (request.content() != null) {
+            prompt.setContent(request.content());
         }
         
-        Prompt updatedPrompt = promptRepository.save(prompt);
+        var updatedPrompt = promptRepository.save(prompt);
         return toDto(updatedPrompt);
     }
     
@@ -76,12 +76,12 @@ public class PromptService {
     }
     
     private PromptDto toDto(Prompt prompt) {
-        return PromptDto.builder()
-                .id(prompt.getId())
-                .title(prompt.getTitle())
-                .content(prompt.getContent())
-                .createdAt(prompt.getCreatedAt())
-                .updatedAt(prompt.getUpdatedAt())
-                .build();
+        return new PromptDto(
+                prompt.getId(),
+                prompt.getTitle(),
+                prompt.getContent(),
+                prompt.getCreatedAt(),
+                prompt.getUpdatedAt()
+        );
     }
 }
