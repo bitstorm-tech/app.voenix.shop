@@ -39,3 +39,6 @@ databaseChangeLog:
             columns:
               - column:
                   name: title
+      rollback:
+        - dropTable:
+            tableName: prompts
