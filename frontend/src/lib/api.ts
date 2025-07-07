@@ -1,4 +1,5 @@
 import type { Prompt, PromptCategory } from '@/types/prompt';
+import type { Mug, MugCategory, MugSubCategory } from '@/types/mug';
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -107,5 +108,96 @@ export interface CreatePromptCategoryRequest {
 
 export interface UpdatePromptCategoryRequest {
   name?: string;
+}
+
+// Mug API endpoints
+export const mugsApi = {
+  getAll: () => api.get<Mug[]>('/mugs'),
+  getActive: () => api.get<Mug[]>('/mugs/active'),
+  getById: (id: number) => api.get<Mug>(`/mugs/${id}`),
+  create: (data: CreateMugRequest) => api.post<Mug>('/mugs', data),
+  update: (id: number, data: UpdateMugRequest) => api.put<Mug>(`/mugs/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/mugs/${id}`),
+  search: (name: string) => api.get<Mug[]>(`/mugs/search?name=${encodeURIComponent(name)}`),
+  getByPriceRange: (minPrice: number, maxPrice: number) => 
+    api.get<Mug[]>(`/mugs/price-range?minPrice=${minPrice}&maxPrice=${maxPrice}`),
+};
+
+// Mug Category API endpoints
+export const mugCategoriesApi = {
+  getAll: () => api.get<MugCategory[]>('/mug-categories'),
+  getById: (id: number) => api.get<MugCategory>(`/mug-categories/${id}`),
+  create: (data: CreateMugCategoryRequest) => api.post<MugCategory>('/mug-categories', data),
+  update: (id: number, data: UpdateMugCategoryRequest) => api.put<MugCategory>(`/mug-categories/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/mug-categories/${id}`),
+  search: (name: string) => api.get<MugCategory[]>(`/mug-categories/search?name=${encodeURIComponent(name)}`),
+};
+
+// Mug SubCategory API endpoints
+export const mugSubCategoriesApi = {
+  getAll: () => api.get<MugSubCategory[]>('/mug-subcategories'),
+  getById: (id: number) => api.get<MugSubCategory>(`/mug-subcategories/${id}`),
+  getByCategoryId: (categoryId: number) => api.get<MugSubCategory[]>(`/mug-subcategories/by-category/${categoryId}`),
+  create: (data: CreateMugSubCategoryRequest) => api.post<MugSubCategory>('/mug-subcategories', data),
+  update: (id: number, data: UpdateMugSubCategoryRequest) => api.put<MugSubCategory>(`/mug-subcategories/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/mug-subcategories/${id}`),
+  search: (name: string) => api.get<MugSubCategory[]>(`/mug-subcategories/search?name=${encodeURIComponent(name)}`),
+};
+
+// Type definitions for Mug API requests
+export interface CreateMugRequest {
+  name: string;
+  descriptionLong: string;
+  descriptionShort: string;
+  image: string;
+  price: number;
+  heightMm: number;
+  diameterMm: number;
+  printTemplateWidthMm: number;
+  printTemplateHeightMm: number;
+  fillingQuantity?: string;
+  dishwasherSafe: boolean;
+  active: boolean;
+  categoryId?: number;
+  subCategoryId?: number;
+}
+
+export interface UpdateMugRequest {
+  name?: string;
+  descriptionLong?: string;
+  descriptionShort?: string;
+  image?: string;
+  price?: number;
+  heightMm?: number;
+  diameterMm?: number;
+  printTemplateWidthMm?: number;
+  printTemplateHeightMm?: number;
+  fillingQuantity?: string;
+  dishwasherSafe?: boolean;
+  active?: boolean;
+  categoryId?: number;
+  subCategoryId?: number;
+}
+
+export interface CreateMugCategoryRequest {
+  name: string;
+  description?: string;
+}
+
+export interface UpdateMugCategoryRequest {
+  name?: string;
+  description?: string;
+}
+
+export interface CreateMugSubCategoryRequest {
+  name: string;
+  categoryId: number;
+  description?: string;
+}
+
+export interface UpdateMugSubCategoryRequest {
+  name?: string;
+  categoryId?: number;
+  description?: string;
 }
 

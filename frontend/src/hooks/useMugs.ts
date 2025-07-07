@@ -1,4 +1,6 @@
 import { MugOption } from '@/components/editor/types';
+import { mugsApi } from '@/lib/api';
+import type { Mug } from '@/types/mug';
 import { useEffect, useState } from 'react';
 
 const mockMugs: MugOption[] = [
@@ -56,15 +58,29 @@ export function useMugs() {
   const [loading, setLoading] = useState(true);
   const [error] = useState<string | null>(null);
 
+  // Helper function to convert backend Mug to frontend MugOption
+  const mapMugToOption = (mug: Mug): MugOption => ({
+    id: mug.id,
+    name: mug.name,
+    price: mug.price,
+    image: mug.image,
+    capacity: mug.fillingQuantity || '',
+    description_short: mug.descriptionShort,
+    description_long: mug.descriptionLong,
+    height_mm: mug.heightMm,
+    diameter_mm: mug.diameterMm,
+    print_template_width_mm: mug.printTemplateWidthMm,
+    print_template_height_mm: mug.printTemplateHeightMm,
+    filling_quantity: mug.fillingQuantity,
+    dishwasher_safe: mug.dishwasherSafe,
+  });
+
   useEffect(() => {
     const fetchMugs = async () => {
       try {
-        const response = await fetch('/api/mugs');
-        if (!response.ok) {
-          throw new Error('Failed to fetch mugs');
-        }
-        const data = await response.json();
-        setMugs(data);
+        const data = await mugsApi.getActive();
+        const mappedMugs = data.map(mapMugToOption);
+        setMugs(mappedMugs);
       } catch (err) {
         console.error('Error fetching mugs:', err);
         // Use mock data as fallback

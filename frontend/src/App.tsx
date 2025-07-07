@@ -1,5 +1,6 @@
 import AdminLayout from '@/components/admin/AdminLayout';
 import CompletedOrders from '@/pages/admin/CompletedOrders';
+import Mugs from '@/pages/admin/Mugs';
 import NewPrompt from '@/pages/admin/NewPrompt';
 import OpenOrders from '@/pages/admin/OpenOrders';
 import PromptCategories from '@/pages/admin/PromptCategories';
@@ -14,21 +15,12 @@ export default function App() {
         <Route path="/" element={<Editor />} />
         <Route path="/editor" element={<Editor />} />
 
-        {/* Admin Routes */}
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Prompts />} />
           <Route path="prompts" element={<Prompts />} />
           <Route path="prompts/new" element={<NewPrompt />} />
           <Route path="prompt-categories" element={<PromptCategories />} />
-          <Route
-            path="mugs"
-            element={
-              <div className="p-8 pt-20 md:pt-8">
-                <h1 className="text-2xl font-semibold">All Mugs</h1>
-                <p className="mt-2 text-gray-600">Mug management coming soon...</p>
-              </div>
-            }
-          />
+          <Route path="mugs" element={<Mugs />} />
           <Route
             path="mug-categories"
             element={
