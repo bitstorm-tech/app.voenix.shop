@@ -64,6 +64,7 @@ backend/src/main/kotlin/com/jotoai/voenix/shop/
 - PostgreSQL on localhost:5432
 - Database name: `voenix_java`
 - Migrations in `resources/db/changelog/`
+- Write SQL statements in lowercase
 
 ### Frontend Architecture
 

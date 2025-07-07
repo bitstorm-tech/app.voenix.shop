@@ -12,7 +12,11 @@
       "Bash(/Users/joe/projects/joto-ai/app.voenix.shop/backend/gradlew clean build -p /Users/joe/projects/joto-ai/app.voenix.shop/backend)",
       "Bash(java:*)",
       "Bash(sh:*)",
-      "Bash(/Users/joe/projects/joto-ai/app.voenix.shop/backend/gradlew -p /Users/joe/projects/joto-ai/app.voenix.shop/backend clean build)"
+      "Bash(/Users/joe/projects/joto-ai/app.voenix.shop/backend/gradlew -p /Users/joe/projects/joto-ai/app.voenix.shop/backend clean build)",
+      "Bash(npm run type-check:*)",
+      "Bash(/Users/joe/projects/joto-ai/app.voenix.shop/backend/gradlew -p /Users/joe/projects/joto-ai/app.voenix.shop/backend build)",
+      "Bash(/Users/joe/projects/joto-ai/app.voenix.shop/backend/gradlew -p /Users/joe/projects/joto-ai/app.voenix.shop/backend bootRun)",
+      "Bash(npm --prefix frontend run type-check)"
     ],
     "deny": []
   }

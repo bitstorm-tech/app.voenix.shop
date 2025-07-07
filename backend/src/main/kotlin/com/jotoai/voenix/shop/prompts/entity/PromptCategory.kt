@@ -1,0 +1,33 @@
+package com.jotoai.voenix.shop.prompts.entity
+
+import com.jotoai.voenix.shop.prompts.dto.PromptCategoryDto
+import jakarta.persistence.*
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
+import java.time.OffsetDateTime
+
+@Entity
+@Table(name = "prompt_categories")
+data class PromptCategory(
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    val id: Long? = null,
+    
+    @Column(nullable = false, unique = true)
+    var name: String,
+    
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    val createdAt: OffsetDateTime? = null,
+    
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
+    var updatedAt: OffsetDateTime? = null
+)
+
+fun PromptCategory.toDto(): PromptCategoryDto = PromptCategoryDto(
+    id = requireNotNull(this.id) { "PromptCategory ID cannot be null when converting to DTO" },
+    name = this.name,
+    createdAt = this.createdAt,
+    updatedAt = this.updatedAt
+)
