@@ -1,4 +1,4 @@
-create table prompt_categories
+create table if not exists prompt_categories
 (
     id         bigserial primary key,
     name       varchar(255) not null unique,
@@ -6,4 +6,4 @@ create table prompt_categories
     updated_at timestamptz  not null default current_timestamp
 );
 
-create index idx_prompt_categories_name on prompt_categories (name);
+create index if not exists idx_prompt_categories_name on prompt_categories (name);

@@ -1,4 +1,4 @@
-create table mugs
+create table if not exists mugs
 (
     id                       bigserial primary key,
     name                     varchar(255) not null,
@@ -17,5 +17,5 @@ create table mugs
     updated_at               timestamptz  not null default current_timestamp
 );
 
-create index idx_mugs_name on mugs (name);
-create index idx_mugs_active on mugs (active);
+create index if not exists idx_mugs_name on mugs (name);
+create index if not exists idx_mugs_active on mugs (active);

@@ -1,4 +1,4 @@
-CREATE TABLE users
+create table if not exists users
 (
     id                           bigserial primary key,
     email                        varchar(255) not null unique,
@@ -12,4 +12,4 @@ CREATE TABLE users
     updated_at                   timestamptz           default current_timestamp
 );
 
-CREATE INDEX idx_users_email ON users (email);
+create index if not exists idx_users_email on users (email);

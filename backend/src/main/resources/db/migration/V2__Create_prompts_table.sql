@@ -1,9 +1,10 @@
-CREATE TABLE prompts (
-    id BIGSERIAL PRIMARY KEY,
-    title VARCHAR(500) NOT NULL,
-    content TEXT,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+create table if not exists prompts
+(
+    id         bigserial primary key,
+    title      varchar(500) not null,
+    content    text,
+    created_at timestamp    not null default current_timestamp,
+    updated_at timestamp    not null default current_timestamp
 );
 
-CREATE INDEX idx_prompts_title ON prompts(title);
+create index if not exists idx_prompts_title on prompts (title);

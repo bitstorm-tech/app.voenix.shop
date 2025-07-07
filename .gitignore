@@ -56,6 +56,7 @@ replay_pid*
 
 # Custom stuff
 .idea
+.kotlin
 node_modules
 _new_prompt.md
 dist
