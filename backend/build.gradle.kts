@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -11,7 +10,7 @@ plugins {
 }
 
 group = "com.jotoai.voenix"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.1"
 
 repositories {
     mavenCentral()
@@ -49,7 +48,7 @@ tasks.withType<KotlinCompile> {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(24)
 }
 
 flyway {
