@@ -89,12 +89,16 @@ export const promptCategoriesApi = {
 // Type definitions for API requests
 export interface CreatePromptRequest {
   title: string;
-  content?: string;
+  content: string;
+  categoryId: number;
+  active: boolean;
 }
 
 export interface UpdatePromptRequest {
-  title?: string;
-  content?: string;
+  title: string;
+  content: string;
+  categoryId: number;
+  active: boolean;
 }
 
 export interface CreatePromptCategoryRequest {
