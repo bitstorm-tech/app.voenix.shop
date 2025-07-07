@@ -5,6 +5,7 @@ import java.time.OffsetDateTime
 data class PromptCategoryDto(
     val id: Long,
     val name: String,
+    val promptsCount: Int = 0,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?
 )

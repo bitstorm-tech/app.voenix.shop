@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository
 interface PromptRepository : JpaRepository<Prompt, Long> {
     
     fun findByTitleContainingIgnoreCase(title: String): List<Prompt>
+    
+    fun countByCategoryId(categoryId: Long): Int
 }

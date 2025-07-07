@@ -16,6 +16,9 @@ data class PromptCategory(
     @Column(nullable = false, unique = true)
     var name: String,
     
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    val prompts: List<Prompt> = emptyList(),
+    
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,
@@ -27,6 +30,7 @@ data class PromptCategory(
     fun toDto() = PromptCategoryDto(
         id = requireNotNull(this.id) { "PromptCategory ID cannot be null when converting to DTO" },
         name = this.name,
+        promptsCount = this.prompts.size,
         createdAt = this.createdAt,
         updatedAt = this.updatedAt
     )

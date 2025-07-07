@@ -6,26 +6,52 @@ import com.jotoai.voenix.shop.prompts.dto.PromptCategoryDto
 import com.jotoai.voenix.shop.prompts.dto.UpdatePromptCategoryRequest
 import com.jotoai.voenix.shop.prompts.entity.PromptCategory
 import com.jotoai.voenix.shop.prompts.repository.PromptCategoryRepository
+import com.jotoai.voenix.shop.prompts.repository.PromptRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional(readOnly = true)
 class PromptCategoryService(
-    private val promptCategoryRepository: PromptCategoryRepository
+    private val promptCategoryRepository: PromptCategoryRepository,
+    private val promptRepository: PromptRepository
 ) {
     
     fun getAllPromptCategories(): List<PromptCategoryDto> = 
-        promptCategoryRepository.findAll().map { it.toDto() }
+        promptCategoryRepository.findAll().map { category ->
+            PromptCategoryDto(
+                id = category.id!!,
+                name = category.name,
+                promptsCount = promptRepository.countByCategoryId(category.id),
+                createdAt = category.createdAt,
+                updatedAt = category.updatedAt
+            )
+        }
     
     fun getPromptCategoryById(id: Long): PromptCategoryDto {
         return promptCategoryRepository.findById(id)
-            .map { it.toDto() }
+            .map { category ->
+                PromptCategoryDto(
+                    id = category.id!!,
+                    name = category.name,
+                    promptsCount = promptRepository.countByCategoryId(category.id),
+                    createdAt = category.createdAt,
+                    updatedAt = category.updatedAt
+                )
+            }
             .orElseThrow { ResourceNotFoundException("PromptCategory", "id", id) }
     }
     
     fun searchPromptCategoriesByName(name: String): List<PromptCategoryDto> = 
-        promptCategoryRepository.findByNameContainingIgnoreCase(name).map { it.toDto() }
+        promptCategoryRepository.findByNameContainingIgnoreCase(name).map { category ->
+            PromptCategoryDto(
+                id = category.id!!,
+                name = category.name,
+                promptsCount = promptRepository.countByCategoryId(category.id),
+                createdAt = category.createdAt,
+                updatedAt = category.updatedAt
+            )
+        }
     
     @Transactional
     fun createPromptCategory(request: CreatePromptCategoryRequest): PromptCategoryDto {
@@ -34,7 +60,13 @@ class PromptCategoryService(
         )
         
         val savedPromptCategory = promptCategoryRepository.save(promptCategory)
-        return savedPromptCategory.toDto()
+        return PromptCategoryDto(
+            id = savedPromptCategory.id!!,
+            name = savedPromptCategory.name,
+            promptsCount = 0, // New category has no prompts
+            createdAt = savedPromptCategory.createdAt,
+            updatedAt = savedPromptCategory.updatedAt
+        )
     }
     
     @Transactional
@@ -45,7 +77,13 @@ class PromptCategoryService(
         request.name?.let { promptCategory.name = it }
         
         val updatedPromptCategory = promptCategoryRepository.save(promptCategory)
-        return updatedPromptCategory.toDto()
+        return PromptCategoryDto(
+            id = updatedPromptCategory.id!!,
+            name = updatedPromptCategory.name,
+            promptsCount = promptRepository.countByCategoryId(updatedPromptCategory.id),
+            createdAt = updatedPromptCategory.createdAt,
+            updatedAt = updatedPromptCategory.updatedAt
+        )
     }
     
     @Transactional
