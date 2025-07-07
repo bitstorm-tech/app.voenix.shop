@@ -1,15 +1,28 @@
-interface Category {
+export interface PromptCategory {
   id: number;
   name: string;
+  createdAt?: string;
+  updatedAt?: string;
+  prompts_count?: number;
+}
+
+export interface PromptSubCategory {
+  id: number;
+  name: string;
+  category_id?: number;
+  category?: PromptCategory;
+  prompts_count?: number;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Prompt {
   id: number;
-  name: string;
-  prompt: string;
-  category?: Category;
-  subcategory?: Category;
-  example_image_url?: string;
-  created_at?: string;
-  updated_at?: string;
+  title: string;
+  content?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  category_id?: number;
+  category?: PromptCategory;
+  active?: boolean;
 }

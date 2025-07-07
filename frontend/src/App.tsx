@@ -1,42 +1,54 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Editor from '@/pages/Editor';
 import AdminLayout from '@/components/admin/AdminLayout';
-import AdminPrompts from '@/components/admin/AdminPrompts';
+import CompletedOrders from '@/pages/admin/CompletedOrders';
+import OpenOrders from '@/pages/admin/OpenOrders';
+import PromptCategories from '@/pages/admin/PromptCategories';
+import Prompts from '@/pages/admin/Prompts';
+import Editor from '@/pages/Editor';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
 export default function App() {
   return (
     <Router>
-      <div className="app">
-        {/*<header className="app-header">*/}
-        {/*  <h1>Voenix Shop</h1>*/}
-        {/*  <nav>*/}
-        {/*    <Link to="/">Home</Link>*/}
-        {/*    <Link to="/about">About</Link>*/}
-        {/*  </nav>*/}
-        {/*</header>*/}
-        
-        <main className="app-main">
-          <Routes>
-            <Route path="/" element={<Editor />} />
-            <Route path="/editor" element={<Editor />} />
+      <Routes>
+        <Route path="/" element={<Editor />} />
+        <Route path="/editor" element={<Editor />} />
 
-            {/* Admin Routes */}
-            <Route path="/admin" element={<AdminLayout />}>
-              <Route path="prompts" element={<AdminPrompts />} />
-              <Route path="prompt-categories" element={<div className="p-8"><h1 className="text-2xl font-semibold">Prompt Categories</h1><p className="mt-2 text-gray-600">Prompt categories management coming soon...</p></div>} />
-              <Route path="mugs" element={<div className="p-8"><h1 className="text-2xl font-semibold">All Mugs</h1><p className="mt-2 text-gray-600">Mug management coming soon...</p></div>} />
-              <Route path="mug-categories" element={<div className="p-8"><h1 className="text-2xl font-semibold">Mug Categories</h1><p className="mt-2 text-gray-600">Mug categories management coming soon...</p></div>} />
-              <Route path="orders/open" element={<div className="p-8"><h1 className="text-2xl font-semibold">Open Orders</h1><p className="mt-2 text-gray-600">Open orders management coming soon...</p></div>} />
-              <Route path="orders/completed" element={<div className="p-8"><h1 className="text-2xl font-semibold">Completed Orders</h1><p className="mt-2 text-gray-600">Completed orders management coming soon...</p></div>} />
-              <Route path="prompt-tester" element={<div className="p-8"><h1 className="text-2xl font-semibold">Prompt Tester</h1><p className="mt-2 text-gray-600">Prompt testing tool coming soon...</p></div>} />
-            </Route>
-          </Routes>
-        </main>
-        
-        {/*<footer className="app-footer">*/}
-        {/*  <p>&copy; 2025 Voenix Shop. All rights reserved.</p>*/}
-        {/*</footer>*/}
-      </div>
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<Prompts />} />
+          <Route path="prompts" element={<Prompts />} />
+          <Route path="prompt-categories" element={<PromptCategories />} />
+          <Route
+            path="mugs"
+            element={
+              <div className="p-8 pt-20 md:pt-8">
+                <h1 className="text-2xl font-semibold">All Mugs</h1>
+                <p className="mt-2 text-gray-600">Mug management coming soon...</p>
+              </div>
+            }
+          />
+          <Route
+            path="mug-categories"
+            element={
+              <div className="p-8 pt-20 md:pt-8">
+                <h1 className="text-2xl font-semibold">Mug Categories</h1>
+                <p className="mt-2 text-gray-600">Mug categories management coming soon...</p>
+              </div>
+            }
+          />
+          <Route path="orders/open" element={<OpenOrders />} />
+          <Route path="orders/completed" element={<CompletedOrders />} />
+          <Route
+            path="prompt-tester"
+            element={
+              <div className="p-8 pt-20 md:pt-8">
+                <h1 className="text-2xl font-semibold">Prompt Tester</h1>
+                <p className="mt-2 text-gray-600">Prompt testing tool coming soon...</p>
+              </div>
+            }
+          />
+        </Route>
+      </Routes>
     </Router>
-  )
+  );
 }

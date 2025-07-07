@@ -4,7 +4,12 @@ import { Coffee, FileText, FlaskConical, LogOut, Package, Palette } from 'lucide
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 
-export default function AdminSidebar() {
+interface AdminSidebarProps {
+  user?: { name?: string };
+  onNavigate?: () => void;
+}
+
+export default function AdminSidebar({ user, onNavigate }: AdminSidebarProps = {}) {
   const [openItems, setOpenItems] = useState<string[]>(['prompts', 'mugs', 'orders']);
 
   const navigate = useNavigate();
@@ -34,6 +39,7 @@ export default function AdminSidebar() {
             <AccordionContent className="ml-4 space-y-1">
               <NavLink
                 to="/admin/prompts"
+                onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
                     isActive ? 'bg-gray-200 font-medium' : ''
@@ -44,6 +50,7 @@ export default function AdminSidebar() {
               </NavLink>
               <NavLink
                 to="/admin/prompt-categories"
+                onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
                     isActive ? 'bg-gray-200 font-medium' : ''
@@ -66,6 +73,7 @@ export default function AdminSidebar() {
             <AccordionContent className="ml-4 space-y-1">
               <NavLink
                 to="/admin/mugs"
+                onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
                     isActive ? 'bg-gray-200 font-medium' : ''
@@ -76,6 +84,7 @@ export default function AdminSidebar() {
               </NavLink>
               <NavLink
                 to="/admin/mug-categories"
+                onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
                     isActive ? 'bg-gray-200 font-medium' : ''
@@ -98,6 +107,7 @@ export default function AdminSidebar() {
             <AccordionContent className="ml-4 space-y-1">
               <NavLink
                 to="/admin/orders/open"
+                onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
                     isActive ? 'bg-gray-200 font-medium' : ''
@@ -108,6 +118,7 @@ export default function AdminSidebar() {
               </NavLink>
               <NavLink
                 to="/admin/orders/completed"
+                onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
                     isActive ? 'bg-gray-200 font-medium' : ''
@@ -124,6 +135,7 @@ export default function AdminSidebar() {
         <div className="mt-4">
           <NavLink
             to="/admin/prompt-tester"
+            onClick={onNavigate}
             className={({ isActive }) =>
               `flex w-full items-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-gray-100 ${
                 isActive ? 'bg-gray-200 font-medium' : ''
@@ -149,7 +161,7 @@ export default function AdminSidebar() {
 
       <div className="border-t p-4">
         <div className="mb-3 px-2">
-          <p className="text-sm text-gray-600">DuDa</p>
+          <p className="text-sm text-gray-600">{user?.name || 'DuDa'}</p>
         </div>
         <Button variant="outline" className="w-full justify-start" onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />

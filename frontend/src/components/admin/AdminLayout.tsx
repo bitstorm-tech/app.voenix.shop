@@ -1,13 +1,46 @@
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import { Button } from '@/components/ui/Button';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/Sheet';
+import { Menu } from 'lucide-react';
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 
 export default function AdminLayout() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const user = { name: 'DuDa' }; // TODO: Get from auth context
+
+  const handleMobileMenuClose = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
     <div className="flex h-screen">
-      <AdminSidebar />
-      <main className="flex-1 overflow-y-auto">
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block">
+        <AdminSidebar user={user} />
+      </div>
+
+      {/* Main Content */}
+      <div className="relative flex-1 overflow-auto">
+        {/* Mobile Menu Button */}
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="icon" className="absolute left-4 top-4 z-40 bg-white shadow-md md:hidden">
+              <Menu className="h-5 w-5" />
+              <span className="sr-only">Toggle menu</span>
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-64 p-0">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Admin Navigation Menu</SheetTitle>
+              <SheetDescription>Navigate through admin sections</SheetDescription>
+            </SheetHeader>
+            <AdminSidebar user={user} onNavigate={handleMobileMenuClose} />
+          </SheetContent>
+        </Sheet>
+
         <Outlet />
-      </main>
+      </div>
     </div>
   );
 }
