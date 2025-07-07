@@ -5,7 +5,6 @@ import com.jotoai.voenix.shop.mugs.dto.CreateMugRequest
 import com.jotoai.voenix.shop.mugs.dto.MugDto
 import com.jotoai.voenix.shop.mugs.dto.UpdateMugRequest
 import com.jotoai.voenix.shop.mugs.entity.Mug
-import com.jotoai.voenix.shop.mugs.entity.toDto
 import com.jotoai.voenix.shop.mugs.repository.MugRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

@@ -6,7 +6,6 @@ import com.jotoai.voenix.shop.users.dto.CreateUserRequest
 import com.jotoai.voenix.shop.users.dto.UpdateUserRequest
 import com.jotoai.voenix.shop.users.dto.UserDto
 import com.jotoai.voenix.shop.users.entity.User
-import com.jotoai.voenix.shop.users.entity.toDto
 import com.jotoai.voenix.shop.users.repository.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

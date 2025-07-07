@@ -26,12 +26,12 @@ data class Prompt(
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null
-)
-
-fun Prompt.toDto(): PromptDto = PromptDto(
-    id = requireNotNull(this.id) { "Prompt ID cannot be null when converting to DTO" },
-    title = this.title,
-    content = this.content,
-    createdAt = this.createdAt,
-    updatedAt = this.updatedAt
-)
+) {
+    fun toDto() = PromptDto(
+        id = requireNotNull(this.id) { "Prompt ID cannot be null when converting to DTO" },
+        title = this.title,
+        content = this.content,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt
+    )
+}

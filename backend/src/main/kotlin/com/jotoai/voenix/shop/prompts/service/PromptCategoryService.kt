@@ -5,7 +5,6 @@ import com.jotoai.voenix.shop.prompts.dto.CreatePromptCategoryRequest
 import com.jotoai.voenix.shop.prompts.dto.PromptCategoryDto
 import com.jotoai.voenix.shop.prompts.dto.UpdatePromptCategoryRequest
 import com.jotoai.voenix.shop.prompts.entity.PromptCategory
-import com.jotoai.voenix.shop.prompts.entity.toDto
 import com.jotoai.voenix.shop.prompts.repository.PromptCategoryRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

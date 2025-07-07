@@ -56,22 +56,22 @@ data class Mug(
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null
-)
-
-fun Mug.toDto(): MugDto = MugDto(
-    id = requireNotNull(this.id) { "Mug ID cannot be null when converting to DTO" },
-    name = this.name,
-    descriptionLong = this.descriptionLong,
-    descriptionShort = this.descriptionShort,
-    image = this.image,
-    price = this.price,
-    heightMm = this.heightMm,
-    diameterMm = this.diameterMm,
-    printTemplateWidthMm = this.printTemplateWidthMm,
-    printTemplateHeightMm = this.printTemplateHeightMm,
-    fillingQuantity = this.fillingQuantity,
-    dishwasherSafe = this.dishwasherSafe,
-    active = this.active,
-    createdAt = this.createdAt,
-    updatedAt = this.updatedAt
-)
+) {
+    fun toDto() = MugDto(
+        id = requireNotNull(this.id) { "Mug ID cannot be null when converting to DTO" },
+        name = this.name,
+        descriptionLong = this.descriptionLong,
+        descriptionShort = this.descriptionShort,
+        image = this.image,
+        price = this.price,
+        heightMm = this.heightMm,
+        diameterMm = this.diameterMm,
+        printTemplateWidthMm = this.printTemplateWidthMm,
+        printTemplateHeightMm = this.printTemplateHeightMm,
+        fillingQuantity = this.fillingQuantity,
+        dishwasherSafe = this.dishwasherSafe,
+        active = this.active,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt
+    )
+}

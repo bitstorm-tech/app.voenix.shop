@@ -39,6 +39,16 @@ data class User(
     @Column(name = "updated_at", columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null
 ) {
+    fun toDto() = UserDto(
+        id = requireNotNull(this.id) { "User ID cannot be null when converting to DTO" },
+        email = this.email,
+        firstName = this.firstName,
+        lastName = this.lastName,
+        phoneNumber = this.phoneNumber,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt
+    )
+
     override fun toString(): String {
         return "User(id=$id, email='$email', firstName=$firstName, lastName=$lastName, " +
                "phoneNumber=$phoneNumber, password=${if (password != null) "[PROTECTED]" else null}, " +
@@ -46,13 +56,3 @@ data class User(
                "createdAt=$createdAt, updatedAt=$updatedAt)"
     }
 }
-
-fun User.toDto(): UserDto = UserDto(
-    id = requireNotNull(this.id) { "User ID cannot be null when converting to DTO" },
-    email = this.email,
-    firstName = this.firstName,
-    lastName = this.lastName,
-    phoneNumber = this.phoneNumber,
-    createdAt = this.createdAt,
-    updatedAt = this.updatedAt
-)

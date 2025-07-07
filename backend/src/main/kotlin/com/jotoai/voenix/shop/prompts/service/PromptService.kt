@@ -5,7 +5,6 @@ import com.jotoai.voenix.shop.prompts.dto.CreatePromptRequest
 import com.jotoai.voenix.shop.prompts.dto.PromptDto
 import com.jotoai.voenix.shop.prompts.dto.UpdatePromptRequest
 import com.jotoai.voenix.shop.prompts.entity.Prompt
-import com.jotoai.voenix.shop.prompts.entity.toDto
 import com.jotoai.voenix.shop.prompts.repository.PromptRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

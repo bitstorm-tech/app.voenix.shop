@@ -23,11 +23,11 @@ data class PromptCategory(
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null
-)
-
-fun PromptCategory.toDto(): PromptCategoryDto = PromptCategoryDto(
-    id = requireNotNull(this.id) { "PromptCategory ID cannot be null when converting to DTO" },
-    name = this.name,
-    createdAt = this.createdAt,
-    updatedAt = this.updatedAt
-)
+) {
+    fun toDto() = PromptCategoryDto(
+        id = requireNotNull(this.id) { "PromptCategory ID cannot be null when converting to DTO" },
+        name = this.name,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt
+    )
+}
