@@ -38,8 +38,8 @@ export default function PromptSelectionStep() {
                 </div>
               )}
 
-              {false ? /* prompt.example_image_url */ (
-                <div className="relative">
+              {false ? (
+                /* prompt.example_image_url */ <div className="relative">
                   <img
                     src={''} // prompt.example_image_url
                     alt={prompt.title}

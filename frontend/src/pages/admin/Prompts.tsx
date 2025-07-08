@@ -27,10 +27,7 @@ export default function Prompts() {
     try {
       setIsLoading(true);
       setError(null);
-      const [promptsData, categoriesData] = await Promise.all([
-        promptsApi.getAll(),
-        promptCategoriesApi.getAll(),
-      ]);
+      const [promptsData, categoriesData] = await Promise.all([promptsApi.getAll(), promptCategoriesApi.getAll()]);
       setPrompts(promptsData);
       setCategories(categoriesData);
     } catch (error) {
@@ -41,9 +38,7 @@ export default function Prompts() {
     }
   };
 
-  const filteredPrompts = selectedCategory === 'all' 
-    ? prompts 
-    : prompts.filter((prompt) => prompt.categoryId === parseInt(selectedCategory));
+  const filteredPrompts = selectedCategory === 'all' ? prompts : prompts.filter((prompt) => prompt.categoryId === parseInt(selectedCategory));
 
   const handleEdit = (prompt: Prompt) => {
     navigate(`/admin/prompts/${prompt.id}/edit`);
@@ -59,7 +54,7 @@ export default function Prompts() {
 
     try {
       await promptsApi.delete(promptToDelete);
-      setPrompts(prompts.filter(p => p.id !== promptToDelete));
+      setPrompts(prompts.filter((p) => p.id !== promptToDelete));
       setIsDeleteDialogOpen(false);
       setPromptToDelete(undefined);
     } catch (error) {
@@ -90,7 +85,7 @@ export default function Prompts() {
   if (isLoading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
+        <div className="flex h-64 items-center justify-center">
           <p className="text-gray-500">Loading prompts...</p>
         </div>
       </div>
@@ -100,13 +95,10 @@ export default function Prompts() {
   if (error) {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
+        <div className="flex h-64 items-center justify-center">
           <div className="text-center">
-            <p className="text-red-500 mb-4">{error}</p>
-            <button 
-              onClick={fetchData} 
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
+            <p className="mb-4 text-red-500">{error}</p>
+            <button onClick={fetchData} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
               Retry
             </button>
           </div>

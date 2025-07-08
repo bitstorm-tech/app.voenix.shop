@@ -25,7 +25,7 @@ export default function AdminLayout() {
         {/* Mobile Menu Button */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="absolute left-4 top-4 z-40 bg-white shadow-md md:hidden">
+            <Button variant="outline" size="icon" className="absolute top-4 left-4 z-40 bg-white shadow-md md:hidden">
               <Menu className="h-5 w-5" />
               <span className="sr-only">Toggle menu</span>
             </Button>

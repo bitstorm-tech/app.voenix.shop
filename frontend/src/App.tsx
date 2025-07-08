@@ -2,10 +2,12 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import CompletedOrders from '@/pages/admin/CompletedOrders';
 import Mugs from '@/pages/admin/Mugs';
 import NewOrEditPrompt from '@/pages/admin/NewOrEditPrompt';
+import NewOrEditSlot from '@/pages/admin/NewOrEditSlot';
 import NewOrEditSlotType from '@/pages/admin/NewOrEditSlotType';
 import OpenOrders from '@/pages/admin/OpenOrders';
 import PromptCategories from '@/pages/admin/PromptCategories';
 import Prompts from '@/pages/admin/Prompts';
+import Slots from '@/pages/admin/Slots';
 import SlotTypes from '@/pages/admin/SlotTypes';
 import Editor from '@/pages/Editor';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
@@ -26,6 +28,9 @@ export default function App() {
           <Route path="slot-types" element={<SlotTypes />} />
           <Route path="slot-types/new" element={<NewOrEditSlotType />} />
           <Route path="slot-types/:id/edit" element={<NewOrEditSlotType />} />
+          <Route path="slots" element={<Slots />} />
+          <Route path="slots/new" element={<NewOrEditSlot />} />
+          <Route path="slots/:id/edit" element={<NewOrEditSlot />} />
           <Route path="mugs" element={<Mugs />} />
           <Route
             path="mug-categories"

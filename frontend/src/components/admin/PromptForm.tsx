@@ -5,8 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/Textarea';
 import { promptsApi, type CreatePromptRequest, type UpdatePromptRequest } from '@/lib/api';
 import { Prompt, PromptCategory } from '@/types/prompt';
-import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface PromptFormProps {
   prompt?: Prompt | null;
@@ -79,11 +79,7 @@ export default function PromptForm({ prompt, categories, onSuccess, onCancel }: 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {errors.general && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded">
-          {errors.general}
-        </div>
-      )}
+      {errors.general && <div className="rounded border border-red-200 bg-red-50 px-4 py-2 text-red-600">{errors.general}</div>}
 
       <div className="grid gap-4">
         <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-4 sm:items-center sm:gap-4">
@@ -108,10 +104,7 @@ export default function PromptForm({ prompt, categories, onSuccess, onCancel }: 
             Category
           </label>
           <div className="sm:col-span-3">
-            <Select
-              value={formData.categoryId}
-              onValueChange={(value) => setFormData({ ...formData, categoryId: value })}
-            >
+            <Select value={formData.categoryId} onValueChange={(value) => setFormData({ ...formData, categoryId: value })}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
@@ -149,11 +142,7 @@ export default function PromptForm({ prompt, categories, onSuccess, onCancel }: 
             Active
           </label>
           <div className="flex items-center">
-            <Checkbox 
-              id="active" 
-              checked={formData.active} 
-              onCheckedChange={(checked) => setFormData({ ...formData, active: checked as boolean })} 
-            />
+            <Checkbox id="active" checked={formData.active} onCheckedChange={(checked) => setFormData({ ...formData, active: checked as boolean })} />
             <label htmlFor="active" className="ml-2 text-sm">
               Make this prompt available for use
             </label>

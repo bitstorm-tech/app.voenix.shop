@@ -43,7 +43,8 @@ npm run format           # Run code formatter
 - Use the puppeteer mcp server to check if the implementation looks right in the browser
 - Use `git mv` to move files that are under version control
 - Don't write useless, unnecessary or redundant comments -> only use comments to describe complex logic
-- 
+- Document WHY decisions were made, not just WHAT the code does
+
 ### Frontend
 - Don't use `React.memo`, `useCallback` or `useMemo` since the React compiler handles these optimizations automatically
 - Run the formatter for all touched files at the end of the implementation

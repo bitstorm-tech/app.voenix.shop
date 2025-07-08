@@ -59,7 +59,7 @@ export default function PromptCategories() {
     try {
       if (editingCategory) {
         const updated = await promptCategoriesApi.update(editingCategory.id, { name: categoryName });
-        setCategories(categories.map(c => c.id === updated.id ? updated : c));
+        setCategories(categories.map((c) => (c.id === updated.id ? updated : c)));
       } else {
         const created = await promptCategoriesApi.create({ name: categoryName });
         setCategories([...categories, created]);
@@ -80,7 +80,7 @@ export default function PromptCategories() {
     if (deleteId) {
       try {
         await promptCategoriesApi.delete(deleteId);
-        setCategories(categories.filter(c => c.id !== deleteId));
+        setCategories(categories.filter((c) => c.id !== deleteId));
         setIsDeleting(false);
         setDeleteId(null);
       } catch (error) {
@@ -98,7 +98,7 @@ export default function PromptCategories() {
   if (isLoading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
+        <div className="flex h-64 items-center justify-center">
           <p className="text-gray-500">Loading categories...</p>
         </div>
       </div>
@@ -108,13 +108,10 @@ export default function PromptCategories() {
   if (error) {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
+        <div className="flex h-64 items-center justify-center">
           <div className="text-center">
-            <p className="text-red-500 mb-4">{error}</p>
-            <button 
-              onClick={fetchCategories} 
-              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-            >
+            <p className="mb-4 text-red-500">{error}</p>
+            <button onClick={fetchCategories} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
               Retry
             </button>
           </div>
@@ -155,9 +152,7 @@ export default function PromptCategories() {
                 <TableRow key={category.id}>
                   <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell>{category.prompts_count || 0}</TableCell>
-                  <TableCell>
-                    {category.createdAt ? new Date(category.createdAt).toLocaleDateString() : '-'}
-                  </TableCell>
+                  <TableCell>{category.createdAt ? new Date(category.createdAt).toLocaleDateString() : '-'}</TableCell>
                   <TableCell className="text-right">
                     <Button variant="ghost" size="sm" onClick={() => handleOpenCategoryDialog(category)} className="mr-1">
                       <Edit className="h-4 w-4" />
@@ -183,22 +178,14 @@ export default function PromptCategories() {
           <form onSubmit={handleSubmitCategory}>
             <DialogHeader>
               <DialogTitle>{editingCategory ? 'Edit Category' : 'New Category'}</DialogTitle>
-              <DialogDescription>
-                {editingCategory ? 'Update the category details below.' : 'Create a new prompt category.'}
-              </DialogDescription>
+              <DialogDescription>{editingCategory ? 'Update the category details below.' : 'Create a new prompt category.'}</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
                   Name
                 </Label>
-                <Input 
-                  id="name" 
-                  value={categoryName} 
-                  onChange={(e) => setCategoryName(e.target.value)} 
-                  className="col-span-3" 
-                  required 
-                />
+                <Input id="name" value={categoryName} onChange={(e) => setCategoryName(e.target.value)} className="col-span-3" required />
               </div>
             </div>
             <DialogFooter>
@@ -215,9 +202,7 @@ export default function PromptCategories() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this category? This action cannot be undone.
-            </DialogDescription>
+            <DialogDescription>Are you sure you want to delete this category? This action cannot be undone.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={cancelDelete}>

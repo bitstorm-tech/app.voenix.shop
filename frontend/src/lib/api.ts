@@ -1,9 +1,12 @@
-import type { Prompt, PromptCategory } from '@/types/prompt';
 import type { Mug, MugCategory, MugSubCategory } from '@/types/mug';
-import type { SlotType } from '@/types/slot';
+import type { Prompt, PromptCategory } from '@/types/prompt';
+import type { Slot, SlotType } from '@/types/slot';
 
 class ApiError extends Error {
-  constructor(public status: number, message: string) {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
     super(message);
     this.name = 'ApiError';
   }
@@ -14,11 +17,11 @@ async function handleResponse<T>(response: Response): Promise<T> {
     const errorData = await response.json().catch(() => ({ message: 'An error occurred' }));
     throw new ApiError(response.status, errorData.message || `HTTP error! status: ${response.status}`);
   }
-  
+
   if (response.status === 204) {
     return {} as T;
   }
-  
+
   return response.json();
 }
 
@@ -118,8 +121,7 @@ export const mugsApi = {
   update: (id: number, data: UpdateMugRequest) => api.put<Mug>(`/mugs/${id}`, data),
   delete: (id: number) => api.delete<void>(`/mugs/${id}`),
   search: (name: string) => api.get<Mug[]>(`/mugs/search?name=${encodeURIComponent(name)}`),
-  getByPriceRange: (minPrice: number, maxPrice: number) => 
-    api.get<Mug[]>(`/mugs/price-range?minPrice=${minPrice}&maxPrice=${maxPrice}`),
+  getByPriceRange: (minPrice: number, maxPrice: number) => api.get<Mug[]>(`/mugs/price-range?minPrice=${minPrice}&maxPrice=${maxPrice}`),
 };
 
 // Mug Category API endpoints
@@ -218,3 +220,25 @@ export interface UpdateSlotTypeRequest {
   name?: string;
 }
 
+// Slot API endpoints
+export const slotsApi = {
+  getAll: () => api.get<Slot[]>('/slots'),
+  getById: (id: number) => api.get<Slot>(`/slots/${id}`),
+  create: (data: CreateSlotRequest) => api.post<Slot>('/slots', data),
+  update: (id: number, data: UpdateSlotRequest) => api.put<Slot>(`/slots/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/slots/${id}`),
+  search: (name: string) => api.get<Slot[]>(`/slots/search?name=${encodeURIComponent(name)}`),
+};
+
+// Type definitions for Slot API requests
+export interface CreateSlotRequest {
+  slotTypeId: number;
+  name: string;
+  prompt: string;
+}
+
+export interface UpdateSlotRequest {
+  slotTypeId?: number;
+  name?: string;
+  prompt?: string;
+}

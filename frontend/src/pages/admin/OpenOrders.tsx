@@ -32,21 +32,19 @@ export default function OpenOrders() {
     const fetchOrders = async () => {
       setIsLoading(true);
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // Mock open orders data
       const mockOrders: Order[] = [
         {
           id: 'ORD-004',
           customer_name: 'Alice Johnson',
           customer_email: 'alice@example.com',
-          items: [
-            { name: 'Custom Mug - Wedding Photo', quantity: 4, price: 19.99 }
-          ],
+          items: [{ name: 'Custom Mug - Wedding Photo', quantity: 4, price: 19.99 }],
           total: 79.96,
           status: 'processing',
           created_at: '2024-01-16T08:00:00Z',
-          updated_at: '2024-01-16T09:30:00Z'
+          updated_at: '2024-01-16T09:30:00Z',
         },
         {
           id: 'ORD-005',
@@ -54,27 +52,25 @@ export default function OpenOrders() {
           customer_email: 'mike@example.com',
           items: [
             { name: 'Custom Mug - Sports Team', quantity: 2, price: 22.99 },
-            { name: 'Custom Mug - Vacation Memory', quantity: 2, price: 19.99 }
+            { name: 'Custom Mug - Vacation Memory', quantity: 2, price: 19.99 },
           ],
           total: 85.96,
           status: 'pending',
           created_at: '2024-01-16T10:15:00Z',
-          updated_at: '2024-01-16T10:15:00Z'
+          updated_at: '2024-01-16T10:15:00Z',
         },
         {
           id: 'ORD-006',
           customer_name: 'Sarah Davis',
           customer_email: 'sarah@example.com',
-          items: [
-            { name: 'Custom Mug - Baby Photo', quantity: 1, price: 24.99 }
-          ],
+          items: [{ name: 'Custom Mug - Baby Photo', quantity: 1, price: 24.99 }],
           total: 24.99,
           status: 'pending',
           created_at: '2024-01-16T11:45:00Z',
-          updated_at: '2024-01-16T11:45:00Z'
-        }
+          updated_at: '2024-01-16T11:45:00Z',
+        },
       ];
-      
+
       setOrders(mockOrders);
       setIsLoading(false);
     };

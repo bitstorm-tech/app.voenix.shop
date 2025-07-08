@@ -66,7 +66,6 @@ function EditorContent() {
           <WizardNavigationButtons />
         </div>
       </div>
-
     </div>
   );
 }

@@ -72,23 +72,12 @@ export default function WizardNavigationButtons() {
 
   return (
     <div className="flex items-center justify-between">
-      <Button
-        variant="outline"
-        onClick={goPrevious}
-        disabled={!canGoPrevious || isProcessing}
-        size="default"
-        className="sm:h-12 sm:px-6"
-      >
+      <Button variant="outline" onClick={goPrevious} disabled={!canGoPrevious || isProcessing} size="default" className="sm:h-12 sm:px-6">
         <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
         <span className="hidden sm:inline">Back</span>
       </Button>
 
-      <Button
-        onClick={handleNextStep}
-        disabled={!canGoNext || isProcessing || isAddingToCart}
-        className="gap-2 sm:h-12 sm:px-6"
-        size="default"
-      >
+      <Button onClick={handleNextStep} disabled={!canGoNext || isProcessing || isAddingToCart} className="gap-2 sm:h-12 sm:px-6" size="default">
         {isProcessing || isAddingToCart ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin sm:h-5 sm:w-5" />

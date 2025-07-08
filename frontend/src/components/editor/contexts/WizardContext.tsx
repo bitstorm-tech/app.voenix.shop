@@ -76,7 +76,6 @@ export function WizardProvider({ children }: WizardProviderProps) {
     window.scrollTo(0, 0);
   }, [state.currentStep]);
 
-
   // Action functions that encapsulate dispatch calls
   const goToStep = (step: WizardStep) => dispatch(wizardActions.setStep(step));
   const goNext = () => dispatch(wizardActions.goNext());

@@ -2,8 +2,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { slotTypesApi, type CreateSlotTypeRequest, type UpdateSlotTypeRequest } from '@/lib/api';
 import { SlotType } from '@/types/slot';
-import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface SlotTypeFormProps {
   slotType?: SlotType | null;
@@ -71,11 +71,7 @@ export default function SlotTypeForm({ slotType, onSuccess, onCancel }: SlotType
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {errors.general && (
-        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-2 rounded">
-          {errors.general}
-        </div>
-      )}
+      {errors.general && <div className="rounded border border-red-200 bg-red-50 px-4 py-2 text-red-600">{errors.general}</div>}
 
       <div className="grid gap-4">
         <div className="grid grid-cols-1 items-start gap-2 sm:grid-cols-4 sm:items-center sm:gap-4">

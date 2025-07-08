@@ -20,9 +20,7 @@ export default function PromptTableRow({ prompt, onEdit, onDelete, onTest }: Pro
         <span>{prompt.title}</span>
       </TableCell>
       <TableCell>
-        <span>
-          {prompt.category?.name || '-'}
-        </span>
+        <span>{prompt.category?.name || '-'}</span>
       </TableCell>
       <TableCell>
         <span className="text-sm text-gray-500">-</span>
@@ -48,4 +46,3 @@ export default function PromptTableRow({ prompt, onEdit, onDelete, onTest }: Pro
     </TableRow>
   );
 }
-

@@ -35,8 +35,8 @@ export default function CompletedOrders() {
     const fetchOrders = async () => {
       setIsLoading(true);
       // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       // Mock completed orders data
       const mockOrders: Order[] = [
         {
@@ -45,26 +45,24 @@ export default function CompletedOrders() {
           customer_email: 'john@example.com',
           items: [
             { name: 'Custom Mug - Beach Sunset', quantity: 2, price: 19.99 },
-            { name: 'Custom Mug - Mountain View', quantity: 1, price: 19.99 }
+            { name: 'Custom Mug - Mountain View', quantity: 1, price: 19.99 },
           ],
           total: 59.97,
           status: 'completed',
           created_at: '2024-01-15T10:30:00Z',
           updated_at: '2024-01-15T14:45:00Z',
-          completed_at: '2024-01-15T14:45:00Z'
+          completed_at: '2024-01-15T14:45:00Z',
         },
         {
           id: 'ORD-002',
           customer_name: 'Jane Smith',
           customer_email: 'jane@example.com',
-          items: [
-            { name: 'Custom Mug - Pet Portrait', quantity: 3, price: 24.99 }
-          ],
+          items: [{ name: 'Custom Mug - Pet Portrait', quantity: 3, price: 24.99 }],
           total: 74.97,
           status: 'shipped',
           created_at: '2024-01-14T09:15:00Z',
           updated_at: '2024-01-14T16:30:00Z',
-          completed_at: '2024-01-14T16:30:00Z'
+          completed_at: '2024-01-14T16:30:00Z',
         },
         {
           id: 'ORD-003',
@@ -72,16 +70,16 @@ export default function CompletedOrders() {
           customer_email: 'bob@example.com',
           items: [
             { name: 'Custom Mug - Family Photo', quantity: 1, price: 19.99 },
-            { name: 'Custom Mug - Logo Design', quantity: 5, price: 22.99 }
+            { name: 'Custom Mug - Logo Design', quantity: 5, price: 22.99 },
           ],
           total: 134.94,
           status: 'completed',
           created_at: '2024-01-13T11:20:00Z',
           updated_at: '2024-01-13T15:00:00Z',
-          completed_at: '2024-01-13T15:00:00Z'
-        }
+          completed_at: '2024-01-13T15:00:00Z',
+        },
       ];
-      
+
       setOrders(mockOrders);
       setIsLoading(false);
     };

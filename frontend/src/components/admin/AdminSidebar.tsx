@@ -70,6 +70,17 @@ export default function AdminSidebar({ user, onNavigate }: AdminSidebarProps = {
               >
                 Slot Types
               </NavLink>
+              <NavLink
+                to="/admin/slots"
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
+                    isActive ? 'bg-gray-200 font-medium' : ''
+                  }`
+                }
+              >
+                Slots
+              </NavLink>
             </AccordionContent>
           </AccordionItem>
 
@@ -148,9 +159,7 @@ export default function AdminSidebar({ user, onNavigate }: AdminSidebarProps = {
             to="/admin/prompt-tester"
             onClick={onNavigate}
             className={({ isActive }) =>
-              `flex w-full items-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-gray-100 ${
-                isActive ? 'bg-gray-200 font-medium' : ''
-              }`
+              `flex w-full items-center gap-2 rounded-md px-3 py-2 transition-colors hover:bg-gray-100 ${isActive ? 'bg-gray-200 font-medium' : ''}`
             }
           >
             <FlaskConical className="h-4 w-4" />
