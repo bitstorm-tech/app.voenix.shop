@@ -30,14 +30,16 @@ export default function SlotTypeForm({ slotType, onSuccess, onCancel }: SlotType
     setIsSubmitting(true);
 
     try {
-      const data: CreateSlotTypeRequest | UpdateSlotTypeRequest = {
-        name: formData.name,
-      };
-
       if (slotType) {
-        await slotTypesApi.update(slotType.id, data);
+        const updateData: UpdateSlotTypeRequest = {
+          name: formData.name,
+        };
+        await slotTypesApi.update(slotType.id, updateData);
       } else {
-        await slotTypesApi.create(data);
+        const createData: CreateSlotTypeRequest = {
+          name: formData.name,
+        };
+        await slotTypesApi.create(createData);
       }
 
       if (onSuccess) {
