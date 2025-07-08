@@ -7,10 +7,16 @@ import org.springframework.stereotype.Repository
 @Repository
 interface MugSubCategoryRepository : JpaRepository<MugSubCategory, Long> {
     fun findByMugCategoryId(mugCategoryId: Long): List<MugSubCategory>
-    
+
     fun findByNameContainingIgnoreCase(name: String): List<MugSubCategory>
-    
-    fun findByMugCategoryIdAndNameContainingIgnoreCase(mugCategoryId: Long, name: String): List<MugSubCategory>
-    
-    fun existsByMugCategoryIdAndNameIgnoreCase(mugCategoryId: Long, name: String): Boolean
+
+    fun findByMugCategoryIdAndNameContainingIgnoreCase(
+        mugCategoryId: Long,
+        name: String,
+    ): List<MugSubCategory>
+
+    fun existsByMugCategoryIdAndNameIgnoreCase(
+        mugCategoryId: Long,
+        name: String,
+    ): Boolean
 }

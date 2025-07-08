@@ -7,5 +7,5 @@ data class PromptCategoryDto(
     val name: String,
     val promptsCount: Int = 0,
     val createdAt: OffsetDateTime?,
-    val updatedAt: OffsetDateTime?
+    val updatedAt: OffsetDateTime?,
 )

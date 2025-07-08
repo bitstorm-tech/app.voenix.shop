@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.mugs.dto
 
-import com.jotoai.voenix.shop.mugs.entity.Mug
 import java.time.OffsetDateTime
 
 data class MugDto(
@@ -18,5 +17,5 @@ data class MugDto(
     val dishwasherSafe: Boolean,
     val active: Boolean,
     val createdAt: OffsetDateTime?,
-    val updatedAt: OffsetDateTime?
+    val updatedAt: OffsetDateTime?,
 )

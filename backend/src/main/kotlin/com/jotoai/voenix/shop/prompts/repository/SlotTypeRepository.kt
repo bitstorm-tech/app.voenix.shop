@@ -6,8 +6,10 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface SlotTypeRepository : JpaRepository<SlotType, Long> {
-    
     fun existsByName(name: String): Boolean
-    
-    fun existsByNameAndIdNot(name: String, id: Long): Boolean
+
+    fun existsByNameAndIdNot(
+        name: String,
+        id: Long,
+    ): Boolean
 }

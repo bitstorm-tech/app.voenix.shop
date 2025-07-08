@@ -6,5 +6,5 @@ data class SlotTypeDto(
     val id: Long,
     val name: String,
     val createdAt: OffsetDateTime?,
-    val updatedAt: OffsetDateTime?
+    val updatedAt: OffsetDateTime?,
 )

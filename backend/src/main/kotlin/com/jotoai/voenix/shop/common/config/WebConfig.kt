@@ -11,13 +11,13 @@ import org.springframework.web.servlet.resource.PathResourceResolver
 
 @Configuration
 class WebConfig(
-    @Value("\${spring.profiles.active:default}") private val activeProfile: String
+    @Value("\${spring.profiles.active:default}") private val activeProfile: String,
 ) : WebMvcConfigurer {
-    
     override fun addCorsMappings(registry: CorsRegistry) {
         // Only enable CORS in development
         if (activeProfile != "prod") {
-            registry.addMapping("/api/**")
+            registry
+                .addMapping("/api/**")
                 .allowedOrigins("http://localhost:3000")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
@@ -25,28 +25,34 @@ class WebConfig(
                 .maxAge(3600)
         }
     }
-    
+
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
         // Serve static resources
-        registry.addResourceHandler("/**")
+        registry
+            .addResourceHandler("/**")
             .addResourceLocations("classpath:/static/")
             .resourceChain(true)
-            .addResolver(object : PathResourceResolver() {
-                override fun getResource(resourcePath: String, location: Resource): Resource? {
-                    val requestedResource = location.createRelative(resourcePath)
-                    
-                    // If the requested resource exists and is readable, return it
-                    return if (requestedResource.exists() && requestedResource.isReadable) {
-                        requestedResource
-                    } else {
-                        // For SPA routing, return index.html for non-API routes
-                        if (!resourcePath.startsWith("api/")) {
-                            ClassPathResource("/static/index.html")
+            .addResolver(
+                object : PathResourceResolver() {
+                    override fun getResource(
+                        resourcePath: String,
+                        location: Resource,
+                    ): Resource? {
+                        val requestedResource = location.createRelative(resourcePath)
+
+                        // If the requested resource exists and is readable, return it
+                        return if (requestedResource.exists() && requestedResource.isReadable) {
+                            requestedResource
                         } else {
-                            null
+                            // For SPA routing, return index.html for non-API routes
+                            if (!resourcePath.startsWith("api/")) {
+                                ClassPathResource("/static/index.html")
+                            } else {
+                                null
+                            }
                         }
                     }
-                }
-            })
+                },
+            )
     }
 }

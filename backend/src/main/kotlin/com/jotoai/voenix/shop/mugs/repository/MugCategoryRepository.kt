@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface MugCategoryRepository : JpaRepository<MugCategory, Long> {
     fun findByNameContainingIgnoreCase(name: String): List<MugCategory>
+
     fun existsByNameIgnoreCase(name: String): Boolean
 }

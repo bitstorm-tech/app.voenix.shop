@@ -10,5 +10,5 @@ data class PromptDto(
     val category: PromptCategoryDto?,
     val active: Boolean,
     val createdAt: OffsetDateTime?,
-    val updatedAt: OffsetDateTime?
+    val updatedAt: OffsetDateTime?,
 )

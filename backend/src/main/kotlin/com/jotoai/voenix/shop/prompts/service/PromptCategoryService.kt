@@ -14,78 +14,82 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class PromptCategoryService(
     private val promptCategoryRepository: PromptCategoryRepository,
-    private val promptRepository: PromptRepository
+    private val promptRepository: PromptRepository,
 ) {
-    
-    fun getAllPromptCategories(): List<PromptCategoryDto> = 
+    fun getAllPromptCategories(): List<PromptCategoryDto> =
         promptCategoryRepository.findAll().map { category ->
             PromptCategoryDto(
                 id = category.id!!,
                 name = category.name,
                 promptsCount = promptRepository.countByCategoryId(category.id),
                 createdAt = category.createdAt,
-                updatedAt = category.updatedAt
+                updatedAt = category.updatedAt,
             )
         }
-    
-    fun getPromptCategoryById(id: Long): PromptCategoryDto {
-        return promptCategoryRepository.findById(id)
+
+    fun getPromptCategoryById(id: Long): PromptCategoryDto =
+        promptCategoryRepository
+            .findById(id)
             .map { category ->
                 PromptCategoryDto(
                     id = category.id!!,
                     name = category.name,
                     promptsCount = promptRepository.countByCategoryId(category.id),
                     createdAt = category.createdAt,
-                    updatedAt = category.updatedAt
+                    updatedAt = category.updatedAt,
                 )
-            }
-            .orElseThrow { ResourceNotFoundException("PromptCategory", "id", id) }
-    }
-    
-    fun searchPromptCategoriesByName(name: String): List<PromptCategoryDto> = 
+            }.orElseThrow { ResourceNotFoundException("PromptCategory", "id", id) }
+
+    fun searchPromptCategoriesByName(name: String): List<PromptCategoryDto> =
         promptCategoryRepository.findByNameContainingIgnoreCase(name).map { category ->
             PromptCategoryDto(
                 id = category.id!!,
                 name = category.name,
                 promptsCount = promptRepository.countByCategoryId(category.id),
                 createdAt = category.createdAt,
-                updatedAt = category.updatedAt
+                updatedAt = category.updatedAt,
             )
         }
-    
+
     @Transactional
     fun createPromptCategory(request: CreatePromptCategoryRequest): PromptCategoryDto {
-        val promptCategory = PromptCategory(
-            name = request.name
-        )
-        
+        val promptCategory =
+            PromptCategory(
+                name = request.name,
+            )
+
         val savedPromptCategory = promptCategoryRepository.save(promptCategory)
         return PromptCategoryDto(
             id = savedPromptCategory.id!!,
             name = savedPromptCategory.name,
             promptsCount = 0, // New category has no prompts
             createdAt = savedPromptCategory.createdAt,
-            updatedAt = savedPromptCategory.updatedAt
+            updatedAt = savedPromptCategory.updatedAt,
         )
     }
-    
+
     @Transactional
-    fun updatePromptCategory(id: Long, request: UpdatePromptCategoryRequest): PromptCategoryDto {
-        val promptCategory = promptCategoryRepository.findById(id)
-            .orElseThrow { ResourceNotFoundException("PromptCategory", "id", id) }
-        
+    fun updatePromptCategory(
+        id: Long,
+        request: UpdatePromptCategoryRequest,
+    ): PromptCategoryDto {
+        val promptCategory =
+            promptCategoryRepository
+                .findById(id)
+                .orElseThrow { ResourceNotFoundException("PromptCategory", "id", id) }
+
         request.name?.let { promptCategory.name = it }
-        
+
         val updatedPromptCategory = promptCategoryRepository.save(promptCategory)
         return PromptCategoryDto(
             id = updatedPromptCategory.id!!,
             name = updatedPromptCategory.name,
             promptsCount = promptRepository.countByCategoryId(updatedPromptCategory.id),
             createdAt = updatedPromptCategory.createdAt,
-            updatedAt = updatedPromptCategory.updatedAt
+            updatedAt = updatedPromptCategory.updatedAt,
         )
     }
-    
+
     @Transactional
     fun deletePromptCategory(id: Long) {
         if (!promptCategoryRepository.existsById(id)) {

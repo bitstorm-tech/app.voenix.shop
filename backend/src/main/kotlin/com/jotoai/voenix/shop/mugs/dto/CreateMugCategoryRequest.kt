@@ -7,6 +7,5 @@ data class CreateMugCategoryRequest(
     @field:NotBlank(message = "Name is required")
     @field:Size(max = 255, message = "Name must not exceed 255 characters")
     val name: String,
-    
-    val description: String?
+    val description: String?,
 )

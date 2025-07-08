@@ -9,5 +9,5 @@ data class SlotDto(
     val name: String,
     val prompt: String,
     val createdAt: OffsetDateTime?,
-    val updatedAt: OffsetDateTime?
+    val updatedAt: OffsetDateTime?,
 )

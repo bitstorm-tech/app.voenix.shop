@@ -6,6 +6,5 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface PromptCategoryRepository : JpaRepository<PromptCategory, Long> {
-    
     fun findByNameContainingIgnoreCase(name: String): List<PromptCategory>
 }

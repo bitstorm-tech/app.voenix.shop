@@ -6,10 +6,12 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface MugRepository : JpaRepository<Mug, Long> {
-    
     fun findByActiveTrue(): List<Mug>
-    
+
     fun findByNameContainingIgnoreCaseAndActiveTrue(name: String): List<Mug>
-    
-    fun findByPriceBetweenAndActiveTrue(minPrice: Int, maxPrice: Int): List<Mug>
+
+    fun findByPriceBetweenAndActiveTrue(
+        minPrice: Int,
+        maxPrice: Int,
+    ): List<Mug>
 }

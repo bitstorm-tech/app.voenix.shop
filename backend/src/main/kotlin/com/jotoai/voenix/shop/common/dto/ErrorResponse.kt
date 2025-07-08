@@ -10,5 +10,5 @@ data class ErrorResponse(
     val error: String,
     val message: String,
     val path: String,
-    val validationErrors: Map<String, String>? = null
+    val validationErrors: Map<String, String>? = null,
 )

@@ -19,6 +19,8 @@ cd backend
 ./gradlew build          # Build the project
 ./gradlew test           # Run tests
 ./gradlew clean build    # Clean rebuild
+./gradlew ktlintCheck    # Run linter
+./gradlew ktlintFormat   # Run code formatter
 ```
 
 ### Frontend (React + Vite)
@@ -51,6 +53,11 @@ npm run format           # Run code formatter
 - After every third changed file and at the end of the implementation, check for TypeScript errors and fix them
 - Make all React components and web pages responsive → working on Mobile and Desktop
 - Don't use `React.memo`, `useCallback` or `useMemo` since the React compiler handles these optimizations automatically
+
+### Backend
+- Check for compiler errors at the end of the implementation
+- Run the linter and formater at the end of the implementation
+- Fix all linter errors when they arise
 
 
 ## Architecture & Code Structure
