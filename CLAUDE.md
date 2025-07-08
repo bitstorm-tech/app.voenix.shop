@@ -25,11 +25,11 @@ cd backend
 
 ```bash
 cd frontend
-bun install              # Install dependencies (or npm install)
-bun run dev              # Start development server (port 3000)
-bun run build            # Production build with type checking
-bun run type-check       # TypeScript type checking only
-bun run preview          # Preview production build
+npm install              # Install dependencies
+npm run dev              # Start development server (port 3000)
+npm run build            # Production build with type checking
+npm run type-check       # TypeScript type checking only
+npm run preview          # Preview production build
 ```
 
 ## Architecture & Code Structure
@@ -106,7 +106,7 @@ frontend/src/
 
 ## Important Development Notes
 
-1. **Package Manager**: Frontend uses Bun (bun.lock present) but npm also works
+1. **Package Manager**: Frontend uses npm (package-lock.json present)
 2. **Kotlin/Java Version**: Backend requires JDK 21+ with Kotlin 2.1.0
 3. **TypeScript**: Strict mode enabled - ensure proper typing
 4. **API Communication**: Frontend expects backend on http://localhost:8080
