@@ -32,6 +32,9 @@ dependencies {
     implementation("org.flywaydb:flyway-database-postgresql:11.10.1")
     implementation("org.postgresql:postgresql:42.7.7")
     
+    // Environment variables (.env file support)
+    implementation("me.paulschwarz:spring-dotenv:4.0.0")
+    
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.2")
@@ -52,9 +55,9 @@ kotlin {
 }
 
 flyway {
-    url = "jdbc:postgresql://localhost:5432/voenix_java"
-    user = "voenix"
-    password = "voenix"
+    url = System.getenv("DATABASE_URL")
+    user = System.getenv("DATABASE_USERNAME")
+    password = System.getenv("DATABASE_PASSWORD")
     schemas = arrayOf("public")
     locations = arrayOf("classpath:db/migration")
 }

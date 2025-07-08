@@ -60,3 +60,8 @@ replay_pid*
 node_modules
 _new_prompt.md
 dist
+
+# Environment variables
+.env
+.env.local
+.env.*.local
