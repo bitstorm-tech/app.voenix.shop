@@ -30,7 +30,27 @@ npm run dev              # Start development server (port 3000)
 npm run build            # Production build with type checking
 npm run type-check       # TypeScript type checking only
 npm run preview          # Preview production build
+npm run lint             # Run linter
+npm run format           # Run code formatter
 ```
+
+## Quality Assurance
+
+### Common
+- Skeptical mode: question everything, suggest simpler explanations, stay grounded
+- Use and spawn subagents to run tasks in parallel whenever possible
+- ALWAYS read the latest documentation from context7 mcp server
+- Use the puppeteer mcp server to check if the implementation looks right in the browser
+- Use `git mv` to move files that are under version control
+- Don't write useless, unnecessary or redundant comments -> only use comments to describe complex logic
+- 
+### Frontend
+- Don't use `React.memo`, `useCallback` or `useMemo` since the React compiler handles these optimizations automatically
+- Run the formatter for all touched files at the end of the implementation
+- After every third changed file and at the end of the implementation, check for TypeScript errors and fix them
+- Make all React components and web pages responsive → working on Mobile and Desktop
+- Don't use `React.memo`, `useCallback` or `useMemo` since the React compiler handles these optimizations automatically
+
 
 ## Architecture & Code Structure
 
