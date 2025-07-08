@@ -1,41 +1,49 @@
 # Stage 1: Build Frontend
-FROM node:20-alpine AS frontend-build
+FROM oven/bun:1.0-alpine AS frontend-build
 
 WORKDIR /app/frontend
 
-# Copy frontend package files
-COPY frontend/package.json ./
+# Copy frontend package and lock files
+COPY frontend/package.json frontend/bun.lock ./
 
-# Install dependencies using npm
-RUN npm install
+# Install dependencies using bun
+RUN bun install --frozen-lockfile
 
 # Copy frontend source code
 COPY frontend/ ./
 
-# Build the frontend (skip TypeScript checks for now)
-RUN npx vite build
+# Build the frontend
+RUN bun run build
 
 # Stage 2: Build Backend
-FROM gradle:8.10-jdk21 AS backend-build
+FROM eclipse-temurin:21-jdk AS backend-build
 
 WORKDIR /app
 
-# Copy backend source
-COPY backend/ ./
+# Copy dependency-related files first
+COPY backend/build.gradle.kts backend/settings.gradle.kts ./
+COPY backend/gradlew ./
+COPY backend/gradle ./gradle
+
+# Make gradlew executable
+RUN chmod +x ./gradlew
+
+# Download dependencies (this layer will be cached)
+RUN ./gradlew build --no-daemon -x test || true
+
+# Copy the rest of the source code
+COPY backend/src ./src
 
 # Copy frontend build output to backend resources
 COPY --from=frontend-build /app/frontend/dist ./src/main/resources/static
 
-# Build the backend (this will include the frontend assets in the JAR)
-RUN gradle bootJar --no-daemon
+# Build the backend using the wrapper
+RUN ./gradlew bootJar --no-daemon
 
 # Stage 3: Runtime
 FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
-
-# Install PostgreSQL client for potential debugging
-RUN apk add --no-cache postgresql-client
 
 # Create non-root user
 RUN addgroup -g 1000 spring && \
@@ -55,5 +63,5 @@ EXPOSE 8080
 # Set Spring profile to production
 ENV SPRING_PROFILES_ACTIVE=prod
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+# Run the application with explicit JVM options
+ENTRYPOINT ["java", "-Xms256m", "-Xmx512m", "-jar", "/app/app.jar"]
