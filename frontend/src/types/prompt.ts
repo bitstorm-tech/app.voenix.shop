@@ -9,7 +9,7 @@ export interface PromptCategory {
 export interface PromptSubCategory {
   id: number;
   name: string;
-  category_id?: number;
+  categoryId?: number;
   category?: PromptCategory;
   prompts_count?: number;
   createdAt?: string;
@@ -22,7 +22,7 @@ export interface Prompt {
   content?: string;
   createdAt?: string;
   updatedAt?: string;
-  category_id?: number;
+  categoryId?: number;
   category?: PromptCategory;
   active?: boolean;
   // Editor-specific properties (not yet provided by backend)

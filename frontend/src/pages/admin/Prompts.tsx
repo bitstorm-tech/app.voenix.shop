@@ -43,7 +43,7 @@ export default function Prompts() {
 
   const filteredPrompts = selectedCategory === 'all' 
     ? prompts 
-    : prompts.filter((prompt) => prompt.category_id === parseInt(selectedCategory));
+    : prompts.filter((prompt) => prompt.categoryId === parseInt(selectedCategory));
 
   const handleEdit = (prompt: Prompt) => {
     navigate(`/admin/prompts/${prompt.id}/edit`);

@@ -19,7 +19,7 @@ export default function PromptForm({ prompt, categories, onSuccess, onCancel }: 
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: prompt?.title || '',
-    categoryId: prompt?.category_id?.toString() || '',
+    categoryId: prompt?.categoryId?.toString() || '',
     content: prompt?.content || '',
     active: prompt?.active ?? true,
   });

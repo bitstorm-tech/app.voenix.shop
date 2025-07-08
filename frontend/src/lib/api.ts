@@ -1,5 +1,6 @@
 import type { Prompt, PromptCategory } from '@/types/prompt';
 import type { Mug, MugCategory, MugSubCategory } from '@/types/mug';
+import type { SlotType } from '@/types/slot';
 
 class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -197,5 +198,23 @@ export interface UpdateMugSubCategoryRequest {
   name?: string;
   categoryId?: number;
   description?: string;
+}
+
+// Slot Type API endpoints
+export const slotTypesApi = {
+  getAll: () => api.get<SlotType[]>('/slot-types'),
+  getById: (id: number) => api.get<SlotType>(`/slot-types/${id}`),
+  create: (data: CreateSlotTypeRequest) => api.post<SlotType>('/slot-types', data),
+  update: (id: number, data: UpdateSlotTypeRequest) => api.put<SlotType>(`/slot-types/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/slot-types/${id}`),
+};
+
+// Type definitions for Slot Type API requests
+export interface CreateSlotTypeRequest {
+  name: string;
+}
+
+export interface UpdateSlotTypeRequest {
+  name?: string;
 }
 
