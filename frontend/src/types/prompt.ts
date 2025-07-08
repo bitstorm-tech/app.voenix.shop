@@ -25,4 +25,7 @@ export interface Prompt {
   category_id?: number;
   category?: PromptCategory;
   active?: boolean;
+  // Editor-specific properties (not yet provided by backend)
+  example_image_url?: string;
+  subcategory?: PromptSubCategory;
 }

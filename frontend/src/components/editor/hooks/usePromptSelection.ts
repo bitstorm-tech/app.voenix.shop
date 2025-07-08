@@ -14,9 +14,8 @@ export function usePromptSelection(prompts: Prompt[]): UsePromptSelectionReturn 
   const categories = (() => {
     const uniqueCategories = new Set<string>();
     prompts.forEach((prompt) => {
-      if (prompt.subcategory) {
-        uniqueCategories.add(prompt.subcategory.name);
-      } else if (prompt.category) {
+      // TODO: Add subcategory support when backend provides it
+      if (prompt.category) {
         uniqueCategories.add(prompt.category.name);
       }
     });
@@ -29,8 +28,8 @@ export function usePromptSelection(prompts: Prompt[]): UsePromptSelectionReturn 
       return prompts;
     }
     return prompts.filter((prompt) => {
-      // Check both subcategory and category for matches
-      const promptCategory = prompt.subcategory?.name || prompt.category?.name;
+      // TODO: Add subcategory support when backend provides it
+      const promptCategory = prompt.category?.name;
       return promptCategory === selectedCategory;
     });
   })();

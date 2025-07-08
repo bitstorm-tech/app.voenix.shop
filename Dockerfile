@@ -1,19 +1,20 @@
 # Stage 1: Build Frontend
-FROM oven/bun:1.0-alpine AS frontend-build
+FROM node:24.3-alpine AS frontend-build
 
 WORKDIR /app/frontend
 
 # Copy frontend package and lock files
-COPY frontend/package.json frontend/bun.lock ./
+COPY frontend/package.json frontend/package-lock.json ./
 
-# Install dependencies using bun
-RUN bun install --frozen-lockfile
+# Install dependencies using npm
+# Clean install to ensure correct architecture binaries
+RUN npm ci
 
 # Copy frontend source code
 COPY frontend/ ./
 
 # Build the frontend
-RUN bun run build
+RUN npm run build
 
 # Stage 2: Build Backend
 FROM eclipse-temurin:21-jdk AS backend-build

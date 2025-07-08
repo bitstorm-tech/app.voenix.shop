@@ -38,23 +38,23 @@ export default function PromptSelectionStep() {
                 </div>
               )}
 
-              {prompt.example_image_url ? (
+              {false ? /* prompt.example_image_url */ (
                 <div className="relative">
                   <img
-                    src={prompt.example_image_url}
-                    alt={prompt.name}
+                    src={''} // prompt.example_image_url
+                    alt={prompt.title}
                     className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-110"
                     loading="lazy"
                   />
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 transition-all duration-300 group-hover:from-black/80">
-                    <h4 className="font-medium text-white">{prompt.name}</h4>
+                    <h4 className="font-medium text-white">{prompt.title}</h4>
                   </div>
                   <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/10" />
                 </div>
               ) : (
                 <div className="flex h-48 items-center justify-center bg-gray-100 p-4 transition-colors duration-300 group-hover:bg-gray-200">
                   <div className="text-center">
-                    <h4 className="mb-2 font-medium">{prompt.name}</h4>
+                    <h4 className="mb-2 font-medium">{prompt.title}</h4>
                     <p className="text-xs text-gray-500">No preview available</p>
                   </div>
                 </div>

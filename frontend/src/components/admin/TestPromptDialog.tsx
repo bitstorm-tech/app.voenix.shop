@@ -7,14 +7,14 @@ interface TestPromptDialogProps {
   onClose: () => void;
 }
 
-export default function TestPromptDialog({ isOpen, testingPromptId, onClose }: TestPromptDialogProps) {
+export default function TestPromptDialog({ isOpen, testingPromptId: _testingPromptId, onClose }: TestPromptDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Test Prompt</DialogTitle>
         </DialogHeader>
-        {/*<ImagePicker defaultPromptId={testingPromptId} storeImages={false} />*/}
+        {/*<ImagePicker defaultPromptId={_testingPromptId} storeImages={false} />*/}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Close
