@@ -1,8 +1,6 @@
 import type { Prompt, PromptCategory } from '@/types/prompt';
 import type { Mug, MugCategory, MugSubCategory } from '@/types/mug';
 
-const API_BASE_URL = 'http://localhost:8080/api';
-
 class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
@@ -25,7 +23,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 
 export const api = {
   get: async <T>(endpoint: string): Promise<T> => {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(`/api${endpoint}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -35,7 +33,7 @@ export const api = {
   },
 
   post: async <T>(endpoint: string, data: any): Promise<T> => {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(`/api${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -46,7 +44,7 @@ export const api = {
   },
 
   put: async <T>(endpoint: string, data: any): Promise<T> => {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(`/api${endpoint}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -57,7 +55,7 @@ export const api = {
   },
 
   delete: async <T>(endpoint: string): Promise<T> => {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(`/api${endpoint}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
