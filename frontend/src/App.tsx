@@ -1,10 +1,11 @@
 import AdminLayout from '@/components/admin/AdminLayout';
 import CompletedOrders from '@/pages/admin/CompletedOrders';
 import Mugs from '@/pages/admin/Mugs';
-import NewPrompt from '@/pages/admin/NewPrompt';
+import NewOrEditPrompt from '@/pages/admin/NewOrEditPrompt';
 import OpenOrders from '@/pages/admin/OpenOrders';
 import PromptCategories from '@/pages/admin/PromptCategories';
 import Prompts from '@/pages/admin/Prompts';
+import SlotTypes from '@/pages/admin/SlotTypes';
 import Editor from '@/pages/Editor';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
@@ -18,8 +19,10 @@ export default function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Prompts />} />
           <Route path="prompts" element={<Prompts />} />
-          <Route path="prompts/new" element={<NewPrompt />} />
+          <Route path="prompts/new" element={<NewOrEditPrompt />} />
+          <Route path="prompts/:id/edit" element={<NewOrEditPrompt />} />
           <Route path="prompt-categories" element={<PromptCategories />} />
+          <Route path="slot-types" element={<SlotTypes />} />
           <Route path="mugs" element={<Mugs />} />
           <Route
             path="mug-categories"
