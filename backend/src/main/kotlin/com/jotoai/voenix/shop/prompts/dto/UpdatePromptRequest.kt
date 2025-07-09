@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.prompts.dto
 
+import jakarta.validation.Valid
 import jakarta.validation.constraints.Size
 
 data class UpdatePromptRequest(
@@ -8,4 +9,6 @@ data class UpdatePromptRequest(
     val content: String? = null,
     val categoryId: Long? = null,
     val active: Boolean? = null,
+    @field:Valid
+    val slots: List<PromptSlotRequest>? = null,
 )

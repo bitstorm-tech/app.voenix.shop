@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.prompts.dto
 
+import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size
 
@@ -9,4 +10,6 @@ data class CreatePromptRequest(
     val title: String,
     val content: String? = null,
     val categoryId: Long? = null,
+    @field:Valid
+    val slots: List<PromptSlotRequest> = emptyList(),
 )

@@ -9,6 +9,7 @@ data class PromptDto(
     val categoryId: Long?,
     val category: PromptCategoryDto?,
     val active: Boolean,
+    val slots: List<SlotDto> = emptyList(),
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,
 )

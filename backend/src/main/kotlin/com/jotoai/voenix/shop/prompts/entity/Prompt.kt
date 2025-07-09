@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.prompts.entity
 
 import com.jotoai.voenix.shop.prompts.dto.PromptDto
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -9,6 +10,8 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToMany
+import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -31,6 +34,9 @@ data class Prompt(
     var category: PromptCategory? = null,
     @Column(nullable = false)
     var active: Boolean = true,
+    @OneToMany(mappedBy = "prompt", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("position ASC")
+    var promptSlots: MutableList<PromptSlot> = mutableListOf(),
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,
@@ -46,7 +52,30 @@ data class Prompt(
             categoryId = this.categoryId,
             category = this.category?.toDto(),
             active = this.active,
+            slots = this.promptSlots.sortedBy { it.position }.map { it.slot.toDto() },
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )
+
+    fun addSlot(
+        slot: Slot,
+        position: Int = this.promptSlots.size,
+    ) {
+        val promptSlot =
+            PromptSlot(
+                id = PromptSlotId(this.id ?: 0, slot.id ?: 0),
+                prompt = this,
+                slot = slot,
+                position = position,
+            )
+        this.promptSlots.add(promptSlot)
+    }
+
+    fun removeSlot(slot: Slot) {
+        this.promptSlots.removeIf { it.slot.id == slot.id }
+    }
+
+    fun clearSlots() {
+        this.promptSlots.clear()
+    }
 }

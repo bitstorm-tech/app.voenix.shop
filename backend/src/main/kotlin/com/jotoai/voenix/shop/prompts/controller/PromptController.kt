@@ -1,8 +1,10 @@
 package com.jotoai.voenix.shop.prompts.controller
 
+import com.jotoai.voenix.shop.prompts.dto.AddSlotsRequest
 import com.jotoai.voenix.shop.prompts.dto.CreatePromptRequest
 import com.jotoai.voenix.shop.prompts.dto.PromptDto
 import com.jotoai.voenix.shop.prompts.dto.UpdatePromptRequest
+import com.jotoai.voenix.shop.prompts.dto.UpdatePromptSlotsRequest
 import com.jotoai.voenix.shop.prompts.service.PromptService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -56,4 +58,23 @@ class PromptController(
         promptService.deletePrompt(id)
         return ResponseEntity.noContent().build()
     }
+
+    // Slot management endpoints
+    @PostMapping("/{id}/slots")
+    fun addSlotsToPrompt(
+        @PathVariable id: Long,
+        @Valid @RequestBody request: AddSlotsRequest,
+    ): ResponseEntity<PromptDto> = ResponseEntity.ok(promptService.addSlotsToPrompt(id, request))
+
+    @PutMapping("/{id}/slots")
+    fun updatePromptSlots(
+        @PathVariable id: Long,
+        @Valid @RequestBody request: UpdatePromptSlotsRequest,
+    ): ResponseEntity<PromptDto> = ResponseEntity.ok(promptService.updatePromptSlots(id, request))
+
+    @DeleteMapping("/{id}/slots/{slotId}")
+    fun removeSlotFromPrompt(
+        @PathVariable id: Long,
+        @PathVariable slotId: Long,
+    ): ResponseEntity<PromptDto> = ResponseEntity.ok(promptService.removeSlotFromPrompt(id, slotId))
 }
