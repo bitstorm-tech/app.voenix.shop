@@ -1,52 +1,88 @@
-import SlotTypeForm from '@/components/admin/SlotTypeForm';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import type { CreateSlotTypeRequest, UpdateSlotTypeRequest } from '@/lib/api';
 import { slotTypesApi } from '@/lib/api';
-import { SlotType } from '@/types/slot';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditSlotType() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const isEditMode = !!id;
-  const [slotType, setSlotType] = useState<SlotType | undefined>(undefined);
+  const isEditing = !!id;
+
+  const [formData, setFormData] = useState<CreateSlotTypeRequest>({
+    name: '',
+  });
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isEditMode && id) {
-      const fetchSlotType = async () => {
-        setLoading(true);
-        try {
-          const data = await slotTypesApi.getById(Number(id));
-          setSlotType(data);
-        } catch (err) {
-          console.error('Failed to fetch slot type:', err);
-          setError('Failed to load slot type');
-        } finally {
-          setLoading(false);
-        }
-      };
-
+    if (isEditing) {
       fetchSlotType();
+    } else {
+      setInitialLoading(false);
     }
-  }, [id, isEditMode]);
+  }, [id]);
 
-  if (loading) {
+  const fetchSlotType = async () => {
+    if (!id) return;
+
+    try {
+      setInitialLoading(true);
+      const slotType = await slotTypesApi.getById(parseInt(id));
+      setFormData({
+        name: slotType.name,
+      });
+    } catch (error) {
+      console.error('Error fetching slot type:', error);
+      setError('Failed to load slot type');
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.name.trim()) {
+      setError('Name is required');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (isEditing) {
+        const updateData: UpdateSlotTypeRequest = {
+          name: formData.name,
+        };
+        await slotTypesApi.update(parseInt(id), updateData);
+      } else {
+        await slotTypesApi.create(formData);
+      }
+
+      navigate('/admin/slot-types');
+    } catch (error) {
+      console.error('Error saving slot type:', error);
+      setError('Failed to save slot type. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate('/admin/slot-types');
+  };
+
+  if (initialLoading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">{isEditMode ? 'Edit Slot Type' : 'New Slot Type'}</h1>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">{isEditMode ? 'Edit Slot Type' : 'New Slot Type'}</h1>
-          <p className="text-red-600">{error}</p>
+        <div className="flex h-64 items-center justify-center">
+          <p className="text-gray-500">Loading...</p>
         </div>
       </div>
     );
@@ -54,14 +90,37 @@ export default function NewOrEditSlotType() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">{isEditMode ? 'Edit Slot Type' : 'New Slot Type'}</h1>
-        <p className="text-gray-600">{isEditMode ? 'Update the slot type details.' : 'Create a new slot type for your collection.'}</p>
-      </div>
+      <Card className="mx-auto max-w-2xl">
+        <CardHeader>
+          <CardTitle>{isEditing ? 'Edit Slot Type' : 'New Slot Type'}</CardTitle>
+          <CardDescription>{isEditing ? 'Update the slot type details below' : 'Create a new slot type with the form below'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
 
-      <div className="mx-auto max-w-4xl">
-        <SlotTypeForm slotType={slotType} />
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Enter slot type name"
+                required
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Saving...' : isEditing ? 'Update Slot Type' : 'Create Slot Type'}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

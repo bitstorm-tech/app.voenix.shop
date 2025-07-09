@@ -1,70 +1,123 @@
-import PromptForm from '@/components/admin/PromptForm';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Checkbox } from '@/components/ui/Checkbox';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Textarea } from '@/components/ui/Textarea';
+import type { CreatePromptRequest, UpdatePromptRequest } from '@/lib/api';
 import { promptCategoriesApi, promptsApi } from '@/lib/api';
-import { Prompt, PromptCategory } from '@/types/prompt';
+import type { PromptCategory } from '@/types/prompt';
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditPrompt() {
+  const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const isEditMode = !!id;
+  const isEditing = !!id;
+
+  const [formData, setFormData] = useState<CreatePromptRequest>({
+    title: '',
+    categoryId: 0,
+    content: '',
+    active: true,
+  });
   const [categories, setCategories] = useState<PromptCategory[]>([]);
-  const [prompt, setPrompt] = useState<Prompt | undefined>(undefined);
-  const [loading, setLoading] = useState(true);
-  const [loadingPrompt, setLoadingPrompt] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await promptCategoriesApi.getAll();
-        setCategories(data);
-      } catch (err) {
-        console.error('Failed to fetch categories:', err);
-        setError('Failed to load categories');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchCategories();
-  }, []);
-
-  useEffect(() => {
-    if (isEditMode && id) {
-      const fetchPrompt = async () => {
-        setLoadingPrompt(true);
-        try {
-          const data = await promptsApi.getById(Number(id));
-          setPrompt(data);
-        } catch (err) {
-          console.error('Failed to fetch prompt:', err);
-          setError('Failed to load prompt');
-        } finally {
-          setLoadingPrompt(false);
-        }
-      };
-
+    if (isEditing) {
       fetchPrompt();
+    } else {
+      setInitialLoading(false);
     }
-  }, [id, isEditMode]);
+  }, [id]);
 
-  if (loading || loadingPrompt) {
+  const fetchCategories = async () => {
+    try {
+      const data = await promptCategoriesApi.getAll();
+      setCategories(data);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      setError('Failed to load categories');
+    }
+  };
+
+  const fetchPrompt = async () => {
+    if (!id) return;
+
+    try {
+      setInitialLoading(true);
+      const prompt = await promptsApi.getById(parseInt(id));
+      setFormData({
+        title: prompt.title || '',
+        categoryId: prompt.categoryId || 0,
+        content: prompt.content || '',
+        active: prompt.active ?? true,
+      });
+    } catch (error) {
+      console.error('Error fetching prompt:', error);
+      setError('Failed to load prompt');
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formData.title.trim()) {
+      setError('Title is required');
+      return;
+    }
+
+    if (!formData.categoryId) {
+      setError('Category is required');
+      return;
+    }
+
+    if (!formData.content.trim()) {
+      setError('Content is required');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      if (isEditing) {
+        const updateData: UpdatePromptRequest = {
+          title: formData.title,
+          categoryId: formData.categoryId,
+          content: formData.content,
+          active: formData.active,
+        };
+        await promptsApi.update(parseInt(id), updateData);
+      } else {
+        await promptsApi.create(formData);
+      }
+
+      navigate('/admin/prompts');
+    } catch (error) {
+      console.error('Error saving prompt:', error);
+      setError('Failed to save prompt. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate('/admin/prompts');
+  };
+
+  if (initialLoading) {
     return (
       <div className="container mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">{isEditMode ? 'Edit Prompt' : 'New Prompt'}</h1>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">{isEditMode ? 'Edit Prompt' : 'New Prompt'}</h1>
-          <p className="text-red-600">{error}</p>
+        <div className="flex h-64 items-center justify-center">
+          <p className="text-gray-500">Loading...</p>
         </div>
       </div>
     );
@@ -72,14 +125,79 @@ export default function NewOrEditPrompt() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold">{isEditMode ? 'Edit Prompt' : 'New Prompt'}</h1>
-        <p className="text-gray-600">{isEditMode ? 'Update the prompt details.' : 'Create a new prompt for your collection.'}</p>
-      </div>
+      <Card className="mx-auto max-w-2xl">
+        <CardHeader>
+          <CardTitle>{isEditing ? 'Edit Prompt' : 'New Prompt'}</CardTitle>
+          <CardDescription>{isEditing ? 'Update the prompt details below' : 'Create a new prompt with the form below'}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {error && <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
 
-      <div className="mx-auto max-w-4xl">
-        <PromptForm categories={categories} prompt={prompt} />
-      </div>
+            <div className="space-y-2">
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder="Enter prompt title"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select value={formData.categoryId.toString()} onValueChange={(value) => setFormData({ ...formData, categoryId: parseInt(value) })}>
+                <SelectTrigger id="category">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="content">Content</Label>
+              <Textarea
+                id="content"
+                value={formData.content}
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                placeholder="Enter the prompt content"
+                rows={6}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="active">Status</Label>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="active"
+                  checked={formData.active}
+                  onCheckedChange={(checked) => setFormData({ ...formData, active: checked as boolean })}
+                />
+                <Label htmlFor="active" className="font-normal">
+                  Make this prompt available for use
+                </Label>
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <Button type="submit" disabled={loading}>
+                {loading ? 'Saving...' : isEditing ? 'Update Prompt' : 'Create Prompt'}
+              </Button>
+              <Button type="button" variant="outline" onClick={handleCancel}>
+                Cancel
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

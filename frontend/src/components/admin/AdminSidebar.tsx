@@ -46,7 +46,7 @@ export default function AdminSidebar({ user, onNavigate }: AdminSidebarProps = {
                   }`
                 }
               >
-                All Prompts
+                Prompts
               </NavLink>
               <NavLink
                 to="/admin/prompt-categories"
@@ -102,7 +102,7 @@ export default function AdminSidebar({ user, onNavigate }: AdminSidebarProps = {
                   }`
                 }
               >
-                All Mugs
+                Mugs
               </NavLink>
               <NavLink
                 to="/admin/mug-categories"
