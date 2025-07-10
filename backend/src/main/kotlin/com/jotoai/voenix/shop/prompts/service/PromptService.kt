@@ -1,6 +1,8 @@
 package com.jotoai.voenix.shop.prompts.service
 
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.images.dto.ImageType
+import com.jotoai.voenix.shop.images.service.ImageService
 import com.jotoai.voenix.shop.prompts.dto.AddSlotsRequest
 import com.jotoai.voenix.shop.prompts.dto.CreatePromptRequest
 import com.jotoai.voenix.shop.prompts.dto.PromptDto
@@ -21,6 +23,7 @@ class PromptService(
     private val promptCategoryRepository: PromptCategoryRepository,
     private val promptSubCategoryRepository: PromptSubCategoryRepository,
     private val slotRepository: SlotRepository,
+    private val imageService: ImageService,
 ) {
     fun getAllPrompts(): List<PromptDto> =
         promptRepository.findAll().map { prompt ->
@@ -66,6 +69,7 @@ class PromptService(
                 content = request.content,
                 categoryId = request.categoryId,
                 subcategoryId = request.subcategoryId,
+                exampleImageFilename = request.exampleImageFilename,
             )
 
         // Add slots if provided
@@ -119,6 +123,20 @@ class PromptService(
         request.subcategoryId?.let { prompt.subcategoryId = it }
         request.active?.let { prompt.active = it }
 
+        // Handle example image filename change
+        request.exampleImageFilename?.let { newFilename ->
+            val oldFilename = prompt.exampleImageFilename
+            if (oldFilename != null && oldFilename != newFilename) {
+                // Delete old image if filename changed
+                try {
+                    imageService.delete(oldFilename, ImageType.PROMPT_EXAMPLE)
+                } catch (e: Exception) {
+                    // Log but don't fail if old image doesn't exist
+                }
+            }
+            prompt.exampleImageFilename = newFilename
+        }
+
         // Update slots if provided
         request.slots?.let { slots ->
             prompt.clearSlots()
@@ -147,9 +165,20 @@ class PromptService(
 
     @Transactional
     fun deletePrompt(id: Long) {
-        if (!promptRepository.existsById(id)) {
-            throw ResourceNotFoundException("Prompt", "id", id)
+        val prompt =
+            promptRepository
+                .findById(id)
+                .orElseThrow { ResourceNotFoundException("Prompt", "id", id) }
+
+        // Delete associated image if exists
+        prompt.exampleImageFilename?.let { filename ->
+            try {
+                imageService.delete(filename, ImageType.PROMPT_EXAMPLE)
+            } catch (e: Exception) {
+                // Log but don't fail if image doesn't exist
+            }
         }
+
         promptRepository.deleteById(id)
     }
 

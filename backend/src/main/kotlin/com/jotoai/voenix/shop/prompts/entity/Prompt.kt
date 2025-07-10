@@ -39,6 +39,8 @@ data class Prompt(
     var subcategory: PromptSubCategory? = null,
     @Column(nullable = false)
     var active: Boolean = true,
+    @Column(name = "example_image_filename", length = 500)
+    var exampleImageFilename: String? = null,
     @OneToMany(mappedBy = "prompt", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     @OrderBy("position ASC")
     var promptSlots: MutableList<PromptSlot> = mutableListOf(),
@@ -60,6 +62,7 @@ data class Prompt(
             subcategory = this.subcategory?.toDto(),
             active = this.active,
             slots = this.promptSlots.sortedBy { it.position }.map { it.slot.toDto() },
+            exampleImageUrl = this.exampleImageFilename?.let { "/images/prompt-example-images/$it" },
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )

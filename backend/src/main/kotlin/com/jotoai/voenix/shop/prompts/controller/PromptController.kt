@@ -1,5 +1,8 @@
 package com.jotoai.voenix.shop.prompts.controller
 
+import com.jotoai.voenix.shop.images.dto.CreateImageRequest
+import com.jotoai.voenix.shop.images.dto.ImageType
+import com.jotoai.voenix.shop.images.service.ImageService
 import com.jotoai.voenix.shop.prompts.dto.AddSlotsRequest
 import com.jotoai.voenix.shop.prompts.dto.CreatePromptRequest
 import com.jotoai.voenix.shop.prompts.dto.PromptDto
@@ -8,6 +11,7 @@ import com.jotoai.voenix.shop.prompts.dto.UpdatePromptSlotsRequest
 import com.jotoai.voenix.shop.prompts.service.PromptService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -17,12 +21,15 @@ import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/prompts")
 class PromptController(
     private val promptService: PromptService,
+    private val imageService: ImageService,
 ) {
     @GetMapping
     fun getAllPrompts(): ResponseEntity<List<PromptDto>> = ResponseEntity.ok(promptService.getAllPrompts())
@@ -77,4 +84,42 @@ class PromptController(
         @PathVariable id: Long,
         @PathVariable slotId: Long,
     ): ResponseEntity<PromptDto> = ResponseEntity.ok(promptService.removeSlotFromPrompt(id, slotId))
+
+    // Example image management endpoints
+    @PostMapping("/{id}/example-image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun uploadExampleImage(
+        @PathVariable id: Long,
+        @RequestPart("file") file: MultipartFile,
+    ): ResponseEntity<PromptDto> {
+        // Verify prompt exists
+        promptService.getPromptById(id)
+
+        // Upload image
+        val imageDto = imageService.upload(file, CreateImageRequest(imageType = ImageType.PROMPT_EXAMPLE))
+
+        // Update prompt with new filename
+        val updateRequest = UpdatePromptRequest(exampleImageFilename = imageDto.filename)
+        return ResponseEntity.ok(promptService.updatePrompt(id, updateRequest))
+    }
+
+    @DeleteMapping("/{id}/example-image")
+    fun deleteExampleImage(
+        @PathVariable id: Long,
+    ): ResponseEntity<PromptDto> {
+        val prompt = promptService.getPromptById(id)
+
+        // Delete image file if exists
+        prompt.exampleImageUrl?.let {
+            val filename = it.substringAfterLast("/")
+            try {
+                imageService.delete(filename, ImageType.PROMPT_EXAMPLE)
+            } catch (e: Exception) {
+                // Log but don't fail if image doesn't exist
+            }
+        }
+
+        // Clear filename in database
+        val updateRequest = UpdatePromptRequest(exampleImageFilename = null)
+        return ResponseEntity.ok(promptService.updatePrompt(id, updateRequest))
+    }
 }

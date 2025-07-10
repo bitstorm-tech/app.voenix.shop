@@ -10,6 +10,7 @@ data class UpdatePromptRequest(
     val categoryId: Long? = null,
     val subcategoryId: Long? = null,
     val active: Boolean? = null,
+    val exampleImageFilename: String? = null,
     @field:Valid
     val slots: List<PromptSlotRequest>? = null,
 )
