@@ -108,21 +108,19 @@ export default function Prompts() {
   }
 
   return (
-    <>
-      <div className="container mx-auto p-6">
-        <PromptTableHeader
-          categories={categories}
-          selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
-          onNewPrompt={handleNewPrompt}
-        />
+    <div className="container mx-auto p-6">
+      <PromptTableHeader
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        onNewPrompt={handleNewPrompt}
+      />
 
-        <PromptTable prompts={filteredPrompts} onEdit={handleEdit} onDelete={handleDelete} onTest={handleTest} />
+      <PromptTable prompts={filteredPrompts} onEdit={handleEdit} onDelete={handleDelete} onTest={handleTest} />
 
-        <TestPromptDialog isOpen={isModalOpen} testingPromptId={testingPromptId} onClose={closeModal} />
+      <TestPromptDialog isOpen={isModalOpen} testingPromptId={testingPromptId} onClose={closeModal} />
 
-        <DeleteConfirmationDialog isOpen={isDeleteDialogOpen} onConfirm={confirmDelete} onCancel={cancelDelete} />
-      </div>
-    </>
+      <DeleteConfirmationDialog isOpen={isDeleteDialogOpen} onConfirm={confirmDelete} onCancel={cancelDelete} />
+    </div>
   );
 }
