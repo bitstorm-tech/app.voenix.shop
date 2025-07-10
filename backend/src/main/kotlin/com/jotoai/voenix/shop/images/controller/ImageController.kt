@@ -31,6 +31,15 @@ class ImageController(
         return ResponseEntity.status(HttpStatus.CREATED).body(image)
     }
 
+    @PostMapping("/prompt-example/upload", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    fun uploadPromptExampleImage(
+        @RequestParam("file") file: MultipartFile,
+    ): ResponseEntity<ImageDto> {
+        val request = CreateImageRequest(imageType = ImageType.PROMPT_EXAMPLE)
+        val image = imageService.upload(file, request)
+        return ResponseEntity.status(HttpStatus.CREATED).body(image)
+    }
+
     @GetMapping("/private/{filename}")
     fun getPrivateImage(
         @PathVariable filename: String,
@@ -55,6 +64,14 @@ class ImageController(
         @PathVariable filename: String,
     ): ResponseEntity<Void> {
         imageService.delete(filename, ImageType.PUBLIC)
+        return ResponseEntity.noContent().build()
+    }
+
+    @DeleteMapping("/prompt-example/{filename}")
+    fun deletePromptExampleImage(
+        @PathVariable filename: String,
+    ): ResponseEntity<Void> {
+        imageService.delete(filename, ImageType.PROMPT_EXAMPLE)
         return ResponseEntity.noContent().build()
     }
 }

@@ -17,9 +17,11 @@ import java.util.UUID
 @Service
 class ImageService(
     @Value("\${images.storage.root:storage}") private val storageRoot: String,
+    private val imageConversionService: ImageConversionService,
 ) {
     private val privateImagesPath: Path = Paths.get(storageRoot, "images", "private")
     private val publicImagesPath: Path = Paths.get(storageRoot, "images", "public")
+    private val promptExampleImagesPath: Path = Paths.get(storageRoot, "images", "public", "prompt-example-images")
 
     init {
         createDirectories()
@@ -32,14 +34,23 @@ class ImageService(
         validateFile(file)
 
         val originalFilename = file.originalFilename ?: "unknown"
-        val fileExtension = getFileExtension(originalFilename)
+
+        // For prompt examples, always use .webp extension
+        val fileExtension = if (request.imageType == ImageType.PROMPT_EXAMPLE) ".webp" else getFileExtension(originalFilename)
         val storedFilename = "${UUID.randomUUID()}$fileExtension"
 
         val targetPath = getTargetPath(request.imageType)
         val filePath = targetPath.resolve(storedFilename)
 
         try {
-            Files.copy(file.inputStream, filePath, StandardCopyOption.REPLACE_EXISTING)
+            if (request.imageType == ImageType.PROMPT_EXAMPLE) {
+                // Convert to WebP for prompt examples
+                val webpBytes = imageConversionService.convertToWebP(file.bytes)
+                Files.write(filePath, webpBytes)
+            } else {
+                // Store as-is for other types
+                Files.copy(file.inputStream, filePath, StandardCopyOption.REPLACE_EXISTING)
+            }
         } catch (e: IOException) {
             throw RuntimeException("Failed to store file: ${e.message}", e)
         }
@@ -111,12 +122,14 @@ class ImageService(
         when (imageType) {
             ImageType.PUBLIC -> publicImagesPath
             ImageType.PRIVATE -> privateImagesPath
+            ImageType.PROMPT_EXAMPLE -> promptExampleImagesPath
         }
 
     private fun createDirectories() {
         try {
             Files.createDirectories(privateImagesPath)
             Files.createDirectories(publicImagesPath)
+            Files.createDirectories(promptExampleImagesPath)
         } catch (e: IOException) {
             throw RuntimeException("Failed to create storage directories: ${e.message}", e)
         }

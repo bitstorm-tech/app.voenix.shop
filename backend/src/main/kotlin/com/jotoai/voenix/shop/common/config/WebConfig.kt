@@ -28,7 +28,7 @@ class WebConfig(
     }
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
-        // Serve public images
+        // Serve public images (includes prompt-example-images subfolder)
         registry
             .addResourceHandler("/images/public/**")
             .addResourceLocations("file:$storageRoot/images/public/")
