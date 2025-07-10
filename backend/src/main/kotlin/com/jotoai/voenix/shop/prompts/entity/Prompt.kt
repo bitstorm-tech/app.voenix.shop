@@ -32,6 +32,11 @@ data class Prompt(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", insertable = false, updatable = false)
     var category: PromptCategory? = null,
+    @Column(name = "subcategory_id")
+    var subcategoryId: Long? = null,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "subcategory_id", insertable = false, updatable = false)
+    var subcategory: PromptSubCategory? = null,
     @Column(nullable = false)
     var active: Boolean = true,
     @OneToMany(mappedBy = "prompt", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
@@ -51,6 +56,8 @@ data class Prompt(
             content = this.content,
             categoryId = this.categoryId,
             category = this.category?.toDto(),
+            subcategoryId = this.subcategoryId,
+            subcategory = this.subcategory?.toDto(),
             active = this.active,
             slots = this.promptSlots.sortedBy { it.position }.map { it.slot.toDto() },
             createdAt = this.createdAt,

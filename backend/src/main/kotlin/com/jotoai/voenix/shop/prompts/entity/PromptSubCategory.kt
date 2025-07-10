@@ -1,12 +1,14 @@
 package com.jotoai.voenix.shop.prompts.entity
 
-import com.jotoai.voenix.shop.prompts.dto.PromptCategoryDto
+import com.jotoai.voenix.shop.prompts.dto.PromptSubCategoryDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
@@ -14,17 +16,20 @@ import org.hibernate.annotations.UpdateTimestamp
 import java.time.OffsetDateTime
 
 @Entity
-@Table(name = "prompt_categories")
-data class PromptCategory(
+@Table(name = "prompt_subcategories")
+data class PromptSubCategory(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-    @Column(nullable = false, unique = true)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "prompt_category_id", nullable = false)
+    var promptCategory: PromptCategory,
+    @Column(nullable = false)
     var name: String,
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @Column(columnDefinition = "TEXT")
+    var description: String? = null,
+    @OneToMany(mappedBy = "subcategory", fetch = FetchType.LAZY)
     val prompts: List<Prompt> = emptyList(),
-    @OneToMany(mappedBy = "promptCategory", fetch = FetchType.LAZY)
-    val subcategories: List<PromptSubCategory> = emptyList(),
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,
@@ -33,11 +38,12 @@ data class PromptCategory(
     var updatedAt: OffsetDateTime? = null,
 ) {
     fun toDto() =
-        PromptCategoryDto(
-            id = requireNotNull(this.id) { "PromptCategory ID cannot be null when converting to DTO" },
+        PromptSubCategoryDto(
+            id = requireNotNull(this.id) { "PromptSubCategory ID cannot be null when converting to DTO" },
+            promptCategoryId = requireNotNull(this.promptCategory.id) { "PromptCategory ID cannot be null when converting to DTO" },
             name = this.name,
+            description = this.description,
             promptsCount = this.prompts.size,
-            subcategoriesCount = this.subcategories.size,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )

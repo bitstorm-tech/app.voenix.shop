@@ -8,6 +8,7 @@ data class UpdatePromptRequest(
     val title: String? = null,
     val content: String? = null,
     val categoryId: Long? = null,
+    val subcategoryId: Long? = null,
     val active: Boolean? = null,
     @field:Valid
     val slots: List<PromptSlotRequest>? = null,

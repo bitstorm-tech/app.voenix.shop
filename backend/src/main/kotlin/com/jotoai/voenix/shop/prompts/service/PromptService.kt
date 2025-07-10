@@ -9,6 +9,7 @@ import com.jotoai.voenix.shop.prompts.dto.UpdatePromptSlotsRequest
 import com.jotoai.voenix.shop.prompts.entity.Prompt
 import com.jotoai.voenix.shop.prompts.repository.PromptCategoryRepository
 import com.jotoai.voenix.shop.prompts.repository.PromptRepository
+import com.jotoai.voenix.shop.prompts.repository.PromptSubCategoryRepository
 import com.jotoai.voenix.shop.prompts.repository.SlotRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,12 +19,16 @@ import org.springframework.transaction.annotation.Transactional
 class PromptService(
     private val promptRepository: PromptRepository,
     private val promptCategoryRepository: PromptCategoryRepository,
+    private val promptSubCategoryRepository: PromptSubCategoryRepository,
     private val slotRepository: SlotRepository,
 ) {
     fun getAllPrompts(): List<PromptDto> =
         promptRepository.findAll().map { prompt ->
             if (prompt.categoryId != null) {
                 prompt.category = promptCategoryRepository.findById(prompt.categoryId!!).orElse(null)
+            }
+            if (prompt.subcategoryId != null) {
+                prompt.subcategory = promptSubCategoryRepository.findById(prompt.subcategoryId!!).orElse(null)
             }
             prompt.toDto()
         }
@@ -34,6 +39,9 @@ class PromptService(
             .map { prompt ->
                 if (prompt.categoryId != null) {
                     prompt.category = promptCategoryRepository.findById(prompt.categoryId!!).orElse(null)
+                }
+                if (prompt.subcategoryId != null) {
+                    prompt.subcategory = promptSubCategoryRepository.findById(prompt.subcategoryId!!).orElse(null)
                 }
                 prompt.toDto()
             }.orElseThrow { ResourceNotFoundException("Prompt", "id", id) }
@@ -47,11 +55,17 @@ class PromptService(
             throw ResourceNotFoundException("PromptCategory", "id", request.categoryId)
         }
 
+        // Validate subcategory exists if provided
+        if (request.subcategoryId != null && !promptSubCategoryRepository.existsById(request.subcategoryId)) {
+            throw ResourceNotFoundException("PromptSubCategory", "id", request.subcategoryId)
+        }
+
         val prompt =
             Prompt(
                 title = request.title,
                 content = request.content,
                 categoryId = request.categoryId,
+                subcategoryId = request.subcategoryId,
             )
 
         // Add slots if provided
@@ -70,6 +84,10 @@ class PromptService(
         // Load category for response
         if (savedPrompt.categoryId != null) {
             savedPrompt.category = promptCategoryRepository.findById(savedPrompt.categoryId!!).orElse(null)
+        }
+        // Load subcategory for response
+        if (savedPrompt.subcategoryId != null) {
+            savedPrompt.subcategory = promptSubCategoryRepository.findById(savedPrompt.subcategoryId!!).orElse(null)
         }
 
         return savedPrompt.toDto()
@@ -90,9 +108,15 @@ class PromptService(
             throw ResourceNotFoundException("PromptCategory", "id", request.categoryId)
         }
 
+        // Validate subcategory exists if provided
+        if (request.subcategoryId != null && !promptSubCategoryRepository.existsById(request.subcategoryId)) {
+            throw ResourceNotFoundException("PromptSubCategory", "id", request.subcategoryId)
+        }
+
         request.title?.let { prompt.title = it }
         request.content?.let { prompt.content = it }
         request.categoryId?.let { prompt.categoryId = it }
+        request.subcategoryId?.let { prompt.subcategoryId = it }
         request.active?.let { prompt.active = it }
 
         // Update slots if provided
@@ -112,6 +136,10 @@ class PromptService(
         // Load category for response
         if (updatedPrompt.categoryId != null) {
             updatedPrompt.category = promptCategoryRepository.findById(updatedPrompt.categoryId!!).orElse(null)
+        }
+        // Load subcategory for response
+        if (updatedPrompt.subcategoryId != null) {
+            updatedPrompt.subcategory = promptSubCategoryRepository.findById(updatedPrompt.subcategoryId!!).orElse(null)
         }
 
         return updatedPrompt.toDto()

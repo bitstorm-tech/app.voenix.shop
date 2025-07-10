@@ -9,4 +9,6 @@ interface PromptRepository : JpaRepository<Prompt, Long> {
     fun findByTitleContainingIgnoreCase(title: String): List<Prompt>
 
     fun countByCategoryId(categoryId: Long): Int
+
+    fun countBySubcategoryId(subcategoryId: Long): Int
 }

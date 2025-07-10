@@ -7,6 +7,7 @@ import com.jotoai.voenix.shop.prompts.dto.UpdatePromptCategoryRequest
 import com.jotoai.voenix.shop.prompts.entity.PromptCategory
 import com.jotoai.voenix.shop.prompts.repository.PromptCategoryRepository
 import com.jotoai.voenix.shop.prompts.repository.PromptRepository
+import com.jotoai.voenix.shop.prompts.repository.PromptSubCategoryRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 class PromptCategoryService(
     private val promptCategoryRepository: PromptCategoryRepository,
     private val promptRepository: PromptRepository,
+    private val promptSubCategoryRepository: PromptSubCategoryRepository,
 ) {
     fun getAllPromptCategories(): List<PromptCategoryDto> =
         promptCategoryRepository.findAll().map { category ->
@@ -22,6 +24,7 @@ class PromptCategoryService(
                 id = category.id!!,
                 name = category.name,
                 promptsCount = promptRepository.countByCategoryId(category.id),
+                subcategoriesCount = promptSubCategoryRepository.countByPromptCategoryId(category.id).toInt(),
                 createdAt = category.createdAt,
                 updatedAt = category.updatedAt,
             )
@@ -35,6 +38,7 @@ class PromptCategoryService(
                     id = category.id!!,
                     name = category.name,
                     promptsCount = promptRepository.countByCategoryId(category.id),
+                    subcategoriesCount = promptSubCategoryRepository.countByPromptCategoryId(category.id).toInt(),
                     createdAt = category.createdAt,
                     updatedAt = category.updatedAt,
                 )
@@ -46,6 +50,7 @@ class PromptCategoryService(
                 id = category.id!!,
                 name = category.name,
                 promptsCount = promptRepository.countByCategoryId(category.id),
+                subcategoriesCount = promptSubCategoryRepository.countByPromptCategoryId(category.id).toInt(),
                 createdAt = category.createdAt,
                 updatedAt = category.updatedAt,
             )
@@ -63,6 +68,7 @@ class PromptCategoryService(
             id = savedPromptCategory.id!!,
             name = savedPromptCategory.name,
             promptsCount = 0, // New category has no prompts
+            subcategoriesCount = 0, // New category has no subcategories
             createdAt = savedPromptCategory.createdAt,
             updatedAt = savedPromptCategory.updatedAt,
         )
@@ -85,6 +91,7 @@ class PromptCategoryService(
             id = updatedPromptCategory.id!!,
             name = updatedPromptCategory.name,
             promptsCount = promptRepository.countByCategoryId(updatedPromptCategory.id),
+            subcategoriesCount = promptSubCategoryRepository.countByPromptCategoryId(updatedPromptCategory.id).toInt(),
             createdAt = updatedPromptCategory.createdAt,
             updatedAt = updatedPromptCategory.updatedAt,
         )

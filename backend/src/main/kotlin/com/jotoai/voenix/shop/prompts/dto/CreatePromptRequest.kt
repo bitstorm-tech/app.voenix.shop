@@ -10,6 +10,7 @@ data class CreatePromptRequest(
     val title: String,
     val content: String? = null,
     val categoryId: Long? = null,
+    val subcategoryId: Long? = null,
     @field:Valid
     val slots: List<PromptSlotRequest> = emptyList(),
 )
