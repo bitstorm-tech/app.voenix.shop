@@ -12,6 +12,7 @@ import org.springframework.web.servlet.resource.PathResourceResolver
 @Configuration
 class WebConfig(
     @Value("\${spring.profiles.active:default}") private val activeProfile: String,
+    @Value("\${images.storage.root:storage}") private val storageRoot: String,
 ) : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
         // Only enable CORS in development
@@ -27,6 +28,12 @@ class WebConfig(
     }
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
+        // Serve public images
+        registry
+            .addResourceHandler("/images/public/**")
+            .addResourceLocations("file:$storageRoot/images/public/")
+            .setCachePeriod(3600)
+
         // Serve static resources
         registry
             .addResourceHandler("/**")
