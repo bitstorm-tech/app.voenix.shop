@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile
 class ImageController(
     private val imageService: ImageService,
 ) {
-    @PostMapping("/upload", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
+    @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadImage(
         @RequestParam("file") file: MultipartFile,
         @RequestParam("imageType") imageType: ImageType,
@@ -31,30 +31,22 @@ class ImageController(
         return ResponseEntity.status(HttpStatus.CREATED).body(image)
     }
 
-    @GetMapping("/private/{filename}")
-    fun getPrivateImage(
+    @GetMapping("/{filename}")
+    fun getImage(
         @PathVariable filename: String,
     ): ResponseEntity<ByteArray> {
-        val (imageData, contentType) = imageService.getImageData(filename, ImageType.PRIVATE)
+        val (imageData, contentType) = imageService.getImageData(filename)
         return ResponseEntity
             .ok()
             .contentType(MediaType.parseMediaType(contentType))
             .body(imageData)
     }
 
-    @DeleteMapping("/private/{filename}")
-    fun deletePrivateImage(
+    @DeleteMapping("/{filename}")
+    fun deleteImage(
         @PathVariable filename: String,
     ): ResponseEntity<Void> {
-        imageService.delete(filename, ImageType.PRIVATE)
-        return ResponseEntity.noContent().build()
-    }
-
-    @DeleteMapping("/public/{filename}")
-    fun deletePublicImage(
-        @PathVariable filename: String,
-    ): ResponseEntity<Void> {
-        imageService.delete(filename, ImageType.PUBLIC)
+        imageService.delete(filename)
         return ResponseEntity.noContent().build()
     }
 }

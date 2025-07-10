@@ -19,9 +19,9 @@ class ImageService(
     @Value("\${images.storage.root:storage}") private val storageRoot: String,
     private val imageConversionService: ImageConversionService,
 ) {
-    private val privateImagesPath: Path = Paths.get(storageRoot, "images", "private")
-    private val publicImagesPath: Path = Paths.get(storageRoot, "images", "public")
-    private val promptExampleImagesPath: Path = Paths.get(storageRoot, "images", "public", "prompt-example-images")
+    private val privateImagesPath: Path = Paths.get(storageRoot, "private", "images")
+    private val publicImagesPath: Path = Paths.get(storageRoot, "public", "images")
+    private val promptExampleImagesPath: Path = Paths.get(storageRoot, "public", "images", "prompt-example-images")
 
     init {
         createDirectories()
@@ -95,6 +95,36 @@ class ImageService(
         } catch (e: IOException) {
             throw RuntimeException("Failed to delete file: ${e.message}", e)
         }
+    }
+
+    fun getImageData(filename: String): Pair<ByteArray, String> {
+        val imageType =
+            findImageType(filename)
+                ?: throw ResourceNotFoundException("Image with filename $filename not found")
+        return getImageData(filename, imageType)
+    }
+
+    fun delete(filename: String) {
+        val imageType =
+            findImageType(filename)
+                ?: throw ResourceNotFoundException("Image with filename $filename not found")
+        delete(filename, imageType)
+    }
+
+    private fun findImageType(filename: String): ImageType? {
+        val imageTypePaths =
+            mapOf(
+                ImageType.PRIVATE to privateImagesPath,
+                ImageType.PUBLIC to publicImagesPath,
+                ImageType.PROMPT_EXAMPLE to promptExampleImagesPath,
+            )
+
+        for ((imageType, path) in imageTypePaths) {
+            if (Files.exists(path.resolve(filename))) {
+                return imageType
+            }
+        }
+        return null
     }
 
     private fun validateFile(file: MultipartFile) {

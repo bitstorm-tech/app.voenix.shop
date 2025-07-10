@@ -30,8 +30,8 @@ class WebConfig(
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
         // Serve public images (includes prompt-example-images subfolder)
         registry
-            .addResourceHandler("/images/public/**")
-            .addResourceLocations("file:$storageRoot/images/public/")
+            .addResourceHandler("/public/images/**")
+            .addResourceLocations("file:$storageRoot/public/images/")
             .setCachePeriod(3600)
 
         // Serve static resources
