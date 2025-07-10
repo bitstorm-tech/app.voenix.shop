@@ -36,6 +36,10 @@ dependencies {
     // Environment variables (.env file support)
     implementation("me.paulschwarz:spring-dotenv:4.0.0")
 
+    // Image processing
+    implementation("com.twelvemonkeys.imageio:imageio-jpeg:3.11.0")
+    implementation("com.twelvemonkeys.imageio:imageio-webp:3.11.0")
+
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.2")
