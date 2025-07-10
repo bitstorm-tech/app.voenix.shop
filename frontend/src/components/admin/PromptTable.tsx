@@ -15,10 +15,10 @@ export default function PromptTable({ prompts, onEdit, onDelete, onTest }: Promp
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead>Example</TableHead>
             <TableHead>Active</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Category</TableHead>
-            <TableHead>Example</TableHead>
             <TableHead>Prompt</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>

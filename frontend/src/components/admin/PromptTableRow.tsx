@@ -14,6 +14,13 @@ export default function PromptTableRow({ prompt, onEdit, onDelete, onTest }: Pro
   return (
     <TableRow>
       <TableCell>
+        {prompt.exampleImageUrl ? (
+          <img src={prompt.exampleImageUrl} alt={`Example for ${prompt.title}`} className="h-16 w-16 rounded object-cover" />
+        ) : (
+          <span className="text-sm text-gray-500">-</span>
+        )}
+      </TableCell>
+      <TableCell>
         <span className={prompt.active ? 'text-green-600' : 'text-red-600'}>{prompt.active ? 'Yes' : 'No'}</span>
       </TableCell>
       <TableCell>
@@ -21,9 +28,6 @@ export default function PromptTableRow({ prompt, onEdit, onDelete, onTest }: Pro
       </TableCell>
       <TableCell>
         <span>{prompt.category?.name || '-'}</span>
-      </TableCell>
-      <TableCell>
-        <span className="text-sm text-gray-500">-</span>
       </TableCell>
       <TableCell>
         <span className="block max-w-md truncate" title={prompt.content || ''}>
