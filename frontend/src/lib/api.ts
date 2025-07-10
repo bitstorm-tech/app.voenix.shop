@@ -1,5 +1,5 @@
 import type { Mug, MugCategory, MugSubCategory } from '@/types/mug';
-import type { Prompt, PromptCategory } from '@/types/prompt';
+import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
 import type { Slot, SlotType } from '@/types/slot';
 
 class ApiError extends Error {
@@ -93,6 +93,17 @@ export const promptCategoriesApi = {
   search: (name: string) => api.get<PromptCategory[]>(`/prompt-categories/search?name=${encodeURIComponent(name)}`),
 };
 
+// Prompt SubCategory API endpoints
+export const promptSubCategoriesApi = {
+  getAll: () => api.get<PromptSubCategory[]>('/prompt-subcategories'),
+  getById: (id: number) => api.get<PromptSubCategory>(`/prompt-subcategories/${id}`),
+  getByCategory: (categoryId: number) => api.get<PromptSubCategory[]>(`/prompt-subcategories/by-category/${categoryId}`),
+  create: (data: CreatePromptSubCategoryRequest) => api.post<PromptSubCategory>('/prompt-subcategories', data),
+  update: (id: number, data: UpdatePromptSubCategoryRequest) => api.put<PromptSubCategory>(`/prompt-subcategories/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/prompt-subcategories/${id}`),
+  search: (name: string) => api.get<PromptSubCategory[]>(`/prompt-subcategories/search?name=${encodeURIComponent(name)}`),
+};
+
 // Type definitions for API requests
 export interface PromptSlotUpdate {
   slotId: number;
@@ -121,6 +132,18 @@ export interface CreatePromptCategoryRequest {
 
 export interface UpdatePromptCategoryRequest {
   name?: string;
+}
+
+export interface CreatePromptSubCategoryRequest {
+  promptCategoryId: number;
+  name: string;
+  description?: string;
+}
+
+export interface UpdatePromptSubCategoryRequest {
+  promptCategoryId?: number;
+  name?: string;
+  description?: string;
 }
 
 // Mug API endpoints

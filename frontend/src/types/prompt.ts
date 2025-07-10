@@ -11,9 +11,9 @@ export interface PromptCategory {
 export interface PromptSubCategory {
   id: number;
   name: string;
-  categoryId?: number;
-  category?: PromptCategory;
-  prompts_count?: number;
+  promptCategoryId: number;
+  description?: string;
+  promptsCount: number;
   createdAt?: string;
   updatedAt?: string;
 }

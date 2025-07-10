@@ -7,6 +7,7 @@ import NewOrEditSlotType from '@/pages/admin/NewOrEditSlotType';
 import OpenOrders from '@/pages/admin/OpenOrders';
 import PromptCategories from '@/pages/admin/PromptCategories';
 import Prompts from '@/pages/admin/Prompts';
+import PromptSubCategories from '@/pages/admin/PromptSubCategories';
 import Slots from '@/pages/admin/Slots';
 import SlotTypes from '@/pages/admin/SlotTypes';
 import Editor from '@/pages/Editor';
@@ -25,6 +26,7 @@ export default function App() {
           <Route path="prompts/new" element={<NewOrEditPrompt />} />
           <Route path="prompts/:id/edit" element={<NewOrEditPrompt />} />
           <Route path="prompt-categories" element={<PromptCategories />} />
+          <Route path="prompt-subcategories" element={<PromptSubCategories />} />
           <Route path="slot-types" element={<SlotTypes />} />
           <Route path="slot-types/new" element={<NewOrEditSlotType />} />
           <Route path="slot-types/:id/edit" element={<NewOrEditSlotType />} />
