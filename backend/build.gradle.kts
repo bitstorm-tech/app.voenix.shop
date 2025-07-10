@@ -39,6 +39,8 @@ dependencies {
     // Image processing
     implementation("com.twelvemonkeys.imageio:imageio-jpeg:3.11.0")
     implementation("com.twelvemonkeys.imageio:imageio-webp:3.11.0")
+    implementation("com.sksamuel.scrimage:scrimage-core:4.3.2")
+    implementation("com.sksamuel.scrimage:scrimage-webp:4.3.2")
 
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
