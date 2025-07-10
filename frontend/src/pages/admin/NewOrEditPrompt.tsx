@@ -1,13 +1,15 @@
+import { SlotSelector } from '@/components/admin/prompt-slots/SlotSelector';
+import { SortableSlotList } from '@/components/admin/prompt-slots/SortableSlotList';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
-import { Textarea } from '@/components/ui/Textarea';
-import type { CreatePromptRequest, UpdatePromptRequest } from '@/lib/api';
+import type { CreatePromptRequest, PromptSlotUpdate, UpdatePromptRequest } from '@/lib/api';
 import { promptCategoriesApi, promptsApi } from '@/lib/api';
-import type { PromptCategory } from '@/types/prompt';
+import type { PromptCategory, PromptSlot } from '@/types/prompt';
+import type { Slot } from '@/types/slot';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -16,13 +18,14 @@ export default function NewOrEditPrompt() {
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
 
-  const [formData, setFormData] = useState<CreatePromptRequest>({
+  const [formData, setFormData] = useState({
     title: '',
     categoryId: 0,
-    content: '',
     active: true,
   });
+  const [promptSlots, setPromptSlots] = useState<PromptSlot[]>([]);
   const [categories, setCategories] = useState<PromptCategory[]>([]);
+  const [showSlotSelector, setShowSlotSelector] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,9 +58,13 @@ export default function NewOrEditPrompt() {
       setFormData({
         title: prompt.title || '',
         categoryId: prompt.categoryId || 0,
-        content: prompt.content || '',
         active: prompt.active ?? true,
       });
+
+      // Set prompt slots with proper PromptSlot type
+      if (prompt.slots) {
+        setPromptSlots(prompt.slots);
+      }
     } catch (error) {
       console.error('Error fetching prompt:', error);
       setError('Failed to load prompt');
@@ -79,8 +86,8 @@ export default function NewOrEditPrompt() {
       return;
     }
 
-    if (!formData.content.trim()) {
-      setError('Content is required');
+    if (promptSlots.length === 0) {
+      setError('At least one slot is required');
       return;
     }
 
@@ -88,16 +95,27 @@ export default function NewOrEditPrompt() {
       setLoading(true);
       setError(null);
 
+      const slots: PromptSlotUpdate[] = promptSlots.map((slot, index) => ({
+        slotId: slot.id,
+        position: index,
+      }));
+
       if (isEditing) {
         const updateData: UpdatePromptRequest = {
           title: formData.title,
           categoryId: formData.categoryId,
-          content: formData.content,
           active: formData.active,
+          slots,
         };
         await promptsApi.update(parseInt(id), updateData);
       } else {
-        await promptsApi.create(formData);
+        const createData: CreatePromptRequest = {
+          title: formData.title,
+          categoryId: formData.categoryId,
+          active: formData.active,
+          slots,
+        };
+        await promptsApi.create(createData);
       }
 
       navigate('/admin/prompts');
@@ -112,6 +130,21 @@ export default function NewOrEditPrompt() {
   const handleCancel = () => {
     navigate('/admin/prompts');
   };
+
+  const handleSlotsChange = (newSlots: PromptSlot[]) => {
+    setPromptSlots(newSlots);
+  };
+
+  const handleAddSlots = (slotsToAdd: Slot[]) => {
+    const newPromptSlots: PromptSlot[] = slotsToAdd.map((slot, index) => ({
+      ...slot,
+      position: promptSlots.length + index,
+    }));
+    setPromptSlots([...promptSlots, ...newPromptSlots]);
+  };
+
+  const existingSlotIds = promptSlots.map((s) => s.id);
+  const existingSlotTypeIds = promptSlots.map((s) => s.slotTypeId);
 
   if (initialLoading) {
     return (
@@ -162,15 +195,7 @@ export default function NewOrEditPrompt() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="content">Content</Label>
-              <Textarea
-                id="content"
-                value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                placeholder="Enter the prompt content"
-                rows={6}
-                required
-              />
+              <SortableSlotList slots={promptSlots} onSlotsChange={handleSlotsChange} onAddSlot={() => setShowSlotSelector(true)} />
             </div>
 
             <div className="space-y-2">
@@ -198,6 +223,14 @@ export default function NewOrEditPrompt() {
           </form>
         </CardContent>
       </Card>
+
+      <SlotSelector
+        open={showSlotSelector}
+        onOpenChange={setShowSlotSelector}
+        existingSlotIds={existingSlotIds}
+        existingSlotTypeIds={existingSlotTypeIds}
+        onSelectSlots={handleAddSlots}
+      />
     </div>
   );
 }

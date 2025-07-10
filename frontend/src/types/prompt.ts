@@ -1,3 +1,5 @@
+import type { Slot } from './slot';
+
 export interface PromptCategory {
   id: number;
   name: string;
@@ -16,6 +18,10 @@ export interface PromptSubCategory {
   updatedAt?: string;
 }
 
+export interface PromptSlot extends Slot {
+  position: number;
+}
+
 export interface Prompt {
   id: number;
   title: string;
@@ -25,6 +31,7 @@ export interface Prompt {
   categoryId?: number;
   category?: PromptCategory;
   active?: boolean;
+  slots?: PromptSlot[];
   // Editor-specific properties (not yet provided by backend)
   example_image_url?: string;
   subcategory?: PromptSubCategory;

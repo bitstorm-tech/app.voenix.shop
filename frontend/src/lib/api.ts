@@ -77,6 +77,10 @@ export const promptsApi = {
   update: (id: number, data: UpdatePromptRequest) => api.put<Prompt>(`/prompts/${id}`, data),
   delete: (id: number) => api.delete<void>(`/prompts/${id}`),
   search: (title: string) => api.get<Prompt[]>(`/prompts/search?title=${encodeURIComponent(title)}`),
+  // Slot management endpoints
+  addSlots: (id: number, slotIds: number[]) => api.post<Prompt>(`/prompts/${id}/slots`, { slotIds }),
+  updateSlots: (id: number, slots: PromptSlotUpdate[]) => api.put<Prompt>(`/prompts/${id}/slots`, { slots }),
+  removeSlot: (id: number, slotId: number) => api.delete<void>(`/prompts/${id}/slots/${slotId}`),
 };
 
 // Prompt Category API endpoints
@@ -90,18 +94,25 @@ export const promptCategoriesApi = {
 };
 
 // Type definitions for API requests
+export interface PromptSlotUpdate {
+  slotId: number;
+  position: number;
+}
+
 export interface CreatePromptRequest {
   title: string;
-  content: string;
+  content?: string;
   categoryId: number;
   active: boolean;
+  slots?: PromptSlotUpdate[];
 }
 
 export interface UpdatePromptRequest {
-  title: string;
-  content: string;
-  categoryId: number;
-  active: boolean;
+  title?: string;
+  content?: string;
+  categoryId?: number;
+  active?: boolean;
+  slots?: PromptSlotUpdate[];
 }
 
 export interface CreatePromptCategoryRequest {
