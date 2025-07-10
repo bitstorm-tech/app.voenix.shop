@@ -30,9 +30,10 @@ export interface Prompt {
   updatedAt?: string;
   categoryId?: number;
   category?: PromptCategory;
+  subcategoryId?: number;
+  subcategory?: PromptSubCategory;
   active?: boolean;
   slots?: PromptSlot[];
   // Editor-specific properties (not yet provided by backend)
   example_image_url?: string;
-  subcategory?: PromptSubCategory;
 }

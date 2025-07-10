@@ -17,7 +17,8 @@
       "Bash(/Users/joe/projects/joto-ai/app.voenix.shop/backend/gradlew -p /Users/joe/projects/joto-ai/app.voenix.shop/backend build)",
       "Bash(/Users/joe/projects/joto-ai/app.voenix.shop/backend/gradlew -p /Users/joe/projects/joto-ai/app.voenix.shop/backend bootRun)",
       "Bash(npm --prefix frontend run type-check)",
-      "Bash(npm run format:*)"
+      "Bash(npm run format:*)",
+      "Bash(npm run lint)"
     ],
     "deny": []
   }

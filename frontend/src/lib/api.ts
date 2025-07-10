@@ -114,6 +114,7 @@ export interface CreatePromptRequest {
   title: string;
   content?: string;
   categoryId: number;
+  subcategoryId?: number;
   active: boolean;
   slots?: PromptSlotUpdate[];
 }
@@ -122,6 +123,7 @@ export interface UpdatePromptRequest {
   title?: string;
   content?: string;
   categoryId?: number;
+  subcategoryId?: number;
   active?: boolean;
   slots?: PromptSlotUpdate[];
 }

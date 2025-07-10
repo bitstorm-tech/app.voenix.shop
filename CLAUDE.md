@@ -49,14 +49,14 @@ npm run format           # Run code formatter
 
 ### Frontend
 - Don't use `React.memo`, `useCallback` or `useMemo` since the React compiler handles these optimizations automatically
-- Run the formatter for all touched files at the end of the implementation
-- After every third changed file and at the end of the implementation, check for TypeScript errors and fix them
+- Run the formatter in the frontend folder for all new or changed files at the end of the implementation
+- After every third changed file and at the end of the implementation, check for TypeScript errors in the frontend folder and fix them
 - Make all React components and web pages responsive → working on Mobile and Desktop
 - Don't use `React.memo`, `useCallback` or `useMemo` since the React compiler handles these optimizations automatically
 
 ### Backend
-- Check for compiler errors at the end of the implementation
-- Run the linter and formater at the end of the implementation
+- Check for compiler errors at the end of the implementation in the backend folder
+- Run the linter and formater at the end of the implementation in the backend folder
 - Fix all linter errors when they arise
 
 

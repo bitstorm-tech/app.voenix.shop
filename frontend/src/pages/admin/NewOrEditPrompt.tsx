@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import type { CreatePromptRequest, PromptSlotUpdate, UpdatePromptRequest } from '@/lib/api';
-import { promptCategoriesApi, promptsApi } from '@/lib/api';
-import type { PromptCategory, PromptSlot } from '@/types/prompt';
+import { promptCategoriesApi, promptsApi, promptSubCategoriesApi } from '@/lib/api';
+import type { PromptCategory, PromptSlot, PromptSubCategory } from '@/types/prompt';
 import type { Slot } from '@/types/slot';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -21,10 +21,12 @@ export default function NewOrEditPrompt() {
   const [formData, setFormData] = useState({
     title: '',
     categoryId: 0,
+    subcategoryId: 0,
     active: true,
   });
   const [promptSlots, setPromptSlots] = useState<PromptSlot[]>([]);
   const [categories, setCategories] = useState<PromptCategory[]>([]);
+  const [subcategories, setSubcategories] = useState<PromptSubCategory[]>([]);
   const [showSlotSelector, setShowSlotSelector] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -58,6 +60,7 @@ export default function NewOrEditPrompt() {
       setFormData({
         title: prompt.title || '',
         categoryId: prompt.categoryId || 0,
+        subcategoryId: prompt.subcategoryId || 0,
         active: prompt.active ?? true,
       });
 
@@ -65,11 +68,32 @@ export default function NewOrEditPrompt() {
       if (prompt.slots) {
         setPromptSlots(prompt.slots);
       }
+
+      // Fetch subcategories for the prompt's category
+      if (prompt.categoryId) {
+        await fetchSubcategories(prompt.categoryId);
+      }
     } catch (error) {
       console.error('Error fetching prompt:', error);
       setError('Failed to load prompt');
     } finally {
       setInitialLoading(false);
+    }
+  };
+
+  const fetchSubcategories = async (categoryId: number) => {
+    if (!categoryId) {
+      setSubcategories([]);
+      return;
+    }
+
+    try {
+      const data = await promptSubCategoriesApi.getByCategory(categoryId);
+      setSubcategories(data);
+    } catch (error) {
+      console.error('Error fetching subcategories:', error);
+      // Don't show error to user as subcategory is optional
+      setSubcategories([]);
     }
   };
 
@@ -104,6 +128,7 @@ export default function NewOrEditPrompt() {
         const updateData: UpdatePromptRequest = {
           title: formData.title,
           categoryId: formData.categoryId,
+          subcategoryId: formData.subcategoryId || undefined,
           active: formData.active,
           slots,
         };
@@ -112,6 +137,7 @@ export default function NewOrEditPrompt() {
         const createData: CreatePromptRequest = {
           title: formData.title,
           categoryId: formData.categoryId,
+          subcategoryId: formData.subcategoryId || undefined,
           active: formData.active,
           slots,
         };
@@ -180,7 +206,14 @@ export default function NewOrEditPrompt() {
 
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Select value={formData.categoryId.toString()} onValueChange={(value) => setFormData({ ...formData, categoryId: parseInt(value) })}>
+              <Select
+                value={formData.categoryId.toString()}
+                onValueChange={(value) => {
+                  const newCategoryId = parseInt(value);
+                  setFormData({ ...formData, categoryId: newCategoryId, subcategoryId: 0 });
+                  fetchSubcategories(newCategoryId);
+                }}
+              >
                 <SelectTrigger id="category">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
@@ -193,6 +226,28 @@ export default function NewOrEditPrompt() {
                 </SelectContent>
               </Select>
             </div>
+
+            {formData.categoryId > 0 && (
+              <div className="space-y-2">
+                <Label htmlFor="subcategory">Subcategory (optional)</Label>
+                <Select
+                  value={formData.subcategoryId.toString()}
+                  onValueChange={(value) => setFormData({ ...formData, subcategoryId: parseInt(value) })}
+                >
+                  <SelectTrigger id="subcategory">
+                    <SelectValue placeholder="Select a subcategory (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">No subcategory</SelectItem>
+                    {subcategories.map((subcategory) => (
+                      <SelectItem key={subcategory.id} value={subcategory.id.toString()}>
+                        {subcategory.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             <div className="space-y-2">
               <SortableSlotList slots={promptSlots} onSlotsChange={handleSlotsChange} onAddSlot={() => setShowSlotSelector(true)} />
