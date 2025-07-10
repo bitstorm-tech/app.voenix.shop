@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.images.dto.CreateImageRequest
 import com.jotoai.voenix.shop.images.dto.ImageDto
 import com.jotoai.voenix.shop.images.dto.ImageType
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -19,11 +20,20 @@ class ImageService(
     @Value("\${images.storage.root:storage}") private val storageRoot: String,
     private val imageConversionService: ImageConversionService,
 ) {
-    private val privateImagesPath: Path = Paths.get(storageRoot, "private", "images")
-    private val publicImagesPath: Path = Paths.get(storageRoot, "public", "images")
-    private val promptExampleImagesPath: Path = Paths.get(storageRoot, "public", "images", "prompt-example-images")
+    companion object {
+        private val logger = LoggerFactory.getLogger(ImageService::class.java)
+    }
+
+    private val rootPath: Path = Paths.get(storageRoot).toAbsolutePath()
+    private val privateImagesPath: Path = rootPath.resolve("private/images")
+    private val publicImagesPath: Path = rootPath.resolve("public/images")
+    private val promptExampleImagesPath: Path = rootPath.resolve("public/images/prompt-example-images")
 
     init {
+        logger.info("Initializing ImageService with storage root: $rootPath")
+        logger.info("Private images path: $privateImagesPath")
+        logger.info("Public images path: $publicImagesPath")
+        logger.info("Prompt example images path: $promptExampleImagesPath")
         createDirectories()
     }
 
@@ -31,6 +41,7 @@ class ImageService(
         file: MultipartFile,
         request: CreateImageRequest,
     ): ImageDto {
+        logger.debug("Starting file upload - Type: ${request.imageType}, Original filename: ${file.originalFilename}")
         validateFile(file)
 
         val originalFilename = file.originalFilename ?: "unknown"
@@ -42,16 +53,22 @@ class ImageService(
         val targetPath = getTargetPath(request.imageType)
         val filePath = targetPath.resolve(storedFilename)
 
+        logger.info("Storing file - Target path: ${filePath.toAbsolutePath()}")
+
         try {
             if (request.imageType == ImageType.PROMPT_EXAMPLE) {
                 // Convert to WebP for prompt examples
+                logger.debug("Converting image to WebP format")
                 val webpBytes = imageConversionService.convertToWebP(file.bytes)
                 Files.write(filePath, webpBytes)
+                logger.info("Successfully stored WebP image: ${filePath.toAbsolutePath()}")
             } else {
                 // Store as-is for other types
                 Files.copy(file.inputStream, filePath, StandardCopyOption.REPLACE_EXISTING)
+                logger.info("Successfully stored image: ${filePath.toAbsolutePath()}")
             }
         } catch (e: IOException) {
+            logger.error("Failed to store file at ${filePath.toAbsolutePath()}: ${e.message}", e)
             throw RuntimeException("Failed to store file: ${e.message}", e)
         }
 
@@ -158,9 +175,15 @@ class ImageService(
     private fun createDirectories() {
         try {
             Files.createDirectories(privateImagesPath)
+            logger.info("Created/verified directory: ${privateImagesPath.toAbsolutePath()}")
+
             Files.createDirectories(publicImagesPath)
+            logger.info("Created/verified directory: ${publicImagesPath.toAbsolutePath()}")
+
             Files.createDirectories(promptExampleImagesPath)
+            logger.info("Created/verified directory: ${promptExampleImagesPath.toAbsolutePath()}")
         } catch (e: IOException) {
+            logger.error("Failed to create storage directories: ${e.message}", e)
             throw RuntimeException("Failed to create storage directories: ${e.message}", e)
         }
     }

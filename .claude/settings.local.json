@@ -18,7 +18,9 @@
       "Bash(/Users/joe/projects/joto-ai/app.voenix.shop/backend/gradlew -p /Users/joe/projects/joto-ai/app.voenix.shop/backend bootRun)",
       "Bash(npm --prefix frontend run type-check)",
       "Bash(npm run format:*)",
-      "Bash(npm run lint)"
+      "Bash(npm run lint)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:sksamuel.github.io)"
     ],
     "deny": []
   }
