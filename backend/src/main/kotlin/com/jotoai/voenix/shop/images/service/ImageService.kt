@@ -17,7 +17,7 @@ import java.util.UUID
 
 @Service
 class ImageService(
-    @Value("\${images.storage.root:storage}") private val storageRoot: String,
+    @Value("\${storage.root:storage}") private val storageRoot: String,
     private val imageConversionService: ImageConversionService,
 ) {
     companion object {
