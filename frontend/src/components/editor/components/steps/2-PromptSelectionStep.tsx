@@ -38,10 +38,10 @@ export default function PromptSelectionStep() {
                 </div>
               )}
 
-              {false ? (
-                /* prompt.example_image_url */ <div className="relative">
+              {prompt.exampleImageUrl ? (
+                <div className="relative">
                   <img
-                    src={''} // prompt.example_image_url
+                    src={prompt.exampleImageUrl}
                     alt={prompt.title}
                     className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-110"
                     loading="lazy"
