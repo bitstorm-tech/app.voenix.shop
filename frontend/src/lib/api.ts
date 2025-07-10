@@ -117,6 +117,7 @@ export interface CreatePromptRequest {
   subcategoryId?: number;
   active: boolean;
   slots?: PromptSlotUpdate[];
+  exampleImageFilename?: string;
 }
 
 export interface UpdatePromptRequest {
@@ -126,6 +127,7 @@ export interface UpdatePromptRequest {
   subcategoryId?: number;
   active?: boolean;
   slots?: PromptSlotUpdate[];
+  exampleImageFilename?: string;
 }
 
 export interface CreatePromptCategoryRequest {
@@ -278,3 +280,19 @@ export interface UpdateSlotRequest {
   name?: string;
   prompt?: string;
 }
+
+// Image API endpoints
+export const imagesApi = {
+  upload: async (file: File, imageType: 'PUBLIC' | 'PRIVATE' | 'PROMPT_EXAMPLE') => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('imageType', imageType);
+
+    const response = await fetch('/api/images', {
+      method: 'POST',
+      body: formData,
+    });
+    return handleResponse<{ filename: string; imageType: string }>(response);
+  },
+  delete: async (filename: string) => api.delete<void>(`/images/${filename}`),
+};

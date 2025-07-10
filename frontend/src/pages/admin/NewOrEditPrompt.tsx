@@ -7,10 +7,11 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import type { CreatePromptRequest, PromptSlotUpdate, UpdatePromptRequest } from '@/lib/api';
-import { promptCategoriesApi, promptsApi, promptSubCategoriesApi } from '@/lib/api';
+import { imagesApi, promptCategoriesApi, promptsApi, promptSubCategoriesApi } from '@/lib/api';
 import type { PromptCategory, PromptSlot, PromptSubCategory } from '@/types/prompt';
 import type { Slot } from '@/types/slot';
-import { useEffect, useState } from 'react';
+import { Upload, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditPrompt() {
@@ -31,6 +32,10 @@ export default function NewOrEditPrompt() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [exampleImageFilename, setExampleImageFilename] = useState<string | null>(null);
+  const [exampleImageUrl, setExampleImageUrl] = useState<string | null>(null);
+  const [exampleImageFile, setExampleImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -40,6 +45,15 @@ export default function NewOrEditPrompt() {
       setInitialLoading(false);
     }
   }, [id]);
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (exampleImageUrl && exampleImageUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(exampleImageUrl);
+      }
+    };
+  }, [exampleImageUrl]);
 
   const fetchCategories = async () => {
     try {
@@ -67,6 +81,14 @@ export default function NewOrEditPrompt() {
       // Set prompt slots with proper PromptSlot type
       if (prompt.slots) {
         setPromptSlots(prompt.slots);
+      }
+
+      // Set example image if exists
+      if (prompt.exampleImageUrl) {
+        setExampleImageUrl(prompt.exampleImageUrl);
+        // Extract filename from URL
+        const filename = prompt.exampleImageUrl.split('/').pop() || null;
+        setExampleImageFilename(filename);
       }
 
       // Fetch subcategories for the prompt's category
@@ -119,6 +141,21 @@ export default function NewOrEditPrompt() {
       setLoading(true);
       setError(null);
 
+      let imageFilename = exampleImageFilename;
+
+      // Upload new image if there is one
+      if (exampleImageFile) {
+        try {
+          const uploadResult = await imagesApi.upload(exampleImageFile, 'PROMPT_EXAMPLE');
+          imageFilename = uploadResult.filename;
+        } catch (uploadError: any) {
+          console.error('Error uploading image:', uploadError);
+          setError(`Failed to upload image: ${uploadError.message || 'Please try again.'}`);
+          setLoading(false);
+          return;
+        }
+      }
+
       const slots: PromptSlotUpdate[] = promptSlots.map((slot, index) => ({
         slotId: slot.id,
         position: index,
@@ -131,6 +168,7 @@ export default function NewOrEditPrompt() {
           subcategoryId: formData.subcategoryId || undefined,
           active: formData.active,
           slots,
+          exampleImageFilename: imageFilename || undefined,
         };
         await promptsApi.update(parseInt(id), updateData);
       } else {
@@ -140,6 +178,7 @@ export default function NewOrEditPrompt() {
           subcategoryId: formData.subcategoryId || undefined,
           active: formData.active,
           slots,
+          exampleImageFilename: imageFilename || undefined,
         };
         await promptsApi.create(createData);
       }
@@ -155,6 +194,47 @@ export default function NewOrEditPrompt() {
 
   const handleCancel = () => {
     navigate('/admin/prompts');
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      return;
+    }
+
+    // Check file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError('File size exceeds maximum allowed size of 10MB');
+      return;
+    }
+
+    // Clean up previous blob URL if exists
+    if (exampleImageUrl && exampleImageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(exampleImageUrl);
+    }
+
+    // Create blob URL for preview
+    const blobUrl = URL.createObjectURL(file);
+    setExampleImageFile(file);
+    setExampleImageUrl(blobUrl);
+    setError(null);
+
+    // Reset the input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImage = () => {
+    // Clean up blob URL if exists
+    if (exampleImageUrl && exampleImageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(exampleImageUrl);
+    }
+    setExampleImageFilename(null);
+    setExampleImageUrl(null);
+    setExampleImageFile(null);
   };
 
   const handleSlotsChange = (newSlots: PromptSlot[]) => {
@@ -251,6 +331,35 @@ export default function NewOrEditPrompt() {
 
             <div className="space-y-2">
               <SortableSlotList slots={promptSlots} onSlotsChange={handleSlotsChange} onAddSlot={() => setShowSlotSelector(true)} />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Example Image (optional)</Label>
+              <div className="space-y-3">
+                {exampleImageUrl ? (
+                  <div className="relative w-full max-w-md">
+                    <img src={exampleImageUrl} alt="Prompt example" className="w-full rounded-lg border border-gray-200 object-contain" />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="absolute top-2 right-2 bg-white shadow-sm"
+                      onClick={handleRemoveImage}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Image
+                    </Button>
+                    <p className="text-sm text-gray-500">PNG, JPG, GIF, or WEBP (automatically converted to WebP)</p>
+                  </div>
+                )}
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+              </div>
             </div>
 
             <div className="space-y-2">
