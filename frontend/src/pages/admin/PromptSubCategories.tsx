@@ -1,23 +1,16 @@
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
-import { Textarea } from '@/components/ui/Textarea';
 import { promptCategoriesApi, promptSubCategoriesApi } from '@/lib/api';
 import { PromptCategory, PromptSubCategory } from '@/types/prompt';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function PromptSubCategories() {
+  const navigate = useNavigate();
   const [subCategories, setSubCategories] = useState<PromptSubCategory[]>([]);
   const [categories, setCategories] = useState<PromptCategory[]>([]);
-  const [isSubCategoryDialogOpen, setIsSubCategoryDialogOpen] = useState(false);
-  const [editingSubCategory, setEditingSubCategory] = useState<PromptSubCategory | null>(null);
-  const [subCategoryName, setSubCategoryName] = useState('');
-  const [subCategoryDescription, setSubCategoryDescription] = useState('');
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,60 +38,6 @@ export default function PromptSubCategories() {
   const getCategoryName = (categoryId: number) => {
     const category = categories.find((c) => c.id === categoryId);
     return category?.name || 'Unknown';
-  };
-
-  const handleOpenSubCategoryDialog = (subCategory?: PromptSubCategory) => {
-    if (subCategory) {
-      setEditingSubCategory(subCategory);
-      setSubCategoryName(subCategory.name);
-      setSubCategoryDescription(subCategory.description || '');
-      setSelectedCategoryId(subCategory.promptCategoryId.toString());
-    } else {
-      setEditingSubCategory(null);
-      setSubCategoryName('');
-      setSubCategoryDescription('');
-      setSelectedCategoryId('');
-    }
-    setIsSubCategoryDialogOpen(true);
-  };
-
-  const handleCloseSubCategoryDialog = () => {
-    setIsSubCategoryDialogOpen(false);
-    setEditingSubCategory(null);
-    setSubCategoryName('');
-    setSubCategoryDescription('');
-    setSelectedCategoryId('');
-  };
-
-  const handleSubmitSubCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!selectedCategoryId) {
-      alert('Please select a category');
-      return;
-    }
-
-    try {
-      if (editingSubCategory) {
-        const updated = await promptSubCategoriesApi.update(editingSubCategory.id, {
-          name: subCategoryName,
-          description: subCategoryDescription || undefined,
-          promptCategoryId: parseInt(selectedCategoryId),
-        });
-        setSubCategories(subCategories.map((sc) => (sc.id === updated.id ? updated : sc)));
-      } else {
-        const created = await promptSubCategoriesApi.create({
-          name: subCategoryName,
-          description: subCategoryDescription || undefined,
-          promptCategoryId: parseInt(selectedCategoryId),
-        });
-        setSubCategories([...subCategories, created]);
-      }
-      handleCloseSubCategoryDialog();
-    } catch (error) {
-      console.error('Error saving subcategory:', error);
-      alert('Failed to save subcategory. Please try again.');
-    }
   };
 
   const handleDelete = async (id: number) => {
@@ -154,7 +93,7 @@ export default function PromptSubCategories() {
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Prompt Subcategories</h1>
-        <Button onClick={() => handleOpenSubCategoryDialog()}>
+        <Button onClick={() => navigate('/admin/prompt-subcategories/new')}>
           <Plus className="mr-2 h-4 w-4" />
           New Subcategory
         </Button>
@@ -188,7 +127,7 @@ export default function PromptSubCategories() {
                   <TableCell>{subCategory.promptsCount || 0}</TableCell>
                   <TableCell>{subCategory.createdAt ? new Date(subCategory.createdAt).toLocaleDateString() : '-'}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => handleOpenSubCategoryDialog(subCategory)} className="mr-1">
+                    <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/prompt-subcategories/${subCategory.id}/edit`)} className="mr-1">
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
@@ -206,62 +145,6 @@ export default function PromptSubCategories() {
           </TableBody>
         </Table>
       </div>
-
-      <Dialog open={isSubCategoryDialogOpen} onOpenChange={setIsSubCategoryDialogOpen}>
-        <DialogContent>
-          <form onSubmit={handleSubmitSubCategory}>
-            <DialogHeader>
-              <DialogTitle>{editingSubCategory ? 'Edit Subcategory' : 'New Subcategory'}</DialogTitle>
-              <DialogDescription>
-                {editingSubCategory ? 'Update the subcategory details below.' : 'Create a new prompt subcategory.'}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="category" className="text-right">
-                  Category
-                </Label>
-                <Select value={selectedCategoryId} onValueChange={setSelectedCategoryId} required>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id.toString()}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
-                <Input id="name" value={subCategoryName} onChange={(e) => setSubCategoryName(e.target.value)} className="col-span-3" required />
-              </div>
-              <div className="grid grid-cols-4 items-start gap-4">
-                <Label htmlFor="description" className="pt-2 text-right">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  value={subCategoryDescription}
-                  onChange={(e) => setSubCategoryDescription(e.target.value)}
-                  className="col-span-3"
-                  rows={3}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleCloseSubCategoryDialog}>
-                Cancel
-              </Button>
-              <Button type="submit">{editingSubCategory ? 'Update' : 'Create'}</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
         <DialogContent>

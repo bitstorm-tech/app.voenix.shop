@@ -1,7 +1,10 @@
 import AdminLayout from '@/components/admin/AdminLayout';
 import CompletedOrders from '@/pages/admin/CompletedOrders';
 import Mugs from '@/pages/admin/Mugs';
+import NewOrEditMug from '@/pages/admin/NewOrEditMug';
 import NewOrEditPrompt from '@/pages/admin/NewOrEditPrompt';
+import NewOrEditPromptCategory from '@/pages/admin/NewOrEditPromptCategory';
+import NewOrEditPromptSubCategory from '@/pages/admin/NewOrEditPromptSubCategory';
 import NewOrEditSlot from '@/pages/admin/NewOrEditSlot';
 import NewOrEditSlotType from '@/pages/admin/NewOrEditSlotType';
 import OpenOrders from '@/pages/admin/OpenOrders';
@@ -26,7 +29,11 @@ export default function App() {
           <Route path="prompts/new" element={<NewOrEditPrompt />} />
           <Route path="prompts/:id/edit" element={<NewOrEditPrompt />} />
           <Route path="prompt-categories" element={<PromptCategories />} />
+          <Route path="prompt-categories/new" element={<NewOrEditPromptCategory />} />
+          <Route path="prompt-categories/:id/edit" element={<NewOrEditPromptCategory />} />
           <Route path="prompt-subcategories" element={<PromptSubCategories />} />
+          <Route path="prompt-subcategories/new" element={<NewOrEditPromptSubCategory />} />
+          <Route path="prompt-subcategories/:id/edit" element={<NewOrEditPromptSubCategory />} />
           <Route path="slot-types" element={<SlotTypes />} />
           <Route path="slot-types/new" element={<NewOrEditSlotType />} />
           <Route path="slot-types/:id/edit" element={<NewOrEditSlotType />} />
@@ -34,6 +41,8 @@ export default function App() {
           <Route path="slots/new" element={<NewOrEditSlot />} />
           <Route path="slots/:id/edit" element={<NewOrEditSlot />} />
           <Route path="mugs" element={<Mugs />} />
+          <Route path="mugs/new" element={<NewOrEditMug />} />
+          <Route path="mugs/:id/edit" element={<NewOrEditMug />} />
           <Route
             path="mug-categories"
             element={

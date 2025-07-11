@@ -1,18 +1,15 @@
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { promptCategoriesApi } from '@/lib/api';
 import { PromptCategory } from '@/types/prompt';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function PromptCategories() {
+  const navigate = useNavigate();
   const [categories, setCategories] = useState<PromptCategory[]>([]);
-  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
-  const [editingCategory, setEditingCategory] = useState<PromptCategory | null>(null);
-  const [categoryName, setCategoryName] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,41 +30,6 @@ export default function PromptCategories() {
       setError('Failed to load categories. Please try again.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleOpenCategoryDialog = (category?: PromptCategory) => {
-    if (category) {
-      setEditingCategory(category);
-      setCategoryName(category.name);
-    } else {
-      setEditingCategory(null);
-      setCategoryName('');
-    }
-    setIsCategoryDialogOpen(true);
-  };
-
-  const handleCloseCategoryDialog = () => {
-    setIsCategoryDialogOpen(false);
-    setEditingCategory(null);
-    setCategoryName('');
-  };
-
-  const handleSubmitCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      if (editingCategory) {
-        const updated = await promptCategoriesApi.update(editingCategory.id, { name: categoryName });
-        setCategories(categories.map((c) => (c.id === updated.id ? updated : c)));
-      } else {
-        const created = await promptCategoriesApi.create({ name: categoryName });
-        setCategories([...categories, created]);
-      }
-      handleCloseCategoryDialog();
-    } catch (error) {
-      console.error('Error saving category:', error);
-      alert('Failed to save category. Please try again.');
     }
   };
 
@@ -124,7 +86,7 @@ export default function PromptCategories() {
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Prompt Categories</h1>
-        <Button onClick={() => handleOpenCategoryDialog()}>
+        <Button onClick={() => navigate('/admin/prompt-categories/new')}>
           <Plus className="mr-2 h-4 w-4" />
           New Category
         </Button>
@@ -154,7 +116,7 @@ export default function PromptCategories() {
                   <TableCell>{category.prompts_count || 0}</TableCell>
                   <TableCell>{category.createdAt ? new Date(category.createdAt).toLocaleDateString() : '-'}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => handleOpenCategoryDialog(category)} className="mr-1">
+                    <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/prompt-categories/${category.id}/edit`)} className="mr-1">
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
@@ -172,31 +134,6 @@ export default function PromptCategories() {
           </TableBody>
         </Table>
       </div>
-
-      <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
-        <DialogContent>
-          <form onSubmit={handleSubmitCategory}>
-            <DialogHeader>
-              <DialogTitle>{editingCategory ? 'Edit Category' : 'New Category'}</DialogTitle>
-              <DialogDescription>{editingCategory ? 'Update the category details below.' : 'Create a new prompt category.'}</DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
-                  Name
-                </Label>
-                <Input id="name" value={categoryName} onChange={(e) => setCategoryName(e.target.value)} className="col-span-3" required />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={handleCloseCategoryDialog}>
-                Cancel
-              </Button>
-              <Button type="submit">{editingCategory ? 'Update' : 'Create'}</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
         <DialogContent>
