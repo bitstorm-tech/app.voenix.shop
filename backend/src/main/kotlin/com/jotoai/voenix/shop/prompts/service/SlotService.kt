@@ -47,6 +47,7 @@ class SlotService(
                 slotTypeId = request.slotTypeId,
                 name = request.name,
                 prompt = request.prompt,
+                description = request.description,
             )
         val savedSlot = slotRepository.save(slot)
 
@@ -82,6 +83,10 @@ class SlotService(
 
         request.prompt?.let { newPrompt ->
             slot.prompt = newPrompt
+        }
+
+        request.description?.let { newDescription ->
+            slot.description = newDescription
         }
 
         val updatedSlot = slotRepository.save(slot)

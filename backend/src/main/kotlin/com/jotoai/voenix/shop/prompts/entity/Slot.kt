@@ -30,6 +30,8 @@ data class Slot(
     var name: String,
     @Column(nullable = false, columnDefinition = "TEXT")
     var prompt: String,
+    @Column(nullable = true, columnDefinition = "TEXT")
+    var description: String? = null,
     @OneToMany(mappedBy = "slot", fetch = FetchType.LAZY)
     var promptSlots: MutableList<PromptSlot> = mutableListOf(),
     @CreationTimestamp
@@ -46,6 +48,7 @@ data class Slot(
             slotType = this.slotType?.toDto(),
             name = this.name,
             prompt = this.prompt,
+            description = this.description,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )

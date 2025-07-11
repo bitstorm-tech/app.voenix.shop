@@ -9,4 +9,5 @@ data class UpdateSlotRequest(
     @field:Size(max = 255, message = "Name must not exceed 255 characters")
     val name: String? = null,
     val prompt: String? = null,
+    val description: String? = null,
 )

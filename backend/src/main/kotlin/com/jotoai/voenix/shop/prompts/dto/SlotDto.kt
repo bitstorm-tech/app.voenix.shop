@@ -8,6 +8,7 @@ data class SlotDto(
     val slotType: SlotTypeDto? = null,
     val name: String,
     val prompt: String,
+    val description: String? = null,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,
 )

@@ -14,4 +14,5 @@ data class CreateSlotRequest(
     val name: String,
     @field:NotBlank(message = "Prompt is required")
     val prompt: String,
+    val description: String? = null,
 )
