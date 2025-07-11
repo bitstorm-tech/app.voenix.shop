@@ -19,6 +19,7 @@ export default function NewOrEditSlot() {
     name: '',
     slotTypeId: 0,
     prompt: '',
+    description: '',
   });
   const [slotTypes, setSlotTypes] = useState<SlotType[]>([]);
   const [loading, setLoading] = useState(false);
@@ -54,6 +55,7 @@ export default function NewOrEditSlot() {
         name: slot.name,
         slotTypeId: slot.slotTypeId,
         prompt: slot.prompt,
+        description: slot.description || '',
       });
     } catch (error) {
       console.error('Error fetching slot:', error);
@@ -90,6 +92,7 @@ export default function NewOrEditSlot() {
           name: formData.name,
           slotTypeId: formData.slotTypeId,
           prompt: formData.prompt,
+          description: formData.description,
         };
         await slotsApi.update(parseInt(id), updateData);
       } else {
@@ -166,6 +169,17 @@ export default function NewOrEditSlot() {
                 placeholder="Enter the prompt text"
                 rows={6}
                 required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description || ''}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Enter an optional description for this slot"
+                rows={3}
               />
             </div>
 

@@ -11,6 +11,7 @@ export interface Slot {
   slotType?: SlotType;
   name: string;
   prompt: string;
+  description?: string;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -273,12 +273,14 @@ export interface CreateSlotRequest {
   slotTypeId: number;
   name: string;
   prompt: string;
+  description?: string;
 }
 
 export interface UpdateSlotRequest {
   slotTypeId?: number;
   name?: string;
   prompt?: string;
+  description?: string;
 }
 
 // Image API endpoints

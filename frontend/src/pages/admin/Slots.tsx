@@ -105,6 +105,7 @@ export default function Slots() {
               <TableHead>Name</TableHead>
               <TableHead>Slot Type</TableHead>
               <TableHead>Prompt</TableHead>
+              <TableHead>Description</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -112,13 +113,13 @@ export default function Slots() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-gray-500">
+                <TableCell colSpan={7} className="text-center text-gray-500">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : slots.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-gray-500">
+                <TableCell colSpan={7} className="text-center text-gray-500">
                   No slots found
                 </TableCell>
               </TableRow>
@@ -131,6 +132,11 @@ export default function Slots() {
                   <TableCell className="max-w-xs">
                     <span className="text-sm text-gray-600" title={slot.prompt}>
                       {truncatePrompt(slot.prompt)}
+                    </span>
+                  </TableCell>
+                  <TableCell className="max-w-xs">
+                    <span className="text-sm text-gray-600" title={slot.description || ''}>
+                      {slot.description ? truncatePrompt(slot.description, 30) : '-'}
                     </span>
                   </TableCell>
                   <TableCell>{slot.createdAt ? new Date(slot.createdAt).toLocaleDateString() : '-'}</TableCell>
