@@ -5,9 +5,10 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import type { CreateSlotRequest, UpdateSlotRequest } from '@/lib/api';
-import { slotsApi, slotTypesApi } from '@/lib/api';
+import { imagesApi, slotsApi, slotTypesApi } from '@/lib/api';
 import type { SlotType } from '@/types/slot';
-import { useEffect, useState } from 'react';
+import { Trash2, Upload } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditSlot() {
@@ -20,11 +21,16 @@ export default function NewOrEditSlot() {
     slotTypeId: 0,
     prompt: '',
     description: '',
+    exampleImageFilename: undefined,
   });
   const [slotTypes, setSlotTypes] = useState<SlotType[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const blobUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     fetchSlotTypes();
@@ -34,6 +40,15 @@ export default function NewOrEditSlot() {
       setInitialLoading(false);
     }
   }, [id]);
+
+  // Cleanup blob URLs
+  useEffect(() => {
+    return () => {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+      }
+    };
+  }, []);
 
   const fetchSlotTypes = async () => {
     try {
@@ -56,7 +71,11 @@ export default function NewOrEditSlot() {
         slotTypeId: slot.slotTypeId,
         prompt: slot.prompt,
         description: slot.description || '',
+        exampleImageFilename: slot.exampleImageUrl ? slot.exampleImageUrl.split('/').pop() : undefined,
       });
+      if (slot.exampleImageUrl) {
+        setCurrentImageUrl(slot.exampleImageUrl);
+      }
     } catch (error) {
       console.error('Error fetching slot:', error);
       setError('Failed to load slot');
@@ -87,16 +106,41 @@ export default function NewOrEditSlot() {
       setLoading(true);
       setError(null);
 
+      let finalImageFilename = formData.exampleImageFilename;
+
+      // Upload image if there's a new file selected
+      if (imageFile) {
+        try {
+          setUploadingImage(true);
+          const response = await imagesApi.upload(imageFile, 'SLOT_EXAMPLE');
+          finalImageFilename = response.filename;
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          setError('Failed to upload image. Please try again.');
+          return;
+        } finally {
+          setUploadingImage(false);
+        }
+      }
+
       if (isEditing) {
         const updateData: UpdateSlotRequest = {
           name: formData.name,
           slotTypeId: formData.slotTypeId,
           prompt: formData.prompt,
           description: formData.description,
+          exampleImageFilename: finalImageFilename === 'pending' ? undefined : finalImageFilename,
         };
         await slotsApi.update(parseInt(id), updateData);
       } else {
-        await slotsApi.create(formData);
+        const createData: CreateSlotRequest = {
+          name: formData.name,
+          slotTypeId: formData.slotTypeId,
+          prompt: formData.prompt,
+          description: formData.description,
+          exampleImageFilename: finalImageFilename === 'pending' ? undefined : finalImageFilename,
+        };
+        await slotsApi.create(createData);
       }
 
       navigate('/admin/slots');
@@ -110,6 +154,52 @@ export default function NewOrEditSlot() {
 
   const handleCancel = () => {
     navigate('/admin/slots');
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      return;
+    }
+
+    setError(null);
+
+    // Store the file for later upload
+    setImageFile(file);
+
+    // Create a blob URL for preview
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+    }
+    const blobUrl = URL.createObjectURL(file);
+    blobUrlRef.current = blobUrl;
+    setCurrentImageUrl(blobUrl);
+
+    // Set a placeholder filename (will be replaced with actual filename after upload)
+    setFormData({ ...formData, exampleImageFilename: 'pending' });
+  };
+
+  const handleRemoveImage = () => {
+    // Clean up blob URL if it exists
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
+
+    // Reset image-related state
+    setImageFile(null);
+    setFormData({ ...formData, exampleImageFilename: undefined });
+    setCurrentImageUrl(null);
   };
 
   if (initialLoading) {
@@ -183,9 +273,35 @@ export default function NewOrEditSlot() {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="exampleImage">Example Image</Label>
+              <div className="space-y-4">
+                {currentImageUrl ? (
+                  <div className="relative inline-block">
+                    <img src={currentImageUrl} alt="Example" className="h-32 w-32 rounded-lg border object-cover" />
+                    <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-8 w-8" onClick={handleRemoveImage}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-4">
+                    <Input id="exampleImage" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                    <Label
+                      htmlFor="exampleImage"
+                      className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed px-4 py-2 hover:border-gray-400"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Upload Image
+                    </Label>
+                    <span className="text-sm text-gray-500">Optional example image for this slot</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="flex gap-4">
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : isEditing ? 'Update Slot' : 'Create Slot'}
+              <Button type="submit" disabled={loading || uploadingImage}>
+                {uploadingImage ? 'Uploading image...' : loading ? 'Saving...' : isEditing ? 'Update Slot' : 'Create Slot'}
               </Button>
               <Button type="button" variant="outline" onClick={handleCancel}>
                 Cancel

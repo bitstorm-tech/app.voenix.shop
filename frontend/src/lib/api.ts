@@ -274,6 +274,7 @@ export interface CreateSlotRequest {
   name: string;
   prompt: string;
   description?: string;
+  exampleImageFilename?: string;
 }
 
 export interface UpdateSlotRequest {
@@ -281,11 +282,12 @@ export interface UpdateSlotRequest {
   name?: string;
   prompt?: string;
   description?: string;
+  exampleImageFilename?: string;
 }
 
 // Image API endpoints
 export const imagesApi = {
-  upload: async (file: File, imageType: 'PUBLIC' | 'PRIVATE' | 'PROMPT_EXAMPLE') => {
+  upload: async (file: File, imageType: 'PUBLIC' | 'PRIVATE' | 'PROMPT_EXAMPLE' | 'SLOT_EXAMPLE') => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('imageType', imageType);

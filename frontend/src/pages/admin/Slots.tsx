@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { slotsApi } from '@/lib/api';
 import type { Slot } from '@/types/slot';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, Image, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -106,6 +106,7 @@ export default function Slots() {
               <TableHead>Slot Type</TableHead>
               <TableHead>Prompt</TableHead>
               <TableHead>Description</TableHead>
+              <TableHead>Example</TableHead>
               <TableHead>Created At</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -113,13 +114,13 @@ export default function Slots() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-gray-500">
+                <TableCell colSpan={8} className="text-center text-gray-500">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : slots.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-gray-500">
+                <TableCell colSpan={8} className="text-center text-gray-500">
                   No slots found
                 </TableCell>
               </TableRow>
@@ -138,6 +139,15 @@ export default function Slots() {
                     <span className="text-sm text-gray-600" title={slot.description || ''}>
                       {slot.description ? truncatePrompt(slot.description, 30) : '-'}
                     </span>
+                  </TableCell>
+                  <TableCell>
+                    {slot.exampleImageUrl ? (
+                      <div className="flex items-center justify-center">
+                        <Image className="h-4 w-4 text-green-600" />
+                      </div>
+                    ) : (
+                      <div className="text-center text-gray-400">-</div>
+                    )}
                   </TableCell>
                   <TableCell>{slot.createdAt ? new Date(slot.createdAt).toLocaleDateString() : '-'}</TableCell>
                   <TableCell className="text-right">

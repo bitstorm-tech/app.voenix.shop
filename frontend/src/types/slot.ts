@@ -12,6 +12,7 @@ export interface Slot {
   name: string;
   prompt: string;
   description?: string;
+  exampleImageUrl?: string;
   createdAt?: string;
   updatedAt?: string;
 }
