@@ -20,7 +20,8 @@
       "Bash(npm run format:*)",
       "Bash(npm run lint)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:sksamuel.github.io)"
+      "WebFetch(domain:sksamuel.github.io)",
+      "Bash(npm run dev:*)"
     ],
     "deny": []
   }
