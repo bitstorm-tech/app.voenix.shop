@@ -10,4 +10,6 @@ data class UpdateSlotRequest(
     val name: String? = null,
     val prompt: String? = null,
     val description: String? = null,
+    @field:Size(max = 500, message = "Example image filename must not exceed 500 characters")
+    val exampleImageFilename: String? = null,
 )

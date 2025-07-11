@@ -27,12 +27,14 @@ class ImageService(
     private val privateImagesPath: Path = rootPath.resolve("private/images")
     private val publicImagesPath: Path = rootPath.resolve("public/images")
     private val promptExampleImagesPath: Path = rootPath.resolve("public/images/prompt-example-images")
+    private val slotExampleImagesPath: Path = rootPath.resolve("public/images/slot-example-images")
 
     init {
         logger.info("Initializing ImageService with storage root: $rootPath")
         logger.info("Private images path: $privateImagesPath")
         logger.info("Public images path: $publicImagesPath")
         logger.info("Prompt example images path: $promptExampleImagesPath")
+        logger.info("Slot example images path: $slotExampleImagesPath")
         createDirectories()
     }
 
@@ -45,8 +47,15 @@ class ImageService(
 
         val originalFilename = file.originalFilename ?: "unknown"
 
-        // For prompt examples, always use .webp extension
-        val fileExtension = if (request.imageType == ImageType.PROMPT_EXAMPLE) ".webp" else getFileExtension(originalFilename)
+        // For prompt and slot examples, always use .webp extension
+        val fileExtension =
+            if (request.imageType == ImageType.PROMPT_EXAMPLE ||
+                request.imageType == ImageType.SLOT_EXAMPLE
+            ) {
+                ".webp"
+            } else {
+                getFileExtension(originalFilename)
+            }
         val storedFilename = "${UUID.randomUUID()}$fileExtension"
 
         val targetPath = getTargetPath(request.imageType)
@@ -65,8 +74,8 @@ class ImageService(
                 imageBytes = imageConversionService.cropImage(imageBytes, request.cropArea)
             }
 
-            if (request.imageType == ImageType.PROMPT_EXAMPLE) {
-                // Convert to WebP for prompt examples
+            if (request.imageType == ImageType.PROMPT_EXAMPLE || request.imageType == ImageType.SLOT_EXAMPLE) {
+                // Convert to WebP for prompt and slot examples
                 logger.debug("Converting image to WebP format")
                 val webpBytes = imageConversionService.convertToWebP(imageBytes)
                 Files.write(filePath, webpBytes)
@@ -146,6 +155,7 @@ class ImageService(
                 ImageType.PRIVATE to privateImagesPath,
                 ImageType.PUBLIC to publicImagesPath,
                 ImageType.PROMPT_EXAMPLE to promptExampleImagesPath,
+                ImageType.SLOT_EXAMPLE to slotExampleImagesPath,
             )
 
         for ((imageType, path) in imageTypePaths) {
@@ -182,6 +192,7 @@ class ImageService(
             ImageType.PUBLIC -> publicImagesPath
             ImageType.PRIVATE -> privateImagesPath
             ImageType.PROMPT_EXAMPLE -> promptExampleImagesPath
+            ImageType.SLOT_EXAMPLE -> slotExampleImagesPath
         }
 
     private fun createDirectories() {
@@ -194,6 +205,9 @@ class ImageService(
 
             Files.createDirectories(promptExampleImagesPath)
             logger.info("Created/verified directory: ${promptExampleImagesPath.toAbsolutePath()}")
+
+            Files.createDirectories(slotExampleImagesPath)
+            logger.info("Created/verified directory: ${slotExampleImagesPath.toAbsolutePath()}")
         } catch (e: IOException) {
             logger.error("Failed to create storage directories: ${e.message}", e)
             throw RuntimeException("Failed to create storage directories: ${e.message}", e)

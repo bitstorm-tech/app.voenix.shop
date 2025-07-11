@@ -9,6 +9,7 @@ data class SlotDto(
     val name: String,
     val prompt: String,
     val description: String? = null,
+    val exampleImageUrl: String? = null,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,
 )

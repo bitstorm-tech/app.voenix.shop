@@ -32,6 +32,8 @@ data class Slot(
     var prompt: String,
     @Column(nullable = true, columnDefinition = "TEXT")
     var description: String? = null,
+    @Column(name = "example_image_filename", length = 500)
+    var exampleImageFilename: String? = null,
     @OneToMany(mappedBy = "slot", fetch = FetchType.LAZY)
     var promptSlots: MutableList<PromptSlot> = mutableListOf(),
     @CreationTimestamp
@@ -49,6 +51,7 @@ data class Slot(
             name = this.name,
             prompt = this.prompt,
             description = this.description,
+            exampleImageUrl = this.exampleImageFilename?.let { "/images/slot-example-images/$it" },
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )
