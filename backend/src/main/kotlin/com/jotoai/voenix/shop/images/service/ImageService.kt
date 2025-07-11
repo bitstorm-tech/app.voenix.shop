@@ -12,7 +12,6 @@ import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.nio.file.StandardCopyOption
 import java.util.UUID
 
 @Service
@@ -56,20 +55,33 @@ class ImageService(
         logger.info("Storing file - Target path: ${filePath.toAbsolutePath()}")
 
         try {
+            var imageBytes = file.bytes
+
+            // Apply cropping if requested
+            if (request.cropArea != null) {
+                logger.debug(
+                    "Applying crop - x: ${request.cropArea.x}, y: ${request.cropArea.y}, width: ${request.cropArea.width}, height: ${request.cropArea.height}",
+                )
+                imageBytes = imageConversionService.cropImage(imageBytes, request.cropArea)
+            }
+
             if (request.imageType == ImageType.PROMPT_EXAMPLE) {
                 // Convert to WebP for prompt examples
                 logger.debug("Converting image to WebP format")
-                val webpBytes = imageConversionService.convertToWebP(file.bytes)
+                val webpBytes = imageConversionService.convertToWebP(imageBytes)
                 Files.write(filePath, webpBytes)
                 logger.info("Successfully stored WebP image: ${filePath.toAbsolutePath()}")
             } else {
-                // Store as-is for other types
-                Files.copy(file.inputStream, filePath, StandardCopyOption.REPLACE_EXISTING)
+                // Store the image (cropped or original)
+                Files.write(filePath, imageBytes)
                 logger.info("Successfully stored image: ${filePath.toAbsolutePath()}")
             }
         } catch (e: IOException) {
             logger.error("Failed to store file at ${filePath.toAbsolutePath()}: ${e.message}", e)
             throw RuntimeException("Failed to store file: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
+            logger.error("Invalid crop parameters: ${e.message}", e)
+            throw IllegalArgumentException("Invalid crop parameters: ${e.message}", e)
         }
 
         return ImageDto(

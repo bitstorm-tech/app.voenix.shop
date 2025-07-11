@@ -1,6 +1,8 @@
 package com.jotoai.voenix.shop.images.controller
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.images.dto.CreateImageRequest
+import com.jotoai.voenix.shop.images.dto.CropArea
 import com.jotoai.voenix.shop.images.dto.ImageDto
 import com.jotoai.voenix.shop.images.dto.ImageType
 import com.jotoai.voenix.shop.images.service.ImageService
@@ -20,13 +22,20 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/images")
 class ImageController(
     private val imageService: ImageService,
+    private val objectMapper: ObjectMapper,
 ) {
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadImage(
         @RequestParam("file") file: MultipartFile,
         @RequestParam("imageType") imageType: ImageType,
+        @RequestParam("cropArea", required = false) cropAreaJson: String?,
     ): ResponseEntity<ImageDto> {
-        val request = CreateImageRequest(imageType = imageType)
+        val cropArea =
+            cropAreaJson?.let {
+                objectMapper.readValue(it, CropArea::class.java)
+            }
+
+        val request = CreateImageRequest(imageType = imageType, cropArea = cropArea)
         val image = imageService.upload(file, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(image)
     }
