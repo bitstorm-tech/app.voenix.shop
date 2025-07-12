@@ -12,8 +12,7 @@ data class CreateSlotRequest(
     @field:NotBlank(message = "Name is required")
     @field:Size(max = 255, message = "Name must not exceed 255 characters")
     val name: String,
-    @field:NotBlank(message = "Prompt is required")
-    val prompt: String,
+    val prompt: String? = null,
     val description: String? = null,
     @field:Size(max = 500, message = "Example image filename must not exceed 500 characters")
     val exampleImageFilename: String? = null,

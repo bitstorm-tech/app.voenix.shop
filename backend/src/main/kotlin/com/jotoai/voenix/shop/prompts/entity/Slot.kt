@@ -28,8 +28,8 @@ data class Slot(
     var slotType: SlotType? = null,
     @Column(nullable = false, unique = true, length = 255)
     var name: String,
-    @Column(nullable = false, columnDefinition = "TEXT")
-    var prompt: String,
+    @Column(nullable = true, columnDefinition = "TEXT")
+    var prompt: String? = null,
     @Column(nullable = true, columnDefinition = "TEXT")
     var description: String? = null,
     @Column(name = "example_image_filename", length = 500)

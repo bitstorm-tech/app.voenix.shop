@@ -7,7 +7,7 @@ data class SlotDto(
     val slotTypeId: Long,
     val slotType: SlotTypeDto? = null,
     val name: String,
-    val prompt: String,
+    val prompt: String? = null,
     val description: String? = null,
     val exampleImageUrl: String? = null,
     val createdAt: OffsetDateTime?,
