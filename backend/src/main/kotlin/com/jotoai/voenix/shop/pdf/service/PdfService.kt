@@ -3,6 +3,9 @@ package com.jotoai.voenix.shop.pdf.service
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
+import com.jotoai.voenix.shop.images.service.ImageService
+import com.jotoai.voenix.shop.mugs.service.MugService
+import com.jotoai.voenix.shop.pdf.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.pdf.dto.PdfSize
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
@@ -20,6 +23,8 @@ class PdfService(
     @Value("\${pdf.size.width}") private val pdfWidthMm: Float,
     @Value("\${pdf.size.height}") private val pdfHeightMm: Float,
     @Value("\${pdf.margin}") private val marginMm: Float,
+    private val mugService: MugService,
+    private val imageService: ImageService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(PdfService::class.java)
@@ -34,13 +39,12 @@ class PdfService(
             margin = marginMm * MM_TO_POINTS,
         )
 
-    fun generatePdf(
-        qrContent: String,
-        imageData: ByteArray,
-        imageWidth: Float,
-        imageHeight: Float,
-    ): ByteArray {
-        logger.debug("Generating PDF with QR content: {}, image size: {}x{} mm", qrContent, imageWidth, imageHeight)
+    fun generatePdf(request: GeneratePdfRequest): ByteArray {
+        // Fetch mug details to get print template dimensions
+        val mug = mugService.getMugById(request.mugId)
+
+        // Load image data using the filename
+        val (imageData, _) = imageService.getImageData(request.imageFilename)
 
         val document = PDDocument()
         return try {
@@ -48,9 +52,17 @@ class PdfService(
             document.addPage(page)
 
             PDPageContentStream(document, page).use { contentStream ->
-                addQrCode(document, contentStream, qrContent)
+                // TODO: Update with actual QR content when requirements are clarified
+                addQrCode(document, contentStream, "https://google.de")
 
-                addCenteredImage(document, contentStream, imageData, imageWidth, imageHeight)
+                // Use mug's print template dimensions for the centered image
+                addCenteredImage(
+                    document,
+                    contentStream,
+                    imageData,
+                    mug.printTemplateWidthMm.toFloat(),
+                    mug.printTemplateHeightMm.toFloat(),
+                )
             }
 
             val outputStream = ByteArrayOutputStream()
