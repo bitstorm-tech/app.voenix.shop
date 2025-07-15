@@ -1,5 +1,4 @@
-import { SlotSelector } from '@/components/admin/prompt-slots/SlotSelector';
-import { SortableSlotList } from '@/components/admin/prompt-slots/SortableSlotList';
+import { SlotTypeSelector } from '@/components/admin/prompt-slots/SlotTypeSelector';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -8,8 +7,7 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import type { CreatePromptRequest, PromptSlotUpdate, UpdatePromptRequest } from '@/lib/api';
 import { imagesApi, promptCategoriesApi, promptsApi, promptSubCategoriesApi } from '@/lib/api';
-import type { PromptCategory, PromptSlot, PromptSubCategory } from '@/types/prompt';
-import type { Slot } from '@/types/slot';
+import type { PromptCategory, PromptSubCategory } from '@/types/prompt';
 import { Upload, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -25,10 +23,9 @@ export default function NewOrEditPrompt() {
     subcategoryId: 0,
     active: true,
   });
-  const [promptSlots, setPromptSlots] = useState<PromptSlot[]>([]);
+  const [selectedSlotIds, setSelectedSlotIds] = useState<number[]>([]);
   const [categories, setCategories] = useState<PromptCategory[]>([]);
   const [subcategories, setSubcategories] = useState<PromptSubCategory[]>([]);
-  const [showSlotSelector, setShowSlotSelector] = useState(false);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,9 +75,9 @@ export default function NewOrEditPrompt() {
         active: prompt.active ?? true,
       });
 
-      // Set prompt slots with proper PromptSlot type
+      // Set selected slot IDs
       if (prompt.slots) {
-        setPromptSlots(prompt.slots);
+        setSelectedSlotIds(prompt.slots.map((slot) => slot.id));
       }
 
       // Set example image if exists
@@ -132,7 +129,7 @@ export default function NewOrEditPrompt() {
       return;
     }
 
-    if (promptSlots.length === 0) {
+    if (selectedSlotIds.length === 0) {
       setError('At least one slot is required');
       return;
     }
@@ -156,9 +153,8 @@ export default function NewOrEditPrompt() {
         }
       }
 
-      const slots: PromptSlotUpdate[] = promptSlots.map((slot, index) => ({
-        slotId: slot.id,
-        position: index,
+      const slots: PromptSlotUpdate[] = selectedSlotIds.map((slotId) => ({
+        slotId: slotId,
       }));
 
       if (isEditing) {
@@ -236,21 +232,6 @@ export default function NewOrEditPrompt() {
     setExampleImageUrl(null);
     setExampleImageFile(null);
   };
-
-  const handleSlotsChange = (newSlots: PromptSlot[]) => {
-    setPromptSlots(newSlots);
-  };
-
-  const handleAddSlots = (slotsToAdd: Slot[]) => {
-    const newPromptSlots: PromptSlot[] = slotsToAdd.map((slot, index) => ({
-      ...slot,
-      position: promptSlots.length + index,
-    }));
-    setPromptSlots([...promptSlots, ...newPromptSlots]);
-  };
-
-  const existingSlotIds = promptSlots.map((s) => s.id);
-  const existingSlotTypeIds = promptSlots.map((s) => s.slotTypeId);
 
   if (initialLoading) {
     return (
@@ -330,7 +311,7 @@ export default function NewOrEditPrompt() {
             )}
 
             <div className="space-y-2">
-              <SortableSlotList slots={promptSlots} onSlotsChange={handleSlotsChange} onAddSlot={() => setShowSlotSelector(true)} />
+              <SlotTypeSelector selectedSlotIds={selectedSlotIds} onSelectionChange={setSelectedSlotIds} />
             </div>
 
             <div className="space-y-2">
@@ -387,14 +368,6 @@ export default function NewOrEditPrompt() {
           </form>
         </CardContent>
       </Card>
-
-      <SlotSelector
-        open={showSlotSelector}
-        onOpenChange={setShowSlotSelector}
-        existingSlotIds={existingSlotIds}
-        existingSlotTypeIds={existingSlotTypeIds}
-        onSelectSlots={handleAddSlots}
-      />
     </div>
   );
 }

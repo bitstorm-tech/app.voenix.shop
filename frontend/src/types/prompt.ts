@@ -18,9 +18,7 @@ export interface PromptSubCategory {
   updatedAt?: string;
 }
 
-export interface PromptSlot extends Slot {
-  position: number;
-}
+export interface PromptSlot extends Slot {}
 
 export interface Prompt {
   id: number;

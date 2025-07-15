@@ -107,7 +107,6 @@ export const promptSubCategoriesApi = {
 // Type definitions for API requests
 export interface PromptSlotUpdate {
   slotId: number;
-  position: number;
 }
 
 export interface CreatePromptRequest {
