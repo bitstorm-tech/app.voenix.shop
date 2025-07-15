@@ -170,7 +170,7 @@ class OpenAIImageService(
                         val savedImage =
                             imageService.store(
                                 multipartFile,
-                                CreateImageRequest(imageType = ImageType.PUBLIC),
+                                CreateImageRequest(imageType = ImageType.PRIVATE),
                             )
 
                         "/images/${savedImage.filename}"
