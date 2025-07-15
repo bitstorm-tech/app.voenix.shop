@@ -241,7 +241,6 @@ export default function NewOrEditMug() {
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id.toString()}>
                         {category.name}
@@ -262,7 +261,6 @@ export default function NewOrEditMug() {
                     <SelectValue placeholder="Select a subcategory" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
                     {subCategories.map((subCategory) => (
                       <SelectItem key={subCategory.id} value={subCategory.id.toString()}>
                         {subCategory.name}
