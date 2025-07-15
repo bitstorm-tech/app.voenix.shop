@@ -42,7 +42,7 @@ class ImageService(
         file: MultipartFile,
         request: CreateImageRequest,
     ): ImageDto {
-        logger.debug("Starting file upload - Type: ${request.imageType}, Original filename: ${file.originalFilename}")
+        logger.debug("Starting file upload - Type: {}, Original filename: {}", request.imageType, file.originalFilename)
         validateFile(file)
 
         val originalFilename = file.originalFilename ?: "unknown"
