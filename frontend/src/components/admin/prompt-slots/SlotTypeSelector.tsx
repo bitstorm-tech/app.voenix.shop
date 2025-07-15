@@ -136,4 +136,3 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
     </div>
   );
 }
-

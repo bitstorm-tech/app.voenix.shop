@@ -2,6 +2,7 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import CompletedOrders from '@/pages/admin/CompletedOrders';
 import Mugs from '@/pages/admin/Mugs';
 import NewOrEditMug from '@/pages/admin/NewOrEditMug';
+import NewOrEditMugSubCategory from '@/pages/admin/NewOrEditMugSubCategory';
 import NewOrEditPrompt from '@/pages/admin/NewOrEditPrompt';
 import NewOrEditPromptCategory from '@/pages/admin/NewOrEditPromptCategory';
 import NewOrEditPromptSubCategory from '@/pages/admin/NewOrEditPromptSubCategory';
@@ -52,6 +53,8 @@ export default function App() {
               </div>
             }
           />
+          <Route path="mug-subcategories/new" element={<NewOrEditMugSubCategory />} />
+          <Route path="mug-subcategories/:id/edit" element={<NewOrEditMugSubCategory />} />
           <Route path="orders/open" element={<OpenOrders />} />
           <Route path="orders/completed" element={<CompletedOrders />} />
           <Route

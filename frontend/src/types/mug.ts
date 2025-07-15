@@ -29,7 +29,7 @@ export interface MugCategory {
 export interface MugSubCategory {
   id: number;
   name: string;
-  categoryId: number;
+  mugCategoryId: number;
   category?: MugCategory;
   description?: string;
   createdAt?: string;

@@ -173,13 +173,13 @@ export const mugCategoriesApi = {
 
 // Mug SubCategory API endpoints
 export const mugSubCategoriesApi = {
-  getAll: () => api.get<MugSubCategory[]>('/mug-subcategories'),
-  getById: (id: number) => api.get<MugSubCategory>(`/mug-subcategories/${id}`),
-  getByCategoryId: (categoryId: number) => api.get<MugSubCategory[]>(`/mug-subcategories/by-category/${categoryId}`),
-  create: (data: CreateMugSubCategoryRequest) => api.post<MugSubCategory>('/mug-subcategories', data),
-  update: (id: number, data: UpdateMugSubCategoryRequest) => api.put<MugSubCategory>(`/mug-subcategories/${id}`, data),
-  delete: (id: number) => api.delete<void>(`/mug-subcategories/${id}`),
-  search: (name: string) => api.get<MugSubCategory[]>(`/mug-subcategories/search?name=${encodeURIComponent(name)}`),
+  getAll: () => api.get<MugSubCategory[]>('/mug-sub-categories'),
+  getById: (id: number) => api.get<MugSubCategory>(`/mug-sub-categories/${id}`),
+  getByCategoryId: (categoryId: number) => api.get<MugSubCategory[]>(`/mug-sub-categories/category/${categoryId}`),
+  create: (data: CreateMugSubCategoryRequest) => api.post<MugSubCategory>('/mug-sub-categories', data),
+  update: (id: number, data: UpdateMugSubCategoryRequest) => api.put<MugSubCategory>(`/mug-sub-categories/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/mug-sub-categories/${id}`),
+  search: (name: string) => api.get<MugSubCategory[]>(`/mug-sub-categories/search?name=${encodeURIComponent(name)}`),
 };
 
 // Type definitions for Mug API requests
@@ -229,13 +229,13 @@ export interface UpdateMugCategoryRequest {
 
 export interface CreateMugSubCategoryRequest {
   name: string;
-  categoryId: number;
+  mugCategoryId: number;
   description?: string;
 }
 
 export interface UpdateMugSubCategoryRequest {
   name?: string;
-  categoryId?: number;
+  mugCategoryId?: number;
   description?: string;
 }
 
