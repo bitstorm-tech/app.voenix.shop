@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.openai.service
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.jotoai.voenix.shop.images.dto.CreateImageRequest
 import com.jotoai.voenix.shop.images.dto.ImageType
@@ -21,9 +22,11 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.readBytes
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
+import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.jackson
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
@@ -59,8 +62,17 @@ class OpenAIImageService(
             }
         }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class OpenAIResponse(
-        val data: List<OpenAIImage>,
+        val data: List<OpenAIImage>? = null,
+        val error: OpenAIError? = null,
+    )
+
+    data class OpenAIError(
+        val message: String,
+        val type: String? = null,
+        val param: String? = null,
+        val code: String? = null,
     )
 
     data class OpenAIImage(
@@ -81,6 +93,7 @@ class OpenAIImageService(
             try {
                 val formData =
                     formData {
+                        append("model", "gpt-image-1")
                         append(
                             "image",
                             imageFile.bytes,
@@ -93,18 +106,36 @@ class OpenAIImageService(
                         append("prompt", buildFinalPrompt(prompt))
                         append("n", request.n.toString())
                         append("size", request.size.apiValue)
-                        append("response_format", "url")
-                        append("transparency", request.background.apiValue)
+                        append("background", request.background.apiValue)
                     }
 
-                val response =
+                val httpResponse =
                     httpClient
                         .post(OPENAI_API_URL) {
                             header(HttpHeaders.Authorization, "Bearer $apiKey")
                             setBody(MultiPartFormDataContent(formData))
-                        }.body<OpenAIResponse>()
+                        }
 
+                if (!httpResponse.status.isSuccess()) {
+                    val errorBody = httpResponse.bodyAsText()
+                    logger.error("OpenAI API returned error status ${httpResponse.status}: $errorBody")
+                    throw RuntimeException("OpenAI API error: ${httpResponse.status} - $errorBody")
+                }
+
+                val response = httpResponse.body<OpenAIResponse>()
                 logger.info("Successfully received response from OpenAI API")
+
+                // Check for error response
+                if (response.error != null) {
+                    logger.error("OpenAI API returned error: ${response.error.message}")
+                    throw RuntimeException("OpenAI API error: ${response.error.message}")
+                }
+
+                // Check if data is null or empty
+                if (response.data.isNullOrEmpty()) {
+                    logger.error("OpenAI API returned empty or null data")
+                    throw RuntimeException("OpenAI API returned no images")
+                }
 
                 // Download and save images, then return URLs
                 val savedImageUrls =

@@ -5,11 +5,10 @@ import com.jotoai.voenix.shop.openai.dto.enums.ImageQuality
 import com.jotoai.voenix.shop.openai.dto.enums.ImageSize
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
-import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 
 data class CreateImageEditRequest(
-    @field:NotBlank(message = "Prompt ID is required")
+    @field:NotNull(message = "Prompt ID is required")
     val promptId: Long,
     @field:NotNull(message = "Background is required")
     val background: ImageBackground = ImageBackground.AUTO,
