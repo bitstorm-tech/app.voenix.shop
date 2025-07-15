@@ -32,8 +32,8 @@ export function useImageGeneration(): UseImageGenerationReturn {
 
       const data = await response.json();
 
-      if (data.imagesUrls && data.imagesUrls.length > 0) {
-        return data.imagesUrls;
+      if (data.imageFilenames && data.imageFilenames.length > 0) {
+        return data.imageFilenames;
       } else {
         throw new Error('Failed to generate images');
       }

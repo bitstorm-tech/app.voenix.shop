@@ -42,7 +42,7 @@ class OpenAIImageController(
 
         val response = openAIImageService.editImage(imageFile, request)
 
-        logger.info("Successfully generated ${response.imagesUrls.size} images")
+        logger.info("Successfully generated ${response.imageFilenames.size} images")
 
         return ResponseEntity.ok(response)
     }

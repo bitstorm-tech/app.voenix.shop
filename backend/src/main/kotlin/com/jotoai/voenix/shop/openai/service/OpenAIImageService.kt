@@ -58,7 +58,7 @@ class OpenAIImageService(
                 level = LogLevel.INFO
             }
             engine {
-                requestTimeout = 60000
+                requestTimeout = 120000
             }
         }
 
@@ -138,7 +138,7 @@ class OpenAIImageService(
                 }
 
                 // Download and save images, then return URLs
-                val savedImageUrls =
+                val savedImageFilenames =
                     response.data.map { openAIImage: OpenAIImage ->
                         val imageBytes =
                             when {
@@ -173,10 +173,10 @@ class OpenAIImageService(
                                 CreateImageRequest(imageType = ImageType.PRIVATE),
                             )
 
-                        "/images/${savedImage.filename}"
+                        savedImage.filename
                     }
 
-                ImageEditResponse(imagesUrls = savedImageUrls)
+                ImageEditResponse(imageFilenames = savedImageFilenames)
             } catch (e: Exception) {
                 logger.error("Error during OpenAI API call", e)
                 throw RuntimeException("Failed to edit image: ${e.message}", e)
