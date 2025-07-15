@@ -9,8 +9,8 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 
 data class CreateImageEditRequest(
-    @field:NotBlank(message = "Prompt is required")
-    val prompt: String,
+    @field:NotBlank(message = "Prompt ID is required")
+    val promptId: Int,
     @field:NotNull(message = "Background is required")
     val background: ImageBackground = ImageBackground.AUTO,
     @field:NotNull(message = "Quality is required")
