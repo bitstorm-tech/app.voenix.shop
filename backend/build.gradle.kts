@@ -47,6 +47,13 @@ dependencies {
     implementation("io.ktor:ktor-serialization-jackson:2.3.12")
     implementation("io.ktor:ktor-client-logging:2.3.12")
 
+    // PDF Generation
+    implementation("org.apache.pdfbox:pdfbox:3.0.3")
+
+    // QR Code Generation
+    implementation("com.google.zxing:core:3.5.3")
+    implementation("com.google.zxing:javase:3.5.3")
+
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.2")
