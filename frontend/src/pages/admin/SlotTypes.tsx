@@ -1,18 +1,16 @@
+import { SortableSlotTypeList } from '@/components/admin/slot-types/SortableSlotTypeList';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { slotTypesApi } from '@/lib/api';
 import type { SlotType } from '@/types/slot';
-import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export default function SlotTypes() {
-  const navigate = useNavigate();
   const [slotTypes, setSlotTypes] = useState<SlotType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     fetchSlotTypes();
@@ -22,11 +20,37 @@ export default function SlotTypes() {
     try {
       setLoading(true);
       const data = await slotTypesApi.getAll();
-      setSlotTypes(data);
+      // Sort by position
+      const sortedData = data.sort((a, b) => a.position - b.position);
+      setSlotTypes(sortedData);
     } catch (error) {
       console.error('Error fetching slot types:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSlotTypesChange = async (updatedSlotTypes: SlotType[]) => {
+    // Optimistically update the UI
+    setSlotTypes(updatedSlotTypes);
+
+    // Update all positions to match the new order (1-based)
+    const positionUpdates = updatedSlotTypes.map((slotType, index) => ({
+      id: slotType.id,
+      position: index + 1,
+    }));
+
+    try {
+      setIsSaving(true);
+      await slotTypesApi.updatePositions(positionUpdates);
+      // Refresh the list to ensure consistency
+      await fetchSlotTypes();
+    } catch (error) {
+      console.error('Error updating slot type positions:', error);
+      // Revert on error
+      await fetchSlotTypes();
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -57,55 +81,21 @@ export default function SlotTypes() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6">
         <h1 className="text-2xl font-bold">Slot Types</h1>
-        <Button onClick={() => navigate('/admin/slot-types/new')}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Slot Type
-        </Button>
+        <p className="mt-1 text-gray-600">Manage slot types and their display order</p>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center text-gray-500">
-                  Loading...
-                </TableCell>
-              </TableRow>
-            ) : slotTypes.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={3} className="text-center text-gray-500">
-                  No slot types found
-                </TableCell>
-              </TableRow>
-            ) : (
-              slotTypes.map((slotType) => (
-                <TableRow key={slotType.id}>
-                  <TableCell className="font-medium">{slotType.name}</TableCell>
-                  <TableCell>{slotType.createdAt ? new Date(slotType.createdAt).toLocaleDateString() : '-'}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/slot-types/${slotType.id}/edit`)} className="mr-2">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(slotType.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      {loading ? (
+        <div className="flex h-64 items-center justify-center">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      ) : (
+        <>
+          <SortableSlotTypeList slotTypes={slotTypes} onSlotTypesChange={handleSlotTypesChange} onDelete={handleDelete} />
+          {isSaving && <div className="mt-2 text-sm text-gray-500">Saving position changes...</div>}
+        </>
+      )}
 
       <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
         <DialogContent>

@@ -247,15 +247,39 @@ export const slotTypesApi = {
   create: (data: CreateSlotTypeRequest) => api.post<SlotType>('/slot-types', data),
   update: (id: number, data: UpdateSlotTypeRequest) => api.put<SlotType>(`/slot-types/${id}`, data),
   delete: (id: number) => api.delete<void>(`/slot-types/${id}`),
+  updatePositions: async (positions: { id: number; position: number }[]) => {
+    // Get all current slot types to find max position
+    const allSlotTypes = await api.get<SlotType[]>('/slot-types');
+    const maxPosition = Math.max(...allSlotTypes.map((st) => st.position), ...positions.map((p) => p.position));
+
+    // Phase 1: Move all items to temporary positions (beyond max)
+    const tempOffset = maxPosition + 10;
+    for (const update of positions) {
+      await api.put<SlotType>(`/slot-types/${update.id}`, { position: update.position + tempOffset });
+    }
+
+    // Phase 2: Move items to their final positions
+    for (const update of positions) {
+      await api.put<SlotType>(`/slot-types/${update.id}`, { position: update.position });
+    }
+
+    return positions;
+  },
 };
 
 // Type definitions for Slot Type API requests
 export interface CreateSlotTypeRequest {
   name: string;
+  position?: number;
 }
 
 export interface UpdateSlotTypeRequest {
   name?: string;
+  position?: number;
+}
+
+export interface UpdateSlotTypePositionsRequest {
+  positions: { id: number; position: number }[];
 }
 
 // Slot API endpoints

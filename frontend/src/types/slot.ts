@@ -1,6 +1,7 @@
 export interface SlotType {
   id: number;
   name: string;
+  position: number;
   createdAt?: string;
   updatedAt?: string;
 }

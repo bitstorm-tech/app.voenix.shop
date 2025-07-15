@@ -18,14 +18,32 @@ export default function NewOrEditSlotType() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [nextPosition, setNextPosition] = useState<number>(0);
 
   useEffect(() => {
     if (isEditing) {
       fetchSlotType();
     } else {
-      setInitialLoading(false);
+      // For new slot types, fetch all to determine next position
+      fetchNextPosition();
     }
   }, [id]);
+
+  const fetchNextPosition = async () => {
+    try {
+      setInitialLoading(true);
+      const allSlotTypes = await slotTypesApi.getAll();
+      // Find the maximum position and add 1
+      const maxPosition = allSlotTypes.length > 0 ? Math.max(...allSlotTypes.map((st) => st.position)) : 0;
+      setNextPosition(maxPosition + 1);
+    } catch (error) {
+      console.error('Error fetching slot types:', error);
+      // Default to 1 if error (1-based indexing)
+      setNextPosition(1);
+    } finally {
+      setInitialLoading(false);
+    }
+  };
 
   const fetchSlotType = async () => {
     if (!id) return;
@@ -62,7 +80,11 @@ export default function NewOrEditSlotType() {
         };
         await slotTypesApi.update(parseInt(id), updateData);
       } else {
-        await slotTypesApi.create(formData);
+        const createData: CreateSlotTypeRequest = {
+          name: formData.name,
+          position: nextPosition,
+        };
+        await slotTypesApi.create(createData);
       }
 
       navigate('/admin/slot-types');
