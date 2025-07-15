@@ -1,7 +1,9 @@
 import AdminLayout from '@/components/admin/AdminLayout';
 import CompletedOrders from '@/pages/admin/CompletedOrders';
+import MugCategories from '@/pages/admin/MugCategories';
 import Mugs from '@/pages/admin/Mugs';
 import NewOrEditMug from '@/pages/admin/NewOrEditMug';
+import NewOrEditMugCategory from '@/pages/admin/NewOrEditMugCategory';
 import NewOrEditMugSubCategory from '@/pages/admin/NewOrEditMugSubCategory';
 import NewOrEditPrompt from '@/pages/admin/NewOrEditPrompt';
 import NewOrEditPromptCategory from '@/pages/admin/NewOrEditPromptCategory';
@@ -44,15 +46,9 @@ export default function App() {
           <Route path="mugs" element={<Mugs />} />
           <Route path="mugs/new" element={<NewOrEditMug />} />
           <Route path="mugs/:id/edit" element={<NewOrEditMug />} />
-          <Route
-            path="mug-categories"
-            element={
-              <div className="p-8 pt-20 md:pt-8">
-                <h1 className="text-2xl font-semibold">Mug Categories</h1>
-                <p className="mt-2 text-gray-600">Mug categories management coming soon...</p>
-              </div>
-            }
-          />
+          <Route path="mug-categories" element={<MugCategories />} />
+          <Route path="mug-categories/new" element={<NewOrEditMugCategory />} />
+          <Route path="mug-categories/:id/edit" element={<NewOrEditMugCategory />} />
           <Route path="mug-subcategories/new" element={<NewOrEditMugSubCategory />} />
           <Route path="mug-subcategories/:id/edit" element={<NewOrEditMugSubCategory />} />
           <Route path="orders/open" element={<OpenOrders />} />
