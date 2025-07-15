@@ -1,122 +1,115 @@
 package com.jotoai.voenix.shop.openai.service
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.openai.dto.GeneratedImage
 import com.jotoai.voenix.shop.openai.dto.ImageEditResponse
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.SIMPLE
+import io.ktor.client.request.forms.MultiPartFormDataContent
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
+import io.ktor.serialization.jackson.jackson
+import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.io.DataOutputStream
-import java.net.HttpURLConnection
-import java.net.URI
-import java.util.UUID
 
 @Service
 class OpenAIImageService(
     @Value("\${OPENAI_API_KEY}") private val apiKey: String,
-    private val objectMapper: ObjectMapper,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(OpenAIImageService::class.java)
         private const val OPENAI_API_URL = "https://api.openai.com/v1/images/edits"
-        private const val TIMEOUT_MS = 30000
     }
 
-    private val boundary = "----WebKitFormBoundary${UUID.randomUUID().toString().replace("-", "")}"
+    private val httpClient =
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                jackson()
+            }
+            install(Logging) {
+                logger = io.ktor.client.plugins.logging.Logger.SIMPLE
+                level = LogLevel.INFO
+            }
+            engine {
+                requestTimeout = 60000
+            }
+        }
+
+    data class OpenAIResponse(
+        val data: List<OpenAIImage>,
+    )
+
+    data class OpenAIImage(
+        val url: String? = null,
+        val b64_json: String? = null,
+        val revised_prompt: String? = null,
+    )
 
     fun editImage(
         imageFile: MultipartFile,
         request: CreateImageEditRequest,
-    ): ImageEditResponse {
-        logger.info("Starting image edit request with prompt: ${request.prompt}")
+    ): ImageEditResponse =
+        runBlocking {
+            logger.info("Starting image edit request with prompt: ${request.prompt}")
 
-        val connection = createConnection()
+            try {
+                val formData =
+                    formData {
+                        // Add image file
+                        append(
+                            "image",
+                            imageFile.bytes,
+                            Headers.build {
+                                append(HttpHeaders.ContentType, getContentType(imageFile.originalFilename ?: "image.png"))
+                                append(HttpHeaders.ContentDisposition, "filename=\"${imageFile.originalFilename ?: "image.png"}\"")
+                            },
+                        )
 
-        try {
-            DataOutputStream(connection.outputStream).use { outputStream ->
-                // Write image file
-                writeFilePart(outputStream, "image", imageFile.originalFilename ?: "image.png", imageFile.bytes)
-
-                // Write prompt
-                writeFormField(outputStream, "prompt", request.prompt)
-
-                // Write other parameters
-                writeFormField(outputStream, "n", request.n.toString())
-                writeFormField(outputStream, "size", request.size.apiValue)
-                writeFormField(outputStream, "response_format", "url")
-
-                // Write background parameter if not AUTO
-                if (request.background != com.jotoai.voenix.shop.openai.dto.enums.ImageBackground.AUTO) {
-                    writeFormField(outputStream, "transparency", request.background.apiValue)
-                }
-
-                // Map quality to model parameter
-                val model =
-                    when (request.quality) {
-                        com.jotoai.voenix.shop.openai.dto.enums.ImageQuality.LOW -> "dall-e-2"
-                        com.jotoai.voenix.shop.openai.dto.enums.ImageQuality.MEDIUM -> "dall-e-2"
-                        com.jotoai.voenix.shop.openai.dto.enums.ImageQuality.HIGH -> "dall-e-3"
+                        // Add form fields
+                        append("prompt", request.prompt)
+                        append("n", request.n.toString())
+                        append("size", request.size.apiValue)
+                        append("response_format", "url")
+                        append("transparency", request.background.apiValue)
                     }
-                writeFormField(outputStream, "model", model)
 
-                // Write closing boundary
-                outputStream.writeBytes("--$boundary--\r\n")
-                outputStream.flush()
+                val response =
+                    httpClient
+                        .post(OPENAI_API_URL) {
+                            header(HttpHeaders.Authorization, "Bearer $apiKey")
+                            setBody(MultiPartFormDataContent(formData))
+                        }.body<OpenAIResponse>()
+
+                logger.info("Successfully received response from OpenAI API")
+
+                // Convert OpenAI response to our DTO
+                ImageEditResponse(
+                    images =
+                        response.data.map { image ->
+                            GeneratedImage(
+                                url = image.url,
+                                b64Json = image.b64_json,
+                                revisedPrompt = image.revised_prompt,
+                            )
+                        },
+                )
+            } catch (e: Exception) {
+                logger.error("Error during OpenAI API call", e)
+                throw RuntimeException("Failed to edit image: ${e.message}", e)
             }
-
-            return handleResponse(connection)
-        } catch (e: Exception) {
-            logger.error("Error during OpenAI API call", e)
-            throw RuntimeException("Failed to edit image: ${e.message}", e)
-        } finally {
-            connection.disconnect()
         }
-    }
-
-    private fun createConnection(): HttpURLConnection {
-        val url = URI(OPENAI_API_URL).toURL()
-        val connection = url.openConnection() as HttpURLConnection
-
-        connection.apply {
-            requestMethod = "POST"
-            doOutput = true
-            doInput = true
-            connectTimeout = TIMEOUT_MS
-            readTimeout = TIMEOUT_MS
-            setRequestProperty("Authorization", "Bearer $apiKey")
-            setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
-        }
-
-        return connection
-    }
-
-    private fun writeFilePart(
-        outputStream: DataOutputStream,
-        fieldName: String,
-        fileName: String,
-        fileData: ByteArray,
-    ) {
-        outputStream.writeBytes("--$boundary\r\n")
-        outputStream.writeBytes("Content-Disposition: form-data; name=\"$fieldName\"; filename=\"$fileName\"\r\n")
-        outputStream.writeBytes("Content-Type: ${getContentType(fileName)}\r\n")
-        outputStream.writeBytes("Content-Transfer-Encoding: binary\r\n")
-        outputStream.writeBytes("\r\n")
-        outputStream.write(fileData)
-        outputStream.writeBytes("\r\n")
-    }
-
-    private fun writeFormField(
-        outputStream: DataOutputStream,
-        fieldName: String,
-        value: String,
-    ) {
-        outputStream.writeBytes("--$boundary\r\n")
-        outputStream.writeBytes("Content-Disposition: form-data; name=\"$fieldName\"\r\n")
-        outputStream.writeBytes("\r\n")
-        outputStream.writeBytes("$value\r\n")
-    }
 
     private fun getContentType(fileName: String): String =
         when {
@@ -126,48 +119,4 @@ class OpenAIImageService(
             fileName.endsWith(".webp", ignoreCase = true) -> "image/webp"
             else -> "application/octet-stream"
         }
-
-    private fun handleResponse(connection: HttpURLConnection): ImageEditResponse {
-        val responseCode = connection.responseCode
-        logger.info("OpenAI API response code: $responseCode")
-
-        val responseBody =
-            if (responseCode in 200..299) {
-                connection.inputStream.bufferedReader().use { it.readText() }
-            } else {
-                connection.errorStream?.bufferedReader()?.use { it.readText() } ?: "No error details"
-            }
-
-        logger.debug("OpenAI API response body: $responseBody")
-
-        if (responseCode !in 200..299) {
-            logger.error("OpenAI API error response: $responseBody")
-            throw RuntimeException("OpenAI API error (HTTP $responseCode): $responseBody")
-        }
-
-        return parseResponse(responseBody)
-    }
-
-    private fun parseResponse(responseBody: String): ImageEditResponse {
-        try {
-            val jsonNode = objectMapper.readTree(responseBody)
-            val dataArray = jsonNode.get("data")
-
-            val images = mutableListOf<GeneratedImage>()
-            dataArray?.forEach { imageNode ->
-                images.add(
-                    GeneratedImage(
-                        url = imageNode.get("url")?.asText(),
-                        b64Json = imageNode.get("b64_json")?.asText(),
-                        revisedPrompt = imageNode.get("revised_prompt")?.asText(),
-                    ),
-                )
-            }
-
-            return ImageEditResponse(images)
-        } catch (e: Exception) {
-            logger.error("Failed to parse OpenAI response", e)
-            throw RuntimeException("Failed to parse OpenAI response: ${e.message}", e)
-        }
-    }
 }

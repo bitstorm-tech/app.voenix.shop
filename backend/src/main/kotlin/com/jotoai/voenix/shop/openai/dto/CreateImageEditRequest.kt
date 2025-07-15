@@ -12,9 +12,9 @@ data class CreateImageEditRequest(
     @field:NotBlank(message = "Prompt is required")
     val prompt: String,
     @field:NotNull(message = "Background is required")
-    val background: ImageBackground,
+    val background: ImageBackground = ImageBackground.AUTO,
     @field:NotNull(message = "Quality is required")
-    val quality: ImageQuality,
+    val quality: ImageQuality = ImageQuality.LOW,
     @field:NotNull(message = "Size is required")
     val size: ImageSize,
     @field:Min(value = 1, message = "Number of images must be at least 1")

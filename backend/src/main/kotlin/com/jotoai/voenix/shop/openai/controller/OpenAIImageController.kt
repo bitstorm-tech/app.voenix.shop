@@ -40,7 +40,7 @@ class OpenAIImageController(
             throw IllegalArgumentException("File must be an image")
         }
 
-        val response = openAIImageService.editImage(imageFile, request, maskFile)
+        val response = openAIImageService.editImage(imageFile, request)
 
         logger.info("Successfully generated ${response.images.size} images")
 

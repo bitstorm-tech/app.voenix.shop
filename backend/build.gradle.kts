@@ -40,6 +40,13 @@ dependencies {
     implementation("com.sksamuel.scrimage:scrimage-core:4.3.2")
     implementation("com.sksamuel.scrimage:scrimage-webp:4.3.2")
 
+    // Ktor Client
+    implementation("io.ktor:ktor-client-core:2.3.12")
+    implementation("io.ktor:ktor-client-cio:2.3.12")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.12")
+    implementation("io.ktor:ktor-serialization-jackson:2.3.12")
+    implementation("io.ktor:ktor-client-logging:2.3.12")
+
     // Testing
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.2")
