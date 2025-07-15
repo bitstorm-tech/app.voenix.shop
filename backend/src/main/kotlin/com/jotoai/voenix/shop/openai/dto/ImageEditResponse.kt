@@ -5,7 +5,6 @@ data class ImageEditResponse(
 )
 
 data class GeneratedImage(
-    val url: String? = null,
-    val b64Json: String? = null,
+    val url: String,
     val revisedPrompt: String? = null,
 )

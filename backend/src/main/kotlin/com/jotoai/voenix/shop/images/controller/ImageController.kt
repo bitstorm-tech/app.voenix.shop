@@ -36,7 +36,7 @@ class ImageController(
             }
 
         val request = CreateImageRequest(imageType = imageType, cropArea = cropArea)
-        val image = imageService.upload(file, request)
+        val image = imageService.store(file, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(image)
     }
 

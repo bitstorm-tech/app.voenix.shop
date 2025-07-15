@@ -95,7 +95,7 @@ class PromptController(
         promptService.getPromptById(id)
 
         // Upload image
-        val imageDto = imageService.upload(file, CreateImageRequest(imageType = ImageType.PROMPT_EXAMPLE))
+        val imageDto = imageService.store(file, CreateImageRequest(imageType = ImageType.PROMPT_EXAMPLE))
 
         // Update prompt with new filename
         val updateRequest = UpdatePromptRequest(exampleImageFilename = imageDto.filename)

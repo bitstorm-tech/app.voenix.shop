@@ -38,7 +38,7 @@ class ImageService(
         createDirectories()
     }
 
-    fun upload(
+    fun store(
         file: MultipartFile,
         request: CreateImageRequest,
     ): ImageDto {

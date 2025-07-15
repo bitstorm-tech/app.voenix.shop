@@ -1,5 +1,8 @@
 package com.jotoai.voenix.shop.openai.service
 
+import com.jotoai.voenix.shop.images.dto.CreateImageRequest
+import com.jotoai.voenix.shop.images.dto.ImageType
+import com.jotoai.voenix.shop.images.service.ImageService
 import com.jotoai.voenix.shop.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.openai.dto.GeneratedImage
 import com.jotoai.voenix.shop.openai.dto.ImageEditResponse
@@ -12,9 +15,11 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.SIMPLE
 import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
+import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.readBytes
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.serialization.jackson.jackson
@@ -23,10 +28,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.io.ByteArrayInputStream
+import java.io.InputStream
+import java.util.Base64
 
 @Service
 class OpenAIImageService(
     @Value("\${OPENAI_API_KEY}") private val apiKey: String,
+    private val imageService: ImageService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(OpenAIImageService::class.java)
@@ -94,17 +103,50 @@ class OpenAIImageService(
 
                 logger.info("Successfully received response from OpenAI API")
 
-                // Convert OpenAI response to our DTO
-                ImageEditResponse(
-                    images =
-                        response.data.map { image ->
-                            GeneratedImage(
-                                url = image.url,
-                                b64Json = image.b64_json,
-                                revisedPrompt = image.revised_prompt,
+                // Download and save images, then return URLs
+                val savedImages =
+                    response.data.map { openAIImage ->
+                        val imageBytes =
+                            when {
+                                openAIImage.url != null -> {
+                                    // Download image from URL
+                                    logger.debug("Downloading image from URL: ${openAIImage.url}")
+                                    httpClient.get(openAIImage.url).readBytes()
+                                }
+                                openAIImage.b64_json != null -> {
+                                    // Decode base64 image
+                                    logger.debug("Decoding base64 image")
+                                    Base64.getDecoder().decode(openAIImage.b64_json)
+                                }
+                                else -> {
+                                    throw IllegalStateException("OpenAI response contains neither URL nor base64 data")
+                                }
+                            }
+
+                        // Create a MultipartFile from the bytes
+                        // ImageService will handle UUID generation
+                        val multipartFile =
+                            SimpleMultipartFile(
+                                "generated-image.png",
+                                "image/png",
+                                imageBytes,
                             )
-                        },
-                )
+
+                        // Save the image using ImageService
+                        val savedImage =
+                            imageService.store(
+                                multipartFile,
+                                CreateImageRequest(imageType = ImageType.PUBLIC),
+                            )
+
+                        // Return the public URL for the saved image
+                        GeneratedImage(
+                            url = "/images/${savedImage.filename}",
+                            revisedPrompt = openAIImage.revised_prompt,
+                        )
+                    }
+
+                ImageEditResponse(images = savedImages)
             } catch (e: Exception) {
                 logger.error("Error during OpenAI API call", e)
                 throw RuntimeException("Failed to edit image: ${e.message}", e)
@@ -119,4 +161,28 @@ class OpenAIImageService(
             fileName.endsWith(".webp", ignoreCase = true) -> "image/webp"
             else -> "application/octet-stream"
         }
+
+    private class SimpleMultipartFile(
+        private val fileName: String,
+        private val contentType: String,
+        private val content: ByteArray,
+    ) : MultipartFile {
+        override fun getName(): String = "file"
+
+        override fun getOriginalFilename(): String = fileName
+
+        override fun getContentType(): String = contentType
+
+        override fun isEmpty(): Boolean = content.isEmpty()
+
+        override fun getSize(): Long = content.size.toLong()
+
+        override fun getBytes(): ByteArray = content
+
+        override fun getInputStream(): InputStream = ByteArrayInputStream(content)
+
+        override fun transferTo(dest: java.io.File) {
+            dest.writeBytes(content)
+        }
+    }
 }
