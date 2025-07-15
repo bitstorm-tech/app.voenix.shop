@@ -12,4 +12,11 @@ interface SlotTypeRepository : JpaRepository<SlotType, Long> {
         name: String,
         id: Long,
     ): Boolean
+
+    fun existsByPosition(position: Int): Boolean
+
+    fun existsByPositionAndIdNot(
+        position: Int,
+        id: Long,
+    ): Boolean
 }

@@ -29,7 +29,11 @@ class SlotTypeService(
             throw ResourceAlreadyExistsException("SlotType", "name", request.name)
         }
 
-        val slotType = SlotType(name = request.name)
+        if (slotTypeRepository.existsByPosition(request.position)) {
+            throw ResourceAlreadyExistsException("SlotType", "position", request.position)
+        }
+
+        val slotType = SlotType(name = request.name, position = request.position)
         val savedSlotType = slotTypeRepository.save(slotType)
 
         return savedSlotType.toDto()
@@ -50,6 +54,13 @@ class SlotTypeService(
                 throw ResourceAlreadyExistsException("SlotType", "name", newName)
             }
             slotType.name = newName
+        }
+
+        request.position?.let { newPosition ->
+            if (slotTypeRepository.existsByPositionAndIdNot(newPosition, id)) {
+                throw ResourceAlreadyExistsException("SlotType", "position", newPosition)
+            }
+            slotType.position = newPosition
         }
 
         val updatedSlotType = slotTypeRepository.save(slotType)

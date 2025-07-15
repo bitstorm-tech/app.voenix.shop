@@ -19,6 +19,8 @@ data class SlotType(
     val id: Long? = null,
     @Column(nullable = false, unique = true, length = 255)
     var name: String,
+    @Column(nullable = false, unique = true)
+    var position: Int,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,
@@ -30,6 +32,7 @@ data class SlotType(
         SlotTypeDto(
             id = requireNotNull(this.id) { "SlotType ID cannot be null when converting to DTO" },
             name = this.name,
+            position = this.position,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )
