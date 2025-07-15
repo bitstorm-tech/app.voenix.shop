@@ -1,11 +1,13 @@
 package com.jotoai.voenix.shop.openai.service
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.jotoai.voenix.shop.images.dto.CreateImageRequest
 import com.jotoai.voenix.shop.images.dto.ImageType
 import com.jotoai.voenix.shop.images.service.ImageService
 import com.jotoai.voenix.shop.openai.dto.CreateImageEditRequest
-import com.jotoai.voenix.shop.openai.dto.GeneratedImage
 import com.jotoai.voenix.shop.openai.dto.ImageEditResponse
+import com.jotoai.voenix.shop.prompts.dto.PromptDto
+import com.jotoai.voenix.shop.prompts.service.PromptService
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -36,6 +38,7 @@ import java.util.Base64
 class OpenAIImageService(
     @Value("\${OPENAI_API_KEY}") private val apiKey: String,
     private val imageService: ImageService,
+    private val promptService: PromptService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(OpenAIImageService::class.java)
@@ -62,8 +65,13 @@ class OpenAIImageService(
 
     data class OpenAIImage(
         val url: String? = null,
-        val b64_json: String? = null,
-        val revised_prompt: String? = null,
+        @JsonProperty("b64_json") val b64Json: String? = null,
+        @JsonProperty("revised_prompt") val revisedPrompt: String? = null,
+    )
+
+    data class GeneratedImage(
+        val url: String,
+        val revisedPrompt: String? = null,
     )
 
     fun editImage(
@@ -71,12 +79,13 @@ class OpenAIImageService(
         request: CreateImageEditRequest,
     ): ImageEditResponse =
         runBlocking {
-            logger.info("Starting image edit request with prompt: ${request.prompt}")
+            logger.info("Starting image edit request with prompt ID: ${request.promptId}")
+
+            val prompt = promptService.getPromptById(request.promptId)
 
             try {
                 val formData =
                     formData {
-                        // Add image file
                         append(
                             "image",
                             imageFile.bytes,
@@ -86,8 +95,7 @@ class OpenAIImageService(
                             },
                         )
 
-                        // Add form fields
-                        append("prompt", request.prompt)
+                        append("prompt", buildFinalPrompt(prompt))
                         append("n", request.n.toString())
                         append("size", request.size.apiValue)
                         append("response_format", "url")
@@ -105,7 +113,7 @@ class OpenAIImageService(
 
                 // Download and save images, then return URLs
                 val savedImages =
-                    response.data.map { openAIImage ->
+                    response.data.map { openAIImage: OpenAIImage ->
                         val imageBytes =
                             when {
                                 openAIImage.url != null -> {
@@ -113,10 +121,10 @@ class OpenAIImageService(
                                     logger.debug("Downloading image from URL: ${openAIImage.url}")
                                     httpClient.get(openAIImage.url).readBytes()
                                 }
-                                openAIImage.b64_json != null -> {
+                                openAIImage.b64Json != null -> {
                                     // Decode base64 image
                                     logger.debug("Decoding base64 image")
-                                    Base64.getDecoder().decode(openAIImage.b64_json)
+                                    Base64.getDecoder().decode(openAIImage.b64Json)
                                 }
                                 else -> {
                                     throw IllegalStateException("OpenAI response contains neither URL nor base64 data")
@@ -142,11 +150,11 @@ class OpenAIImageService(
                         // Return the public URL for the saved image
                         GeneratedImage(
                             url = "/images/${savedImage.filename}",
-                            revisedPrompt = openAIImage.revised_prompt,
+                            revisedPrompt = openAIImage.revisedPrompt,
                         )
                     }
 
-                ImageEditResponse(images = savedImages)
+                ImageEditResponse(imagesUrls = savedImages.map { it.url })
             } catch (e: Exception) {
                 logger.error("Error during OpenAI API call", e)
                 throw RuntimeException("Failed to edit image: ${e.message}", e)
@@ -184,5 +192,21 @@ class OpenAIImageService(
         override fun transferTo(dest: java.io.File) {
             dest.writeBytes(content)
         }
+    }
+
+    private fun buildFinalPrompt(prompt: PromptDto): String {
+        val parts = mutableListOf<String>()
+
+        // Add base prompt content if exists
+        prompt.content?.let { parts.add(it) }
+
+        // Add slot prompts sorted by position
+        prompt.slots
+            .sortedBy { it.slotType?.position ?: 0 }
+            .forEach { slot ->
+                slot.prompt?.let { parts.add(it) }
+            }
+
+        return parts.joinToString(" ")
     }
 }

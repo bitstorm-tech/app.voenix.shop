@@ -28,7 +28,7 @@ class OpenAIImageController(
         @RequestParam("image") imageFile: MultipartFile,
         @Valid @ModelAttribute request: CreateImageEditRequest,
     ): ResponseEntity<ImageEditResponse> {
-        logger.info("Received image edit request - prompt: ${request.prompt}, size: ${request.size}, quality: ${request.quality}")
+        logger.info("Received image edit request - promptId: ${request.promptId}, size: ${request.size}, quality: ${request.quality}")
 
         // Validate image file
         if (imageFile.isEmpty) {
@@ -42,7 +42,7 @@ class OpenAIImageController(
 
         val response = openAIImageService.editImage(imageFile, request)
 
-        logger.info("Successfully generated ${response.images.size} images")
+        logger.info("Successfully generated ${response.imagesUrls.size} images")
 
         return ResponseEntity.ok(response)
     }
