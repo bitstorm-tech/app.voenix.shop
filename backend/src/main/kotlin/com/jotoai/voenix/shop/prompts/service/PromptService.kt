@@ -79,7 +79,7 @@ class PromptService(
                     slotRepository
                         .findById(slotRequest.slotId)
                         .orElseThrow { ResourceNotFoundException("Slot", "id", slotRequest.slotId) }
-                prompt.addSlot(slot, slotRequest.position)
+                prompt.addSlot(slot)
             }
         }
 
@@ -145,7 +145,7 @@ class PromptService(
                     slotRepository
                         .findById(slotRequest.slotId)
                         .orElseThrow { ResourceNotFoundException("Slot", "id", slotRequest.slotId) }
-                prompt.addSlot(slot, slotRequest.position)
+                prompt.addSlot(slot)
             }
         }
 
@@ -220,13 +220,13 @@ class PromptService(
         // Clear existing slots
         prompt.clearSlots()
 
-        // Add new slots with positions
+        // Add new slots
         request.slots.forEach { slotRequest ->
             val slot =
                 slotRepository
                     .findById(slotRequest.slotId)
                     .orElseThrow { ResourceNotFoundException("Slot", "id", slotRequest.slotId) }
-            prompt.addSlot(slot, slotRequest.position)
+            prompt.addSlot(slot)
         }
 
         val savedPrompt = promptRepository.save(prompt)

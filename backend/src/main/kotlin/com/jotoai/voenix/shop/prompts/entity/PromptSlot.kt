@@ -34,8 +34,6 @@ data class PromptSlot(
     @MapsId("slotId")
     @JoinColumn(name = "slot_id")
     val slot: Slot,
-    @Column(nullable = false)
-    var position: Int = 0,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,

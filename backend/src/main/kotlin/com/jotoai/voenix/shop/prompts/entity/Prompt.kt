@@ -11,7 +11,6 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
-import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -42,7 +41,6 @@ data class Prompt(
     @Column(name = "example_image_filename", length = 500)
     var exampleImageFilename: String? = null,
     @OneToMany(mappedBy = "prompt", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    @OrderBy("position ASC")
     var promptSlots: MutableList<PromptSlot> = mutableListOf(),
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
@@ -61,22 +59,18 @@ data class Prompt(
             subcategoryId = this.subcategoryId,
             subcategory = this.subcategory?.toDto(),
             active = this.active,
-            slots = this.promptSlots.sortedBy { it.position }.map { it.slot.toDto() },
+            slots = this.promptSlots.sortedBy { it.slot.slotType?.position ?: 0 }.map { it.slot.toDto() },
             exampleImageUrl = this.exampleImageFilename?.let { "/images/prompt-example-images/$it" },
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )
 
-    fun addSlot(
-        slot: Slot,
-        position: Int = this.promptSlots.size,
-    ) {
+    fun addSlot(slot: Slot) {
         val promptSlot =
             PromptSlot(
                 id = PromptSlotId(this.id ?: 0, slot.id ?: 0),
                 prompt = this,
                 slot = slot,
-                position = position,
             )
         this.promptSlots.add(promptSlot)
     }
