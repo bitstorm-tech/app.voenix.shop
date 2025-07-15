@@ -6,9 +6,10 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import type { CreateMugRequest, UpdateMugRequest } from '@/lib/api';
-import { mugCategoriesApi, mugSubCategoriesApi, mugsApi } from '@/lib/api';
+import { imagesApi, mugCategoriesApi, mugSubCategoriesApi, mugsApi } from '@/lib/api';
 import type { MugCategory, MugSubCategory } from '@/types/mug';
-import { useEffect, useState } from 'react';
+import { Upload, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditMug() {
@@ -37,6 +38,9 @@ export default function NewOrEditMug() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -46,6 +50,15 @@ export default function NewOrEditMug() {
       setInitialLoading(false);
     }
   }, [id]);
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (imageUrl && imageUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(imageUrl);
+      }
+    };
+  }, [imageUrl]);
 
   useEffect(() => {
     if (formData.categoryId) {
@@ -97,6 +110,11 @@ export default function NewOrEditMug() {
         categoryId: mug.category?.id,
         subCategoryId: mug.subCategory?.id,
       });
+
+      // Set image if exists
+      if (mug.image) {
+        setImageUrl(mug.image);
+      }
     } catch (error) {
       console.error('Error fetching mug:', error);
       setError('Failed to load mug');
@@ -142,14 +160,37 @@ export default function NewOrEditMug() {
       setLoading(true);
       setError(null);
 
+      let finalImageUrl = formData.image;
+
+      // Upload new image if there is one
+      if (imageFile) {
+        try {
+          const uploadResult = await imagesApi.upload(imageFile, 'PUBLIC');
+          // Construct the full URL for the uploaded image
+          finalImageUrl = `/api/images/${uploadResult.filename}`;
+        } catch (uploadError: any) {
+          console.error('Error uploading image:', uploadError);
+          setError(`Failed to upload image: ${uploadError.message || 'Please try again.'}`);
+          setLoading(false);
+          return;
+        }
+      } else if (imageUrl && !imageUrl.startsWith('blob:')) {
+        // Keep existing image URL if not uploading a new one
+        finalImageUrl = imageUrl;
+      }
+
       if (isEditing) {
         const updateData: UpdateMugRequest = {
           ...formData,
+          image: finalImageUrl || '',
           fillingQuantity: formData.fillingQuantity || undefined,
         };
         await mugsApi.update(parseInt(id), updateData);
       } else {
-        await mugsApi.create(formData);
+        await mugsApi.create({
+          ...formData,
+          image: finalImageUrl || '',
+        });
       }
 
       navigate('/admin/mugs');
@@ -163,6 +204,46 @@ export default function NewOrEditMug() {
 
   const handleCancel = () => {
     navigate('/admin/mugs');
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) {
+      setError('Please select a valid image file');
+      return;
+    }
+
+    // Check file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError('File size exceeds maximum allowed size of 10MB');
+      return;
+    }
+
+    // Clean up previous blob URL if exists
+    if (imageUrl && imageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(imageUrl);
+    }
+
+    // Create blob URL for preview
+    const blobUrl = URL.createObjectURL(file);
+    setImageFile(file);
+    setImageUrl(blobUrl);
+    setError(null);
+
+    // Reset the input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImage = () => {
+    // Clean up blob URL if exists
+    if (imageUrl && imageUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(imageUrl);
+    }
+    setImageUrl(null);
+    setImageFile(null);
   };
 
   if (initialLoading) {
@@ -221,13 +302,32 @@ export default function NewOrEditMug() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="image">Image URL</Label>
-              <Input
-                id="image"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                placeholder="Enter image URL"
-              />
+              <Label>Image</Label>
+              <div className="space-y-3">
+                {imageUrl ? (
+                  <div className="relative w-full max-w-md">
+                    <img src={imageUrl} alt="Mug" className="w-full rounded-lg border border-gray-200 object-contain" />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="absolute top-2 right-2 bg-white shadow-sm"
+                      onClick={handleRemoveImage}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      Upload Image
+                    </Button>
+                    <p className="text-sm text-gray-500">PNG, JPG, GIF, or WEBP (automatically converted to WebP)</p>
+                  </div>
+                )}
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
