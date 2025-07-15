@@ -69,11 +69,6 @@ class OpenAIImageService(
         @JsonProperty("revised_prompt") val revisedPrompt: String? = null,
     )
 
-    data class GeneratedImage(
-        val url: String,
-        val revisedPrompt: String? = null,
-    )
-
     fun editImage(
         imageFile: MultipartFile,
         request: CreateImageEditRequest,
@@ -112,7 +107,7 @@ class OpenAIImageService(
                 logger.info("Successfully received response from OpenAI API")
 
                 // Download and save images, then return URLs
-                val savedImages =
+                val savedImageUrls =
                     response.data.map { openAIImage: OpenAIImage ->
                         val imageBytes =
                             when {
@@ -147,14 +142,10 @@ class OpenAIImageService(
                                 CreateImageRequest(imageType = ImageType.PUBLIC),
                             )
 
-                        // Return the public URL for the saved image
-                        GeneratedImage(
-                            url = "/images/${savedImage.filename}",
-                            revisedPrompt = openAIImage.revisedPrompt,
-                        )
+                        "/images/${savedImage.filename}"
                     }
 
-                ImageEditResponse(imagesUrls = savedImages.map { it.url })
+                ImageEditResponse(imagesUrls = savedImageUrls)
             } catch (e: Exception) {
                 logger.error("Error during OpenAI API call", e)
                 throw RuntimeException("Failed to edit image: ${e.message}", e)
