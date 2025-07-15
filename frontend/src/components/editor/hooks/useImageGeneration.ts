@@ -18,7 +18,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
       const formData = new FormData();
       formData.append('image', file);
       formData.append('promptId', promptId.toString());
-      formData.append('n', '4');
+      formData.append('n', '1');
 
       const response = await fetch('/api/openai/images/edit', {
         method: 'POST',
