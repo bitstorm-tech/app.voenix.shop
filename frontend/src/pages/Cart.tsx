@@ -76,9 +76,6 @@ export default function CartPage() {
 
   const fetchCart = async () => {
     try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
       // Set dummy cart data
       setCart(DUMMY_CART);
     } catch (error) {
@@ -96,9 +93,6 @@ export default function CartPage() {
     setUpdatingItems((prev) => new Set(prev).add(itemId));
 
     try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
       // Update cart state locally
       setCart((prevCart) => {
         if (!prevCart) return null;
@@ -137,9 +131,6 @@ export default function CartPage() {
     setUpdatingItems((prev) => new Set(prev).add(itemId));
 
     try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
       // Remove item from cart state
       setCart((prevCart) => {
         if (!prevCart) return null;
