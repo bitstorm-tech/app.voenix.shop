@@ -17,6 +17,7 @@ import PromptSubCategories from '@/pages/admin/PromptSubCategories';
 import Slots from '@/pages/admin/Slots';
 import SlotTypes from '@/pages/admin/SlotTypes';
 import CartPage from '@/pages/Cart';
+import CheckoutPage from '@/pages/Checkout';
 import Editor from '@/pages/Editor';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/" element={<Editor />} />
         <Route path="/editor" element={<Editor />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
 
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Prompts />} />
