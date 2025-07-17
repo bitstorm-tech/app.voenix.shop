@@ -23,7 +23,7 @@ export interface PromptSlot extends Slot {}
 export interface Prompt {
   id: number;
   title: string;
-  content?: string;
+  promptText?: string;
   createdAt?: string;
   updatedAt?: string;
   categoryId?: number;
