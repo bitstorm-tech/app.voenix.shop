@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Textarea } from '@/components/ui/Textarea';
 import type { CreatePromptRequest, PromptSlotUpdate, UpdatePromptRequest } from '@/lib/api';
 import { imagesApi, promptCategoriesApi, promptsApi, promptSubCategoriesApi } from '@/lib/api';
 import type { PromptCategory, PromptSubCategory } from '@/types/prompt';
@@ -19,6 +20,7 @@ export default function NewOrEditPrompt() {
 
   const [formData, setFormData] = useState({
     title: '',
+    content: '',
     categoryId: 0,
     subcategoryId: 0,
     active: true,
@@ -70,6 +72,7 @@ export default function NewOrEditPrompt() {
       const prompt = await promptsApi.getById(parseInt(id));
       setFormData({
         title: prompt.title || '',
+        content: prompt.content || '',
         categoryId: prompt.categoryId || 0,
         subcategoryId: prompt.subcategoryId || 0,
         active: prompt.active ?? true,
@@ -160,6 +163,7 @@ export default function NewOrEditPrompt() {
       if (isEditing) {
         const updateData: UpdatePromptRequest = {
           title: formData.title,
+          content: formData.content || undefined,
           categoryId: formData.categoryId,
           subcategoryId: formData.subcategoryId || undefined,
           active: formData.active,
@@ -170,6 +174,7 @@ export default function NewOrEditPrompt() {
       } else {
         const createData: CreatePromptRequest = {
           title: formData.title,
+          content: formData.content || undefined,
           categoryId: formData.categoryId,
           subcategoryId: formData.subcategoryId || undefined,
           active: formData.active,
@@ -262,6 +267,17 @@ export default function NewOrEditPrompt() {
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Enter prompt title"
                 required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="content">Prompt Text</Label>
+              <Textarea
+                id="content"
+                value={formData.content}
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                placeholder="Enter the prompt text (optional)"
+                rows={4}
               />
             </div>
 
