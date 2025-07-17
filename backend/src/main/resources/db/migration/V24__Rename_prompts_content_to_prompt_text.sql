@@ -1,0 +1,1 @@
+alter table prompts rename column content to prompt_text;

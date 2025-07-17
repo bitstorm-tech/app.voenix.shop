@@ -66,7 +66,7 @@ class PromptService(
         val prompt =
             Prompt(
                 title = request.title,
-                content = request.content,
+                promptText = request.promptText,
                 categoryId = request.categoryId,
                 subcategoryId = request.subcategoryId,
                 exampleImageFilename = request.exampleImageFilename,
@@ -118,7 +118,7 @@ class PromptService(
         }
 
         request.title?.let { prompt.title = it }
-        request.content?.let { prompt.content = it }
+        request.promptText?.let { prompt.promptText = it }
         request.categoryId?.let { prompt.categoryId = it }
         request.subcategoryId?.let { prompt.subcategoryId = it }
         request.active?.let { prompt.active = it }

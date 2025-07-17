@@ -220,7 +220,7 @@ class OpenAIImageService(
         val parts = mutableListOf<String>()
 
         // Add base prompt content if exists
-        prompt.content?.let { parts.add(it) }
+        prompt.promptText?.let { parts.add(it) }
 
         // Add slot prompts sorted by position
         prompt.slots

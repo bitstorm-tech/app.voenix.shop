@@ -5,7 +5,7 @@ import java.time.OffsetDateTime
 data class PromptDto(
     val id: Long,
     val title: String,
-    val content: String?,
+    val promptText: String?,
     val categoryId: Long?,
     val category: PromptCategoryDto?,
     val subcategoryId: Long?,

@@ -8,7 +8,7 @@ data class CreatePromptRequest(
     @field:NotBlank(message = "Title is required")
     @field:Size(max = 500, message = "Title must not exceed 500 characters")
     val title: String,
-    val content: String? = null,
+    val promptText: String? = null,
     val categoryId: Long? = null,
     val subcategoryId: Long? = null,
     val exampleImageFilename: String? = null,

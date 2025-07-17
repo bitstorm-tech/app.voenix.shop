@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Size
 data class UpdatePromptRequest(
     @field:Size(max = 500, message = "Title must not exceed 500 characters")
     val title: String? = null,
-    val content: String? = null,
+    val promptText: String? = null,
     val categoryId: Long? = null,
     val subcategoryId: Long? = null,
     val active: Boolean? = null,

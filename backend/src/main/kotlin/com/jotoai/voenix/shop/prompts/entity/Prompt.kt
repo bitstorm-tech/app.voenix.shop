@@ -24,8 +24,8 @@ data class Prompt(
     val id: Long? = null,
     @Column(nullable = false, length = 500)
     var title: String,
-    @Column(columnDefinition = "TEXT")
-    var content: String? = null,
+    @Column(name = "prompt_text", columnDefinition = "TEXT")
+    var promptText: String? = null,
     @Column(name = "category_id")
     var categoryId: Long? = null,
     @ManyToOne(fetch = FetchType.LAZY)
@@ -53,7 +53,7 @@ data class Prompt(
         PromptDto(
             id = requireNotNull(this.id) { "Prompt ID cannot be null when converting to DTO" },
             title = this.title,
-            content = this.content,
+            promptText = this.promptText,
             categoryId = this.categoryId,
             category = this.category?.toDto(),
             subcategoryId = this.subcategoryId,
