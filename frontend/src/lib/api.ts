@@ -1,8 +1,9 @@
+import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
 import type { Mug, MugCategory, MugSubCategory } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
 import type { Slot, SlotType } from '@/types/slot';
 
-class ApiError extends Error {
+export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
@@ -32,6 +33,7 @@ export const api = {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     });
     return handleResponse<T>(response);
   },
@@ -42,6 +44,7 @@ export const api = {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     return handleResponse<T>(response);
@@ -53,6 +56,7 @@ export const api = {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(data),
     });
     return handleResponse<T>(response);
@@ -64,6 +68,7 @@ export const api = {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
     });
     return handleResponse<T>(response);
   },
@@ -111,7 +116,7 @@ export interface PromptSlotUpdate {
 
 export interface CreatePromptRequest {
   title: string;
-  promptText?: string;
+  content?: string;
   categoryId: number;
   subcategoryId?: number;
   active: boolean;
@@ -121,7 +126,7 @@ export interface CreatePromptRequest {
 
 export interface UpdatePromptRequest {
   title?: string;
-  promptText?: string;
+  content?: string;
   categoryId?: number;
   subcategoryId?: number;
   active?: boolean;
@@ -317,9 +322,17 @@ export const imagesApi = {
 
     const response = await fetch('/api/images', {
       method: 'POST',
+      credentials: 'include',
       body: formData,
     });
     return handleResponse<{ filename: string; imageType: string }>(response);
   },
   delete: async (filename: string) => api.delete<void>(`/images/${filename}`),
+};
+
+// Authentication API endpoints
+export const authApi = {
+  login: (data: LoginRequest) => api.post<LoginResponse>('/auth/login', data),
+  logout: () => api.post<void>('/auth/logout', {}),
+  checkSession: () => api.get<SessionInfo>('/auth/session'),
 };

@@ -1,23 +1,21 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/Accordion';
 import { Button } from '@/components/ui/Button';
+import { useAuth } from '@/contexts/AuthContext';
 import { Coffee, FileText, FlaskConical, LogOut, Package, Palette } from 'lucide-react';
 import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 interface AdminSidebarProps {
   user?: { name?: string };
   onNavigate?: () => void;
 }
 
-export default function AdminSidebar({ user, onNavigate }: AdminSidebarProps = {}) {
+export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
   const [openItems, setOpenItems] = useState<string[]>(['prompts', 'mugs', 'orders']);
+  const { logout, user } = useAuth();
 
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    // TODO: Implement logout API call
-    // router.post('/logout');
-    navigate('/');
+  const handleLogout = async () => {
+    await logout();
   };
 
   return (
@@ -203,7 +201,7 @@ export default function AdminSidebar({ user, onNavigate }: AdminSidebarProps = {
 
       <div className="border-t p-4">
         <div className="mb-3 px-2">
-          <p className="text-sm text-gray-600">{user?.name || 'DuDa'}</p>
+          <p className="text-sm text-gray-600">{user?.firstName || user?.email || 'Admin'}</p>
         </div>
         <Button variant="outline" className="w-full justify-start" onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />

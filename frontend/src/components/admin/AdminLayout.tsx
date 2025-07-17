@@ -7,7 +7,6 @@ import { Outlet } from 'react-router-dom';
 
 export default function AdminLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const user = { name: 'DuDa' }; // TODO: Get from auth context
 
   const handleMobileMenuClose = () => {
     setMobileMenuOpen(false);
@@ -17,7 +16,7 @@ export default function AdminLayout() {
     <div className="flex h-screen">
       {/* Desktop Sidebar */}
       <div className="hidden md:block">
-        <AdminSidebar user={user} />
+        <AdminSidebar />
       </div>
 
       {/* Main Content */}
@@ -35,7 +34,7 @@ export default function AdminLayout() {
               <SheetTitle>Admin Navigation Menu</SheetTitle>
               <SheetDescription>Navigate through admin sections</SheetDescription>
             </SheetHeader>
-            <AdminSidebar user={user} onNavigate={handleMobileMenuClose} />
+            <AdminSidebar onNavigate={handleMobileMenuClose} />
           </SheetContent>
         </Sheet>
 

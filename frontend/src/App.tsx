@@ -1,4 +1,6 @@
 import AdminLayout from '@/components/admin/AdminLayout';
+import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import { AuthProvider } from '@/contexts/AuthContext';
 import CompletedOrders from '@/pages/admin/CompletedOrders';
 import MugCategories from '@/pages/admin/MugCategories';
 import Mugs from '@/pages/admin/Mugs';
@@ -19,55 +21,61 @@ import SlotTypes from '@/pages/admin/SlotTypes';
 import CartPage from '@/pages/Cart';
 import CheckoutPage from '@/pages/Checkout';
 import Editor from '@/pages/Editor';
+import Login from '@/pages/Login';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 
 export default function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Editor />} />
-        <Route path="/editor" element={<Editor />} />
-        <Route path="/cart" element={<CartPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
+      <AuthProvider>
+        <Routes>
+          <Route path="/" element={<Editor />} />
+          <Route path="/editor" element={<Editor />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/login" element={<Login />} />
 
-        <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Prompts />} />
-          <Route path="prompts" element={<Prompts />} />
-          <Route path="prompts/new" element={<NewOrEditPrompt />} />
-          <Route path="prompts/:id/edit" element={<NewOrEditPrompt />} />
-          <Route path="prompt-categories" element={<PromptCategories />} />
-          <Route path="prompt-categories/new" element={<NewOrEditPromptCategory />} />
-          <Route path="prompt-categories/:id/edit" element={<NewOrEditPromptCategory />} />
-          <Route path="prompt-subcategories" element={<PromptSubCategories />} />
-          <Route path="prompt-subcategories/new" element={<NewOrEditPromptSubCategory />} />
-          <Route path="prompt-subcategories/:id/edit" element={<NewOrEditPromptSubCategory />} />
-          <Route path="slot-types" element={<SlotTypes />} />
-          <Route path="slot-types/new" element={<NewOrEditSlotType />} />
-          <Route path="slot-types/:id/edit" element={<NewOrEditSlotType />} />
-          <Route path="slots" element={<Slots />} />
-          <Route path="slots/new" element={<NewOrEditSlot />} />
-          <Route path="slots/:id/edit" element={<NewOrEditSlot />} />
-          <Route path="mugs" element={<Mugs />} />
-          <Route path="mugs/new" element={<NewOrEditMug />} />
-          <Route path="mugs/:id/edit" element={<NewOrEditMug />} />
-          <Route path="mug-categories" element={<MugCategories />} />
-          <Route path="mug-categories/new" element={<NewOrEditMugCategory />} />
-          <Route path="mug-categories/:id/edit" element={<NewOrEditMugCategory />} />
-          <Route path="mug-subcategories/new" element={<NewOrEditMugSubCategory />} />
-          <Route path="mug-subcategories/:id/edit" element={<NewOrEditMugSubCategory />} />
-          <Route path="orders/open" element={<OpenOrders />} />
-          <Route path="orders/completed" element={<CompletedOrders />} />
-          <Route
-            path="prompt-tester"
-            element={
-              <div className="p-8 pt-20 md:pt-8">
-                <h1 className="text-2xl font-semibold">Prompt Tester</h1>
-                <p className="mt-2 text-gray-600">Prompt testing tool coming soon...</p>
-              </div>
-            }
-          />
-        </Route>
-      </Routes>
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Prompts />} />
+              <Route path="prompts" element={<Prompts />} />
+              <Route path="prompts/new" element={<NewOrEditPrompt />} />
+              <Route path="prompts/:id/edit" element={<NewOrEditPrompt />} />
+              <Route path="prompt-categories" element={<PromptCategories />} />
+              <Route path="prompt-categories/new" element={<NewOrEditPromptCategory />} />
+              <Route path="prompt-categories/:id/edit" element={<NewOrEditPromptCategory />} />
+              <Route path="prompt-subcategories" element={<PromptSubCategories />} />
+              <Route path="prompt-subcategories/new" element={<NewOrEditPromptSubCategory />} />
+              <Route path="prompt-subcategories/:id/edit" element={<NewOrEditPromptSubCategory />} />
+              <Route path="slot-types" element={<SlotTypes />} />
+              <Route path="slot-types/new" element={<NewOrEditSlotType />} />
+              <Route path="slot-types/:id/edit" element={<NewOrEditSlotType />} />
+              <Route path="slots" element={<Slots />} />
+              <Route path="slots/new" element={<NewOrEditSlot />} />
+              <Route path="slots/:id/edit" element={<NewOrEditSlot />} />
+              <Route path="mugs" element={<Mugs />} />
+              <Route path="mugs/new" element={<NewOrEditMug />} />
+              <Route path="mugs/:id/edit" element={<NewOrEditMug />} />
+              <Route path="mug-categories" element={<MugCategories />} />
+              <Route path="mug-categories/new" element={<NewOrEditMugCategory />} />
+              <Route path="mug-categories/:id/edit" element={<NewOrEditMugCategory />} />
+              <Route path="mug-subcategories/new" element={<NewOrEditMugSubCategory />} />
+              <Route path="mug-subcategories/:id/edit" element={<NewOrEditMugSubCategory />} />
+              <Route path="orders/open" element={<OpenOrders />} />
+              <Route path="orders/completed" element={<CompletedOrders />} />
+              <Route
+                path="prompt-tester"
+                element={
+                  <div className="p-8 pt-20 md:pt-8">
+                    <h1 className="text-2xl font-semibold">Prompt Tester</h1>
+                    <p className="mt-2 text-gray-600">Prompt testing tool coming soon...</p>
+                  </div>
+                }
+              />
+            </Route>
+          </Route>
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }
