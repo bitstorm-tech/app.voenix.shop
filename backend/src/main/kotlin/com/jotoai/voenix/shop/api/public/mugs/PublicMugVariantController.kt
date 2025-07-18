@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.public.catalog
+package com.jotoai.voenix.shop.api.public.mugs
 
 import com.jotoai.voenix.shop.domain.mugs.dto.MugVariantDto
 import com.jotoai.voenix.shop.domain.mugs.service.MugVariantService
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/public/catalog/mug-variants")
+@RequestMapping("/api/public/mugs/variants")
 class PublicMugVariantController(
     private val mugVariantService: MugVariantService,
 ) {

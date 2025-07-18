@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.public.catalog
+package com.jotoai.voenix.shop.api.public.prompts
 
 import com.jotoai.voenix.shop.domain.prompts.dto.SlotTypeDto
 import com.jotoai.voenix.shop.domain.prompts.service.SlotTypeService
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/public/catalog/slot-types")
+@RequestMapping("/api/public/prompts/slot-types")
 class PublicSlotTypeController(
     private val slotTypeService: SlotTypeService,
 ) {

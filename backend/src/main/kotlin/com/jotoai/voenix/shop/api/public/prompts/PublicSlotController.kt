@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.public.catalog
+package com.jotoai.voenix.shop.api.public.prompts
 
 import com.jotoai.voenix.shop.domain.prompts.dto.SlotDto
 import com.jotoai.voenix.shop.domain.prompts.service.SlotService
@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/public/catalog/slots")
+@RequestMapping("/api/public/prompts/slots")
 class PublicSlotController(
     private val slotService: SlotService,
 ) {

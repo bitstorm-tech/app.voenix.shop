@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.admin.catalog
+package com.jotoai.voenix.shop.api.admin.mugs
 
 import com.jotoai.voenix.shop.domain.mugs.dto.CreateMugRequest
 import com.jotoai.voenix.shop.domain.mugs.dto.MugDto
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/admin/catalog/mugs")
+@RequestMapping("/api/admin/mugs")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminMugController(
     private val mugService: MugService,

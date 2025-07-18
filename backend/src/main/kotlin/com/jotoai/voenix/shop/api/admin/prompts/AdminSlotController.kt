@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.admin.catalog
+package com.jotoai.voenix.shop.api.admin.prompts
 
 import com.jotoai.voenix.shop.domain.prompts.dto.CreateSlotRequest
 import com.jotoai.voenix.shop.domain.prompts.dto.SlotDto
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/admin/catalog/slots")
+@RequestMapping("/api/admin/prompts/slots")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminSlotController(
     private val slotService: SlotService,

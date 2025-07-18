@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.public.catalog
+package com.jotoai.voenix.shop.api.public.prompts
 
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptSubCategoryDto
 import com.jotoai.voenix.shop.domain.prompts.service.PromptSubCategoryService
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/public/catalog/prompt-subcategories")
+@RequestMapping("/api/public/prompts/subcategories")
 class PublicPromptSubCategoryController(
     private val promptSubCategoryService: PromptSubCategoryService,
 ) {

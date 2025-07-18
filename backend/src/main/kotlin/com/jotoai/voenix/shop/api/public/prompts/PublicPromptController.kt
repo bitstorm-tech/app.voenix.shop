@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.public.catalog
+package com.jotoai.voenix.shop.api.public.prompts
 
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptDto
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/public/catalog/prompts")
+@RequestMapping("/api/public/prompts")
 class PublicPromptController(
     private val promptService: PromptService,
 ) {

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.public.catalog
+package com.jotoai.voenix.shop.api.public.mugs
 
 import com.jotoai.voenix.shop.domain.mugs.dto.MugSubCategoryDto
 import com.jotoai.voenix.shop.domain.mugs.service.MugSubCategoryService
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/public/catalog/mug-subcategories")
+@RequestMapping("/api/public/mugs/subcategories")
 class PublicMugSubCategoryController(
     private val mugSubCategoryService: MugSubCategoryService,
 ) {

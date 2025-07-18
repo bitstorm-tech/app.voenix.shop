@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.admin.catalog
+package com.jotoai.voenix.shop.api.admin.prompts
 
 import com.jotoai.voenix.shop.domain.prompts.dto.CreatePromptSubCategoryRequest
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptSubCategoryDto
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/admin/catalog/prompt-subcategories")
+@RequestMapping("/api/admin/prompts/subcategories")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminPromptSubCategoryController(
     private val promptSubCategoryService: PromptSubCategoryService,
