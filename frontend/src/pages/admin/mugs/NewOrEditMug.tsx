@@ -9,7 +9,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import CostsTab from './tabs/CostsTab';
 import DataTab from './tabs/DataTab';
 import DescriptionTab from './tabs/DescriptionTab';
+import LieferantTab from './tabs/LieferantTab';
 import VariantsTab from './tabs/VariantsTab';
+import VersandTab from './tabs/VersandTab';
 
 export default function NewOrEditMug() {
   const navigate = useNavigate();
@@ -267,10 +269,12 @@ export default function NewOrEditMug() {
             {error && <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
 
             <Tabs defaultValue="description" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-6">
                 <TabsTrigger value="description">Description</TabsTrigger>
                 <TabsTrigger value="data">Data</TabsTrigger>
                 <TabsTrigger value="costs">Costs</TabsTrigger>
+                <TabsTrigger value="lieferant">Lieferant</TabsTrigger>
+                <TabsTrigger value="versand">Versand</TabsTrigger>
                 <TabsTrigger value="variants">Variants</TabsTrigger>
               </TabsList>
 
@@ -293,6 +297,14 @@ export default function NewOrEditMug() {
 
               <TabsContent value="data" className="mt-6">
                 <DataTab formData={formData} setFormData={setFormData} />
+              </TabsContent>
+
+              <TabsContent value="lieferant" className="mt-6">
+                <LieferantTab formData={formData} setFormData={setFormData} />
+              </TabsContent>
+
+              <TabsContent value="versand" className="mt-6">
+                <VersandTab formData={formData} setFormData={setFormData} />
               </TabsContent>
 
               <TabsContent value="variants" className="mt-6">

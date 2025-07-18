@@ -250,7 +250,9 @@ export default function VariantsTab({ mugId }: VariantsTabProps) {
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                   <div className="flex items-center gap-4">
                     <div className="flex-shrink-0">
-                      <Label htmlFor={`edit-color-${variant.id}`} className="text-xs text-gray-500">Color</Label>
+                      <Label htmlFor={`edit-color-${variant.id}`} className="text-xs text-gray-500">
+                        Color
+                      </Label>
                       <ColorPicker
                         id={`edit-color-${variant.id}`}
                         value={editVariant.colorCode || variant.colorCode}
@@ -258,14 +260,14 @@ export default function VariantsTab({ mugId }: VariantsTabProps) {
                       />
                     </div>
                     <div className="flex-shrink-0">
-                      {editVariantImageUrl && (
-                        <img src={editVariantImageUrl} alt="Variant preview" className="h-20 w-20 rounded-md object-cover" />
-                      )}
+                      {editVariantImageUrl && <img src={editVariantImageUrl} alt="Variant preview" className="h-20 w-20 rounded-md object-cover" />}
                     </div>
                   </div>
 
                   <div className="flex-grow">
-                    <Label htmlFor={`edit-image-${variant.id}`} className="text-xs text-gray-500">Example Image</Label>
+                    <Label htmlFor={`edit-image-${variant.id}`} className="text-xs text-gray-500">
+                      Example Image
+                    </Label>
                     <Input
                       id={`edit-image-${variant.id}`}
                       type="file"
@@ -289,11 +291,7 @@ export default function VariantsTab({ mugId }: VariantsTabProps) {
             ) : (
               // View Mode
               <div className="flex flex-col items-center gap-4 p-4 sm:flex-row">
-                <img 
-                  src={variant.exampleImageUrl} 
-                  alt={`Variant ${variant.colorCode}`} 
-                  className="h-20 w-20 flex-shrink-0 rounded-md object-cover" 
-                />
+                <img src={variant.exampleImageUrl} alt={`Variant ${variant.colorCode}`} className="h-20 w-20 flex-shrink-0 rounded-md object-cover" />
                 <div className="flex flex-grow items-center gap-3">
                   <div className="h-10 w-10 flex-shrink-0 rounded-full border-2 border-gray-300" style={{ backgroundColor: variant.colorCode }} />
                   <span className="font-medium">{variant.colorCode}</span>
@@ -318,7 +316,9 @@ export default function VariantsTab({ mugId }: VariantsTabProps) {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="flex items-center gap-4">
                   <div className="flex-shrink-0">
-                    <Label htmlFor="new-color" className="text-xs text-gray-500">Color</Label>
+                    <Label htmlFor="new-color" className="text-xs text-gray-500">
+                      Color
+                    </Label>
                     <ColorPicker
                       id="new-color"
                       value={newVariant.colorCode}
@@ -326,20 +326,20 @@ export default function VariantsTab({ mugId }: VariantsTabProps) {
                     />
                   </div>
                   <div className="flex-shrink-0">
-                    {newVariantImageUrl && (
-                      <img src={newVariantImageUrl} alt="New variant preview" className="h-20 w-20 rounded-md object-cover" />
-                    )}
+                    {newVariantImageUrl && <img src={newVariantImageUrl} alt="New variant preview" className="h-20 w-20 rounded-md object-cover" />}
                   </div>
                 </div>
 
                 <div className="flex-grow">
-                  <Label htmlFor="new-image" className="text-xs text-gray-500">Example Image</Label>
-                  <Input 
-                    id="new-image" 
-                    type="file" 
-                    accept="image/*" 
-                    ref={newVariantFileInputRef} 
-                    onChange={(e) => handleImageUpload(e, false)} 
+                  <Label htmlFor="new-image" className="text-xs text-gray-500">
+                    Example Image
+                  </Label>
+                  <Input
+                    id="new-image"
+                    type="file"
+                    accept="image/*"
+                    ref={newVariantFileInputRef}
+                    onChange={(e) => handleImageUpload(e, false)}
                     className="mt-1"
                   />
                 </div>
