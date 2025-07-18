@@ -1,11 +1,14 @@
 package com.jotoai.voenix.shop.mugs.entity
 
 import com.jotoai.voenix.shop.mugs.dto.MugDto
+import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -41,6 +44,8 @@ data class Mug(
     var dishwasherSafe: Boolean = true,
     @Column(nullable = false)
     var active: Boolean = true,
+    @OneToMany(mappedBy = "mug", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    var variants: MutableList<MugVariant> = mutableListOf(),
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,
@@ -63,6 +68,7 @@ data class Mug(
             fillingQuantity = this.fillingQuantity,
             dishwasherSafe = this.dishwasherSafe,
             active = this.active,
+            variants = this.variants.map { it.toDto() },
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )

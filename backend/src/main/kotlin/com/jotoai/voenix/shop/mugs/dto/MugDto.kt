@@ -16,6 +16,7 @@ data class MugDto(
     val fillingQuantity: String?,
     val dishwasherSafe: Boolean,
     val active: Boolean,
+    val variants: List<MugVariantDto> = emptyList(),
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,
 )
