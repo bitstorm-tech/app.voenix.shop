@@ -2,9 +2,9 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import type { CreateMugRequest, UpdateMugRequest } from '@/lib/api';
-import { imagesApi, mugCategoriesApi, mugsApi, mugSubCategoriesApi } from '@/lib/api';
+import { mugCategoriesApi, mugsApi, mugSubCategoriesApi } from '@/lib/api';
 import type { MugCategory, MugSubCategory } from '@/types/mug';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CostsTab from './tabs/CostsTab';
 import DataTab from './tabs/DataTab';
@@ -39,9 +39,6 @@ export default function NewOrEditMug() {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -51,15 +48,6 @@ export default function NewOrEditMug() {
       setInitialLoading(false);
     }
   }, [id]);
-
-  // Cleanup blob URLs on unmount
-  useEffect(() => {
-    return () => {
-      if (imageUrl && imageUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(imageUrl);
-      }
-    };
-  }, [imageUrl]);
 
   useEffect(() => {
     if (formData.categoryId) {
@@ -111,11 +99,6 @@ export default function NewOrEditMug() {
         categoryId: mug.category?.id,
         subCategoryId: mug.subCategory?.id,
       });
-
-      // Set image if exists
-      if (mug.image) {
-        setImageUrl(mug.image);
-      }
     } catch (error) {
       console.error('Error fetching mug:', error);
       setError('Failed to load mug');
@@ -161,37 +144,14 @@ export default function NewOrEditMug() {
       setLoading(true);
       setError(null);
 
-      let finalImageUrl = formData.image;
-
-      // Upload new image if there is one
-      if (imageFile) {
-        try {
-          const uploadResult = await imagesApi.upload(imageFile, 'PUBLIC');
-          // Construct the full URL for the uploaded image
-          finalImageUrl = `/api/images/${uploadResult.filename}`;
-        } catch (uploadError: any) {
-          console.error('Error uploading image:', uploadError);
-          setError(`Failed to upload image: ${uploadError.message || 'Please try again.'}`);
-          setLoading(false);
-          return;
-        }
-      } else if (imageUrl && !imageUrl.startsWith('blob:')) {
-        // Keep existing image URL if not uploading a new one
-        finalImageUrl = imageUrl;
-      }
-
       if (isEditing) {
         const updateData: UpdateMugRequest = {
           ...formData,
-          image: finalImageUrl || '',
           fillingQuantity: formData.fillingQuantity || undefined,
         };
         await mugsApi.update(parseInt(id), updateData);
       } else {
-        await mugsApi.create({
-          ...formData,
-          image: finalImageUrl || '',
-        });
+        await mugsApi.create(formData);
       }
 
       navigate('/admin/mugs');
@@ -205,46 +165,6 @@ export default function NewOrEditMug() {
 
   const handleCancel = () => {
     navigate('/admin/mugs');
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !file.type.startsWith('image/')) {
-      setError('Please select a valid image file');
-      return;
-    }
-
-    // Check file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      setError('File size exceeds maximum allowed size of 10MB');
-      return;
-    }
-
-    // Clean up previous blob URL if exists
-    if (imageUrl && imageUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(imageUrl);
-    }
-
-    // Create blob URL for preview
-    const blobUrl = URL.createObjectURL(file);
-    setImageFile(file);
-    setImageUrl(blobUrl);
-    setError(null);
-
-    // Reset the input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleRemoveImage = () => {
-    // Clean up blob URL if exists
-    if (imageUrl && imageUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(imageUrl);
-    }
-    setImageUrl(null);
-    setImageFile(null);
   };
 
   if (initialLoading) {
@@ -279,16 +199,7 @@ export default function NewOrEditMug() {
               </TabsList>
 
               <TabsContent value="description" className="mt-6">
-                <DescriptionTab
-                  formData={formData}
-                  setFormData={setFormData}
-                  categories={categories}
-                  subCategories={subCategories}
-                  imageUrl={imageUrl}
-                  fileInputRef={fileInputRef}
-                  handleImageUpload={handleImageUpload}
-                  handleRemoveImage={handleRemoveImage}
-                />
+                <DescriptionTab formData={formData} setFormData={setFormData} categories={categories} subCategories={subCategories} />
               </TabsContent>
 
               <TabsContent value="costs" className="mt-6">

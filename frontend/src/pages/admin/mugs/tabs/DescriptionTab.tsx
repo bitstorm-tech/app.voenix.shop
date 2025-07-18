@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
@@ -6,30 +5,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/Textarea';
 import type { CreateMugRequest } from '@/lib/api';
 import type { MugCategory, MugSubCategory } from '@/types/mug';
-import { Upload, X } from 'lucide-react';
-import { RefObject } from 'react';
 
 interface DescriptionTabProps {
   formData: CreateMugRequest;
   setFormData: (data: CreateMugRequest) => void;
   categories: MugCategory[];
   subCategories: MugSubCategory[];
-  imageUrl: string | null;
-  fileInputRef: RefObject<HTMLInputElement | null>;
-  handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleRemoveImage: () => void;
 }
 
-export default function DescriptionTab({
-  formData,
-  setFormData,
-  categories,
-  subCategories,
-  imageUrl,
-  fileInputRef,
-  handleImageUpload,
-  handleRemoveImage,
-}: DescriptionTabProps) {
+export default function DescriptionTab({ formData, setFormData, categories, subCategories }: DescriptionTabProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-2">
@@ -112,29 +96,6 @@ export default function DescriptionTab({
           rows={4}
           required
         />
-      </div>
-
-      <div className="space-y-2">
-        <Label>Image</Label>
-        <div className="space-y-3">
-          {imageUrl ? (
-            <div className="relative w-full max-w-md">
-              <img src={imageUrl} alt="Mug" className="w-full rounded-lg border border-gray-200 object-contain" />
-              <Button type="button" variant="outline" size="sm" className="absolute top-2 right-2 bg-white shadow-sm" onClick={handleRemoveImage}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Image
-              </Button>
-              <p className="text-sm text-gray-500">PNG, JPG, GIF, or WEBP (automatically converted to WebP)</p>
-            </div>
-          )}
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-        </div>
       </div>
     </div>
   );
