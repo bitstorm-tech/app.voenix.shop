@@ -16,6 +16,7 @@ export interface Mug {
   updatedAt?: string;
   category?: MugCategory;
   subCategory?: MugSubCategory;
+  variants?: MugVariant[];
 }
 
 export interface MugCategory {
@@ -32,6 +33,15 @@ export interface MugSubCategory {
   mugCategoryId: number;
   category?: MugCategory;
   description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface MugVariant {
+  id: number;
+  mugId: number;
+  colorCode: string;
+  exampleImageUrl: string;
   createdAt?: string;
   updatedAt?: string;
 }

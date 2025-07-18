@@ -23,7 +23,11 @@
       "WebFetch(domain:sksamuel.github.io)",
       "Bash(npm run dev:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "mcp__puppeteer__puppeteer_navigate",
+      "mcp__puppeteer__puppeteer_screenshot",
+      "mcp__puppeteer__puppeteer_click",
+      "mcp__puppeteer__puppeteer_evaluate"
     ],
     "deny": []
   }

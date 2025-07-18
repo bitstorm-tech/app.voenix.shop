@@ -296,7 +296,7 @@ export default function NewOrEditMug() {
               </TabsContent>
 
               <TabsContent value="variants" className="mt-6">
-                <VariantsTab />
+                <VariantsTab mugId={id ? parseInt(id) : undefined} />
               </TabsContent>
             </Tabs>
 

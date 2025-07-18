@@ -1,5 +1,5 @@
 import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
-import type { Mug, MugCategory, MugSubCategory } from '@/types/mug';
+import type { Mug, MugCategory, MugSubCategory, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
 import type { Slot, SlotType } from '@/types/slot';
 
@@ -242,6 +242,28 @@ export interface UpdateMugSubCategoryRequest {
   name?: string;
   mugCategoryId?: number;
   description?: string;
+}
+
+// Mug Variant API endpoints
+export const mugVariantsApi = {
+  getAll: () => api.get<MugVariant[]>('/mug-variants'),
+  getById: (id: number) => api.get<MugVariant>(`/mug-variants/${id}`),
+  getByMugId: (mugId: number) => api.get<MugVariant[]>(`/mugs/${mugId}/variants`),
+  create: (data: CreateMugVariantRequest) => api.post<MugVariant>('/mug-variants', data),
+  update: (id: number, data: UpdateMugVariantRequest) => api.put<MugVariant>(`/mug-variants/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/mug-variants/${id}`),
+};
+
+// Type definitions for Mug Variant API requests
+export interface CreateMugVariantRequest {
+  mugId: number;
+  colorCode: string;
+  exampleImageFilename: string;
+}
+
+export interface UpdateMugVariantRequest {
+  colorCode?: string;
+  exampleImageFilename?: string;
 }
 
 // Slot Type API endpoints
