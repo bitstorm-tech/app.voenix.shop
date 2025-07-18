@@ -4,7 +4,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import CompletedOrders from '@/pages/admin/CompletedOrders';
 import MugCategories from '@/pages/admin/MugCategories';
 import Mugs from '@/pages/admin/Mugs';
-import NewOrEditMug from '@/pages/admin/NewOrEditMug';
+import NewOrEditMug from '@/pages/admin/mugs/NewOrEditMug';
 import NewOrEditMugCategory from '@/pages/admin/NewOrEditMugCategory';
 import NewOrEditMugSubCategory from '@/pages/admin/NewOrEditMugSubCategory';
 import NewOrEditPrompt from '@/pages/admin/NewOrEditPrompt';
