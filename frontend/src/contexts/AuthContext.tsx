@@ -1,5 +1,7 @@
-import { authApi } from '@/lib/api';
-import type { LoginRequest, SessionInfo, User } from '@/types/auth';
+// TEMPORARY: Authentication disabled for development
+// To re-enable: revert changes in this file
+
+import type { LoginRequest, User } from '@/types/auth';
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,49 +17,45 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// TEMPORARY: Mock user for development
+const MOCK_USER: User = {
+  id: 1,
+  email: 'admin@example.com',
+  firstName: 'Admin',
+  lastName: 'User',
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+};
+const MOCK_ROLES = ['ADMIN', 'USER'];
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [roles, setRoles] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(MOCK_USER);
+  const [roles, setRoles] = useState<string[]>(MOCK_ROLES);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const checkSession = async () => {
-    try {
-      const sessionInfo: SessionInfo = await authApi.checkSession();
-      if (sessionInfo.authenticated && sessionInfo.user) {
-        setUser(sessionInfo.user);
-        setRoles(sessionInfo.roles);
-      } else {
-        setUser(null);
-        setRoles([]);
-      }
-    } catch (error) {
-      setUser(null);
-      setRoles([]);
-    } finally {
-      setIsLoading(false);
-    }
+    // TEMPORARY: Skip session check, always use mock user
+    setUser(MOCK_USER);
+    setRoles(MOCK_ROLES);
+    setIsLoading(false);
   };
 
-  const login = async (credentials: LoginRequest) => {
-    const response = await authApi.login(credentials);
-    setUser(response.user);
-    setRoles(response.roles);
+  const login = async (_credentials: LoginRequest) => {
+    // TEMPORARY: Skip actual login, just navigate to admin
+    setUser(MOCK_USER);
+    setRoles(MOCK_ROLES);
     navigate('/admin');
   };
 
   const logout = async () => {
-    try {
-      await authApi.logout();
-    } finally {
-      setUser(null);
-      setRoles([]);
-      navigate('/login');
-    }
+    // TEMPORARY: Just redirect to home
+    navigate('/');
   };
 
   useEffect(() => {
-    checkSession();
+    // TEMPORARY: Skip session check on mount
+    // checkSession();
   }, []);
 
   const value: AuthContextType = {

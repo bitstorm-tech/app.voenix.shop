@@ -30,6 +30,7 @@
         
         <logger name="com.jotoai.voenix.shop" level="DEBUG" />
         <logger name="org.springframework.web" level="DEBUG" />
+        <logger name="org.springframework.security" level="TRACE" />
         <logger name="org.flywaydb" level="INFO" />
     </springProfile>
 
