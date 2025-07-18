@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.auth.service
 
-import com.jotoai.voenix.shop.users.repository.UserRepository
+import com.jotoai.voenix.shop.domain.users.repository.UserRepository
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.core.userdetails.UsernameNotFoundException

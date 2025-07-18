@@ -3,8 +3,8 @@ package com.jotoai.voenix.shop.auth.service
 import com.jotoai.voenix.shop.auth.dto.LoginRequest
 import com.jotoai.voenix.shop.auth.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.dto.SessionInfo
-import com.jotoai.voenix.shop.users.entity.User
-import com.jotoai.voenix.shop.users.repository.UserRepository
+import com.jotoai.voenix.shop.domain.users.entity.User
+import com.jotoai.voenix.shop.domain.users.repository.UserRepository
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
