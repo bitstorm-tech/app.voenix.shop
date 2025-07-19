@@ -15,6 +15,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.HttpStatusEntryPoint
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository
+import org.springframework.security.web.context.SecurityContextRepository
+import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession
 
 @Configuration
 @EnableWebSecurity
@@ -22,6 +25,11 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint
 class SecurityConfig(
     private val customUserDetailsService: CustomUserDetailsService,
 ) {
+    @Bean
+    fun securityContextRepository(): SecurityContextRepository {
+        return HttpSessionSecurityContextRepository()
+    }
+
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
@@ -39,6 +47,9 @@ class SecurityConfig(
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain {
         http
+            .securityContext { context ->
+                context.securityContextRepository(securityContextRepository())
+            }
             .csrf { it.disable() }
             .cors { }
             .sessionManagement { session ->

@@ -354,7 +354,7 @@ export const imagesApi = {
 
 // Authentication API endpoints
 export const authApi = {
-  login: (data: LoginRequest) => api.post<LoginResponse>('/auth/login', data),
-  logout: () => api.post<void>('/auth/logout', {}),
-  checkSession: () => api.get<SessionInfo>('/auth/session'),
+  login: (data: LoginRequest) => api.post<LoginResponse>('/public/auth/login', data),
+  logout: () => api.post<void>('/public/auth/logout', {}),
+  checkSession: () => api.get<SessionInfo>('/public/auth/session'),
 };
