@@ -29,7 +29,9 @@
       "mcp__puppeteer__puppeteer_click",
       "mcp__puppeteer__puppeteer_evaluate",
       "Bash(npm run build:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(npm install:*)",
+      "Bash(npx prettier:*)"
     ],
     "deny": []
   }

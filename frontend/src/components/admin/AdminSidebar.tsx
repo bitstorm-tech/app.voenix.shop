@@ -1,9 +1,9 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/Accordion';
 import { Button } from '@/components/ui/Button';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/stores/authStore';
 import { Coffee, FileText, FlaskConical, LogOut, Package, Palette } from 'lucide-react';
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 interface AdminSidebarProps {
   user?: { name?: string };
@@ -12,10 +12,13 @@ interface AdminSidebarProps {
 
 export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
   const [openItems, setOpenItems] = useState<string[]>(['prompts', 'mugs', 'orders']);
-  const { logout, user } = useAuth();
+  const logout = useAuthStore((state) => state.logout);
+  const user = useAuthStore((state) => state.user);
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     await logout();
+    navigate('/login');
   };
 
   return (

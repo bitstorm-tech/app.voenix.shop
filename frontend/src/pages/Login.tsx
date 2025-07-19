@@ -2,12 +2,14 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import { useAuth } from '@/contexts/AuthContext';
 import { ApiError } from '@/lib/api';
+import { useAuthStore } from '@/stores/authStore';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
-  const { login } = useAuth();
+  const login = useAuthStore((state) => state.login);
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,6 +22,7 @@ export default function Login() {
 
     try {
       await login({ email, password });
+      navigate('/admin');
     } catch (err) {
       if (err instanceof ApiError) {
         if (err.status === 401) {

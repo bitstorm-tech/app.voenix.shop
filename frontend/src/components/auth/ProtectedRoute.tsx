@@ -1,4 +1,5 @@
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuthStore } from '@/stores/authStore';
+import { useEffect } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 
 interface ProtectedRouteProps {
@@ -6,8 +7,15 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ requiredRoles = [] }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, roles } = useAuth();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const roles = useAuthStore((state) => state.roles);
   const location = useLocation();
+
+  useEffect(() => {
+    // Use getState to avoid subscribing to the store in useEffect
+    useAuthStore.getState().checkSession();
+  }, []);
 
   if (isLoading) {
     return (
