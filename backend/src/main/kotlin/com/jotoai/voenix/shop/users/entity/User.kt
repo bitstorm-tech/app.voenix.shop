@@ -2,21 +2,9 @@ package com.jotoai.voenix.shop.users.entity
 
 import com.jotoai.voenix.shop.auth.entity.Role
 import com.jotoai.voenix.shop.users.dto.UserDto
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.JoinTable
-import jakarta.persistence.ManyToMany
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.authority.SimpleGrantedAuthority
-import org.springframework.security.core.userdetails.UserDetails
 import java.time.OffsetDateTime
 
 @Entity
@@ -51,7 +39,7 @@ data class User(
         inverseJoinColumns = [JoinColumn(name = "role_id")],
     )
     var roles: Set<Role> = mutableSetOf(),
-) : UserDetails {
+) {
     fun toDto() =
         UserDto(
             id = requireNotNull(this.id) { "User ID cannot be null when converting to DTO" },
@@ -62,24 +50,4 @@ data class User(
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )
-
-    override fun toString(): String =
-        "User(id=$id, email='$email', firstName=$firstName, lastName=$lastName, " +
-            "phoneNumber=$phoneNumber, password=${if (password != null) "[PROTECTED]" else null}, " +
-            "oneTimePassword=${if (oneTimePassword != null) "[PROTECTED]" else null}, " +
-            "createdAt=$createdAt, updatedAt=$updatedAt, roles=$roles)"
-
-    override fun getAuthorities(): Collection<GrantedAuthority> = roles.map { SimpleGrantedAuthority("ROLE_${it.name}") }
-
-    override fun getUsername(): String = email
-
-    override fun getPassword(): String? = this.password
-
-    override fun isAccountNonExpired(): Boolean = true
-
-    override fun isAccountNonLocked(): Boolean = true
-
-    override fun isCredentialsNonExpired(): Boolean = true
-
-    override fun isEnabled(): Boolean = true
 }

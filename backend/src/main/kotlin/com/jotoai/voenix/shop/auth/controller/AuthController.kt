@@ -5,14 +5,11 @@ import com.jotoai.voenix.shop.auth.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.dto.SessionInfo
 import com.jotoai.voenix.shop.auth.service.AuthService
 import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/auth")
@@ -23,9 +20,9 @@ class AuthController(
     fun login(
         @Valid @RequestBody loginRequest: LoginRequest,
         request: HttpServletRequest,
-    ): ResponseEntity<LoginResponse> {
-        val response = authService.login(loginRequest, request)
-        return ResponseEntity.ok(response)
+        response: HttpServletResponse,
+    ): LoginResponse {
+        return authService.login(loginRequest, request, response)
     }
 
     @PostMapping("/logout")
