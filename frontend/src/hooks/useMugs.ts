@@ -78,7 +78,7 @@ export function useMugs() {
   useEffect(() => {
     const fetchMugs = async () => {
       try {
-        const data = await mugsApi.getActive();
+        const data = await mugsApi.getAll();
         const mappedMugs = data.map(mapMugToOption);
         setMugs(mappedMugs);
       } catch (err) {

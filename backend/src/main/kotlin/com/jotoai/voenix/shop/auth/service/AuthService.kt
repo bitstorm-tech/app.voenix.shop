@@ -37,15 +37,18 @@ class AuthService(
                     ),
                 )
 
+            // The following 4 lines of code fix the problem with not persisted principal
+            // Took me one f**king day to find the solution
             val context = SecurityContextHolder.createEmptyContext()
             context.authentication = authentication
             SecurityContextHolder.setContext(context)
             securityContextRepository.saveContext(context, request, response)
 
             val userDetails = authentication.principal as CustomUserDetails
-            val user = userRepository.findById(userDetails.id).orElseThrow {
-                UsernameNotFoundException("User not found with ID: ${userDetails.id}")
-            }
+            val user =
+                userRepository.findById(userDetails.id).orElseThrow {
+                    UsernameNotFoundException("User not found with ID: ${userDetails.id}")
+                }
             val session = request.getSession(true)
 
             return LoginResponse(

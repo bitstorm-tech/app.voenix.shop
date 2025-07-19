@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.public.services
+package com.jotoai.voenix.shop.api.admin.services
 
 import com.jotoai.voenix.shop.domain.pdf.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.domain.pdf.service.PdfService
@@ -7,14 +7,16 @@ import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/public/pdf")
-class PublicPdfController(
+@RequestMapping("/api/admin/pdf")
+@PreAuthorize("hasRole('ADMIN')")
+class AdminPdfController(
     private val pdfService: PdfService,
 ) {
     @PostMapping("/generate")

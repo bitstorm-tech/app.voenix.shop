@@ -7,11 +7,13 @@ import com.jotoai.voenix.shop.domain.mugs.service.MugSubCategoryService
 import jakarta.validation.Valid
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -20,6 +22,24 @@ import org.springframework.web.bind.annotation.RestController
 class AdminMugSubCategoryController(
     private val mugSubCategoryService: MugSubCategoryService,
 ) {
+    @GetMapping
+    fun getAllSubCategories(): List<MugSubCategoryDto> = mugSubCategoryService.getAllSubCategories()
+
+    @GetMapping("/{id}")
+    fun getSubCategoryById(
+        @PathVariable id: Long,
+    ): MugSubCategoryDto = mugSubCategoryService.getSubCategoryById(id)
+
+    @GetMapping("/category/{categoryId}")
+    fun getSubCategoriesByCategoryId(
+        @PathVariable categoryId: Long,
+    ): List<MugSubCategoryDto> = mugSubCategoryService.getSubCategoriesByCategoryId(categoryId)
+
+    @GetMapping("/search")
+    fun searchSubCategoriesByName(
+        @RequestParam name: String,
+    ): List<MugSubCategoryDto> = mugSubCategoryService.searchSubCategoriesByName(name)
+
     @PostMapping
     fun createMugSubCategory(
         @Valid @RequestBody createMugSubCategoryRequest: CreateMugSubCategoryRequest,

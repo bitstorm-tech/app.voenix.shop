@@ -17,7 +17,6 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.HttpStatusEntryPoint
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository
 import org.springframework.security.web.context.SecurityContextRepository
-import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession
 
 @Configuration
 @EnableWebSecurity
@@ -26,9 +25,7 @@ class SecurityConfig(
     private val customUserDetailsService: CustomUserDetailsService,
 ) {
     @Bean
-    fun securityContextRepository(): SecurityContextRepository {
-        return HttpSessionSecurityContextRepository()
-    }
+    fun securityContextRepository(): SecurityContextRepository = HttpSessionSecurityContextRepository()
 
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
@@ -49,15 +46,14 @@ class SecurityConfig(
         http
             .securityContext { context ->
                 context.securityContextRepository(securityContextRepository())
-            }
-            .csrf { it.disable() }
+            }.csrf { it.disable() }
             .cors { }
             .sessionManagement { session ->
                 session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             }.authorizeHttpRequests { auth ->
                 auth
-                    // Public endpoints - No authentication required
-                    .requestMatchers("/api/public/**")
+                    // Auth endpoints - No authentication required
+                    .requestMatchers("/api/auth/**")
                     .permitAll()
                     // Admin endpoints - Require ADMIN role
                     .requestMatchers("/api/admin/**")

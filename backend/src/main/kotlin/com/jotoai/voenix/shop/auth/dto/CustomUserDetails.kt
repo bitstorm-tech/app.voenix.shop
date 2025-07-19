@@ -10,8 +10,8 @@ data class CustomUserDetails(
     private val email: String,
     private val passwordHash: String?,
     private val userRoles: Set<String>,
-) : UserDetails, Serializable {
-
+) : UserDetails,
+    Serializable {
     override fun getAuthorities(): Collection<GrantedAuthority> = userRoles.map { SimpleGrantedAuthority("ROLE_$it") }
 
     override fun getPassword(): String? = passwordHash
