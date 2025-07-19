@@ -1,7 +1,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/Accordion';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/stores/authStore';
-import { Coffee, FileText, FlaskConical, LogOut, Package, Palette } from 'lucide-react';
+import { Box, FileText, FlaskConical, LogOut, Palette, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 
@@ -100,8 +100,8 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
           <AccordionItem value="mugs" className="border-none">
             <AccordionTrigger className="rounded-md px-3 py-2 hover:bg-gray-100 hover:no-underline">
               <div className="flex items-center gap-2">
-                <Coffee className="h-4 w-4" />
-                <span>Mugs</span>
+                <Box className="h-4 w-4" />
+                <span>Articles</span>
               </div>
             </AccordionTrigger>
             <AccordionContent className="ml-4 space-y-1">
@@ -127,17 +127,6 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
               >
                 Categories
               </NavLink>
-              <NavLink
-                to="/admin/mug-subcategories"
-                onClick={onNavigate}
-                className={({ isActive }) =>
-                  `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
-                    isActive ? 'bg-gray-200 font-medium' : ''
-                  }`
-                }
-              >
-                Subcategories
-              </NavLink>
             </AccordionContent>
           </AccordionItem>
 
@@ -145,7 +134,7 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
           <AccordionItem value="orders" className="border-none">
             <AccordionTrigger className="rounded-md px-3 py-2 hover:bg-gray-100 hover:no-underline">
               <div className="flex items-center gap-2">
-                <Package className="h-4 w-4" />
+                <ShoppingBag className="h-4 w-4" />
                 <span>Orders</span>
               </div>
             </AccordionTrigger>
