@@ -25,6 +25,7 @@ export interface ArticleCategory {
   description?: string;
   createdAt?: string;
   updatedAt?: string;
+  articles_count?: number;
 }
 
 export interface ArticleSubCategory {
@@ -33,6 +34,7 @@ export interface ArticleSubCategory {
   articleCategoryId: number;
   category?: ArticleCategory;
   description?: string;
+  articlesCount?: number;
   createdAt?: string;
   updatedAt?: string;
 }

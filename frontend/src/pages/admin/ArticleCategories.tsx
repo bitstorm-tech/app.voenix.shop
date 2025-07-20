@@ -1,72 +1,154 @@
+import ArticleCategoryFormDialog from '@/components/admin/categories/ArticleCategoryFormDialog';
+import ArticleSubCategoryFormDialog from '@/components/admin/categories/ArticleSubCategoryFormDialog';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/Accordion';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/AlertDialog';
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { Input } from '@/components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
-import { useDebounce } from '@/hooks/useDebounce';
-import { articleCategoriesApi } from '@/lib/api';
-import { ArticleCategory } from '@/types/mug';
-import { Edit, Plus, Search, Trash2 } from 'lucide-react';
+import { articleCategoriesApi, articleSubCategoriesApi } from '@/lib/api';
+import { ArticleCategory, ArticleSubCategory } from '@/types/mug';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+interface CategoryWithSubcategories extends ArticleCategory {
+  subcategories: ArticleSubCategory[];
+}
 
 export default function ArticleCategories() {
-  const navigate = useNavigate();
   const [categories, setCategories] = useState<ArticleCategory[]>([]);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [subcategories, setSubcategories] = useState<ArticleSubCategory[]>([]);
+  const [categoriesWithSubs, setCategoriesWithSubs] = useState<CategoryWithSubcategories[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
+  const [isSubcategoryDialogOpen, setIsSubcategoryDialogOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<ArticleCategory | null>(null);
+  const [editingSubcategory, setEditingSubcategory] = useState<ArticleSubCategory | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
+
+  const [deleteDialog, setDeleteDialog] = useState<{
+    isOpen: boolean;
+    type: 'category' | 'subcategory';
+    id: number | null;
+    name: string;
+  }>({ isOpen: false, type: 'category', id: null, name: '' });
 
   useEffect(() => {
-    fetchCategories();
-  }, [debouncedSearchTerm]);
+    fetchData();
+  }, []);
 
-  const fetchCategories = async () => {
+  useEffect(() => {
+    // Combine categories and subcategories
+    const combined = categories.map((category) => ({
+      ...category,
+      subcategories: subcategories.filter((sub) => sub.articleCategoryId === category.id),
+    }));
+    setCategoriesWithSubs(combined);
+  }, [categories, subcategories]);
+
+  const fetchData = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      let data: ArticleCategory[];
-      if (debouncedSearchTerm.trim()) {
-        data = await articleCategoriesApi.search(debouncedSearchTerm);
-      } else {
-        data = await articleCategoriesApi.getAll();
-      }
-      setCategories(data);
+      const [categoriesData, subcategoriesData] = await Promise.all([articleCategoriesApi.getAll(), articleSubCategoriesApi.getAll()]);
+      setCategories(categoriesData);
+      setSubcategories(subcategoriesData);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error('Error fetching data:', error);
       setError('Failed to load categories. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    setDeleteId(id);
-    setIsDeleting(true);
+  const handleAddCategory = () => {
+    setEditingCategory(null);
+    setIsCategoryDialogOpen(true);
+  };
+
+  const handleEditCategory = (category: ArticleCategory) => {
+    setEditingCategory(category);
+    setIsCategoryDialogOpen(true);
+  };
+
+  const handleAddSubcategory = (categoryId: number) => {
+    setEditingSubcategory(null);
+    setSelectedCategoryId(categoryId);
+    setIsSubcategoryDialogOpen(true);
+  };
+
+  const handleEditSubcategory = (subcategory: ArticleSubCategory) => {
+    setEditingSubcategory(subcategory);
+    setSelectedCategoryId(subcategory.articleCategoryId);
+    setIsSubcategoryDialogOpen(true);
+  };
+
+  const handleDeleteCategory = (category: ArticleCategory) => {
+    const hasSubcategories = categoriesWithSubs.find((c) => c.id === category.id)?.subcategories.length || 0;
+    if (hasSubcategories > 0) {
+      alert('Cannot delete category with subcategories. Please delete all subcategories first.');
+      return;
+    }
+    setDeleteDialog({
+      isOpen: true,
+      type: 'category',
+      id: category.id,
+      name: category.name,
+    });
+  };
+
+  const handleDeleteSubcategory = (subcategory: ArticleSubCategory) => {
+    if (subcategory.articlesCount && subcategory.articlesCount > 0) {
+      alert('Cannot delete subcategory with associated articles.');
+      return;
+    }
+    setDeleteDialog({
+      isOpen: true,
+      type: 'subcategory',
+      id: subcategory.id,
+      name: subcategory.name,
+    });
   };
 
   const confirmDelete = async () => {
-    if (deleteId) {
-      try {
-        await articleCategoriesApi.delete(deleteId);
-        setCategories(categories.filter((c) => c.id !== deleteId));
-        setIsDeleting(false);
-        setDeleteId(null);
-      } catch (error) {
-        console.error('Error deleting category:', error);
-        alert('Failed to delete category. It may have associated articles.');
+    if (!deleteDialog.id) return;
+
+    try {
+      if (deleteDialog.type === 'category') {
+        await articleCategoriesApi.delete(deleteDialog.id);
+        setCategories(categories.filter((c) => c.id !== deleteDialog.id));
+      } else {
+        await articleSubCategoriesApi.delete(deleteDialog.id);
+        setSubcategories(subcategories.filter((s) => s.id !== deleteDialog.id));
       }
+      setDeleteDialog({ isOpen: false, type: 'category', id: null, name: '' });
+    } catch (error) {
+      console.error('Error deleting:', error);
+      alert(`Failed to delete ${deleteDialog.type}. Please try again.`);
     }
   };
 
-  const cancelDelete = () => {
-    setIsDeleting(false);
-    setDeleteId(null);
+  const handleCategorySaved = async () => {
+    await fetchData();
+    setIsCategoryDialogOpen(false);
   };
 
-  if (isLoading && categories.length === 0) {
+  const handleSubcategorySaved = async () => {
+    await fetchData();
+    setIsSubcategoryDialogOpen(false);
+  };
+
+  if (isLoading) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
@@ -76,13 +158,13 @@ export default function ArticleCategories() {
     );
   }
 
-  if (error && categories.length === 0) {
+  if (error) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
           <div className="text-center">
             <p className="mb-4 text-red-500">{error}</p>
-            <button onClick={fetchCategories} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
+            <button onClick={fetchData} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
               Retry
             </button>
           </div>
@@ -95,81 +177,129 @@ export default function ArticleCategories() {
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Article Categories</h1>
-        <Button onClick={() => navigate('/admin/article-categories/new')}>
+        <Button onClick={handleAddCategory}>
           <Plus className="mr-2 h-4 w-4" />
           New Category
         </Button>
       </div>
 
-      <div className="mb-4 flex items-center gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Search categories by name..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+      {categoriesWithSubs.length === 0 ? (
+        <div className="rounded-md border p-8 text-center">
+          <p className="text-gray-500">No categories found. Create your first category to get started.</p>
         </div>
-      </div>
-
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {categories.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center text-gray-500">
-                  {searchTerm ? 'No categories found matching your search' : 'No categories found'}
-                </TableCell>
-              </TableRow>
-            ) : (
-              categories.map((category) => (
-                <TableRow key={category.id}>
-                  <TableCell className="font-medium">{category.id}</TableCell>
-                  <TableCell className="font-medium">{category.name}</TableCell>
-                  <TableCell>{category.description || '-'}</TableCell>
-                  <TableCell>{category.createdAt ? new Date(category.createdAt).toLocaleDateString() : '-'}</TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/article-categories/${category.id}/edit`)} className="mr-1">
-                      <Edit className="h-4 w-4" />
+      ) : (
+        <Accordion type="multiple" className="w-full space-y-2">
+          {categoriesWithSubs.map((category) => (
+            <AccordionItem key={category.id} value={`category-${category.id}`} className="rounded-lg border !border-b">
+              <div className="flex items-center justify-between px-4">
+                <AccordionTrigger className="flex-1 py-4 hover:no-underline">
+                  <div className="flex items-center gap-3">
+                    <span className="font-medium">{category.name}</span>
+                    <Badge variant="secondary">{category.subcategories.length} subcategories</Badge>
+                    {category.articles_count && category.articles_count > 0 && <Badge variant="outline">{category.articles_count} articles</Badge>}
+                  </div>
+                </AccordionTrigger>
+                <div className="flex items-center gap-2 py-4">
+                  <Button variant="ghost" size="sm" onClick={() => handleEditCategory(category)}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteCategory(category)} disabled={category.subcategories.length > 0}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <AccordionContent className="px-4 pb-4">
+                {category.subcategories.length === 0 ? (
+                  <div className="mb-4 rounded-md bg-gray-50 p-4 text-center">
+                    <p className="mb-2 text-sm text-gray-500">No subcategories yet</p>
+                    <Button size="sm" variant="outline" onClick={() => handleAddSubcategory(category.id)}>
+                      <Plus className="mr-2 h-3 w-3" />
+                      Add Subcategory
                     </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(category.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+                  </div>
+                ) : (
+                  <>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Description</TableHead>
+                          <TableHead>Articles</TableHead>
+                          <TableHead>Created</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {category.subcategories.map((subcategory) => (
+                          <TableRow key={subcategory.id}>
+                            <TableCell className="font-medium">{subcategory.name}</TableCell>
+                            <TableCell className="max-w-xs truncate">{subcategory.description || '-'}</TableCell>
+                            <TableCell>{subcategory.articlesCount || 0}</TableCell>
+                            <TableCell>{subcategory.createdAt ? new Date(subcategory.createdAt).toLocaleDateString() : '-'}</TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="ghost" size="sm" onClick={() => handleEditSubcategory(subcategory)} className="mr-1">
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteSubcategory(subcategory)}
+                                disabled={!!subcategory.articlesCount && subcategory.articlesCount > 0}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    <div className="mt-4 text-center">
+                      <Button size="sm" variant="outline" onClick={() => handleAddSubcategory(category.id)}>
+                        <Plus className="mr-2 h-3 w-3" />
+                        Add Subcategory
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      )}
 
-      <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>Are you sure you want to delete this category? This action cannot be undone.</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={cancelDelete}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
+      <ArticleCategoryFormDialog
+        open={isCategoryDialogOpen}
+        onOpenChange={setIsCategoryDialogOpen}
+        category={editingCategory}
+        onSaved={handleCategorySaved}
+      />
+
+      <ArticleSubCategoryFormDialog
+        open={isSubcategoryDialogOpen}
+        onOpenChange={setIsSubcategoryDialogOpen}
+        subcategory={editingSubcategory}
+        categoryId={selectedCategoryId}
+        categories={categories}
+        onSaved={handleSubcategorySaved}
+      />
+
+      <AlertDialog open={deleteDialog.isOpen} onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, isOpen: open })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {deleteDialog.type === 'category' ? 'the category' : 'the subcategory'} "{deleteDialog.name}"? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
