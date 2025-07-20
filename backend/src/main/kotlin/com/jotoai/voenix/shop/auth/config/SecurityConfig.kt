@@ -51,8 +51,41 @@ class SecurityConfig(
                 session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             }.authorizeHttpRequests { auth ->
                 auth
+                    // Static resources and frontend assets
+                    .requestMatchers(
+                        "/",
+                        "/index.html",
+                        "/assets/**",
+                        "/images/**",
+                        "/*.js",
+                        "/*.css",
+                        "/*.ico",
+                        "/*.png",
+                        "/*.jpg",
+                        "/*.svg",
+                        "/*.webp",
+                        "/*.woff",
+                        "/*.woff2",
+                        "/*.ttf",
+                        "/*.eot"
+                    )
+                    .permitAll()
                     // Auth endpoints - No authentication required
                     .requestMatchers("/api/auth/**")
+                    .permitAll()
+                    // Public API endpoints for e-commerce functionality
+                    .requestMatchers(
+                        "GET", "/api/prompts/**",
+                        "GET", "/api/mugs/**",
+                        "GET", "/api/categories/**",
+                        "GET", "/api/subcategories/**"
+                    )
+                    .permitAll()
+                    // Public service endpoints
+                    .requestMatchers(
+                        "POST", "/api/openai/images/edit",
+                        "POST", "/api/pdf/generate"
+                    )
                     .permitAll()
                     // Admin endpoints - Require ADMIN role
                     .requestMatchers("/api/admin/**")
