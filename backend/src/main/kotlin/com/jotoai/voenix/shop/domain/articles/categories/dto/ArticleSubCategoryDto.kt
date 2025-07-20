@@ -1,10 +1,10 @@
-package com.jotoai.voenix.shop.domain.articles.mugs.dto
+package com.jotoai.voenix.shop.domain.articles.categories.dto
 
 import java.time.OffsetDateTime
 
-data class MugSubCategoryDto(
+data class ArticleSubCategoryDto(
     val id: Long,
-    val mugCategoryId: Long,
+    val articleCategoryId: Long,
     val name: String,
     val description: String?,
     val createdAt: OffsetDateTime?,

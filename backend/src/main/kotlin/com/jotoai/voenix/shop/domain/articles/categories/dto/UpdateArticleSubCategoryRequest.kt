@@ -1,11 +1,11 @@
-package com.jotoai.voenix.shop.domain.articles.mugs.dto
+package com.jotoai.voenix.shop.domain.articles.categories.dto
 
 import jakarta.validation.constraints.Positive
 import jakarta.validation.constraints.Size
 
-data class UpdateMugSubCategoryRequest(
-    @field:Positive(message = "Mug category ID must be positive")
-    val mugCategoryId: Long?,
+data class UpdateArticleSubCategoryRequest(
+    @field:Positive(message = "Article category ID must be positive")
+    val articleCategoryId: Long?,
     @field:Size(max = 255, message = "Name must not exceed 255 characters")
     val name: String?,
     val description: String?,

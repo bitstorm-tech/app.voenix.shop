@@ -1,28 +1,22 @@
-package com.jotoai.voenix.shop.domain.articles.mugs.entity
+package com.jotoai.voenix.shop.domain.articles.categories.entity
 
-import com.jotoai.voenix.shop.domain.articles.mugs.dto.MugSubCategoryDto
+import com.jotoai.voenix.shop.domain.articles.categories.dto.ArticleCategoryDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import java.time.OffsetDateTime
 
 @Entity
-@Table(name = "mug_sub_categories")
-data class MugSubCategory(
+@Table(name = "article_categories")
+data class ArticleCategory(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "mug_category_id", nullable = false)
-    var mugCategory: MugCategory,
     @Column(nullable = false)
     var name: String,
     @Column(columnDefinition = "TEXT")
@@ -35,9 +29,8 @@ data class MugSubCategory(
     var updatedAt: OffsetDateTime? = null,
 ) {
     fun toDto() =
-        MugSubCategoryDto(
-            id = requireNotNull(this.id) { "MugSubCategory ID cannot be null when converting to DTO" },
-            mugCategoryId = requireNotNull(this.mugCategory.id) { "MugCategory ID cannot be null when converting to DTO" },
+        ArticleCategoryDto(
+            id = requireNotNull(this.id) { "ArticleCategory ID cannot be null when converting to DTO" },
             name = this.name,
             description = this.description,
             createdAt = this.createdAt,
