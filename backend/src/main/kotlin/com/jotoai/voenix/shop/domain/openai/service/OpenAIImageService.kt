@@ -28,18 +28,18 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.jackson
+import java.io.ByteArrayInputStream
+import java.io.InputStream
+import kotlin.io.encoding.Base64
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.io.ByteArrayInputStream
-import java.io.InputStream
-import java.util.Base64
 
 @Service
 class OpenAIImageService(
-    @param:Value("\${OPENAI_API_KEY}") private val apiKey: String,
+    @param:Value($$"${OPENAI_API_KEY}") private val apiKey: String,
     private val imageService: ImageService,
     private val promptService: PromptService,
 ) {
@@ -150,7 +150,7 @@ class OpenAIImageService(
                                 openAIImage.b64Json != null -> {
                                     // Decode base64 image
                                     logger.debug("Decoding base64 image")
-                                    Base64.getDecoder().decode(openAIImage.b64Json)
+                                    Base64.decode(openAIImage.b64Json)
                                 }
                                 else -> {
                                     throw IllegalStateException("OpenAI response contains neither URL nor base64 data")
