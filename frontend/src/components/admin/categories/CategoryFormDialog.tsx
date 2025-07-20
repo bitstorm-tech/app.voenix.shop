@@ -100,4 +100,3 @@ export default function CategoryFormDialog({ open, onOpenChange, category, onSav
     </Dialog>
   );
 }
-

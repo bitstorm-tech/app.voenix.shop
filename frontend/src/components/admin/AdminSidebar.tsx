@@ -106,7 +106,7 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
                 Mugs
               </NavLink>
               <NavLink
-                to="/admin/mug-categories"
+                to="/admin/article-categories"
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${

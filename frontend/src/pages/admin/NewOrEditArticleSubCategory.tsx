@@ -4,23 +4,23 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
-import type { CreateMugSubCategoryRequest, UpdateMugSubCategoryRequest } from '@/lib/api';
-import { mugCategoriesApi, mugSubCategoriesApi } from '@/lib/api';
-import type { MugCategory } from '@/types/mug';
+import type { CreateArticleSubCategoryRequest, UpdateArticleSubCategoryRequest } from '@/lib/api';
+import { articleCategoriesApi, articleSubCategoriesApi } from '@/lib/api';
+import type { ArticleCategory } from '@/types/mug';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-export default function NewOrEditMugSubCategory() {
+export default function NewOrEditArticleSubCategory() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
 
-  const [formData, setFormData] = useState<CreateMugSubCategoryRequest>({
-    mugCategoryId: 0,
+  const [formData, setFormData] = useState<CreateArticleSubCategoryRequest>({
+    articleCategoryId: 0,
     name: '',
     description: '',
   });
-  const [categories, setCategories] = useState<MugCategory[]>([]);
+  const [categories, setCategories] = useState<ArticleCategory[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +28,7 @@ export default function NewOrEditMugSubCategory() {
   useEffect(() => {
     fetchCategories();
     if (isEditing) {
-      fetchMugSubCategory();
+      fetchArticleSubCategory();
     } else {
       setInitialLoading(false);
     }
@@ -36,28 +36,28 @@ export default function NewOrEditMugSubCategory() {
 
   const fetchCategories = async () => {
     try {
-      const data = await mugCategoriesApi.getAll();
+      const data = await articleCategoriesApi.getAll();
       setCategories(data);
     } catch (error) {
-      console.error('Error fetching mug categories:', error);
-      setError('Failed to load mug categories');
+      console.error('Error fetching article categories:', error);
+      setError('Failed to load article categories');
     }
   };
 
-  const fetchMugSubCategory = async () => {
+  const fetchArticleSubCategory = async () => {
     if (!id) return;
 
     try {
       setInitialLoading(true);
-      const subCategory = await mugSubCategoriesApi.getById(parseInt(id));
+      const subCategory = await articleSubCategoriesApi.getById(parseInt(id));
       setFormData({
-        mugCategoryId: subCategory.mugCategoryId,
+        articleCategoryId: subCategory.articleCategoryId,
         name: subCategory.name,
         description: subCategory.description || '',
       });
     } catch (error) {
-      console.error('Error fetching mug subcategory:', error);
-      setError('Failed to load mug subcategory');
+      console.error('Error fetching article subcategory:', error);
+      setError('Failed to load article subcategory');
     } finally {
       setInitialLoading(false);
     }
@@ -71,7 +71,7 @@ export default function NewOrEditMugSubCategory() {
       return;
     }
 
-    if (!formData.mugCategoryId) {
+    if (!formData.articleCategoryId) {
       setError('Category is required');
       return;
     }
@@ -81,27 +81,27 @@ export default function NewOrEditMugSubCategory() {
       setError(null);
 
       if (isEditing) {
-        const updateData: UpdateMugSubCategoryRequest = {
-          mugCategoryId: formData.mugCategoryId,
+        const updateData: UpdateArticleSubCategoryRequest = {
+          articleCategoryId: formData.articleCategoryId,
           name: formData.name,
           description: formData.description || undefined,
         };
-        await mugSubCategoriesApi.update(parseInt(id), updateData);
+        await articleSubCategoriesApi.update(parseInt(id), updateData);
       } else {
-        await mugSubCategoriesApi.create(formData);
+        await articleSubCategoriesApi.create(formData);
       }
 
-      navigate('/admin/mug-subcategories');
+      navigate('/admin/article-subcategories');
     } catch (error) {
-      console.error('Error saving mug subcategory:', error);
-      setError('Failed to save mug subcategory. Please try again.');
+      console.error('Error saving article subcategory:', error);
+      setError('Failed to save article subcategory. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    navigate('/admin/mug-subcategories');
+    navigate('/admin/article-subcategories');
   };
 
   if (initialLoading) {
@@ -118,9 +118,9 @@ export default function NewOrEditMugSubCategory() {
     <div className="container mx-auto p-6">
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
-          <CardTitle>{isEditing ? 'Edit Mug Subcategory' : 'New Mug Subcategory'}</CardTitle>
+          <CardTitle>{isEditing ? 'Edit Article Subcategory' : 'New Article Subcategory'}</CardTitle>
           <CardDescription>
-            {isEditing ? 'Update the mug subcategory details below' : 'Create a new mug subcategory with the form below'}
+            {isEditing ? 'Update the article subcategory details below' : 'Create a new article subcategory with the form below'}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -130,8 +130,8 @@ export default function NewOrEditMugSubCategory() {
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
               <Select
-                value={formData.mugCategoryId.toString()}
-                onValueChange={(value) => setFormData({ ...formData, mugCategoryId: parseInt(value) })}
+                value={formData.articleCategoryId.toString()}
+                onValueChange={(value) => setFormData({ ...formData, articleCategoryId: parseInt(value) })}
               >
                 <SelectTrigger id="category">
                   <SelectValue placeholder="Select a category" />

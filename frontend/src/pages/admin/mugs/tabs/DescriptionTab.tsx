@@ -4,13 +4,13 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import type { CreateMugRequest } from '@/lib/api';
-import type { MugCategory, MugSubCategory } from '@/types/mug';
+import type { ArticleCategory, ArticleSubCategory } from '@/types/mug';
 
 interface DescriptionTabProps {
   formData: CreateMugRequest;
   setFormData: (data: CreateMugRequest) => void;
-  categories: MugCategory[];
-  subCategories: MugSubCategory[];
+  categories: ArticleCategory[];
+  subCategories: ArticleSubCategory[];
 }
 
 export default function DescriptionTab({ formData, setFormData, categories, subCategories }: DescriptionTabProps) {

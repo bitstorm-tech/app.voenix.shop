@@ -147,4 +147,3 @@ export default function SubCategoryFormDialog({ open, onOpenChange, subcategory,
     </Dialog>
   );
 }
-

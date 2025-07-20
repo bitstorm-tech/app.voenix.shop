@@ -2,8 +2,8 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import type { CreateMugRequest, UpdateMugRequest } from '@/lib/api';
-import { mugCategoriesApi, mugsApi, mugSubCategoriesApi } from '@/lib/api';
-import type { MugCategory, MugSubCategory } from '@/types/mug';
+import { articleCategoriesApi, articleSubCategoriesApi, mugsApi } from '@/lib/api';
+import type { ArticleCategory, ArticleSubCategory } from '@/types/mug';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import CostsTab from './tabs/CostsTab';
@@ -34,8 +34,8 @@ export default function NewOrEditMug() {
     categoryId: undefined,
     subCategoryId: undefined,
   });
-  const [categories, setCategories] = useState<MugCategory[]>([]);
-  const [subCategories, setSubCategories] = useState<MugSubCategory[]>([]);
+  const [categories, setCategories] = useState<ArticleCategory[]>([]);
+  const [subCategories, setSubCategories] = useState<ArticleSubCategory[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -60,20 +60,20 @@ export default function NewOrEditMug() {
 
   const fetchCategories = async () => {
     try {
-      const data = await mugCategoriesApi.getAll();
+      const data = await articleCategoriesApi.getAll();
       setCategories(data);
     } catch (error) {
-      console.error('Error fetching mug categories:', error);
-      setError('Failed to load mug categories');
+      console.error('Error fetching article categories:', error);
+      setError('Failed to load article categories');
     }
   };
 
   const fetchSubCategories = async (categoryId: number) => {
     try {
-      const data = await mugSubCategoriesApi.getByCategoryId(categoryId);
+      const data = await articleSubCategoriesApi.getByCategoryId(categoryId);
       setSubCategories(data);
     } catch (error) {
-      console.error('Error fetching mug subcategories:', error);
+      console.error('Error fetching article subcategories:', error);
     }
   };
 

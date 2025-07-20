@@ -14,12 +14,12 @@ export interface Mug {
   active: boolean;
   createdAt?: string;
   updatedAt?: string;
-  category?: MugCategory;
-  subCategory?: MugSubCategory;
+  category?: ArticleCategory;
+  subCategory?: ArticleSubCategory;
   variants?: MugVariant[];
 }
 
-export interface MugCategory {
+export interface ArticleCategory {
   id: number;
   name: string;
   description?: string;
@@ -27,11 +27,11 @@ export interface MugCategory {
   updatedAt?: string;
 }
 
-export interface MugSubCategory {
+export interface ArticleSubCategory {
   id: number;
   name: string;
-  mugCategoryId: number;
-  category?: MugCategory;
+  articleCategoryId: number;
+  category?: ArticleCategory;
   description?: string;
   createdAt?: string;
   updatedAt?: string;

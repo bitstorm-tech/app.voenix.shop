@@ -3,17 +3,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Textarea } from '@/components/ui/Textarea';
-import type { CreateMugCategoryRequest, UpdateMugCategoryRequest } from '@/lib/api';
-import { mugCategoriesApi } from '@/lib/api';
+import type { CreateArticleCategoryRequest, UpdateArticleCategoryRequest } from '@/lib/api';
+import { articleCategoriesApi } from '@/lib/api';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-export default function NewOrEditMugCategory() {
+export default function NewOrEditArticleCategory() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
 
-  const [formData, setFormData] = useState<CreateMugCategoryRequest>({
+  const [formData, setFormData] = useState<CreateArticleCategoryRequest>({
     name: '',
     description: '',
   });
@@ -23,25 +23,25 @@ export default function NewOrEditMugCategory() {
 
   useEffect(() => {
     if (isEditing) {
-      fetchMugCategory();
+      fetchArticleCategory();
     } else {
       setInitialLoading(false);
     }
   }, [id]);
 
-  const fetchMugCategory = async () => {
+  const fetchArticleCategory = async () => {
     if (!id) return;
 
     try {
       setInitialLoading(true);
-      const category = await mugCategoriesApi.getById(parseInt(id));
+      const category = await articleCategoriesApi.getById(parseInt(id));
       setFormData({
         name: category.name,
         description: category.description || '',
       });
     } catch (error) {
-      console.error('Error fetching mug category:', error);
-      setError('Failed to load mug category');
+      console.error('Error fetching article category:', error);
+      setError('Failed to load article category');
     } finally {
       setInitialLoading(false);
     }
@@ -65,30 +65,30 @@ export default function NewOrEditMugCategory() {
       setError(null);
 
       if (isEditing) {
-        const updateData: UpdateMugCategoryRequest = {
+        const updateData: UpdateArticleCategoryRequest = {
           name: formData.name,
           description: formData.description || undefined,
         };
-        await mugCategoriesApi.update(parseInt(id), updateData);
+        await articleCategoriesApi.update(parseInt(id), updateData);
       } else {
-        const createData: CreateMugCategoryRequest = {
+        const createData: CreateArticleCategoryRequest = {
           name: formData.name,
           description: formData.description || undefined,
         };
-        await mugCategoriesApi.create(createData);
+        await articleCategoriesApi.create(createData);
       }
 
-      navigate('/admin/mug-categories');
+      navigate('/admin/article-categories');
     } catch (error) {
-      console.error('Error saving mug category:', error);
-      setError('Failed to save mug category. Please try again.');
+      console.error('Error saving article category:', error);
+      setError('Failed to save article category. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    navigate('/admin/mug-categories');
+    navigate('/admin/article-categories');
   };
 
   if (initialLoading) {
@@ -105,8 +105,10 @@ export default function NewOrEditMugCategory() {
     <div className="container mx-auto p-6">
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
-          <CardTitle>{isEditing ? 'Edit Mug Category' : 'New Mug Category'}</CardTitle>
-          <CardDescription>{isEditing ? 'Update the mug category details below' : 'Create a new mug category with the form below'}</CardDescription>
+          <CardTitle>{isEditing ? 'Edit Article Category' : 'New Article Category'}</CardTitle>
+          <CardDescription>
+            {isEditing ? 'Update the article category details below' : 'Create a new article category with the form below'}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -118,7 +120,7 @@ export default function NewOrEditMugCategory() {
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter mug category name"
+                placeholder="Enter article category name"
                 maxLength={255}
                 required
               />
@@ -131,7 +133,7 @@ export default function NewOrEditMugCategory() {
                 id="description"
                 value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Enter mug category description (optional)"
+                placeholder="Enter article category description (optional)"
                 rows={4}
               />
             </div>

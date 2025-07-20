@@ -1,16 +1,16 @@
 import AdminLayout from '@/components/admin/AdminLayout';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
-import PromptCategories from '@/pages/admin/PromptCategories';
+import ArticleCategories from '@/pages/admin/ArticleCategories';
 import CompletedOrders from '@/pages/admin/CompletedOrders';
-import MugCategories from '@/pages/admin/MugCategories';
 import Mugs from '@/pages/admin/Mugs';
 import NewOrEditMug from '@/pages/admin/mugs/NewOrEditMug';
-import NewOrEditMugCategory from '@/pages/admin/NewOrEditMugCategory';
-import NewOrEditMugSubCategory from '@/pages/admin/NewOrEditMugSubCategory';
+import NewOrEditArticleCategory from '@/pages/admin/NewOrEditArticleCategory';
+import NewOrEditArticleSubCategory from '@/pages/admin/NewOrEditArticleSubCategory';
 import NewOrEditPrompt from '@/pages/admin/NewOrEditPrompt';
 import NewOrEditSlot from '@/pages/admin/NewOrEditSlot';
 import NewOrEditSlotType from '@/pages/admin/NewOrEditSlotType';
 import OpenOrders from '@/pages/admin/OpenOrders';
+import PromptCategories from '@/pages/admin/PromptCategories';
 import Prompts from '@/pages/admin/Prompts';
 import Slots from '@/pages/admin/Slots';
 import SlotTypes from '@/pages/admin/SlotTypes';
@@ -46,11 +46,11 @@ export default function App() {
             <Route path="mugs" element={<Mugs />} />
             <Route path="mugs/new" element={<NewOrEditMug />} />
             <Route path="mugs/:id/edit" element={<NewOrEditMug />} />
-            <Route path="mug-categories" element={<MugCategories />} />
-            <Route path="mug-categories/new" element={<NewOrEditMugCategory />} />
-            <Route path="mug-categories/:id/edit" element={<NewOrEditMugCategory />} />
-            <Route path="mug-subcategories/new" element={<NewOrEditMugSubCategory />} />
-            <Route path="mug-subcategories/:id/edit" element={<NewOrEditMugSubCategory />} />
+            <Route path="article-categories" element={<ArticleCategories />} />
+            <Route path="article-categories/new" element={<NewOrEditArticleCategory />} />
+            <Route path="article-categories/:id/edit" element={<NewOrEditArticleCategory />} />
+            <Route path="article-subcategories/new" element={<NewOrEditArticleSubCategory />} />
+            <Route path="article-subcategories/:id/edit" element={<NewOrEditArticleSubCategory />} />
             <Route path="orders/open" element={<OpenOrders />} />
             <Route path="orders/completed" element={<CompletedOrders />} />
             <Route

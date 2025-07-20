@@ -3,15 +3,15 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useDebounce } from '@/hooks/useDebounce';
-import { mugCategoriesApi } from '@/lib/api';
-import { MugCategory } from '@/types/mug';
+import { articleCategoriesApi } from '@/lib/api';
+import { ArticleCategory } from '@/types/mug';
 import { Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function MugCategories() {
+export default function ArticleCategories() {
   const navigate = useNavigate();
-  const [categories, setCategories] = useState<MugCategory[]>([]);
+  const [categories, setCategories] = useState<ArticleCategory[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -27,11 +27,11 @@ export default function MugCategories() {
     try {
       setIsLoading(true);
       setError(null);
-      let data: MugCategory[];
+      let data: ArticleCategory[];
       if (debouncedSearchTerm.trim()) {
-        data = await mugCategoriesApi.search(debouncedSearchTerm);
+        data = await articleCategoriesApi.search(debouncedSearchTerm);
       } else {
-        data = await mugCategoriesApi.getAll();
+        data = await articleCategoriesApi.getAll();
       }
       setCategories(data);
     } catch (error) {
@@ -50,13 +50,13 @@ export default function MugCategories() {
   const confirmDelete = async () => {
     if (deleteId) {
       try {
-        await mugCategoriesApi.delete(deleteId);
+        await articleCategoriesApi.delete(deleteId);
         setCategories(categories.filter((c) => c.id !== deleteId));
         setIsDeleting(false);
         setDeleteId(null);
       } catch (error) {
         console.error('Error deleting category:', error);
-        alert('Failed to delete category. It may have associated mugs.');
+        alert('Failed to delete category. It may have associated articles.');
       }
     }
   };
@@ -94,8 +94,8 @@ export default function MugCategories() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Mug Categories</h1>
-        <Button onClick={() => navigate('/admin/mug-categories/new')}>
+        <h1 className="text-2xl font-bold">Article Categories</h1>
+        <Button onClick={() => navigate('/admin/article-categories/new')}>
           <Plus className="mr-2 h-4 w-4" />
           New Category
         </Button>
@@ -140,7 +140,7 @@ export default function MugCategories() {
                   <TableCell>{category.description || '-'}</TableCell>
                   <TableCell>{category.createdAt ? new Date(category.createdAt).toLocaleDateString() : '-'}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/mug-categories/${category.id}/edit`)} className="mr-1">
+                    <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/article-categories/${category.id}/edit`)} className="mr-1">
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDelete(category.id)}>

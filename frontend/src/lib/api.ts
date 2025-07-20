@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/stores/authStore';
 import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
-import type { Mug, MugCategory, MugSubCategory, MugVariant } from '@/types/mug';
+import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
 import type { Slot, SlotType } from '@/types/slot';
 
@@ -178,28 +178,29 @@ export const mugsApi = {
   update: (id: number, data: UpdateMugRequest) => api.put<Mug>(`/admin/articles/mugs/${id}`, data),
   delete: (id: number) => api.delete<void>(`/admin/articles/mugs/${id}`),
   search: (name: string) => api.get<Mug[]>(`/admin/articles/mugs/search?name=${encodeURIComponent(name)}`),
-  getByPriceRange: (minPrice: number, maxPrice: number) => api.get<Mug[]>(`/admin/articles/mugs/price-range?minPrice=${minPrice}&maxPrice=${maxPrice}`),
+  getByPriceRange: (minPrice: number, maxPrice: number) =>
+    api.get<Mug[]>(`/admin/articles/mugs/price-range?minPrice=${minPrice}&maxPrice=${maxPrice}`),
 };
 
-// Mug Category API endpoints
-export const mugCategoriesApi = {
-  getAll: () => api.get<MugCategory[]>('/admin/articles/mugs/categories'),
-  getById: (id: number) => api.get<MugCategory>(`/admin/articles/mugs/categories/${id}`),
-  create: (data: CreateMugCategoryRequest) => api.post<MugCategory>('/admin/articles/mugs/categories', data),
-  update: (id: number, data: UpdateMugCategoryRequest) => api.put<MugCategory>(`/admin/articles/mugs/categories/${id}`, data),
-  delete: (id: number) => api.delete<void>(`/admin/articles/mugs/categories/${id}`),
-  search: (name: string) => api.get<MugCategory[]>(`/admin/articles/mugs/categories/search?name=${encodeURIComponent(name)}`),
+// Article Category API endpoints
+export const articleCategoriesApi = {
+  getAll: () => api.get<ArticleCategory[]>('/admin/articles/categories'),
+  getById: (id: number) => api.get<ArticleCategory>(`/admin/articles/categories/${id}`),
+  create: (data: CreateArticleCategoryRequest) => api.post<ArticleCategory>('/admin/articles/categories', data),
+  update: (id: number, data: UpdateArticleCategoryRequest) => api.put<ArticleCategory>(`/admin/articles/categories/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/admin/articles/categories/${id}`),
+  search: (name: string) => api.get<ArticleCategory[]>(`/admin/articles/categories/search?name=${encodeURIComponent(name)}`),
 };
 
-// Mug SubCategory API endpoints
-export const mugSubCategoriesApi = {
-  getAll: () => api.get<MugSubCategory[]>('/admin/articles/mugs/subcategories'),
-  getById: (id: number) => api.get<MugSubCategory>(`/admin/articles/mugs/subcategories/${id}`),
-  getByCategoryId: (categoryId: number) => api.get<MugSubCategory[]>(`/admin/articles/mugs/subcategories/category/${categoryId}`),
-  create: (data: CreateMugSubCategoryRequest) => api.post<MugSubCategory>('/admin/articles/mugs/subcategories', data),
-  update: (id: number, data: UpdateMugSubCategoryRequest) => api.put<MugSubCategory>(`/admin/articles/mugs/subcategories/${id}`, data),
-  delete: (id: number) => api.delete<void>(`/admin/articles/mugs/subcategories/${id}`),
-  search: (name: string) => api.get<MugSubCategory[]>(`/admin/articles/mugs/subcategories/search?name=${encodeURIComponent(name)}`),
+// Article SubCategory API endpoints
+export const articleSubCategoriesApi = {
+  getAll: () => api.get<ArticleSubCategory[]>('/admin/articles/subcategories'),
+  getById: (id: number) => api.get<ArticleSubCategory>(`/admin/articles/subcategories/${id}`),
+  getByCategoryId: (categoryId: number) => api.get<ArticleSubCategory[]>(`/admin/articles/subcategories/category/${categoryId}`),
+  create: (data: CreateArticleSubCategoryRequest) => api.post<ArticleSubCategory>('/admin/articles/subcategories', data),
+  update: (id: number, data: UpdateArticleSubCategoryRequest) => api.put<ArticleSubCategory>(`/admin/articles/subcategories/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/admin/articles/subcategories/${id}`),
+  search: (name: string) => api.get<ArticleSubCategory[]>(`/admin/articles/subcategories/search?name=${encodeURIComponent(name)}`),
 };
 
 // Type definitions for Mug API requests
@@ -237,25 +238,25 @@ export interface UpdateMugRequest {
   subCategoryId?: number;
 }
 
-export interface CreateMugCategoryRequest {
+export interface CreateArticleCategoryRequest {
   name: string;
   description?: string;
 }
 
-export interface UpdateMugCategoryRequest {
+export interface UpdateArticleCategoryRequest {
   name?: string;
   description?: string;
 }
 
-export interface CreateMugSubCategoryRequest {
+export interface CreateArticleSubCategoryRequest {
   name: string;
-  mugCategoryId: number;
+  articleCategoryId: number;
   description?: string;
 }
 
-export interface UpdateMugSubCategoryRequest {
+export interface UpdateArticleSubCategoryRequest {
   name?: string;
-  mugCategoryId?: number;
+  articleCategoryId?: number;
   description?: string;
 }
 
