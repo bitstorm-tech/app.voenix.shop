@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/stores/authStore';
 import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
 import type { Mug, MugCategory, MugSubCategory, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
@@ -15,6 +16,22 @@ export class ApiError extends Error {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
+    // Handle authentication errors globally
+    if (response.status === 401 || response.status === 403) {
+      // Clear auth state
+      const authStore = useAuthStore.getState();
+      authStore.logout().catch(() => {
+        // Ignore logout errors, we're redirecting anyway
+      });
+
+      // Redirect to login page
+      window.location.href = '/login';
+
+      // Still throw the error for proper error handling
+      const errorData = await response.json().catch(() => ({ message: 'Authentication required' }));
+      throw new ApiError(response.status, errorData.message || 'Authentication required');
+    }
+
     const errorData = await response.json().catch(() => ({ message: 'An error occurred' }));
     throw new ApiError(response.status, errorData.message || `HTTP error! status: ${response.status}`);
   }
