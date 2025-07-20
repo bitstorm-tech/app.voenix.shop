@@ -93,6 +93,9 @@ class SecurityConfig(
                     // User endpoints - Require authentication
                     .requestMatchers("/api/user/**")
                     .authenticated()
+                    // Frontend routes (for SPA routing)
+                    .requestMatchers("/login", "/editor", "/admin/**")
+                    .permitAll()
                     // Deny all other requests by default
                     .anyRequest()
                     .authenticated()
