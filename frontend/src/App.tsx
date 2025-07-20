@@ -2,6 +2,7 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import ArticleCategories from '@/pages/admin/ArticleCategories';
 import CompletedOrders from '@/pages/admin/CompletedOrders';
+import Logistics from '@/pages/admin/Logistics';
 import Mugs from '@/pages/admin/Mugs';
 import NewOrEditMug from '@/pages/admin/mugs/NewOrEditMug';
 import NewOrEditArticleCategory from '@/pages/admin/NewOrEditArticleCategory';
@@ -14,6 +15,7 @@ import PromptCategories from '@/pages/admin/PromptCategories';
 import Prompts from '@/pages/admin/Prompts';
 import Slots from '@/pages/admin/Slots';
 import SlotTypes from '@/pages/admin/SlotTypes';
+import Suppliers from '@/pages/admin/Suppliers';
 import CartPage from '@/pages/Cart';
 import CheckoutPage from '@/pages/Checkout';
 import Editor from '@/pages/Editor';
@@ -53,6 +55,8 @@ export default function App() {
             <Route path="article-subcategories/:id/edit" element={<NewOrEditArticleSubCategory />} />
             <Route path="orders/open" element={<OpenOrders />} />
             <Route path="orders/completed" element={<CompletedOrders />} />
+            <Route path="suppliers" element={<Suppliers />} />
+            <Route path="logistics" element={<Logistics />} />
             <Route
               path="prompt-tester"
               element={

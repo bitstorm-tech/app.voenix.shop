@@ -1,7 +1,7 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/Accordion';
 import { Button } from '@/components/ui/Button';
 import { useAuthStore } from '@/stores/authStore';
-import { Box, FileText, FlaskConical, LogOut, Palette, ShoppingBag } from 'lucide-react';
+import { Box, Database, FileText, FlaskConical, LogOut, Palette, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 
@@ -11,7 +11,7 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
-  const [openItems, setOpenItems] = useState<string[]>(['prompts', 'mugs', 'orders']);
+  const [openItems, setOpenItems] = useState<string[]>(['prompts', 'mugs', 'orders', 'masterdata']);
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
@@ -85,7 +85,7 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
             </AccordionContent>
           </AccordionItem>
 
-          {/* Mugs Section */}
+          {/* Articles Section */}
           <AccordionItem value="mugs" className="border-none">
             <AccordionTrigger className="rounded-md px-3 py-2 hover:bg-gray-100 hover:no-underline">
               <div className="flex items-center gap-2">
@@ -115,6 +115,40 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
                 }
               >
                 Categories
+              </NavLink>
+            </AccordionContent>
+          </AccordionItem>
+
+          {/* Masterdata Section */}
+          <AccordionItem value="masterdata" className="border-none">
+            <AccordionTrigger className="rounded-md px-3 py-2 hover:bg-gray-100 hover:no-underline">
+              <div className="flex items-center gap-2">
+                <Database className="h-4 w-4" />
+                <span>Masterdata</span>
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="ml-4 space-y-1">
+              <NavLink
+                to="/admin/suppliers"
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
+                    isActive ? 'bg-gray-200 font-medium' : ''
+                  }`
+                }
+              >
+                Supplier
+              </NavLink>
+              <NavLink
+                to="/admin/logistics"
+                onClick={onNavigate}
+                className={({ isActive }) =>
+                  `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
+                    isActive ? 'bg-gray-200 font-medium' : ''
+                  }`
+                }
+              >
+                Logistics
               </NavLink>
             </AccordionContent>
           </AccordionItem>
