@@ -67,26 +67,23 @@ class SecurityConfig(
                         "/*.woff",
                         "/*.woff2",
                         "/*.ttf",
-                        "/*.eot"
-                    )
-                    .permitAll()
+                        "/*.eot",
+                    ).permitAll()
                     // Auth endpoints - No authentication required
                     .requestMatchers("/api/auth/**")
                     .permitAll()
                     // Public API endpoints for e-commerce functionality
                     .requestMatchers(
-                        "GET", "/api/prompts/**",
-                        "GET", "/api/mugs/**",
-                        "GET", "/api/categories/**",
-                        "GET", "/api/subcategories/**"
-                    )
-                    .permitAll()
+                        "/api/prompts/**",
+                        "/api/mugs/**",
+                        "/api/categories/**",
+                        "/api/subcategories/**",
+                    ).permitAll()
                     // Public service endpoints
                     .requestMatchers(
-                        "POST", "/api/openai/images/edit",
-                        "POST", "/api/pdf/generate"
-                    )
-                    .permitAll()
+                        "/api/openai/images/edit",
+                        "/api/pdf/generate",
+                    ).permitAll()
                     // Admin endpoints - Require ADMIN role
                     .requestMatchers("/api/admin/**")
                     .hasRole("ADMIN")

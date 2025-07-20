@@ -3,8 +3,8 @@ package com.jotoai.voenix.shop.domain.pdf.service
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
+import com.jotoai.voenix.shop.domain.articles.mugs.service.MugService
 import com.jotoai.voenix.shop.domain.images.service.ImageService
-import com.jotoai.voenix.shop.domain.mugs.service.MugService
 import com.jotoai.voenix.shop.domain.pdf.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.domain.pdf.dto.PdfSize
 import org.apache.pdfbox.pdmodel.PDDocument

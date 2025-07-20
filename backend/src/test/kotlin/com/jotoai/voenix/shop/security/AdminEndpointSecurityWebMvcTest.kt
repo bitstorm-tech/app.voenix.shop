@@ -1,11 +1,11 @@
 package com.jotoai.voenix.shop.security
 
-import com.jotoai.voenix.shop.api.admin.mugs.AdminMugController
+import com.jotoai.voenix.shop.api.admin.articles.mugs.AdminMugController
 import com.jotoai.voenix.shop.api.admin.prompts.AdminPromptController
 import com.jotoai.voenix.shop.api.admin.users.AdminUserController
 import com.jotoai.voenix.shop.auth.config.SecurityConfig
 import com.jotoai.voenix.shop.auth.service.CustomUserDetailsService
-import com.jotoai.voenix.shop.domain.mugs.service.MugService
+import com.jotoai.voenix.shop.domain.articles.mugs.service.MugService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import com.jotoai.voenix.shop.domain.users.service.UserService
 import org.junit.jupiter.api.Test
@@ -96,7 +96,7 @@ class AdminEndpointSecurityWebMvcTest {
             .andExpect(status().isOk())
 
         mockMvc
-            .perform(MockMvcRequestBuilders.get("/api/admin/mugs"))
+            .perform(MockMvcRequestBuilders.get("/api/admin/articles/mugs"))
             .andExpect(status().isOk())
     }
 }
