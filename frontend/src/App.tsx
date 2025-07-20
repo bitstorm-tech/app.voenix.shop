@@ -1,5 +1,6 @@
 import AdminLayout from '@/components/admin/AdminLayout';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import PromptCategories from '@/pages/admin/PromptCategories';
 import CompletedOrders from '@/pages/admin/CompletedOrders';
 import MugCategories from '@/pages/admin/MugCategories';
 import Mugs from '@/pages/admin/Mugs';
@@ -7,14 +8,10 @@ import NewOrEditMug from '@/pages/admin/mugs/NewOrEditMug';
 import NewOrEditMugCategory from '@/pages/admin/NewOrEditMugCategory';
 import NewOrEditMugSubCategory from '@/pages/admin/NewOrEditMugSubCategory';
 import NewOrEditPrompt from '@/pages/admin/NewOrEditPrompt';
-import NewOrEditPromptCategory from '@/pages/admin/NewOrEditPromptCategory';
-import NewOrEditPromptSubCategory from '@/pages/admin/NewOrEditPromptSubCategory';
 import NewOrEditSlot from '@/pages/admin/NewOrEditSlot';
 import NewOrEditSlotType from '@/pages/admin/NewOrEditSlotType';
 import OpenOrders from '@/pages/admin/OpenOrders';
-import PromptCategories from '@/pages/admin/PromptCategories';
 import Prompts from '@/pages/admin/Prompts';
-import PromptSubCategories from '@/pages/admin/PromptSubCategories';
 import Slots from '@/pages/admin/Slots';
 import SlotTypes from '@/pages/admin/SlotTypes';
 import CartPage from '@/pages/Cart';
@@ -40,11 +37,6 @@ export default function App() {
             <Route path="prompts/new" element={<NewOrEditPrompt />} />
             <Route path="prompts/:id/edit" element={<NewOrEditPrompt />} />
             <Route path="prompt-categories" element={<PromptCategories />} />
-            <Route path="prompt-categories/new" element={<NewOrEditPromptCategory />} />
-            <Route path="prompt-categories/:id/edit" element={<NewOrEditPromptCategory />} />
-            <Route path="prompt-subcategories" element={<PromptSubCategories />} />
-            <Route path="prompt-subcategories/new" element={<NewOrEditPromptSubCategory />} />
-            <Route path="prompt-subcategories/:id/edit" element={<NewOrEditPromptSubCategory />} />
             <Route path="slot-types" element={<SlotTypes />} />
             <Route path="slot-types/new" element={<NewOrEditSlotType />} />
             <Route path="slot-types/:id/edit" element={<NewOrEditSlotType />} />
