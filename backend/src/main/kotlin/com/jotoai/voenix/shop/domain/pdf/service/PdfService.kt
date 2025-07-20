@@ -20,9 +20,9 @@ import javax.imageio.ImageIO
 
 @Service
 class PdfService(
-    @Value("\${pdf.size.width}") private val pdfWidthMm: Float,
-    @Value("\${pdf.size.height}") private val pdfHeightMm: Float,
-    @Value("\${pdf.margin}") private val marginMm: Float,
+    @param:Value("\${pdf.size.width}") private val pdfWidthMm: Float,
+    @param:Value("\${pdf.size.height}") private val pdfHeightMm: Float,
+    @param:Value("\${pdf.margin}") private val marginMm: Float,
     private val mugService: MugService,
     private val imageService: ImageService,
 ) {

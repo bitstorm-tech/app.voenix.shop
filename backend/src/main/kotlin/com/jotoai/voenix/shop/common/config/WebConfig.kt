@@ -11,8 +11,8 @@ import org.springframework.web.servlet.resource.PathResourceResolver
 
 @Configuration
 class WebConfig(
-    @Value("\${spring.profiles.active:default}") private val activeProfile: String,
-    @Value("\${storage.root:storage}") private val storageRoot: String,
+    @param:Value("\${spring.profiles.active:default}") private val activeProfile: String,
+    @param:Value("\${storage.root:storage}") private val storageRoot: String,
 ) : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
         // Only enable CORS in development

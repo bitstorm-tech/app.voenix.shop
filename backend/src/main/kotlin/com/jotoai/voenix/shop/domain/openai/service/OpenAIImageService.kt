@@ -39,7 +39,7 @@ import java.util.Base64
 
 @Service
 class OpenAIImageService(
-    @Value("\${OPENAI_API_KEY}") private val apiKey: String,
+    @param:Value("\${OPENAI_API_KEY}") private val apiKey: String,
     private val imageService: ImageService,
     private val promptService: PromptService,
 ) {
@@ -77,8 +77,8 @@ class OpenAIImageService(
 
     data class OpenAIImage(
         val url: String? = null,
-        @JsonProperty("b64_json") val b64Json: String? = null,
-        @JsonProperty("revised_prompt") val revisedPrompt: String? = null,
+        @param:JsonProperty("b64_json") val b64Json: String? = null,
+        @param:JsonProperty("revised_prompt") val revisedPrompt: String? = null,
     )
 
     fun editImage(
