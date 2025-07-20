@@ -1,11 +1,9 @@
 package com.jotoai.voenix.shop.auth.config
 
-import com.jotoai.voenix.shop.auth.service.CustomUserDetailsService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -21,27 +19,19 @@ import org.springframework.security.web.context.SecurityContextRepository
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
-class SecurityConfig(
-    private val customUserDetailsService: CustomUserDetailsService,
-) {
+class SecurityConfig() {
     @Bean
     fun securityContextRepository(): SecurityContextRepository = HttpSessionSecurityContextRepository()
 
     @Bean
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
-    @Bean
-    fun authenticationProvider(): DaoAuthenticationProvider {
-        val authProvider = DaoAuthenticationProvider(customUserDetailsService)
-        authProvider.setPasswordEncoder(passwordEncoder())
-        return authProvider
-    }
 
     @Bean
     fun authenticationManager(authConfig: AuthenticationConfiguration): AuthenticationManager = authConfig.authenticationManager
 
     @Bean
-    fun filterChain(http: HttpSecurity): SecurityFilterChain {
+    fun filterChain(http: HttpSecurity): SecurityFilterChain =
         http
             .securityContext { context ->
                 context.securityContextRepository(securityContextRepository())
@@ -98,8 +88,7 @@ class SecurityConfig(
                     .authenticated()
             }.exceptionHandling { exceptions ->
                 exceptions.authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-            }.authenticationProvider(authenticationProvider())
+            }.build()
 
-        return http.build()
-    }
+
 }
