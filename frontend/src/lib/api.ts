@@ -132,7 +132,7 @@ export interface PromptSlotUpdate {
 
 export interface CreatePromptRequest {
   title: string;
-  content?: string;
+  promptText?: string;
   categoryId: number;
   subcategoryId?: number;
   active: boolean;
@@ -142,7 +142,7 @@ export interface CreatePromptRequest {
 
 export interface UpdatePromptRequest {
   title?: string;
-  content?: string;
+  promptText?: string;
   categoryId?: number;
   subcategoryId?: number;
   active?: boolean;

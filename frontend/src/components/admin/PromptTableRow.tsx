@@ -30,8 +30,8 @@ export default function PromptTableRow({ prompt, onEdit, onDelete, onTest }: Pro
         <span>{prompt.category?.name || '-'}</span>
       </TableCell>
       <TableCell>
-        <span className="block max-w-md truncate" title={prompt.content || ''}>
-          {prompt.content || '-'}
+        <span className="block max-w-md truncate" title={prompt.promptText || ''}>
+          {prompt.promptText || '-'}
         </span>
       </TableCell>
       <TableCell>

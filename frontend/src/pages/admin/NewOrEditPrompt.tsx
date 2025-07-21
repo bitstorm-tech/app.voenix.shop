@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Textarea } from '@/components/ui/Textarea';
 import type { CreatePromptRequest, PromptSlotUpdate, UpdatePromptRequest } from '@/lib/api';
 import { imagesApi, promptCategoriesApi, promptsApi, promptSubCategoriesApi } from '@/lib/api';
 import type { PromptCategory, PromptSubCategory } from '@/types/prompt';
@@ -19,6 +20,7 @@ export default function NewOrEditPrompt() {
 
   const [formData, setFormData] = useState({
     title: '',
+    promptText: '',
     categoryId: 0,
     subcategoryId: 0,
     active: true,
@@ -70,6 +72,7 @@ export default function NewOrEditPrompt() {
       const prompt = await promptsApi.getById(parseInt(id));
       setFormData({
         title: prompt.title || '',
+        promptText: prompt.promptText || '',
         categoryId: prompt.categoryId || 0,
         subcategoryId: prompt.subcategoryId || 0,
         active: prompt.active ?? true,
@@ -160,6 +163,7 @@ export default function NewOrEditPrompt() {
       if (isEditing) {
         const updateData: UpdatePromptRequest = {
           title: formData.title,
+          promptText: formData.promptText || undefined,
           categoryId: formData.categoryId,
           subcategoryId: formData.subcategoryId || undefined,
           active: formData.active,
@@ -170,6 +174,7 @@ export default function NewOrEditPrompt() {
       } else {
         const createData: CreatePromptRequest = {
           title: formData.title,
+          promptText: formData.promptText || undefined,
           categoryId: formData.categoryId,
           subcategoryId: formData.subcategoryId || undefined,
           active: formData.active,
@@ -265,50 +270,63 @@ export default function NewOrEditPrompt() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select
-                value={formData.categoryId.toString()}
-                onValueChange={(value) => {
-                  const newCategoryId = parseInt(value);
-                  setFormData({ ...formData, categoryId: newCategoryId, subcategoryId: 0 });
-                  fetchSubcategories(newCategoryId);
-                }}
-              >
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id.toString()}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {formData.categoryId > 0 && (
+            <div className="flex gap-8">
               <div className="space-y-2">
-                <Label htmlFor="subcategory">Subcategory (optional)</Label>
+                <Label htmlFor="category">Category</Label>
                 <Select
-                  value={formData.subcategoryId.toString()}
-                  onValueChange={(value) => setFormData({ ...formData, subcategoryId: parseInt(value) })}
+                  value={formData.categoryId.toString()}
+                  onValueChange={(value) => {
+                    const newCategoryId = parseInt(value);
+                    setFormData({ ...formData, categoryId: newCategoryId, subcategoryId: 0 });
+                    fetchSubcategories(newCategoryId);
+                  }}
                 >
-                  <SelectTrigger id="subcategory">
-                    <SelectValue placeholder="Select a subcategory (optional)" />
+                  <SelectTrigger id="category">
+                    <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="0">No subcategory</SelectItem>
-                    {subcategories.map((subcategory) => (
-                      <SelectItem key={subcategory.id} value={subcategory.id.toString()}>
-                        {subcategory.name}
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id.toString()}>
+                        {category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-            )}
+
+              {formData.categoryId > 0 && subcategories.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="subcategory">Subcategory (optional)</Label>
+                  <Select
+                    value={formData.subcategoryId.toString()}
+                    onValueChange={(value) => setFormData({ ...formData, subcategoryId: parseInt(value) })}
+                  >
+                    <SelectTrigger id="subcategory">
+                      <SelectValue placeholder="Select a subcategory (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">No subcategory</SelectItem>
+                      {subcategories.map((subcategory) => (
+                        <SelectItem key={subcategory.id} value={subcategory.id.toString()}>
+                          {subcategory.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="promptText">Prompt Text (optional)</Label>
+              <Textarea
+                id="promptText"
+                value={formData.promptText}
+                onChange={(e) => setFormData({ ...formData, promptText: e.target.value })}
+                placeholder="Enter the prompt text content..."
+                rows={4}
+              />
+            </div>
 
             <div className="space-y-2">
               <SlotTypeSelector selectedSlotIds={selectedSlotIds} onSelectionChange={setSelectedSlotIds} />
