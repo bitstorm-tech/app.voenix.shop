@@ -132,11 +132,6 @@ export default function NewOrEditPrompt() {
       return;
     }
 
-    if (selectedSlotIds.length === 0) {
-      setError('At least one slot is required');
-      return;
-    }
-
     try {
       setLoading(true);
       setError(null);

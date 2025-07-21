@@ -53,18 +53,15 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
   // Sort slot types by position
   const sortedSlotTypes = Object.values(slotsByType).sort((a, b) => a.type.position - b.type.position);
 
-  const handleSlotChange = (slotTypeId: number, slotId: string) => {
-    const selectedSlot = slots.find((s) => s.id === parseInt(slotId));
-    if (!selectedSlot) return;
-
+  const handleSlotChange = (slotTypeId: number, slotId: number, isChecked: boolean) => {
     // Get all currently selected slots except those of the same type
     const otherSelectedSlots = selectedSlotIds.filter((id) => {
       const slot = slots.find((s) => s.id === id);
       return slot && slot.slotTypeId !== slotTypeId;
     });
 
-    // Add the new selection
-    const newSelection = [...otherSelectedSlots, selectedSlot.id];
+    // If checked, add the new selection; if unchecked, just keep other selections
+    const newSelection = isChecked ? [...otherSelectedSlots, slotId] : otherSelectedSlots;
     onSelectionChange(newSelection);
   };
 
@@ -110,12 +107,10 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
                   {typeSlots.map((slot) => (
                     <label key={slot.id} className="flex cursor-pointer space-x-3 rounded-lg border p-4 hover:bg-gray-50">
                       <input
-                        type="radio"
-                        name={`slot-type-${type.id}`}
-                        value={slot.id}
+                        type="checkbox"
                         checked={selectedSlotIds.includes(slot.id)}
-                        onChange={(e) => handleSlotChange(type.id, e.target.value)}
-                        className="mt-1 h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                        onChange={(e) => handleSlotChange(type.id, slot.id, e.target.checked)}
+                        className="mt-1 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                       />
                       <div className="flex-1 space-y-1">
                         <div className="font-medium">{slot.name}</div>
