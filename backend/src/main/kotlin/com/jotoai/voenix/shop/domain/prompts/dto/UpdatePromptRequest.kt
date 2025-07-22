@@ -12,5 +12,5 @@ data class UpdatePromptRequest(
     val active: Boolean? = null,
     val exampleImageFilename: String? = null,
     @field:Valid
-    val slots: List<PromptSlotRequest>? = null,
+    val slots: List<PromptSlotVariantRequest>? = null,
 )

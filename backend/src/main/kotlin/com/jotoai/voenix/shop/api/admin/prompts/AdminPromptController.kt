@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.api.admin.prompts
 
-import com.jotoai.voenix.shop.domain.prompts.dto.AddSlotsRequest
+import com.jotoai.voenix.shop.domain.prompts.dto.AddSlotVariantsRequest
 import com.jotoai.voenix.shop.domain.prompts.dto.CreatePromptRequest
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptDto
 import com.jotoai.voenix.shop.domain.prompts.dto.UpdatePromptRequest
-import com.jotoai.voenix.shop.domain.prompts.dto.UpdatePromptSlotsRequest
+import com.jotoai.voenix.shop.domain.prompts.dto.UpdatePromptSlotVariantsRequest
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import jakarta.validation.Valid
 import org.springframework.security.access.prepost.PreAuthorize
@@ -49,16 +49,16 @@ class AdminPromptController(
     ): PromptDto = promptService.updatePrompt(id, updatePromptRequest)
 
     @PutMapping("/{id}/slots")
-    fun updatePromptSlots(
+    fun updatePromptSlotVariants(
         @PathVariable id: Long,
-        @Valid @RequestBody updatePromptSlotsRequest: UpdatePromptSlotsRequest,
-    ): PromptDto = promptService.updatePromptSlots(id, updatePromptSlotsRequest)
+        @Valid @RequestBody updatePromptSlotVariantsRequest: UpdatePromptSlotVariantsRequest,
+    ): PromptDto = promptService.updatePromptSlotVariants(id, updatePromptSlotVariantsRequest)
 
     @PostMapping("/{id}/slots")
-    fun addSlotsToPrompt(
+    fun addSlotVariantsToPrompt(
         @PathVariable id: Long,
-        @Valid @RequestBody addSlotsRequest: AddSlotsRequest,
-    ): PromptDto = promptService.addSlotsToPrompt(id, addSlotsRequest)
+        @Valid @RequestBody addSlotVariantsRequest: AddSlotVariantsRequest,
+    ): PromptDto = promptService.addSlotVariantsToPrompt(id, addSlotVariantsRequest)
 
     @DeleteMapping("/{id}")
     fun deletePrompt(

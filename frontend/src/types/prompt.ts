@@ -1,4 +1,4 @@
-import type { Slot } from './slot';
+import type { PromptSlotVariant } from './promptSlotVariant';
 
 export interface PromptCategory {
   id: number;
@@ -18,7 +18,7 @@ export interface PromptSubCategory {
   updatedAt?: string;
 }
 
-export interface PromptSlot extends Slot {}
+export interface PromptSlot extends PromptSlotVariant {}
 
 export interface Prompt {
   id: number;

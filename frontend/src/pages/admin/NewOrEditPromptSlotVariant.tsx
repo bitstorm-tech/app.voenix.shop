@@ -4,26 +4,26 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
-import type { CreateSlotRequest, UpdateSlotRequest } from '@/lib/api';
-import { imagesApi, slotsApi, slotTypesApi } from '@/lib/api';
-import type { SlotType } from '@/types/slot';
+import type { CreatePromptSlotVariantRequest, UpdatePromptSlotVariantRequest } from '@/lib/api';
+import { imagesApi, promptSlotTypesApi, promptSlotVariantsApi } from '@/lib/api';
+import type { PromptSlotType } from '@/types/promptSlotVariant';
 import { Trash2, Upload } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-export default function NewOrEditSlot() {
+export default function NewOrEditPromptSlotVariant() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
 
-  const [formData, setFormData] = useState<CreateSlotRequest>({
+  const [formData, setFormData] = useState<CreatePromptSlotVariantRequest>({
     name: '',
-    slotTypeId: 0,
+    promptSlotTypeId: 0,
     prompt: '',
     description: '',
     exampleImageFilename: undefined,
   });
-  const [slotTypes, setSlotTypes] = useState<SlotType[]>([]);
+  const [promptSlotTypes, setPromptSlotTypes] = useState<PromptSlotType[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -33,7 +33,7 @@ export default function NewOrEditSlot() {
   const blobUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
-    fetchSlotTypes();
+    fetchPromptSlotTypes();
     if (isEditing) {
       fetchSlot();
     } else {
@@ -50,13 +50,13 @@ export default function NewOrEditSlot() {
     };
   }, []);
 
-  const fetchSlotTypes = async () => {
+  const fetchPromptSlotTypes = async () => {
     try {
-      const data = await slotTypesApi.getAll();
-      setSlotTypes(data);
+      const data = await promptSlotTypesApi.getAll();
+      setPromptSlotTypes(data);
     } catch (error) {
-      console.error('Error fetching slot types:', error);
-      setError('Failed to load slot types');
+      console.error('Error fetching prompt slot types:', error);
+      setError('Failed to load prompt slot types');
     }
   };
 
@@ -65,10 +65,10 @@ export default function NewOrEditSlot() {
 
     try {
       setInitialLoading(true);
-      const slot = await slotsApi.getById(parseInt(id));
+      const slot = await promptSlotVariantsApi.getById(parseInt(id));
       setFormData({
         name: slot.name,
-        slotTypeId: slot.slotTypeId,
+        promptSlotTypeId: slot.promptSlotTypeId,
         prompt: slot.prompt,
         description: slot.description || '',
         exampleImageFilename: slot.exampleImageUrl ? slot.exampleImageUrl.split('/').pop() : undefined,
@@ -92,8 +92,8 @@ export default function NewOrEditSlot() {
       return;
     }
 
-    if (!formData.slotTypeId) {
-      setError('Slot type is required');
+    if (!formData.promptSlotTypeId) {
+      setError('Prompt slot type is required');
       return;
     }
 
@@ -112,7 +112,7 @@ export default function NewOrEditSlot() {
       if (imageFile) {
         try {
           setUploadingImage(true);
-          const response = await imagesApi.upload(imageFile, 'SLOT_EXAMPLE');
+          const response = await imagesApi.upload(imageFile, 'PROMPT_SLOT_VARIANT_EXAMPLE');
           finalImageFilename = response.filename;
         } catch (error) {
           console.error('Error uploading image:', error);
@@ -124,26 +124,26 @@ export default function NewOrEditSlot() {
       }
 
       if (isEditing) {
-        const updateData: UpdateSlotRequest = {
+        const updateData: UpdatePromptSlotVariantRequest = {
           name: formData.name,
-          slotTypeId: formData.slotTypeId,
+          promptSlotTypeId: formData.promptSlotTypeId,
           prompt: formData.prompt,
           description: formData.description,
           exampleImageFilename: finalImageFilename === 'pending' ? undefined : finalImageFilename,
         };
-        await slotsApi.update(parseInt(id), updateData);
+        await promptSlotVariantsApi.update(parseInt(id), updateData);
       } else {
-        const createData: CreateSlotRequest = {
+        const createData: CreatePromptSlotVariantRequest = {
           name: formData.name,
-          slotTypeId: formData.slotTypeId,
+          promptSlotTypeId: formData.promptSlotTypeId,
           prompt: formData.prompt,
           description: formData.description,
           exampleImageFilename: finalImageFilename === 'pending' ? undefined : finalImageFilename,
         };
-        await slotsApi.create(createData);
+        await promptSlotVariantsApi.create(createData);
       }
 
-      navigate('/admin/slots');
+      navigate('/admin/slot-variants');
     } catch (error) {
       console.error('Error saving slot:', error);
       setError('Failed to save slot. Please try again.');
@@ -235,13 +235,16 @@ export default function NewOrEditSlot() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="slotType">Slot Type</Label>
-              <Select value={formData.slotTypeId.toString()} onValueChange={(value) => setFormData({ ...formData, slotTypeId: parseInt(value) })}>
-                <SelectTrigger id="slotType">
-                  <SelectValue placeholder="Select a slot type" />
+              <Label htmlFor="promptSlotType">Prompt Slot Type</Label>
+              <Select
+                value={formData.promptSlotTypeId.toString()}
+                onValueChange={(value) => setFormData({ ...formData, promptSlotTypeId: parseInt(value) })}
+              >
+                <SelectTrigger id="promptSlotType">
+                  <SelectValue placeholder="Select a prompt slot type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {slotTypes.map((type) => (
+                  {promptSlotTypes.map((type) => (
                     <SelectItem key={type.id} value={type.id.toString()}>
                       {type.name}
                     </SelectItem>

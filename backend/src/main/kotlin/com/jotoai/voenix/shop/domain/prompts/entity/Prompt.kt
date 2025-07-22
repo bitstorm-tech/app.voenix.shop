@@ -41,7 +41,7 @@ data class Prompt(
     @Column(name = "example_image_filename", length = 500)
     var exampleImageFilename: String? = null,
     @OneToMany(mappedBy = "prompt", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    var promptSlots: MutableList<PromptSlot> = mutableListOf(),
+    var promptSlotVariantMappings: MutableList<PromptSlotVariantMapping> = mutableListOf(),
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,
@@ -59,27 +59,34 @@ data class Prompt(
             subcategoryId = this.subcategoryId,
             subcategory = this.subcategory?.toDto(),
             active = this.active,
-            slots = this.promptSlots.sortedBy { it.slot.slotType?.position ?: 0 }.map { it.slot.toDto() },
+            slots =
+                this.promptSlotVariantMappings
+                    .sortedBy {
+                        it.promptSlotVariant.promptSlotType?.position ?: 0
+                    }.map {
+                        it.promptSlotVariant
+                            .toDto()
+                    },
             exampleImageUrl = this.exampleImageFilename?.let { "/images/prompt-example-images/$it" },
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )
 
-    fun addSlot(slot: Slot) {
-        val promptSlot =
-            PromptSlot(
-                id = PromptSlotId(this.id ?: 0, slot.id ?: 0),
+    fun addPromptSlotVariant(promptSlotVariant: PromptSlotVariant) {
+        val mapping =
+            PromptSlotVariantMapping(
+                id = PromptSlotVariantMappingId(this.id ?: 0, promptSlotVariant.id ?: 0),
                 prompt = this,
-                slot = slot,
+                promptSlotVariant = promptSlotVariant,
             )
-        this.promptSlots.add(promptSlot)
+        this.promptSlotVariantMappings.add(mapping)
     }
 
-    fun removeSlot(slot: Slot) {
-        this.promptSlots.removeIf { it.slot.id == slot.id }
+    fun removePromptSlotVariant(promptSlotVariant: PromptSlotVariant) {
+        this.promptSlotVariantMappings.removeIf { it.promptSlotVariant.id == promptSlotVariant.id }
     }
 
-    fun clearSlots() {
-        this.promptSlots.clear()
+    fun clearPromptSlotVariants() {
+        this.promptSlotVariantMappings.clear()
     }
 }

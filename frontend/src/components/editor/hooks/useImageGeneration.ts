@@ -20,9 +20,10 @@ export function useImageGeneration(): UseImageGenerationReturn {
       formData.append('promptId', promptId.toString());
       formData.append('n', '1');
 
-      const response = await fetch('/api/openai/images/edit', {
+      const response = await fetch('/api/admin/openai/image-edit', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       });
 
       if (!response.ok) {

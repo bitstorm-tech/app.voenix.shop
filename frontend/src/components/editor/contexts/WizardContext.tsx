@@ -48,7 +48,7 @@ export function WizardProvider({ children }: WizardProviderProps) {
     dispatch(wizardActions.setPromptsLoading(true));
     dispatch(wizardActions.setPromptsError(null));
 
-    fetch('/api/prompts', { signal: controller.signal })
+    fetch('/api/admin/prompts', { signal: controller.signal, credentials: 'include' })
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to fetch prompts');

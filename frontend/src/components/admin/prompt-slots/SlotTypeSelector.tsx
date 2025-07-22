@@ -1,8 +1,8 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/Accordion';
 import { Badge } from '@/components/ui/Badge';
 import { Label } from '@/components/ui/Label';
-import { slotsApi } from '@/lib/api';
-import type { Slot, SlotType } from '@/types/slot';
+import { promptSlotVariantsApi } from '@/lib/api';
+import type { PromptSlotType, PromptSlotVariant } from '@/types/promptSlotVariant';
 import { useEffect, useState } from 'react';
 
 interface SlotTypeSelectorProps {
@@ -11,53 +11,53 @@ interface SlotTypeSelectorProps {
 }
 
 export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTypeSelectorProps) {
-  const [slots, setSlots] = useState<Slot[]>([]);
+  const [slotVariants, setSlotVariants] = useState<PromptSlotVariant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSlots();
+    fetchSlotVariants();
   }, []);
 
-  const fetchSlots = async () => {
+  const fetchSlotVariants = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await slotsApi.getAll();
-      setSlots(data);
+      const data = await promptSlotVariantsApi.getAll();
+      setSlotVariants(data);
     } catch (error) {
-      console.error('Error fetching slots:', error);
-      setError('Failed to load slots');
+      console.error('Error fetching slot variants:', error);
+      setError('Failed to load slot variants');
     } finally {
       setLoading(false);
     }
   };
 
-  // Group slots by type
-  const slotsByType = slots.reduce(
+  // Group slot variants by type
+  const slotVariantsByType = slotVariants.reduce(
     (acc, slot) => {
-      const typeId = slot.slotType?.id || 0;
+      const typeId = slot.promptSlotType?.id || 0;
 
       if (!acc[typeId]) {
         acc[typeId] = {
-          type: slot.slotType || { id: 0, name: 'Other', position: 999 },
-          slots: [],
+          type: slot.promptSlotType || { id: 0, name: 'Other', position: 999 },
+          slotVariants: [],
         };
       }
-      acc[typeId].slots.push(slot);
+      acc[typeId].slotVariants.push(slot);
       return acc;
     },
-    {} as Record<number, { type: SlotType; slots: Slot[] }>,
+    {} as Record<number, { type: PromptSlotType; slotVariants: PromptSlotVariant[] }>,
   );
 
   // Sort slot types by position
-  const sortedSlotTypes = Object.values(slotsByType).sort((a, b) => a.type.position - b.type.position);
+  const sortedSlotTypes = Object.values(slotVariantsByType).sort((a, b) => a.type.position - b.type.position);
 
   const handleSlotChange = (slotTypeId: number, slotId: number, isChecked: boolean) => {
-    // Get all currently selected slots except those of the same type
+    // Get all currently selected slot variants except those of the same type
     const otherSelectedSlots = selectedSlotIds.filter((id) => {
-      const slot = slots.find((s) => s.id === id);
-      return slot && slot.slotTypeId !== slotTypeId;
+      const slot = slotVariants.find((s) => s.id === id);
+      return slot && slot.promptSlotTypeId !== slotTypeId;
     });
 
     // If checked, add the new selection; if unchecked, just keep other selections
@@ -66,7 +66,7 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
   };
 
   if (loading) {
-    return <div className="py-8 text-center text-gray-500">Loading slots...</div>;
+    return <div className="py-8 text-center text-gray-500">Loading slot variants...</div>;
   }
 
   if (error) {
@@ -74,21 +74,25 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
   }
 
   if (sortedSlotTypes.length === 0) {
-    return <div className="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-gray-600">No slots available. Please create slots first.</div>;
+    return (
+      <div className="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-gray-600">
+        No slot variants available. Please create slot variants first.
+      </div>
+    );
   }
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label>Prompt Slots</Label>
+        <Label>Prompt Slot Variants</Label>
         <Badge variant="secondary">
           {selectedSlotIds.length} of {sortedSlotTypes.length} types selected
         </Badge>
       </div>
 
       <Accordion type="multiple" className="w-full">
-        {sortedSlotTypes.map(({ type, slots: typeSlots }) => {
-          const isSelected = selectedSlotIds.some((id) => slots.find((s) => s.id === id)?.slotTypeId === type.id);
+        {sortedSlotTypes.map(({ type, slotVariants: typeSlotVariants }) => {
+          const isSelected = selectedSlotIds.some((id) => slotVariants.find((s) => s.id === id)?.promptSlotTypeId === type.id);
 
           return (
             <AccordionItem key={type.id} value={`type-${type.id}`}>
@@ -104,7 +108,7 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-3">
-                  {typeSlots.map((slot) => (
+                  {typeSlotVariants.map((slot) => (
                     <label key={slot.id} className="flex cursor-pointer space-x-3 rounded-lg border p-4 hover:bg-gray-50">
                       <input
                         type="checkbox"

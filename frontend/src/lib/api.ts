@@ -3,7 +3,7 @@ import type { Article, CreateArticleRequest, PaginatedResponse, UpdateArticleReq
 import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
-import type { Slot, SlotType } from '@/types/slot';
+import type { PromptSlotType, PromptSlotVariant } from '@/types/promptSlotVariant';
 
 export class ApiError extends Error {
   constructor(
@@ -112,7 +112,8 @@ export const promptsApi = {
   search: (title: string) => api.get<Prompt[]>(`/admin/prompts/search?title=${encodeURIComponent(title)}`),
   // Slot management endpoints
   addSlots: (id: number, slotIds: number[]) => api.post<Prompt>(`/admin/prompts/${id}/slots`, { slotIds }),
-  updateSlots: (id: number, slots: PromptSlotUpdate[]) => api.put<Prompt>(`/admin/prompts/${id}/slots`, { slots }),
+  updateSlots: (id: number, slots: PromptSlotUpdate[]) =>
+    api.put<Prompt>(`/admin/prompts/${id}/slots`, { slotVariants: slots.map((s) => ({ slotId: s.slotId })) }),
 };
 
 // Prompt Category API endpoints
@@ -325,40 +326,40 @@ export interface UpdateMugVariantRequest {
   exampleImageFilename?: string;
 }
 
-// Slot Type API endpoints
-export const slotTypesApi = {
-  getAll: () => api.get<SlotType[]>('/admin/prompts/slot-types'),
-  getById: (id: number) => api.get<SlotType>(`/admin/prompts/slot-types/${id}`),
-  create: (data: CreateSlotTypeRequest) => api.post<SlotType>('/admin/prompts/slot-types', data),
-  update: (id: number, data: UpdateSlotTypeRequest) => api.put<SlotType>(`/admin/prompts/slot-types/${id}`, data),
-  delete: (id: number) => api.delete<void>(`/admin/prompts/slot-types/${id}`),
+// Prompt Slot Type API endpoints
+export const promptSlotTypesApi = {
+  getAll: () => api.get<PromptSlotType[]>('/admin/prompts/prompt-slot-types'),
+  getById: (id: number) => api.get<PromptSlotType>(`/admin/prompts/prompt-slot-types/${id}`),
+  create: (data: CreatePromptSlotTypeRequest) => api.post<PromptSlotType>('/admin/prompts/prompt-slot-types', data),
+  update: (id: number, data: UpdatePromptSlotTypeRequest) => api.put<PromptSlotType>(`/admin/prompts/prompt-slot-types/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/admin/prompts/prompt-slot-types/${id}`),
   updatePositions: async (positions: { id: number; position: number }[]) => {
-    // Get all current slot types to find max position
-    const allSlotTypes = await api.get<SlotType[]>('/admin/prompts/slot-types');
-    const maxPosition = Math.max(...allSlotTypes.map((st) => st.position), ...positions.map((p) => p.position));
+    // Get all current prompt slot types to find max position
+    const allPromptSlotTypes = await api.get<PromptSlotType[]>('/admin/prompts/prompt-slot-types');
+    const maxPosition = Math.max(...allPromptSlotTypes.map((st) => st.position), ...positions.map((p) => p.position));
 
     // Phase 1: Move all items to temporary positions (beyond max)
     const tempOffset = maxPosition + 10;
     for (const update of positions) {
-      await api.put<SlotType>(`/admin/prompts/slot-types/${update.id}`, { position: update.position + tempOffset });
+      await api.put<PromptSlotType>(`/admin/prompts/prompt-slot-types/${update.id}`, { position: update.position + tempOffset });
     }
 
     // Phase 2: Move items to their final positions
     for (const update of positions) {
-      await api.put<SlotType>(`/admin/prompts/slot-types/${update.id}`, { position: update.position });
+      await api.put<PromptSlotType>(`/admin/prompts/prompt-slot-types/${update.id}`, { position: update.position });
     }
 
     return positions;
   },
 };
 
-// Type definitions for Slot Type API requests
-export interface CreateSlotTypeRequest {
+// Type definitions for Prompt Slot Type API requests
+export interface CreatePromptSlotTypeRequest {
   name: string;
-  position?: number;
+  position: number;
 }
 
-export interface UpdateSlotTypeRequest {
+export interface UpdatePromptSlotTypeRequest {
   name?: string;
   position?: number;
 }
@@ -367,27 +368,27 @@ export interface UpdateSlotTypePositionsRequest {
   positions: { id: number; position: number }[];
 }
 
-// Slot API endpoints
-export const slotsApi = {
-  getAll: () => api.get<Slot[]>('/admin/prompts/slots'),
-  getById: (id: number) => api.get<Slot>(`/admin/prompts/slots/${id}`),
-  getByTypeId: (typeId: number) => api.get<Slot[]>(`/admin/prompts/slots/type/${typeId}`),
-  create: (data: CreateSlotRequest) => api.post<Slot>('/admin/prompts/slots', data),
-  update: (id: number, data: UpdateSlotRequest) => api.put<Slot>(`/admin/prompts/slots/${id}`, data),
-  delete: (id: number) => api.delete<void>(`/admin/prompts/slots/${id}`),
+// Prompt Slot Variant API endpoints
+export const promptSlotVariantsApi = {
+  getAll: () => api.get<PromptSlotVariant[]>('/admin/prompts/slot-variants'),
+  getById: (id: number) => api.get<PromptSlotVariant>(`/admin/prompts/slot-variants/${id}`),
+  getByTypeId: (typeId: number) => api.get<PromptSlotVariant[]>(`/admin/prompts/slot-variants/type/${typeId}`),
+  create: (data: CreatePromptSlotVariantRequest) => api.post<PromptSlotVariant>('/admin/prompts/slot-variants', data),
+  update: (id: number, data: UpdatePromptSlotVariantRequest) => api.put<PromptSlotVariant>(`/admin/prompts/slot-variants/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/admin/prompts/slot-variants/${id}`),
 };
 
-// Type definitions for Slot API requests
-export interface CreateSlotRequest {
-  slotTypeId: number;
+// Type definitions for Prompt Slot Variant API requests
+export interface CreatePromptSlotVariantRequest {
+  promptSlotTypeId: number;
   name: string;
   prompt: string;
   description?: string;
   exampleImageFilename?: string;
 }
 
-export interface UpdateSlotRequest {
-  slotTypeId?: number;
+export interface UpdatePromptSlotVariantRequest {
+  promptSlotTypeId?: number;
   name?: string;
   prompt?: string;
   description?: string;
@@ -396,10 +397,20 @@ export interface UpdateSlotRequest {
 
 // Image API endpoints
 export const imagesApi = {
-  upload: async (file: File, imageType: 'PUBLIC' | 'PRIVATE' | 'PROMPT_EXAMPLE' | 'SLOT_EXAMPLE') => {
+  upload: async (
+    file: File,
+    imageType: 'PUBLIC' | 'PRIVATE' | 'PROMPT_EXAMPLE' | 'PROMPT_SLOT_VARIANT_EXAMPLE',
+    cropArea?: { x: number; y: number; width: number; height: number },
+  ) => {
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('imageType', imageType);
+
+    const request = {
+      imageType,
+      cropArea: cropArea || null,
+    };
+
+    formData.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }));
 
     const response = await fetch('/api/admin/images', {
       method: 'POST',
@@ -443,11 +454,16 @@ export const servicesApi = {
   editImage: async (image: File, mask: File, prompt: string, size: string, quality: string, background: string) => {
     const formData = new FormData();
     formData.append('image', image);
-    formData.append('mask', mask);
-    formData.append('prompt', prompt);
-    formData.append('size', size);
-    formData.append('quality', quality);
-    formData.append('background', background);
+
+    const request = {
+      mask,
+      prompt,
+      size,
+      quality,
+      background,
+    };
+
+    formData.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }));
 
     const response = await fetch('/api/admin/openai/image-edit', {
       method: 'POST',
@@ -455,6 +471,23 @@ export const servicesApi = {
       body: formData,
     });
     return handleResponse<ImageEditResponse>(response);
+  },
+  // Test Prompt
+  testPrompt: async (image: File, masterPrompt: string, specificPrompt: string, background: string, quality: string, size: string) => {
+    const formData = new FormData();
+    formData.append('image', image);
+    formData.append('masterPrompt', masterPrompt);
+    formData.append('specificPrompt', specificPrompt);
+    formData.append('background', background);
+    formData.append('quality', quality);
+    formData.append('size', size);
+
+    const response = await fetch('/api/admin/openai/test-prompt', {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+    return handleResponse<TestPromptResponse>(response);
   },
   // PDF Generation
   generatePdf: (data: GeneratePdfRequest) => api.post<PdfResponse>('/admin/pdf/generate', data),
@@ -488,6 +521,12 @@ export interface UpdateUserRequest {
 export interface ImageEditResponse {
   imageUrl: string;
   filename: string;
+}
+
+export interface TestPromptResponse {
+  imageUrl: string;
+  filename: string;
+  finalPrompt: string;
 }
 
 export interface GeneratePdfRequest {

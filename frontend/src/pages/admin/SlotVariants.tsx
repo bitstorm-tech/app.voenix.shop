@@ -1,33 +1,33 @@
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
-import { slotsApi } from '@/lib/api';
-import type { Slot } from '@/types/slot';
+import { promptSlotVariantsApi } from '@/lib/api';
+import type { PromptSlotVariant } from '@/types/promptSlotVariant';
 import { Edit, Image, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-export default function Slots() {
+export default function SlotVariants() {
   const navigate = useNavigate();
-  const [slots, setSlots] = useState<Slot[]>([]);
+  const [slotVariants, setSlotVariants] = useState<PromptSlotVariant[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchSlots();
+    fetchSlotVariants();
   }, []);
 
-  const fetchSlots = async () => {
+  const fetchSlotVariants = async () => {
     try {
       setLoading(true);
       setError(null);
-      const data = await slotsApi.getAll();
-      setSlots(data);
+      const data = await promptSlotVariantsApi.getAll();
+      setSlotVariants(data);
     } catch (error) {
-      console.error('Error fetching slots:', error);
-      setError('Failed to load slots. Please try again.');
+      console.error('Error fetching slot variants:', error);
+      setError('Failed to load slot variants. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -41,15 +41,15 @@ export default function Slots() {
   const confirmDelete = async () => {
     if (deleteId) {
       try {
-        await slotsApi.delete(deleteId);
+        await promptSlotVariantsApi.delete(deleteId);
         setIsDeleting(false);
         setDeleteId(null);
-        fetchSlots();
+        fetchSlotVariants();
       } catch (error) {
-        console.error('Error deleting slot:', error);
+        console.error('Error deleting slot variant:', error);
         setIsDeleting(false);
         setDeleteId(null);
-        alert('Failed to delete slot. Please try again.');
+        alert('Failed to delete slot variant. Please try again.');
       }
     }
   };
@@ -68,7 +68,7 @@ export default function Slots() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading slots...</p>
+          <p className="text-gray-500">Loading slot variants...</p>
         </div>
       </div>
     );
@@ -80,7 +80,7 @@ export default function Slots() {
         <div className="flex h-64 items-center justify-center">
           <div className="text-center">
             <p className="mb-4 text-red-500">{error}</p>
-            <Button onClick={fetchSlots}>Retry</Button>
+            <Button onClick={fetchSlotVariants}>Retry</Button>
           </div>
         </div>
       </div>
@@ -90,10 +90,10 @@ export default function Slots() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Slots</h1>
-        <Button onClick={() => navigate('/admin/slots/new')}>
+        <h1 className="text-2xl font-bold">Slot Variants</h1>
+        <Button onClick={() => navigate('/admin/slot-variants/new')}>
           <Plus className="mr-2 h-4 w-4" />
-          New Slot
+          New Slot Variant
         </Button>
       </div>
 
@@ -118,18 +118,18 @@ export default function Slots() {
                   Loading...
                 </TableCell>
               </TableRow>
-            ) : slots.length === 0 ? (
+            ) : slotVariants.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center text-gray-500">
-                  No slots found
+                  No slot variants found
                 </TableCell>
               </TableRow>
             ) : (
-              slots.map((slot) => (
+              slotVariants.map((slot) => (
                 <TableRow key={slot.id}>
                   <TableCell className="font-medium">{slot.id}</TableCell>
                   <TableCell>{slot.name}</TableCell>
-                  <TableCell>{slot.slotType?.name || '-'}</TableCell>
+                  <TableCell>{slot.promptSlotType?.name || '-'}</TableCell>
                   <TableCell className="max-w-xs">
                     <span className="text-sm text-gray-600" title={slot.prompt}>
                       {truncatePrompt(slot.prompt)}
@@ -151,7 +151,7 @@ export default function Slots() {
                   </TableCell>
                   <TableCell>{slot.createdAt ? new Date(slot.createdAt).toLocaleDateString() : '-'}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/slots/${slot.id}/edit`)} className="mr-2">
+                    <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/slot-variants/${slot.id}/edit`)} className="mr-2">
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="sm" onClick={() => handleDelete(slot.id)}>
@@ -169,7 +169,7 @@ export default function Slots() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>Are you sure you want to delete this slot? This action cannot be undone.</DialogDescription>
+            <DialogDescription>Are you sure you want to delete this slot variant? This action cannot be undone.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={cancelDelete}>

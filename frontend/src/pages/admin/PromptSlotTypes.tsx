@@ -1,54 +1,54 @@
 import { SortableSlotTypeList } from '@/components/admin/slot-types/SortableSlotTypeList';
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import { slotTypesApi } from '@/lib/api';
-import type { SlotType } from '@/types/slot';
+import { promptSlotTypesApi } from '@/lib/api';
+import type { PromptSlotType } from '@/types/promptSlotVariant';
 import { useEffect, useState } from 'react';
 
-export default function SlotTypes() {
-  const [slotTypes, setSlotTypes] = useState<SlotType[]>([]);
+export default function PromptSlotTypes() {
+  const [promptSlotTypes, setPromptSlotTypes] = useState<PromptSlotType[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    fetchSlotTypes();
+    fetchPromptSlotTypes();
   }, []);
 
-  const fetchSlotTypes = async () => {
+  const fetchPromptSlotTypes = async () => {
     try {
       setLoading(true);
-      const data = await slotTypesApi.getAll();
+      const data = await promptSlotTypesApi.getAll();
       // Sort by position
       const sortedData = data.sort((a, b) => a.position - b.position);
-      setSlotTypes(sortedData);
+      setPromptSlotTypes(sortedData);
     } catch (error) {
-      console.error('Error fetching slot types:', error);
+      console.error('Error fetching prompt slot types:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSlotTypesChange = async (updatedSlotTypes: SlotType[]) => {
+  const handlePromptSlotTypesChange = async (updatedPromptSlotTypes: PromptSlotType[]) => {
     // Optimistically update the UI
-    setSlotTypes(updatedSlotTypes);
+    setPromptSlotTypes(updatedPromptSlotTypes);
 
     // Update all positions to match the new order (1-based)
-    const positionUpdates = updatedSlotTypes.map((slotType, index) => ({
-      id: slotType.id,
+    const positionUpdates = updatedPromptSlotTypes.map((promptSlotType, index) => ({
+      id: promptSlotType.id,
       position: index + 1,
     }));
 
     try {
       setIsSaving(true);
-      await slotTypesApi.updatePositions(positionUpdates);
+      await promptSlotTypesApi.updatePositions(positionUpdates);
       // Refresh the list to ensure consistency
-      await fetchSlotTypes();
+      await fetchPromptSlotTypes();
     } catch (error) {
-      console.error('Error updating slot type positions:', error);
+      console.error('Error updating prompt slot type positions:', error);
       // Revert on error
-      await fetchSlotTypes();
+      await fetchPromptSlotTypes();
     } finally {
       setIsSaving(false);
     }
@@ -62,12 +62,12 @@ export default function SlotTypes() {
   const confirmDelete = async () => {
     if (deleteId) {
       try {
-        await slotTypesApi.delete(deleteId);
+        await promptSlotTypesApi.delete(deleteId);
         setIsDeleting(false);
         setDeleteId(null);
-        fetchSlotTypes();
+        fetchPromptSlotTypes();
       } catch (error) {
-        console.error('Error deleting slot type:', error);
+        console.error('Error deleting prompt slot type:', error);
         setIsDeleting(false);
         setDeleteId(null);
       }
@@ -82,8 +82,8 @@ export default function SlotTypes() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Slot Types</h1>
-        <p className="mt-1 text-gray-600">Manage slot types and their display order</p>
+        <h1 className="text-2xl font-bold">Prompt Slot Types</h1>
+        <p className="mt-1 text-gray-600">Manage prompt slot types and their display order</p>
       </div>
 
       {loading ? (
@@ -92,7 +92,7 @@ export default function SlotTypes() {
         </div>
       ) : (
         <>
-          <SortableSlotTypeList slotTypes={slotTypes} onSlotTypesChange={handleSlotTypesChange} onDelete={handleDelete} />
+          <SortableSlotTypeList slotTypes={promptSlotTypes} onSlotTypesChange={handlePromptSlotTypesChange} onDelete={handleDelete} />
           {isSaving && <div className="mt-2 text-sm text-gray-500">Saving position changes...</div>}
         </>
       )}
@@ -101,7 +101,7 @@ export default function SlotTypes() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>Are you sure you want to delete this slot type? This action cannot be undone.</DialogDescription>
+            <DialogDescription>Are you sure you want to delete this prompt slot type? This action cannot be undone.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={cancelDelete}>

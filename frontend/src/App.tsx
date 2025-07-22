@@ -8,14 +8,14 @@ import Logistics from '@/pages/admin/Logistics';
 import NewOrEditArticleCategory from '@/pages/admin/NewOrEditArticleCategory';
 import NewOrEditArticleSubCategory from '@/pages/admin/NewOrEditArticleSubCategory';
 import NewOrEditPrompt from '@/pages/admin/NewOrEditPrompt';
-import NewOrEditSlot from '@/pages/admin/NewOrEditSlot';
-import NewOrEditSlotType from '@/pages/admin/NewOrEditSlotType';
+import NewOrEditPromptSlotType from '@/pages/admin/NewOrEditPromptSlotType';
+import NewOrEditPromptSlotVariant from '@/pages/admin/NewOrEditPromptSlotVariant';
 import OpenOrders from '@/pages/admin/OpenOrders';
 import PromptCategories from '@/pages/admin/PromptCategories';
 import Prompts from '@/pages/admin/Prompts';
+import PromptSlotTypes from '@/pages/admin/PromptSlotTypes';
 import PromptTester from '@/pages/admin/PromptTester';
-import Slots from '@/pages/admin/Slots';
-import SlotTypes from '@/pages/admin/SlotTypes';
+import SlotVariants from '@/pages/admin/SlotVariants';
 import Suppliers from '@/pages/admin/Suppliers';
 import CartPage from '@/pages/Cart';
 import CheckoutPage from '@/pages/Checkout';
@@ -40,12 +40,12 @@ export default function App() {
             <Route path="prompts/new" element={<NewOrEditPrompt />} />
             <Route path="prompts/:id/edit" element={<NewOrEditPrompt />} />
             <Route path="prompt-categories" element={<PromptCategories />} />
-            <Route path="slot-types" element={<SlotTypes />} />
-            <Route path="slot-types/new" element={<NewOrEditSlotType />} />
-            <Route path="slot-types/:id/edit" element={<NewOrEditSlotType />} />
-            <Route path="slots" element={<Slots />} />
-            <Route path="slots/new" element={<NewOrEditSlot />} />
-            <Route path="slots/:id/edit" element={<NewOrEditSlot />} />
+            <Route path="prompt-slot-types" element={<PromptSlotTypes />} />
+            <Route path="prompt-slot-types/new" element={<NewOrEditPromptSlotType />} />
+            <Route path="prompt-slot-types/:id/edit" element={<NewOrEditPromptSlotType />} />
+            <Route path="slot-variants" element={<SlotVariants />} />
+            <Route path="slot-variants/new" element={<NewOrEditPromptSlotVariant />} />
+            <Route path="slot-variants/:id/edit" element={<NewOrEditPromptSlotVariant />} />
             <Route path="articles" element={<Articles />} />
             <Route path="articles/new" element={<NewOrEditArticle />} />
             <Route path="articles/:id/edit" element={<NewOrEditArticle />} />

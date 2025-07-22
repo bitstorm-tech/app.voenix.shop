@@ -11,7 +11,7 @@ data class PromptDto(
     val subcategoryId: Long?,
     val subcategory: PromptSubCategoryDto?,
     val active: Boolean,
-    val slots: List<SlotDto> = emptyList(),
+    val slots: List<PromptSlotVariantDto> = emptyList(),
     val exampleImageUrl: String?,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,

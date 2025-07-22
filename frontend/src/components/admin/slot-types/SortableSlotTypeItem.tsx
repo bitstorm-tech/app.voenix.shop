@@ -1,12 +1,12 @@
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import type { SlotType } from '@/types/slot';
+import type { PromptSlotType } from '@/types/promptSlotVariant';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Edit, GripVertical, Trash2 } from 'lucide-react';
 
 interface SortableSlotTypeItemProps {
-  slotType: SlotType;
+  slotType: PromptSlotType;
   onEdit: (id: number) => void;
   onDelete: (id: number) => void;
 }

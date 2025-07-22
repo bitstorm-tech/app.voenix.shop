@@ -2,18 +2,19 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import type { CreateSlotTypeRequest, UpdateSlotTypeRequest } from '@/lib/api';
-import { slotTypesApi } from '@/lib/api';
+import type { CreatePromptSlotTypeRequest, UpdatePromptSlotTypeRequest } from '@/lib/api';
+import { promptSlotTypesApi } from '@/lib/api';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-export default function NewOrEditSlotType() {
+export default function NewOrEditPromptSlotType() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
 
-  const [formData, setFormData] = useState<CreateSlotTypeRequest>({
+  const [formData, setFormData] = useState<CreatePromptSlotTypeRequest>({
     name: '',
+    position: 0,
   });
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -22,9 +23,9 @@ export default function NewOrEditSlotType() {
 
   useEffect(() => {
     if (isEditing) {
-      fetchSlotType();
+      fetchPromptSlotType();
     } else {
-      // For new slot types, fetch all to determine next position
+      // For new prompt slot types, fetch all to determine next position
       fetchNextPosition();
     }
   }, [id]);
@@ -32,12 +33,12 @@ export default function NewOrEditSlotType() {
   const fetchNextPosition = async () => {
     try {
       setInitialLoading(true);
-      const allSlotTypes = await slotTypesApi.getAll();
+      const allPromptSlotTypes = await promptSlotTypesApi.getAll();
       // Find the maximum position and add 1
-      const maxPosition = allSlotTypes.length > 0 ? Math.max(...allSlotTypes.map((st) => st.position)) : 0;
+      const maxPosition = allPromptSlotTypes.length > 0 ? Math.max(...allPromptSlotTypes.map((st) => st.position)) : 0;
       setNextPosition(maxPosition + 1);
     } catch (error) {
-      console.error('Error fetching slot types:', error);
+      console.error('Error fetching prompt slot types:', error);
       // Default to 1 if error (1-based indexing)
       setNextPosition(1);
     } finally {
@@ -45,18 +46,19 @@ export default function NewOrEditSlotType() {
     }
   };
 
-  const fetchSlotType = async () => {
+  const fetchPromptSlotType = async () => {
     if (!id) return;
 
     try {
       setInitialLoading(true);
-      const slotType = await slotTypesApi.getById(parseInt(id));
+      const promptSlotType = await promptSlotTypesApi.getById(parseInt(id));
       setFormData({
-        name: slotType.name,
+        name: promptSlotType.name,
+        position: promptSlotType.position,
       });
     } catch (error) {
-      console.error('Error fetching slot type:', error);
-      setError('Failed to load slot type');
+      console.error('Error fetching prompt slot type:', error);
+      setError('Failed to load prompt slot type');
     } finally {
       setInitialLoading(false);
     }
@@ -75,29 +77,29 @@ export default function NewOrEditSlotType() {
       setError(null);
 
       if (isEditing) {
-        const updateData: UpdateSlotTypeRequest = {
+        const updateData: UpdatePromptSlotTypeRequest = {
           name: formData.name,
         };
-        await slotTypesApi.update(parseInt(id), updateData);
+        await promptSlotTypesApi.update(parseInt(id), updateData);
       } else {
-        const createData: CreateSlotTypeRequest = {
+        const createData: CreatePromptSlotTypeRequest = {
           name: formData.name,
           position: nextPosition,
         };
-        await slotTypesApi.create(createData);
+        await promptSlotTypesApi.create(createData);
       }
 
-      navigate('/admin/slot-types');
+      navigate('/admin/prompt-slot-types');
     } catch (error) {
-      console.error('Error saving slot type:', error);
-      setError('Failed to save slot type. Please try again.');
+      console.error('Error saving prompt slot type:', error);
+      setError('Failed to save prompt slot type. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    navigate('/admin/slot-types');
+    navigate('/admin/prompt-slot-types');
   };
 
   if (initialLoading) {

@@ -23,11 +23,12 @@ export default function WizardNavigationButtons() {
           throw new Error('Please select a mug before downloading PDF');
         }
 
-        const response = await fetch('/api/pdf/generate', {
+        const response = await fetch('/api/admin/pdf/generate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',
           body: JSON.stringify({
             mugId: selectedMug.id,
             imageFilename: imageFilename,

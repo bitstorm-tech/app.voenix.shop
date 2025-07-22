@@ -61,7 +61,7 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
                 Categories
               </NavLink>
               <NavLink
-                to="/admin/slot-types"
+                to="/admin/prompt-slot-types"
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
@@ -72,7 +72,7 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
                 Slot Types
               </NavLink>
               <NavLink
-                to="/admin/slots"
+                to="/admin/slot-variants"
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
@@ -80,7 +80,7 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
                   }`
                 }
               >
-                Slots
+                Slot Variants
               </NavLink>
             </AccordionContent>
           </AccordionItem>

@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.domain.prompts.entity
 
-import com.jotoai.voenix.shop.domain.prompts.dto.SlotTypeDto
+import com.jotoai.voenix.shop.domain.prompts.dto.PromptSlotTypeDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
@@ -12,8 +12,8 @@ import org.hibernate.annotations.UpdateTimestamp
 import java.time.OffsetDateTime
 
 @Entity
-@Table(name = "slot_types")
-data class SlotType(
+@Table(name = "prompt_slot_types")
+data class PromptSlotType(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -29,8 +29,8 @@ data class SlotType(
     var updatedAt: OffsetDateTime? = null,
 ) {
     fun toDto() =
-        SlotTypeDto(
-            id = requireNotNull(this.id) { "SlotType ID cannot be null when converting to DTO" },
+        PromptSlotTypeDto(
+            id = requireNotNull(this.id) { "PromptSlotType ID cannot be null when converting to DTO" },
             name = this.name,
             position = this.position,
             createdAt = this.createdAt,

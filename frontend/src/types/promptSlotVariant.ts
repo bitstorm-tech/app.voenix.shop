@@ -1,4 +1,4 @@
-export interface SlotType {
+export interface PromptSlotType {
   id: number;
   name: string;
   position: number;
@@ -6,10 +6,10 @@ export interface SlotType {
   updatedAt?: string;
 }
 
-export interface Slot {
+export interface PromptSlotVariant {
   id: number;
-  slotTypeId: number;
-  slotType?: SlotType;
+  promptSlotTypeId: number;
+  promptSlotType?: PromptSlotType;
   name: string;
   prompt: string;
   description?: string;

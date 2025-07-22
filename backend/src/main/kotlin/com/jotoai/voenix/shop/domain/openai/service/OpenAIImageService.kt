@@ -227,7 +227,7 @@ class OpenAIImageService(
 
         // Add slot prompts sorted by position
         prompt.slots
-            .sortedBy { it.slotType?.position ?: 0 }
+            .sortedBy { it.promptSlotType?.position ?: 0 }
             .forEach { slot ->
                 slot.prompt?.let { parts.add(it) }
             }

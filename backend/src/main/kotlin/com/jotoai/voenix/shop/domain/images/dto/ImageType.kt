@@ -4,5 +4,5 @@ enum class ImageType {
     PUBLIC,
     PRIVATE,
     PROMPT_EXAMPLE,
-    SLOT_EXAMPLE,
+    PROMPT_SLOT_VARIANT_EXAMPLE,
 }

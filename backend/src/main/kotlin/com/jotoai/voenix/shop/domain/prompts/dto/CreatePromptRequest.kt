@@ -13,5 +13,5 @@ data class CreatePromptRequest(
     val subcategoryId: Long? = null,
     val exampleImageFilename: String? = null,
     @field:Valid
-    val slots: List<PromptSlotRequest> = emptyList(),
+    val slots: List<PromptSlotVariantRequest> = emptyList(),
 )

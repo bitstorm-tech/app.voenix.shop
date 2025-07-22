@@ -3,16 +3,16 @@ package com.jotoai.voenix.shop.domain.prompts.service
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.service.ImageService
-import com.jotoai.voenix.shop.domain.prompts.dto.AddSlotsRequest
+import com.jotoai.voenix.shop.domain.prompts.dto.AddSlotVariantsRequest
 import com.jotoai.voenix.shop.domain.prompts.dto.CreatePromptRequest
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptDto
 import com.jotoai.voenix.shop.domain.prompts.dto.UpdatePromptRequest
-import com.jotoai.voenix.shop.domain.prompts.dto.UpdatePromptSlotsRequest
+import com.jotoai.voenix.shop.domain.prompts.dto.UpdatePromptSlotVariantsRequest
 import com.jotoai.voenix.shop.domain.prompts.entity.Prompt
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptCategoryRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptRepository
+import com.jotoai.voenix.shop.domain.prompts.repository.PromptSlotVariantRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptSubCategoryRepository
-import com.jotoai.voenix.shop.domain.prompts.repository.SlotRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -22,7 +22,7 @@ class PromptService(
     private val promptRepository: PromptRepository,
     private val promptCategoryRepository: PromptCategoryRepository,
     private val promptSubCategoryRepository: PromptSubCategoryRepository,
-    private val slotRepository: SlotRepository,
+    private val promptSlotVariantRepository: PromptSlotVariantRepository,
     private val imageService: ImageService,
 ) {
     fun getAllPrompts(): List<PromptDto> =
@@ -72,14 +72,14 @@ class PromptService(
                 exampleImageFilename = request.exampleImageFilename,
             )
 
-        // Add slots if provided
+        // Add slot variants if provided
         if (request.slots.isNotEmpty()) {
-            request.slots.forEach { slotRequest ->
-                val slot =
-                    slotRepository
-                        .findById(slotRequest.slotId)
-                        .orElseThrow { ResourceNotFoundException("Slot", "id", slotRequest.slotId) }
-                prompt.addSlot(slot)
+            request.slots.forEach { slotVariantRequest ->
+                val slotVariant =
+                    promptSlotVariantRepository
+                        .findById(slotVariantRequest.slotId)
+                        .orElseThrow { ResourceNotFoundException("Slot variant", "id", slotVariantRequest.slotId) }
+                prompt.addPromptSlotVariant(slotVariant)
             }
         }
 
@@ -137,15 +137,15 @@ class PromptService(
             prompt.exampleImageFilename = newFilename
         }
 
-        // Update slots if provided
-        request.slots?.let { slots ->
-            prompt.clearSlots()
-            slots.forEach { slotRequest ->
-                val slot =
-                    slotRepository
-                        .findById(slotRequest.slotId)
-                        .orElseThrow { ResourceNotFoundException("Slot", "id", slotRequest.slotId) }
-                prompt.addSlot(slot)
+        // Update slot variants if provided
+        request.slots?.let { slotVariants ->
+            prompt.clearPromptSlotVariants()
+            slotVariants.forEach { slotVariantRequest ->
+                val promptSlotVariant =
+                    promptSlotVariantRepository
+                        .findById(slotVariantRequest.slotId)
+                        .orElseThrow { ResourceNotFoundException("Prompt slot variant", "id", slotVariantRequest.slotId) }
+                prompt.addPromptSlotVariant(promptSlotVariant)
             }
         }
 
@@ -183,24 +183,24 @@ class PromptService(
     }
 
     @Transactional
-    fun addSlotsToPrompt(
+    fun addSlotVariantsToPrompt(
         promptId: Long,
-        request: AddSlotsRequest,
+        request: AddSlotVariantsRequest,
     ): PromptDto {
         val prompt =
             promptRepository
                 .findById(promptId)
                 .orElseThrow { ResourceNotFoundException("Prompt", "id", promptId) }
 
-        val slots = slotRepository.findAllById(request.slotIds)
-        if (slots.size != request.slotIds.size) {
-            val foundIds = slots.mapNotNull { it.id }
+        val promptSlotVariants = promptSlotVariantRepository.findAllById(request.slotIds)
+        if (promptSlotVariants.size != request.slotIds.size) {
+            val foundIds = promptSlotVariants.mapNotNull { it.id }
             val missingIds = request.slotIds - foundIds.toSet()
-            throw ResourceNotFoundException("Slot", "ids", missingIds.joinToString(", "))
+            throw ResourceNotFoundException("Prompt slot variant", "ids", missingIds.joinToString(", "))
         }
 
-        slots.forEach { slot ->
-            prompt.addSlot(slot)
+        promptSlotVariants.forEach { promptSlotVariant ->
+            prompt.addPromptSlotVariant(promptSlotVariant)
         }
 
         val savedPrompt = promptRepository.save(prompt)
@@ -208,25 +208,25 @@ class PromptService(
     }
 
     @Transactional
-    fun updatePromptSlots(
+    fun updatePromptSlotVariants(
         promptId: Long,
-        request: UpdatePromptSlotsRequest,
+        request: UpdatePromptSlotVariantsRequest,
     ): PromptDto {
         val prompt =
             promptRepository
                 .findById(promptId)
                 .orElseThrow { ResourceNotFoundException("Prompt", "id", promptId) }
 
-        // Clear existing slots
-        prompt.clearSlots()
+        // Clear existing slot variants
+        prompt.clearPromptSlotVariants()
 
-        // Add new slots
-        request.slots.forEach { slotRequest ->
-            val slot =
-                slotRepository
-                    .findById(slotRequest.slotId)
-                    .orElseThrow { ResourceNotFoundException("Slot", "id", slotRequest.slotId) }
-            prompt.addSlot(slot)
+        // Add new slot variants
+        request.slotVariants.forEach { slotVariantRequest ->
+            val promptSlotVariant =
+                promptSlotVariantRepository
+                    .findById(slotVariantRequest.slotId)
+                    .orElseThrow { ResourceNotFoundException("Prompt slot variant", "id", slotVariantRequest.slotId) }
+            prompt.addPromptSlotVariant(promptSlotVariant)
         }
 
         val savedPrompt = promptRepository.save(prompt)
@@ -234,7 +234,7 @@ class PromptService(
     }
 
     @Transactional
-    fun removeSlotFromPrompt(
+    fun removeSlotVariantFromPrompt(
         promptId: Long,
         slotId: Long,
     ): PromptDto {
@@ -243,12 +243,12 @@ class PromptService(
                 .findById(promptId)
                 .orElseThrow { ResourceNotFoundException("Prompt", "id", promptId) }
 
-        val slot =
-            slotRepository
+        val promptSlotVariant =
+            promptSlotVariantRepository
                 .findById(slotId)
-                .orElseThrow { ResourceNotFoundException("Slot", "id", slotId) }
+                .orElseThrow { ResourceNotFoundException("Prompt slot variant", "id", slotId) }
 
-        prompt.removeSlot(slot)
+        prompt.removePromptSlotVariant(promptSlotVariant)
 
         val savedPrompt = promptRepository.save(prompt)
         return getPromptById(savedPrompt.id!!)

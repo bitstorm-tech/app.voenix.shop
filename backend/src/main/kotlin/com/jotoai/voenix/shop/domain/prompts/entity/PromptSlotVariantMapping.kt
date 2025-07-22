@@ -14,26 +14,26 @@ import java.io.Serializable
 import java.time.OffsetDateTime
 
 @Embeddable
-data class PromptSlotId(
+data class PromptSlotVariantMappingId(
     @Column(name = "prompt_id")
     val promptId: Long = 0,
     @Column(name = "slot_id")
-    val slotId: Long = 0,
+    val promptSlotVariantId: Long = 0,
 ) : Serializable
 
 @Entity
-@Table(name = "prompt_slots")
-data class PromptSlot(
+@Table(name = "prompt_slot_variant_mappings")
+data class PromptSlotVariantMapping(
     @EmbeddedId
-    val id: PromptSlotId = PromptSlotId(),
+    val id: PromptSlotVariantMappingId = PromptSlotVariantMappingId(),
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("promptId")
     @JoinColumn(name = "prompt_id")
     val prompt: Prompt,
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("slotId")
+    @MapsId("promptSlotVariantId")
     @JoinColumn(name = "slot_id")
-    val slot: Slot,
+    val promptSlotVariant: PromptSlotVariant,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,
