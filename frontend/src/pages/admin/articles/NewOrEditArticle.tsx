@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Switch } from '@/components/ui/Switch';
+import { useCreateArticle, useUpdateArticle } from '@/hooks/queries/useArticles';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Textarea } from '@/components/ui/Textarea';
 import { articleCategoriesApi, articlesApi, articleSubCategoriesApi } from '@/lib/api';
@@ -37,6 +38,9 @@ export default function NewOrEditArticle() {
   const navigate = useNavigate();
   const { id } = useParams();
   const isEdit = !!id;
+
+  const createArticleMutation = useCreateArticle();
+  const updateArticleMutation = useUpdateArticle();
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -164,8 +168,14 @@ export default function NewOrEditArticle() {
           pillowDetails: article.pillowDetails,
         };
         console.log('Updating article with data:', updateData);
-        await articlesApi.update(Number(id), updateData);
-        toast.success('Article updated successfully');
+        updateArticleMutation.mutate(
+          { id: Number(id), data: updateData },
+          {
+            onSuccess: () => {
+              navigate('/admin/articles');
+            },
+          }
+        );
       } else {
         const createData: CreateArticleRequest = {
           name: article.name || '',
@@ -183,11 +193,12 @@ export default function NewOrEditArticle() {
           pillowDetails: article.pillowDetails,
         };
         console.log('Creating article with data:', createData);
-        await articlesApi.create(createData);
-        toast.success('Article created successfully');
+        createArticleMutation.mutate(createData, {
+          onSuccess: () => {
+            navigate('/admin/articles');
+          },
+        });
       }
-
-      navigate('/admin/articles');
     } catch (error) {
       console.error('Error saving article:', error);
       if (error instanceof Error) {
@@ -217,8 +228,8 @@ export default function NewOrEditArticle() {
           </Button>
           <h1 className="text-2xl font-bold">{isEdit ? 'Edit Article' : 'New Article'}</h1>
         </div>
-        <Button onClick={handleSubmit} disabled={saving}>
-          {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+        <Button onClick={handleSubmit} disabled={saving || createArticleMutation.isPending || updateArticleMutation.isPending}>
+          {(saving || createArticleMutation.isPending || updateArticleMutation.isPending) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
           Save
         </Button>
       </div>
