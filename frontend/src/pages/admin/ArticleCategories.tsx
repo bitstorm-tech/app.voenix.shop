@@ -1,18 +1,9 @@
 import ArticleCategoryFormDialog from '@/components/admin/categories/ArticleCategoryFormDialog';
 import ArticleSubCategoryFormDialog from '@/components/admin/categories/ArticleSubCategoryFormDialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/Accordion';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/AlertDialog';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { articleCategoriesApi, articleSubCategoriesApi } from '@/lib/api';
 import { ArticleCategory, ArticleSubCategory } from '@/types/mug';
@@ -283,23 +274,12 @@ export default function ArticleCategories() {
         onSaved={handleSubcategorySaved}
       />
 
-      <AlertDialog open={deleteDialog.isOpen} onOpenChange={(open) => setDeleteDialog({ ...deleteDialog, isOpen: open })}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete {deleteDialog.type === 'category' ? 'the category' : 'the subcategory'} "{deleteDialog.name}"? This
-              action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmationDialog
+        isOpen={deleteDialog.isOpen}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteDialog({ ...deleteDialog, isOpen: false })}
+        description={`Are you sure you want to delete ${deleteDialog.type === 'category' ? 'the category' : 'the subcategory'} "${deleteDialog.name}"? This action cannot be undone.`}
+      />
     </div>
   );
 }

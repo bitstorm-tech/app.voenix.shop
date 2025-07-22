@@ -1,6 +1,5 @@
 import { SortableSlotTypeList } from '@/components/admin/slot-types/SortableSlotTypeList';
-import { Button } from '@/components/ui/Button';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { promptSlotTypesApi } from '@/lib/api';
 import type { PromptSlotType } from '@/types/promptSlotVariant';
 import { useEffect, useState } from 'react';
@@ -97,22 +96,12 @@ export default function PromptSlotTypes() {
         </>
       )}
 
-      <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>Are you sure you want to delete this prompt slot type? This action cannot be undone.</DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={cancelDelete}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmDelete}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmationDialog
+        isOpen={isDeleting}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        description="Are you sure you want to delete this prompt slot type? This action cannot be undone."
+      />
     </div>
   );
 }

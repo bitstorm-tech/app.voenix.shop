@@ -4,9 +4,9 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Switch } from '@/components/ui/Switch';
-import { useCreateArticle, useUpdateArticle } from '@/hooks/queries/useArticles';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Textarea } from '@/components/ui/Textarea';
+import { useCreateArticle, useUpdateArticle } from '@/hooks/queries/useArticles';
 import { articleCategoriesApi, articlesApi, articleSubCategoriesApi } from '@/lib/api';
 import type {
   Article,
@@ -174,7 +174,7 @@ export default function NewOrEditArticle() {
             onSuccess: () => {
               navigate('/admin/articles');
             },
-          }
+          },
         );
       } else {
         const createData: CreateArticleRequest = {
@@ -229,7 +229,11 @@ export default function NewOrEditArticle() {
           <h1 className="text-2xl font-bold">{isEdit ? 'Edit Article' : 'New Article'}</h1>
         </div>
         <Button onClick={handleSubmit} disabled={saving || createArticleMutation.isPending || updateArticleMutation.isPending}>
-          {(saving || createArticleMutation.isPending || updateArticleMutation.isPending) ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+          {saving || createArticleMutation.isPending || updateArticleMutation.isPending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="mr-2 h-4 w-4" />
+          )}
           Save
         </Button>
       </div>

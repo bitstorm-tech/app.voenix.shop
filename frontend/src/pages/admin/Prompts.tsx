@@ -1,7 +1,7 @@
-import DeleteConfirmationDialog from '@/components/admin/DeleteConfirmationDialog';
 import PromptTable from '@/components/admin/PromptTable';
 import PromptTableHeader from '@/components/admin/PromptTableHeader';
 import TestPromptDialog from '@/components/admin/TestPromptDialog';
+import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { usePromptCategories } from '@/hooks/queries/useCategories';
 import { useDeletePrompt, usePrompts } from '@/hooks/queries/usePrompts';
 import { useState } from 'react';
@@ -101,7 +101,12 @@ export default function Prompts() {
 
       <TestPromptDialog isOpen={isModalOpen} testingPromptId={testingPromptId} onClose={closeModal} />
 
-      <DeleteConfirmationDialog isOpen={isDeleteDialogOpen} onConfirm={confirmDelete} onCancel={cancelDelete} />
+      <ConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+        description="This will permanently delete the prompt. This action cannot be undone."
+      />
     </div>
   );
 }
