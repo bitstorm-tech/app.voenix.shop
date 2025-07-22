@@ -11,6 +11,7 @@ import type {
   Article,
   ArticleType,
   CreateArticleRequest,
+  CreateArticleVariantRequest,
   CreateMugDetailsRequest,
   CreatePillowDetailsRequest,
   CreateShirtDetailsRequest,
@@ -61,6 +62,7 @@ export default function NewOrEditArticle() {
   });
   const [categories, setCategories] = useState<ArticleCategory[]>([]);
   const [subcategories, setSubcategories] = useState<ArticleSubCategory[]>([]);
+  const [temporaryVariants, setTemporaryVariants] = useState<CreateArticleVariantRequest[]>([]);
 
   useEffect(() => {
     fetchCategories();
@@ -106,6 +108,14 @@ export default function NewOrEditArticle() {
     } catch (error) {
       console.error('Error fetching subcategories:', error);
     }
+  };
+
+  const handleAddTemporaryVariant = (variant: CreateArticleVariantRequest) => {
+    setTemporaryVariants([...temporaryVariants, variant]);
+  };
+
+  const handleDeleteTemporaryVariant = (index: number) => {
+    setTemporaryVariants(temporaryVariants.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
@@ -167,7 +177,7 @@ export default function NewOrEditArticle() {
           articleType: article.articleType as ArticleType,
           categoryId: article.categoryId || 0,
           subcategoryId: article.subcategoryId,
-          variants: [],
+          variants: temporaryVariants,
           mugDetails: article.mugDetails,
           shirtDetails: article.shirtDetails,
           pillowDetails: article.pillowDetails,
@@ -301,7 +311,7 @@ export default function NewOrEditArticle() {
                 <div className="space-y-2">
                   <Label htmlFor="category">Category *</Label>
                   <Select
-                    value={article.categoryId?.toString()}
+                    value={article.categoryId?.toString() || ''}
                     onValueChange={(value) => setArticle({ ...article, categoryId: Number(value), subcategoryId: undefined })}
                   >
                     <SelectTrigger id="category">
@@ -320,7 +330,7 @@ export default function NewOrEditArticle() {
                 <div className="space-y-2">
                   <Label htmlFor="subcategory">Subcategory</Label>
                   <Select
-                    value={article.subcategoryId?.toString()}
+                    value={article.subcategoryId?.toString() || ''}
                     onValueChange={(value) => setArticle({ ...article, subcategoryId: value ? Number(value) : undefined })}
                     disabled={!article.categoryId}
                   >
@@ -412,7 +422,14 @@ export default function NewOrEditArticle() {
         )}
 
         <TabsContent value="variants">
-          <VariantsTab articleId={article.id} articleType={article.articleType as ArticleType} variants={article.variants || []} />
+          <VariantsTab
+            articleId={article.id}
+            articleType={article.articleType as ArticleType}
+            variants={article.variants || []}
+            temporaryVariants={temporaryVariants}
+            onAddTemporaryVariant={handleAddTemporaryVariant}
+            onDeleteTemporaryVariant={handleDeleteTemporaryVariant}
+          />
         </TabsContent>
       </Tabs>
     </div>

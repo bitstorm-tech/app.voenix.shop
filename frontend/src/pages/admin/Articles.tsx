@@ -85,8 +85,6 @@ export default function Articles() {
     setDeleteId(null);
   };
 
-
-
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
