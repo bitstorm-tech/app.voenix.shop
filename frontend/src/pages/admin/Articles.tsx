@@ -133,7 +133,7 @@ export default function Articles() {
                     {article.categoryName || '-'}
                     {article.subcategoryName && <span className="text-sm text-gray-500"> / {article.subcategoryName}</span>}
                   </TableCell>
-                  <TableCell>${article.price}</TableCell>
+                  <TableCell>${(article.price / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                   <TableCell>
                     <Badge variant={article.active ? 'default' : 'secondary'}>{article.active ? 'Active' : 'Inactive'}</Badge>
                   </TableCell>
