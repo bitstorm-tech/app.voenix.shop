@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { articlesApi } from '@/lib/api';
 import type { Article, ArticleType } from '@/types/article';
-import { Edit, Image, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -85,18 +85,7 @@ export default function Articles() {
     setDeleteId(null);
   };
 
-  const getArticleDimensions = (article: Article): string => {
-    switch (article.articleType) {
-      case 'MUG':
-        return article.mugDetails ? `${article.mugDetails.heightMm}×${article.mugDetails.diameterMm}mm` : '-';
-      case 'SHIRT':
-        return article.shirtDetails ? article.shirtDetails.availableSizes.join(', ') : '-';
-      case 'PILLOW':
-        return article.pillowDetails ? `${article.pillowDetails.widthCm}×${article.pillowDetails.heightCm}×${article.pillowDetails.depthCm}cm` : '-';
-      default:
-        return '-';
-    }
-  };
+
 
   return (
     <div className="container mx-auto p-6">
@@ -125,11 +114,9 @@ export default function Articles() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-16">Image</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Details</TableHead>
               <TableHead>Price</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -138,28 +125,19 @@ export default function Articles() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-gray-500">
+                <TableCell colSpan={6} className="text-center text-gray-500">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : articles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-gray-500">
+                <TableCell colSpan={6} className="text-center text-gray-500">
                   No articles found
                 </TableCell>
               </TableRow>
             ) : (
               articles.map((article) => (
                 <TableRow key={article.id}>
-                  <TableCell>
-                    {article.mainImage ? (
-                      <img src={article.mainImage} alt={article.name} className="h-12 w-12 rounded object-cover" />
-                    ) : (
-                      <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100">
-                        <Image className="h-6 w-6 text-gray-400" />
-                      </div>
-                    )}
-                  </TableCell>
                   <TableCell className="font-medium">{article.name}</TableCell>
                   <TableCell>
                     <Badge className={articleTypeColors[article.articleType]}>{articleTypeLabels[article.articleType]}</Badge>
@@ -168,7 +146,6 @@ export default function Articles() {
                     {article.categoryName || '-'}
                     {article.subcategoryName && <span className="text-sm text-gray-500"> / {article.subcategoryName}</span>}
                   </TableCell>
-                  <TableCell className="text-sm">{getArticleDimensions(article)}</TableCell>
                   <TableCell>${article.price}</TableCell>
                   <TableCell>
                     <Badge variant={article.active ? 'default' : 'secondary'}>{article.active ? 'Active' : 'Inactive'}</Badge>
