@@ -155,7 +155,7 @@ export default function NewOrEditArticle() {
           descriptionShort: article.descriptionShort || '',
           descriptionLong: article.descriptionLong || '',
           mainImage: article.mainImage || '',
-          price: Math.round(article.price || 0),
+          price: article.price || 0,
           active: article.active || false,
           categoryId: article.categoryId || 0,
           subcategoryId: article.subcategoryId,
@@ -172,7 +172,7 @@ export default function NewOrEditArticle() {
           descriptionShort: article.descriptionShort || '',
           descriptionLong: article.descriptionLong || '',
           mainImage: article.mainImage || '',
-          price: Math.round(article.price || 0),
+          price: article.price || 0,
           active: article.active || false,
           articleType: article.articleType as ArticleType,
           categoryId: article.categoryId || 0,
@@ -239,6 +239,11 @@ export default function NewOrEditArticle() {
               <CardDescription>General article details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
+              <div className="flex items-center space-x-2">
+                <Switch id="active" checked={article.active} onCheckedChange={(checked) => setArticle({ ...article, active: checked })} />
+                <Label htmlFor="active">Active</Label>
+              </div>
+
               {!isEdit && (
                 <div className="space-y-2">
                   <Label htmlFor="articleType">Article Type *</Label>
@@ -386,18 +391,13 @@ export default function NewOrEditArticle() {
                   <Input
                     id="price"
                     type="number"
-                    value={article.price}
-                    onChange={(e) => setArticle({ ...article, price: Math.round(Number(e.target.value)) })}
-                    placeholder="0"
+                    value={article.price ? (article.price / 100).toFixed(2) : ''}
+                    onChange={(e) => setArticle({ ...article, price: Math.round(Number(e.target.value) * 100) })}
+                    placeholder="0.00"
                     min="0"
-                    step="1"
+                    step="0.01"
                   />
                 </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch id="active" checked={article.active} onCheckedChange={(checked) => setArticle({ ...article, active: checked })} />
-                <Label htmlFor="active">Active</Label>
               </div>
             </CardContent>
           </Card>
