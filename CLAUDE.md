@@ -11,6 +11,8 @@ Voenix Shop is a full-stack e-commerce application for creating custom mugs with
 
 ## Common Development Commands
 
+The test credentials to login into the admin site are `a@a` / `test`.
+
 ### Backend (Spring Boot)
 
 ```bash

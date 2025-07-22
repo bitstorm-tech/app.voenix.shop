@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/stores/authStore';
+import type { Article, CreateArticleRequest, PaginatedResponse, UpdateArticleRequest } from '@/types/article';
 import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
@@ -33,7 +34,17 @@ async function handleResponse<T>(response: Response): Promise<T> {
     }
 
     const errorData = await response.json().catch(() => ({ message: 'An error occurred' }));
-    throw new ApiError(response.status, errorData.message || `HTTP error! status: ${response.status}`);
+
+    // If validation errors exist, append them to the message
+    let errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
+    if (errorData.validationErrors) {
+      const validationMessages = Object.entries(errorData.validationErrors)
+        .map(([field, message]) => `${field}: ${message}`)
+        .join(', ');
+      errorMessage = `${errorMessage} - ${validationMessages}`;
+    }
+
+    throw new ApiError(response.status, errorMessage);
   }
 
   if (response.status === 204) {
@@ -169,6 +180,38 @@ export interface UpdatePromptSubCategoryRequest {
   name?: string;
   description?: string;
 }
+
+// Articles API endpoints
+export const articlesApi = {
+  getAll: (params?: {
+    page?: number;
+    size?: number;
+    type?: string;
+    categoryId?: number;
+    subcategoryId?: number;
+    active?: boolean;
+    search?: string;
+  }) => {
+    const queryParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          queryParams.append(key, value.toString());
+        }
+      });
+    }
+    const queryString = queryParams.toString();
+    return api.get<PaginatedResponse<Article>>(`/admin/articles${queryString ? `?${queryString}` : ''}`);
+  },
+  getById: (id: number) => api.get<Article>(`/admin/articles/${id}`),
+  create: (data: CreateArticleRequest) => api.post<Article>('/admin/articles', data),
+  update: (id: number, data: UpdateArticleRequest) => api.put<Article>(`/admin/articles/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/admin/articles/${id}`),
+  // Variant management
+  createVariant: (articleId: number, data: any) => api.post<any>(`/admin/articles/${articleId}/variants`, data),
+  updateVariant: (variantId: number, data: any) => api.put<any>(`/admin/articles/variants/${variantId}`, data),
+  deleteVariant: (variantId: number) => api.delete<void>(`/admin/articles/variants/${variantId}`),
+};
 
 // Mug API endpoints
 export const mugsApi = {

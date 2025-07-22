@@ -1,0 +1,209 @@
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { articlesApi } from '@/lib/api';
+import type { Article, ArticleType } from '@/types/article';
+import { Edit, Image, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+
+const articleTypeLabels: Record<ArticleType, string> = {
+  MUG: 'Mug',
+  SHIRT: 'T-Shirt',
+  PILLOW: 'Pillow',
+};
+
+const articleTypeColors: Record<ArticleType, string> = {
+  MUG: 'bg-blue-100 text-blue-800',
+  SHIRT: 'bg-green-100 text-green-800',
+  PILLOW: 'bg-purple-100 text-purple-800',
+};
+
+export default function Articles() {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+
+  const typeFilter = searchParams.get('type') as ArticleType | null;
+
+  useEffect(() => {
+    fetchArticles();
+  }, [typeFilter]);
+
+  const fetchArticles = async () => {
+    try {
+      setLoading(true);
+      const params: any = { page: 0, size: 50 };
+      if (typeFilter) {
+        params.type = typeFilter;
+      }
+      const response = await articlesApi.getAll(params);
+      setArticles(response.content || []);
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleTypeFilterChange = (value: string) => {
+    if (value === 'all') {
+      searchParams.delete('type');
+    } else {
+      searchParams.set('type', value);
+    }
+    setSearchParams(searchParams);
+  };
+
+  const handleDelete = async (id: number) => {
+    setDeleteId(id);
+    setIsDeleting(true);
+  };
+
+  const confirmDelete = async () => {
+    if (deleteId) {
+      try {
+        await articlesApi.delete(deleteId);
+        setIsDeleting(false);
+        setDeleteId(null);
+        fetchArticles();
+      } catch (error) {
+        console.error('Error deleting article:', error);
+        setIsDeleting(false);
+        setDeleteId(null);
+      }
+    }
+  };
+
+  const cancelDelete = () => {
+    setIsDeleting(false);
+    setDeleteId(null);
+  };
+
+  const getArticleDimensions = (article: Article): string => {
+    switch (article.articleType) {
+      case 'MUG':
+        return article.mugDetails ? `${article.mugDetails.heightMm}×${article.mugDetails.diameterMm}mm` : '-';
+      case 'SHIRT':
+        return article.shirtDetails ? article.shirtDetails.availableSizes.join(', ') : '-';
+      case 'PILLOW':
+        return article.pillowDetails ? `${article.pillowDetails.widthCm}×${article.pillowDetails.heightCm}×${article.pillowDetails.depthCm}cm` : '-';
+      default:
+        return '-';
+    }
+  };
+
+  return (
+    <div className="container mx-auto p-6">
+      <div className="mb-6 flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Articles</h1>
+        <div className="flex items-center gap-4">
+          <Select value={typeFilter || 'all'} onValueChange={handleTypeFilterChange}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Filter by type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="MUG">Mugs</SelectItem>
+              <SelectItem value="SHIRT">T-Shirts</SelectItem>
+              <SelectItem value="PILLOW">Pillows</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={() => navigate('/admin/articles/new')}>
+            <Plus className="mr-2 h-4 w-4" />
+            New Article
+          </Button>
+        </div>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-16">Image</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead>Details</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center text-gray-500">
+                  Loading...
+                </TableCell>
+              </TableRow>
+            ) : articles.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={8} className="text-center text-gray-500">
+                  No articles found
+                </TableCell>
+              </TableRow>
+            ) : (
+              articles.map((article) => (
+                <TableRow key={article.id}>
+                  <TableCell>
+                    {article.mainImage ? (
+                      <img src={article.mainImage} alt={article.name} className="h-12 w-12 rounded object-cover" />
+                    ) : (
+                      <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100">
+                        <Image className="h-6 w-6 text-gray-400" />
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell className="font-medium">{article.name}</TableCell>
+                  <TableCell>
+                    <Badge className={articleTypeColors[article.articleType]}>{articleTypeLabels[article.articleType]}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    {article.categoryName || '-'}
+                    {article.subcategoryName && <span className="text-sm text-gray-500"> / {article.subcategoryName}</span>}
+                  </TableCell>
+                  <TableCell className="text-sm">{getArticleDimensions(article)}</TableCell>
+                  <TableCell>${article.price}</TableCell>
+                  <TableCell>
+                    <Badge variant={article.active ? 'default' : 'secondary'}>{article.active ? 'Active' : 'Inactive'}</Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/articles/${article.id}/edit`)} className="mr-2">
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(article.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>Are you sure you want to delete this article? This action cannot be undone.</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={cancelDelete}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

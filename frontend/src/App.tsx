@@ -1,10 +1,10 @@
 import AdminLayout from '@/components/admin/AdminLayout';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import ArticleCategories from '@/pages/admin/ArticleCategories';
+import Articles from '@/pages/admin/Articles';
+import NewOrEditArticle from '@/pages/admin/articles/NewOrEditArticle';
 import CompletedOrders from '@/pages/admin/CompletedOrders';
 import Logistics from '@/pages/admin/Logistics';
-import Mugs from '@/pages/admin/Mugs';
-import NewOrEditMug from '@/pages/admin/mugs/NewOrEditMug';
 import NewOrEditArticleCategory from '@/pages/admin/NewOrEditArticleCategory';
 import NewOrEditArticleSubCategory from '@/pages/admin/NewOrEditArticleSubCategory';
 import NewOrEditPrompt from '@/pages/admin/NewOrEditPrompt';
@@ -46,9 +46,9 @@ export default function App() {
             <Route path="slots" element={<Slots />} />
             <Route path="slots/new" element={<NewOrEditSlot />} />
             <Route path="slots/:id/edit" element={<NewOrEditSlot />} />
-            <Route path="mugs" element={<Mugs />} />
-            <Route path="mugs/new" element={<NewOrEditMug />} />
-            <Route path="mugs/:id/edit" element={<NewOrEditMug />} />
+            <Route path="articles" element={<Articles />} />
+            <Route path="articles/new" element={<NewOrEditArticle />} />
+            <Route path="articles/:id/edit" element={<NewOrEditArticle />} />
             <Route path="article-categories" element={<ArticleCategories />} />
             <Route path="article-categories/new" element={<NewOrEditArticleCategory />} />
             <Route path="article-categories/:id/edit" element={<NewOrEditArticleCategory />} />

@@ -11,7 +11,7 @@ interface AdminSidebarProps {
 }
 
 export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
-  const [openItems, setOpenItems] = useState<string[]>(['prompts', 'mugs', 'orders', 'masterdata']);
+  const [openItems, setOpenItems] = useState<string[]>(['prompts', 'articles', 'orders', 'masterdata']);
   const logout = useAuthStore((state) => state.logout);
   const user = useAuthStore((state) => state.user);
   const navigate = useNavigate();
@@ -47,7 +47,7 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
                   }`
                 }
               >
-                Prompts
+                All Prompts
               </NavLink>
               <NavLink
                 to="/admin/prompt-categories"
@@ -86,7 +86,7 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
           </AccordionItem>
 
           {/* Articles Section */}
-          <AccordionItem value="mugs" className="border-none">
+          <AccordionItem value="articles" className="border-none">
             <AccordionTrigger className="rounded-md px-3 py-2 hover:bg-gray-100 hover:no-underline">
               <div className="flex items-center gap-2">
                 <Box className="h-4 w-4" />
@@ -95,7 +95,7 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
             </AccordionTrigger>
             <AccordionContent className="ml-4 space-y-1">
               <NavLink
-                to="/admin/mugs"
+                to="/admin/articles"
                 onClick={onNavigate}
                 className={({ isActive }) =>
                   `flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-gray-100 ${
@@ -103,7 +103,7 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
                   }`
                 }
               >
-                Mugs
+                All Articles
               </NavLink>
               <NavLink
                 to="/admin/article-categories"

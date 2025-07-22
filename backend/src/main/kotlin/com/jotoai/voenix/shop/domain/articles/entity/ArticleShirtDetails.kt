@@ -1,0 +1,47 @@
+package com.jotoai.voenix.shop.domain.articles.entity
+
+import com.jotoai.voenix.shop.domain.articles.dto.ArticleShirtDetailsDto
+import com.jotoai.voenix.shop.domain.articles.enums.FitType
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.EnumType
+import jakarta.persistence.Enumerated
+import jakarta.persistence.Id
+import jakarta.persistence.Table
+import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.UpdateTimestamp
+import java.time.OffsetDateTime
+
+@Entity
+@Table(name = "article_shirt_details")
+data class ArticleShirtDetails(
+    @Id
+    @Column(name = "article_id")
+    val articleId: Long,
+    @Column(nullable = false)
+    var material: String,
+    @Column(name = "care_instructions", columnDefinition = "TEXT")
+    var careInstructions: String? = null,
+    @Enumerated(EnumType.STRING)
+    @Column(name = "fit_type", nullable = false, length = 50)
+    var fitType: FitType,
+    @Column(name = "available_sizes", nullable = false, columnDefinition = "text[]")
+    var availableSizes: Array<String>,
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    val createdAt: OffsetDateTime? = null,
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
+    var updatedAt: OffsetDateTime? = null,
+) {
+    fun toDto() =
+        ArticleShirtDetailsDto(
+            articleId = this.articleId,
+            material = this.material,
+            careInstructions = this.careInstructions,
+            fitType = this.fitType,
+            availableSizes = this.availableSizes.toList(),
+            createdAt = this.createdAt,
+            updatedAt = this.updatedAt,
+        )
+}
