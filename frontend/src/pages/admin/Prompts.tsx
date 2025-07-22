@@ -2,45 +2,29 @@ import DeleteConfirmationDialog from '@/components/admin/DeleteConfirmationDialo
 import PromptTable from '@/components/admin/PromptTable';
 import PromptTableHeader from '@/components/admin/PromptTableHeader';
 import TestPromptDialog from '@/components/admin/TestPromptDialog';
-import { promptCategoriesApi, promptsApi } from '@/lib/api';
-import { Prompt, PromptCategory } from '@/types/prompt';
-import { useEffect, useState } from 'react';
+import { usePromptCategories } from '@/hooks/queries/useCategories';
+import { useDeletePrompt, usePrompts } from '@/hooks/queries/usePrompts';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Prompts() {
   const navigate = useNavigate();
-  const [prompts, setPrompts] = useState<Prompt[]>([]);
-  const [categories, setCategories] = useState<PromptCategory[]>([]);
+  const { data: prompts = [], isLoading: isLoadingPrompts, error: promptsError } = usePrompts();
+  const { data: categories = [], isLoading: isLoadingCategories } = usePromptCategories();
+  const deletePromptMutation = useDeletePrompt();
+
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [testingPromptId, setTestingPromptId] = useState<number | undefined>(undefined);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
   const [promptToDelete, setPromptToDelete] = useState<number | undefined>(undefined);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const [promptsData, categoriesData] = await Promise.all([promptsApi.getAll(), promptCategoriesApi.getAll()]);
-      setPrompts(promptsData);
-      setCategories(categoriesData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      setError('Failed to load prompts. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const isLoading = isLoadingPrompts || isLoadingCategories;
+  const error = promptsError;
 
   const filteredPrompts = selectedCategory === 'all' ? prompts : prompts.filter((prompt) => prompt.categoryId === parseInt(selectedCategory));
 
-  const handleEdit = (prompt: Prompt) => {
+  const handleEdit = (prompt: any) => {
     navigate(`/admin/prompts/${prompt.id}/edit`);
   };
 
@@ -52,15 +36,12 @@ export default function Prompts() {
   const confirmDelete = async () => {
     if (!promptToDelete) return;
 
-    try {
-      await promptsApi.delete(promptToDelete);
-      setPrompts(prompts.filter((p) => p.id !== promptToDelete));
-      setIsDeleteDialogOpen(false);
-      setPromptToDelete(undefined);
-    } catch (error) {
-      console.error('Error deleting prompt:', error);
-      alert('Failed to delete prompt. Please try again.');
-    }
+    deletePromptMutation.mutate(promptToDelete, {
+      onSuccess: () => {
+        setIsDeleteDialogOpen(false);
+        setPromptToDelete(undefined);
+      },
+    });
   };
 
   const cancelDelete = () => {
@@ -97,8 +78,8 @@ export default function Prompts() {
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
           <div className="text-center">
-            <p className="mb-4 text-red-500">{error}</p>
-            <button onClick={fetchData} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
+            <p className="mb-4 text-red-500">Failed to load prompts. Please try again.</p>
+            <button onClick={() => window.location.reload()} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
               Retry
             </button>
           </div>

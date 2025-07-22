@@ -1,4 +1,3 @@
-import { useAuthStore } from '@/stores/authStore';
 import type { Article, CreateArticleRequest, PaginatedResponse, UpdateArticleRequest } from '@/types/article';
 import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
@@ -19,11 +18,8 @@ async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     // Handle authentication errors globally
     if (response.status === 401 || response.status === 403) {
-      // Clear auth state
-      const authStore = useAuthStore.getState();
-      authStore.logout().catch(() => {
-        // Ignore logout errors, we're redirecting anyway
-      });
+      // Clear auth state - just redirect, React Query will handle the rest
+      // The session query will fail and update the auth state automatically
 
       // Redirect to login page
       window.location.href = '/login';
@@ -181,6 +177,9 @@ export interface UpdatePromptSubCategoryRequest {
   name?: string;
   description?: string;
 }
+
+// Re-export types for convenience
+export type { CreateArticleRequest, UpdateArticleRequest } from '@/types/article';
 
 // Articles API endpoints
 export const articlesApi = {

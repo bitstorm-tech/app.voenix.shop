@@ -3,10 +3,10 @@ import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
-import { articlesApi } from '@/lib/api';
-import type { Article, ArticleType } from '@/types/article';
+import { useArticles, useDeleteArticle } from '@/hooks/queries/useArticles';
+import type { ArticleType } from '@/types/article';
 import { Edit, Plus, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const articleTypeLabels: Record<ArticleType, string> = {
@@ -24,32 +24,21 @@ const articleTypeColors: Record<ArticleType, string> = {
 export default function Articles() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const typeFilter = searchParams.get('type') as ArticleType | null;
+  const page = parseInt(searchParams.get('page') || '0');
+  const size = parseInt(searchParams.get('size') || '50');
 
-  useEffect(() => {
-    fetchArticles();
-  }, [typeFilter]);
+  const { data, isLoading: loading } = useArticles({
+    page,
+    size,
+    type: typeFilter || undefined,
+  });
 
-  const fetchArticles = async () => {
-    try {
-      setLoading(true);
-      const params: any = { page: 0, size: 50 };
-      if (typeFilter) {
-        params.type = typeFilter;
-      }
-      const response = await articlesApi.getAll(params);
-      setArticles(response.content || []);
-    } catch (error) {
-      console.error('Error fetching articles:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const deleteArticleMutation = useDeleteArticle();
+  const articles = data?.content || [];
 
   const handleTypeFilterChange = (value: string) => {
     if (value === 'all') {
@@ -67,16 +56,16 @@ export default function Articles() {
 
   const confirmDelete = async () => {
     if (deleteId) {
-      try {
-        await articlesApi.delete(deleteId);
-        setIsDeleting(false);
-        setDeleteId(null);
-        fetchArticles();
-      } catch (error) {
-        console.error('Error deleting article:', error);
-        setIsDeleting(false);
-        setDeleteId(null);
-      }
+      deleteArticleMutation.mutate(deleteId, {
+        onSuccess: () => {
+          setIsDeleting(false);
+          setDeleteId(null);
+        },
+        onError: () => {
+          setIsDeleting(false);
+          setDeleteId(null);
+        },
+      });
     }
   };
 

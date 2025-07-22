@@ -2,40 +2,36 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
+import { useLogin } from '@/hooks/queries/useAuth';
 import { ApiError } from '@/lib/api';
-import { useAuthStore } from '@/stores/authStore';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
-  const login = useAuthStore((state) => state.login);
-  const navigate = useNavigate();
+  const loginMutation = useLogin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsLoading(true);
 
-    try {
-      await login({ email, password });
-      navigate('/admin');
-    } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.status === 401) {
-          setError('Invalid email or password');
-        } else {
-          setError(err.message || 'An error occurred during login');
-        }
-      } else {
-        setError('An unexpected error occurred');
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    loginMutation.mutate(
+      { email, password },
+      {
+        onError: (err) => {
+          if (err instanceof ApiError) {
+            if (err.status === 401) {
+              setError('Invalid email or password');
+            } else {
+              setError(err.message || 'An error occurred during login');
+            }
+          } else {
+            setError('An unexpected error occurred');
+          }
+        },
+      },
+    );
   };
 
   return (
@@ -57,7 +53,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                disabled={isLoading}
+                disabled={loginMutation.isPending}
               />
             </div>
             <div className="space-y-2">
@@ -69,12 +65,12 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 autoComplete="current-password"
-                disabled={isLoading}
+                disabled={loginMutation.isPending}
               />
             </div>
             {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>}
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Logging in...' : 'Log in'}
+            <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+              {loginMutation.isPending ? 'Logging in...' : 'Log in'}
             </Button>
           </form>
         </CardContent>

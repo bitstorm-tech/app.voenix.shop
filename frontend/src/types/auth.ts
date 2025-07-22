@@ -4,6 +4,7 @@ export interface User {
   firstName?: string;
   lastName?: string;
   phoneNumber?: string;
+  roles?: string[];
   createdAt?: string;
   updatedAt?: string;
 }
