@@ -13,6 +13,7 @@ import NewOrEditSlotType from '@/pages/admin/NewOrEditSlotType';
 import OpenOrders from '@/pages/admin/OpenOrders';
 import PromptCategories from '@/pages/admin/PromptCategories';
 import Prompts from '@/pages/admin/Prompts';
+import PromptTester from '@/pages/admin/PromptTester';
 import Slots from '@/pages/admin/Slots';
 import SlotTypes from '@/pages/admin/SlotTypes';
 import Suppliers from '@/pages/admin/Suppliers';
@@ -57,15 +58,7 @@ export default function App() {
             <Route path="orders/completed" element={<CompletedOrders />} />
             <Route path="suppliers" element={<Suppliers />} />
             <Route path="logistics" element={<Logistics />} />
-            <Route
-              path="prompt-tester"
-              element={
-                <div className="p-8 pt-20 md:pt-8">
-                  <h1 className="text-2xl font-semibold">Prompt Tester</h1>
-                  <p className="mt-2 text-gray-600">Prompt testing tool coming soon...</p>
-                </div>
-              }
-            />
+            <Route path="prompt-tester" element={<PromptTester />} />
           </Route>
         </Route>
       </Routes>

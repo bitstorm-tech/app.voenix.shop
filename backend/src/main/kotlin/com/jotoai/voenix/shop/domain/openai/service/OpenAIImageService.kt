@@ -7,6 +7,9 @@ import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.service.ImageService
 import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.domain.openai.dto.ImageEditResponse
+import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
+import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequestParams
+import com.jotoai.voenix.shop.domain.openai.dto.TestPromptResponse
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptDto
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import io.ktor.client.HttpClient
@@ -231,4 +234,83 @@ class OpenAIImageService(
 
         return parts.joinToString(" ")
     }
+
+    fun testPrompt(
+        imageFile: MultipartFile,
+        request: TestPromptRequest,
+    ): TestPromptResponse =
+        runBlocking {
+            logger.info("Starting prompt test with master prompt: ${request.masterPrompt}")
+
+            try {
+                val combinedPrompt = "${request.masterPrompt} ${request.specificPrompt}".trim()
+
+                val formData =
+                    formData {
+                        append("model", "dall-e-2")
+                        append(
+                            "image",
+                            imageFile.bytes,
+                            Headers.build {
+                                append(HttpHeaders.ContentType, getContentType(imageFile.originalFilename ?: "image.png"))
+                                append(HttpHeaders.ContentDisposition, "filename=\"${imageFile.originalFilename ?: "image.png"}\"")
+                            },
+                        )
+                        append("prompt", combinedPrompt)
+                        append("n", "1")
+                        append("size", request.size.apiValue)
+                        append("response_format", "url")
+                    }
+
+                val httpResponse =
+                    httpClient
+                        .post(OPENAI_API_URL) {
+                            header(HttpHeaders.Authorization, "Bearer $apiKey")
+                            setBody(MultiPartFormDataContent(formData))
+                        }
+
+                if (!httpResponse.status.isSuccess()) {
+                    val errorBody = httpResponse.bodyAsText()
+                    logger.error("OpenAI API returned error status ${httpResponse.status}: $errorBody")
+                    throw RuntimeException("OpenAI API error: ${httpResponse.status} - $errorBody")
+                }
+
+                val response = httpResponse.body<OpenAIResponse>()
+                logger.info("Successfully received response from OpenAI API")
+
+                // Check for error response
+                if (response.error != null) {
+                    logger.error("OpenAI API returned error: ${response.error.message}")
+                    throw RuntimeException("OpenAI API error: ${response.error.message}")
+                }
+
+                // Check if data is null or empty
+                if (response.data.isNullOrEmpty()) {
+                    logger.error("OpenAI API returned empty or null data")
+                    throw RuntimeException("OpenAI API returned no images")
+                }
+
+                val openAIImage = response.data.first()
+                val imageUrl = openAIImage.url ?: throw RuntimeException("No image URL returned")
+
+                TestPromptResponse(
+                    imageUrl = imageUrl,
+                    requestParams =
+                        TestPromptRequestParams(
+                            model = "dall-e-2",
+                            size = request.size.apiValue,
+                            n = 1,
+                            responseFormat = "url",
+                            masterPrompt = request.masterPrompt,
+                            specificPrompt = request.specificPrompt,
+                            combinedPrompt = combinedPrompt,
+                            quality = request.quality.name.lowercase(),
+                            background = request.background.name.lowercase(),
+                        ),
+                )
+            } catch (e: Exception) {
+                logger.error("Error during OpenAI API call", e)
+                throw RuntimeException("Failed to test prompt: ${e.message}", e)
+            }
+        }
 }
