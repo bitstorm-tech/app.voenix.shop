@@ -3,7 +3,7 @@ package com.jotoai.voenix.shop.domain.pdf.service
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
-import com.jotoai.voenix.shop.domain.articles.mugs.service.MugService
+import com.jotoai.voenix.shop.domain.articles.service.ArticleService
 import com.jotoai.voenix.shop.domain.images.service.ImageService
 import com.jotoai.voenix.shop.domain.pdf.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.domain.pdf.dto.PdfSize
@@ -23,7 +23,7 @@ class PdfService(
     @param:Value("\${pdf.size.width}") private val pdfWidthMm: Float,
     @param:Value("\${pdf.size.height}") private val pdfHeightMm: Float,
     @param:Value("\${pdf.margin}") private val marginMm: Float,
-    private val mugService: MugService,
+    private val articleService: ArticleService,
     private val imageService: ImageService,
 ) {
     companion object {
@@ -40,8 +40,13 @@ class PdfService(
         )
 
     fun generatePdf(request: GeneratePdfRequest): ByteArray {
-        // Fetch mug details to get print template dimensions
-        val mug = mugService.getMugById(request.mugId)
+        // Fetch article details to get print template dimensions
+        val article = articleService.findById(request.articleId)
+
+        // Ensure this is a mug article with mug details
+        val mugDetails =
+            article.mugDetails
+                ?: throw IllegalArgumentException("Article ${request.articleId} is not a mug or has no mug details")
 
         // Load image data using the filename
         val (imageData, _) = imageService.getImageData(request.imageFilename)
@@ -60,8 +65,8 @@ class PdfService(
                     document,
                     contentStream,
                     imageData,
-                    mug.printTemplateWidthMm.toFloat(),
-                    mug.printTemplateHeightMm.toFloat(),
+                    mugDetails.printTemplateWidthMm.toFloat(),
+                    mugDetails.printTemplateHeightMm.toFloat(),
                 )
             }
 

@@ -37,8 +37,8 @@ class AuthService(
                     ),
                 )
 
-            // The following 4 lines of code fix the problem with not persisted principal
-            // Took me one f**king day to find the solution
+            // Persist the authentication context to the session
+            // This ensures the principal is available in subsequent requests
             val context = SecurityContextHolder.createEmptyContext()
             context.authentication = authentication
             SecurityContextHolder.setContext(context)

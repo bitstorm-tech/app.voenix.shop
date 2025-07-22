@@ -13,6 +13,7 @@ import com.jotoai.voenix.shop.domain.prompts.repository.PromptCategoryRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptSlotVariantRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptSubCategoryRepository
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -25,27 +26,19 @@ class PromptService(
     private val promptSlotVariantRepository: PromptSlotVariantRepository,
     private val imageService: ImageService,
 ) {
+    companion object {
+        private val logger = LoggerFactory.getLogger(PromptService::class.java)
+    }
+
     fun getAllPrompts(): List<PromptDto> =
-        promptRepository.findAll().map { prompt ->
-            if (prompt.categoryId != null) {
-                prompt.category = promptCategoryRepository.findById(prompt.categoryId!!).orElse(null)
-            }
-            if (prompt.subcategoryId != null) {
-                prompt.subcategory = promptSubCategoryRepository.findById(prompt.subcategoryId!!).orElse(null)
-            }
+        promptRepository.findAllWithRelations().map { prompt ->
             prompt.toDto()
         }
 
     fun getPromptById(id: Long): PromptDto =
         promptRepository
-            .findById(id)
+            .findByIdWithRelations(id)
             .map { prompt ->
-                if (prompt.categoryId != null) {
-                    prompt.category = promptCategoryRepository.findById(prompt.categoryId!!).orElse(null)
-                }
-                if (prompt.subcategoryId != null) {
-                    prompt.subcategory = promptSubCategoryRepository.findById(prompt.subcategoryId!!).orElse(null)
-                }
                 prompt.toDto()
             }.orElseThrow { ResourceNotFoundException("Prompt", "id", id) }
 
@@ -85,16 +78,8 @@ class PromptService(
 
         val savedPrompt = promptRepository.save(prompt)
 
-        // Load category for response
-        if (savedPrompt.categoryId != null) {
-            savedPrompt.category = promptCategoryRepository.findById(savedPrompt.categoryId!!).orElse(null)
-        }
-        // Load subcategory for response
-        if (savedPrompt.subcategoryId != null) {
-            savedPrompt.subcategory = promptSubCategoryRepository.findById(savedPrompt.subcategoryId!!).orElse(null)
-        }
-
-        return savedPrompt.toDto()
+        // Reload with relations for response
+        return getPromptById(savedPrompt.id!!)
     }
 
     @Transactional
@@ -131,7 +116,7 @@ class PromptService(
                 try {
                     imageService.delete(oldFilename, ImageType.PROMPT_EXAMPLE)
                 } catch (e: Exception) {
-                    // Log but don't fail if old image doesn't exist
+                    logger.warn("Failed to delete old prompt example image: $oldFilename", e)
                 }
             }
             prompt.exampleImageFilename = newFilename
@@ -151,16 +136,8 @@ class PromptService(
 
         val updatedPrompt = promptRepository.save(prompt)
 
-        // Load category for response
-        if (updatedPrompt.categoryId != null) {
-            updatedPrompt.category = promptCategoryRepository.findById(updatedPrompt.categoryId!!).orElse(null)
-        }
-        // Load subcategory for response
-        if (updatedPrompt.subcategoryId != null) {
-            updatedPrompt.subcategory = promptSubCategoryRepository.findById(updatedPrompt.subcategoryId!!).orElse(null)
-        }
-
-        return updatedPrompt.toDto()
+        // Reload with relations for response
+        return getPromptById(updatedPrompt.id!!)
     }
 
     @Transactional
@@ -175,7 +152,7 @@ class PromptService(
             try {
                 imageService.delete(filename, ImageType.PROMPT_EXAMPLE)
             } catch (e: Exception) {
-                // Log but don't fail if image doesn't exist
+                logger.warn("Failed to delete prompt example image during prompt deletion: $filename", e)
             }
         }
 

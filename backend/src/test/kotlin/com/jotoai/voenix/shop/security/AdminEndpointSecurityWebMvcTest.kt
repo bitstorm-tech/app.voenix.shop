@@ -1,11 +1,11 @@
 package com.jotoai.voenix.shop.security
 
-import com.jotoai.voenix.shop.api.admin.articles.mugs.AdminMugController
+import com.jotoai.voenix.shop.api.admin.articles.ArticleController
 import com.jotoai.voenix.shop.api.admin.prompts.AdminPromptController
 import com.jotoai.voenix.shop.api.admin.users.AdminUserController
 import com.jotoai.voenix.shop.auth.config.SecurityConfig
 import com.jotoai.voenix.shop.auth.service.CustomUserDetailsService
-import com.jotoai.voenix.shop.domain.articles.mugs.service.MugService
+import com.jotoai.voenix.shop.domain.articles.service.ArticleService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import com.jotoai.voenix.shop.domain.users.service.UserService
 import org.junit.jupiter.api.Test
@@ -24,7 +24,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
     controllers = [
         AdminUserController::class,
         AdminPromptController::class,
-        AdminMugController::class,
+        ArticleController::class,
     ],
 )
 @Import(SecurityConfig::class)
@@ -40,7 +40,23 @@ class AdminEndpointSecurityWebMvcTest {
     private lateinit var promptService: PromptService
 
     @MockitoBean
-    private lateinit var mugService: MugService
+    private lateinit var articleService: ArticleService
+
+    @MockitoBean
+    private lateinit var articleCategoryRepository: com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleCategoryRepository
+
+    @MockitoBean
+    private lateinit var articleSubCategoryRepository:
+        com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleSubCategoryRepository
+
+    @MockitoBean
+    private lateinit var mugDetailsService: com.jotoai.voenix.shop.domain.articles.service.MugDetailsService
+
+    @MockitoBean
+    private lateinit var shirtDetailsService: com.jotoai.voenix.shop.domain.articles.service.ShirtDetailsService
+
+    @MockitoBean
+    private lateinit var pillowDetailsService: com.jotoai.voenix.shop.domain.articles.service.PillowDetailsService
 
     @MockitoBean
     private lateinit var customUserDetailsService: CustomUserDetailsService
@@ -57,7 +73,7 @@ class AdminEndpointSecurityWebMvcTest {
             .andExpect(status().isUnauthorized())
 
         mockMvc
-            .perform(MockMvcRequestBuilders.get("/api/admin/mugs"))
+            .perform(MockMvcRequestBuilders.get("/api/admin/articles"))
             .andExpect(status().isUnauthorized())
     }
 
@@ -74,7 +90,7 @@ class AdminEndpointSecurityWebMvcTest {
             .andExpect(status().isForbidden())
 
         mockMvc
-            .perform(MockMvcRequestBuilders.get("/api/admin/mugs"))
+            .perform(MockMvcRequestBuilders.get("/api/admin/articles"))
             .andExpect(status().isForbidden())
     }
 
@@ -84,7 +100,15 @@ class AdminEndpointSecurityWebMvcTest {
         // Mock service responses
         `when`(userService.getAllUsers()).thenReturn(emptyList())
         `when`(promptService.getAllPrompts()).thenReturn(emptyList())
-        `when`(mugService.getAllMugs()).thenReturn(emptyList())
+        `when`(articleService.findAll(0, 20, null, null, null, null, null)).thenReturn(
+            com.jotoai.voenix.shop.common.dto.PaginatedResponse(
+                content = emptyList(),
+                currentPage = 0,
+                totalPages = 0,
+                totalElements = 0,
+                size = 20,
+            ),
+        )
 
         // Test that admin endpoints are accessible with ADMIN role (200 or other success status)
         mockMvc
@@ -96,7 +120,7 @@ class AdminEndpointSecurityWebMvcTest {
             .andExpect(status().isOk())
 
         mockMvc
-            .perform(MockMvcRequestBuilders.get("/api/admin/articles/mugs"))
+            .perform(MockMvcRequestBuilders.get("/api/admin/articles"))
             .andExpect(status().isOk())
     }
 }
