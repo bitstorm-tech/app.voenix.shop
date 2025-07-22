@@ -313,7 +313,7 @@ export default function NewOrEditPrompt() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="promptText">Prompt Text (optional)</Label>
+              <Label htmlFor="promptText">Prompt Style (optional)</Label>
               <Textarea
                 id="promptText"
                 value={formData.promptText}
