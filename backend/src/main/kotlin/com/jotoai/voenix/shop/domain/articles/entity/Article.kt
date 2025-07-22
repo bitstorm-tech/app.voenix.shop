@@ -33,8 +33,8 @@ data class Article(
     var descriptionShort: String,
     @Column(name = "description_long", nullable = false, columnDefinition = "TEXT")
     var descriptionLong: String,
-    @Column(name = "main_image", nullable = false, length = 500)
-    var mainImage: String,
+    @Column(name = "example_image_filename", nullable = false, length = 500)
+    var exampleImageFilename: String,
     @Column(nullable = false)
     var price: Int,
     @Column(nullable = false)
@@ -63,7 +63,7 @@ data class Article(
             name = this.name,
             descriptionShort = this.descriptionShort,
             descriptionLong = this.descriptionLong,
-            mainImage = this.mainImage,
+            exampleImageFilename = this.exampleImageFilename,
             price = this.price,
             active = this.active,
             articleType = this.articleType,

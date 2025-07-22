@@ -48,7 +48,7 @@ export default function NewOrEditArticle() {
     name: '',
     descriptionShort: '',
     descriptionLong: '',
-    mainImage: '',
+    exampleImageFilename: '',
     price: 0,
     active: true,
     articleType: 'MUG',
@@ -158,7 +158,7 @@ export default function NewOrEditArticle() {
           name: article.name || '',
           descriptionShort: article.descriptionShort || '',
           descriptionLong: article.descriptionLong || '',
-          mainImage: article.mainImage || '',
+          exampleImageFilename: article.exampleImageFilename || '',
           price: article.price || 0,
           active: article.active || false,
           categoryId: article.categoryId || 0,
@@ -181,7 +181,7 @@ export default function NewOrEditArticle() {
           name: article.name || '',
           descriptionShort: article.descriptionShort || '',
           descriptionLong: article.descriptionLong || '',
-          mainImage: article.mainImage || '',
+          exampleImageFilename: article.exampleImageFilename || '',
           price: article.price || 0,
           active: article.active || false,
           articleType: article.articleType as ArticleType,
@@ -392,11 +392,11 @@ export default function NewOrEditArticle() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="mainImage">Main Image URL</Label>
+                  <Label htmlFor="exampleImageFilename">Example Image Filename</Label>
                   <Input
-                    id="mainImage"
-                    value={article.mainImage}
-                    onChange={(e) => setArticle({ ...article, mainImage: e.target.value })}
+                    id="exampleImageFilename"
+                    value={article.exampleImageFilename}
+                    onChange={(e) => setArticle({ ...article, exampleImageFilename: e.target.value })}
                     placeholder="https://example.com/image.jpg"
                   />
                 </div>

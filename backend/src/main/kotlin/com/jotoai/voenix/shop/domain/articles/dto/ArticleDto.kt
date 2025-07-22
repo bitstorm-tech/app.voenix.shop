@@ -8,7 +8,7 @@ data class ArticleDto(
     val name: String,
     val descriptionShort: String,
     val descriptionLong: String,
-    val mainImage: String,
+    val exampleImageFilename: String,
     val price: Int,
     val active: Boolean,
     val articleType: ArticleType,

@@ -55,7 +55,7 @@ export interface Article {
   name: string;
   descriptionShort: string;
   descriptionLong: string;
-  mainImage: string;
+  exampleImageFilename: string;
   price: number;
   active: boolean;
   articleType: ArticleType;
@@ -75,7 +75,7 @@ export interface CreateArticleRequest {
   name: string;
   descriptionShort: string;
   descriptionLong: string;
-  mainImage: string;
+  exampleImageFilename: string;
   price: number;
   active: boolean;
   articleType: ArticleType;
