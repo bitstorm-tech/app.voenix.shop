@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { FieldLabel } from '@/components/ui/FieldLabel';
 import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useVats } from '@/hooks/queries/useVat';
 import type { CostCalculation, CreateCostCalculationRequest } from '@/types/article';
@@ -323,7 +323,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
         <CardContent className="space-y-4">
           {/* Tax Rate */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label>Tax Rate:</Label>
+            <FieldLabel optional>Tax Rate</FieldLabel>
             <Select value={data.purchaseVatRateId?.toString() || ''} onValueChange={handlePurchaseVatRateChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Select VAT rate" />
@@ -375,7 +375,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
 
           {/* Purchase Price */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label>Purchase Price:</Label>
+            <FieldLabel optional>Purchase Price</FieldLabel>
             <Input
               type="number"
               value={formatCurrency(data.purchasePriceNet)}
@@ -410,7 +410,9 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
                 onChange={() => setPurchaseActiveRow('cost')}
                 className="h-4 w-4"
               />
-              <Label htmlFor="purchaseCostRadio">Purchase Cost:</Label>
+              <FieldLabel htmlFor="purchaseCostRadio" optional>
+                Purchase Cost
+              </FieldLabel>
             </div>
             <Input
               type="number"
@@ -446,7 +448,9 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
                 onChange={() => setPurchaseActiveRow('costPercent')}
                 className="h-4 w-4"
               />
-              <Label htmlFor="purchaseCostPercentRadio">Purchase Cost %:</Label>
+              <FieldLabel htmlFor="purchaseCostPercentRadio" optional>
+                Purchase Cost %
+              </FieldLabel>
             </div>
             <Input
               type="number"
@@ -466,7 +470,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
 
           {/* Purchase Total */}
           <div className="grid grid-cols-4 items-center gap-4 font-semibold">
-            <Label>Purchase Total:</Label>
+            <FieldLabel>Purchase Total</FieldLabel>
             <Input type="number" value={formatCurrency(data.purchaseTotalNet)} disabled step="0.01" />
             <Input type="number" value={formatCurrency(data.purchaseTotalTax)} disabled step="0.01" />
             <div className="flex items-center space-x-2">
@@ -482,9 +486,9 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
               checked={purchasePriceCorresponds}
               onCheckedChange={(checked) => setPurchasePriceCorresponds(checked === true)}
             />
-            <Label htmlFor="purchasePriceCorresponds" className="text-sm font-normal">
+            <FieldLabel htmlFor="purchasePriceCorresponds" className="text-sm font-normal" optional>
               Price corresponds to
-            </Label>
+            </FieldLabel>
             <Input
               type="text"
               value={data.purchasePriceUnit}
@@ -506,7 +510,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
         <CardContent className="space-y-4">
           {/* Tax Rate */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label>Tax Rate:</Label>
+            <FieldLabel optional>Tax Rate</FieldLabel>
             <Select value={data.salesVatRateId?.toString() || ''} onValueChange={handleSalesVatRateChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Select VAT rate" />
@@ -568,7 +572,9 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
                 onChange={() => setSalesActiveRow('margin')}
                 className="h-4 w-4"
               />
-              <Label htmlFor="salesMarginRadio">Margin:</Label>
+              <FieldLabel htmlFor="salesMarginRadio" optional>
+                Margin
+              </FieldLabel>
             </div>
             <Input
               type="number"
@@ -602,7 +608,9 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
                 onChange={() => setSalesActiveRow('marginPercent')}
                 className="h-4 w-4"
               />
-              <Label htmlFor="salesMarginPercentRadio">Margin %:</Label>
+              <FieldLabel htmlFor="salesMarginPercentRadio" optional>
+                Margin %
+              </FieldLabel>
             </div>
             <Input
               type="number"
@@ -631,7 +639,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
                 onChange={() => setSalesActiveRow('total')}
                 className="h-4 w-4"
               />
-              <Label htmlFor="salesTotalRadio">Sales Total:</Label>
+              <FieldLabel htmlFor="salesTotalRadio">Sales Total</FieldLabel>
             </div>
             <Input
               type="number"
@@ -660,9 +668,9 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
               checked={salesPriceCorresponds}
               onCheckedChange={(checked) => setSalesPriceCorresponds(checked === true)}
             />
-            <Label htmlFor="salesPriceCorresponds" className="text-sm font-normal">
+            <FieldLabel htmlFor="salesPriceCorresponds" className="text-sm font-normal" optional>
               Price corresponds to
-            </Label>
+            </FieldLabel>
             <Input
               type="text"
               value={data.salesPriceUnit}

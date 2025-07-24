@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { FieldLabel } from '@/components/ui/FieldLabel';
 import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Switch } from '@/components/ui/Switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
@@ -316,12 +316,14 @@ export default function NewOrEditArticle() {
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-2">
                 <Switch id="active" checked={article.active} onCheckedChange={(checked) => setArticle({ ...article, active: checked })} />
-                <Label htmlFor="active">Active</Label>
+                <FieldLabel htmlFor="active">Active</FieldLabel>
               </div>
 
               {!isEdit && (
                 <div className="space-y-2">
-                  <Label htmlFor="articleType">Article Type *</Label>
+                  <FieldLabel htmlFor="articleType" required>
+                    Article Type
+                  </FieldLabel>
                   <Select
                     value={article.articleType}
                     onValueChange={(value) => {
@@ -383,13 +385,17 @@ export default function NewOrEditArticle() {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="name">Name *</Label>
+                <FieldLabel htmlFor="name" required>
+                  Name
+                </FieldLabel>
                 <Input id="name" value={article.name} onChange={(e) => setArticle({ ...article, name: e.target.value })} placeholder="Article name" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="category">Category *</Label>
+                  <FieldLabel htmlFor="category" required>
+                    Category
+                  </FieldLabel>
                   <Select
                     value={article.categoryId?.toString() || ''}
                     onValueChange={(value) => setArticle({ ...article, categoryId: Number(value), subcategoryId: undefined })}
@@ -408,7 +414,9 @@ export default function NewOrEditArticle() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="subcategory">Subcategory</Label>
+                  <FieldLabel htmlFor="subcategory" optional>
+                    Subcategory
+                  </FieldLabel>
                   <Select
                     value={article.subcategoryId?.toString() || ''}
                     onValueChange={(value) => setArticle({ ...article, subcategoryId: value ? Number(value) : undefined })}
@@ -429,7 +437,9 @@ export default function NewOrEditArticle() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="supplier">Supplier</Label>
+                <FieldLabel htmlFor="supplier" optional>
+                  Supplier
+                </FieldLabel>
                 <Select
                   value={article.supplierId?.toString() || 'none'}
                   onValueChange={(value) => setArticle({ ...article, supplierId: value === 'none' ? undefined : Number(value) })}
@@ -449,7 +459,9 @@ export default function NewOrEditArticle() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="descriptionShort">Short Description</Label>
+                <FieldLabel htmlFor="descriptionShort" required>
+                  Short Description
+                </FieldLabel>
                 <Textarea
                   id="descriptionShort"
                   value={article.descriptionShort}
@@ -460,7 +472,9 @@ export default function NewOrEditArticle() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="descriptionLong">Long Description</Label>
+                <FieldLabel htmlFor="descriptionLong" required>
+                  Long Description
+                </FieldLabel>
                 <Textarea
                   id="descriptionLong"
                   value={article.descriptionLong}
@@ -472,7 +486,9 @@ export default function NewOrEditArticle() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="exampleImageFilename">Example Image Filename</Label>
+                  <FieldLabel htmlFor="exampleImageFilename" required>
+                    Example Image Filename
+                  </FieldLabel>
                   <Input
                     id="exampleImageFilename"
                     value={article.exampleImageFilename}
@@ -482,7 +498,9 @@ export default function NewOrEditArticle() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="price">Price ($)</Label>
+                  <FieldLabel htmlFor="price" required>
+                    Price ($)
+                  </FieldLabel>
                   <Input
                     id="price"
                     type="number"

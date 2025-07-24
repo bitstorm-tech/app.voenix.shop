@@ -20,16 +20,8 @@ class MugVariantService(
         request: CreateArticleMugVariantRequest,
     ): ArticleMugVariantDto {
         val article =
-            articleRepository
-                .findById(articleId)
-                .orElseThrow { ResourceNotFoundException("Article not found with id: $articleId") }
-
-        // Validate SKU uniqueness if provided
-        request.sku?.let {
-            if (mugVariantRepository.existsBySku(it)) {
-                throw IllegalArgumentException("SKU already exists: $it")
-            }
-        }
+            articleRepository.findById(articleId).orElseGet(null)
+                ?: throw ResourceNotFoundException("Article not found with id: $articleId")
 
         val variant =
             ArticleMugVariant(
@@ -50,16 +42,8 @@ class MugVariantService(
         request: CreateArticleMugVariantRequest,
     ): ArticleMugVariantDto {
         val variant =
-            mugVariantRepository
-                .findById(variantId)
-                .orElseThrow { ResourceNotFoundException("Mug variant not found with id: $variantId") }
-
-        // Validate SKU uniqueness if provided
-        request.sku?.let {
-            if (mugVariantRepository.existsBySkuAndIdNot(it, variantId)) {
-                throw IllegalArgumentException("SKU already exists: $it")
-            }
-        }
+            mugVariantRepository.findByIdWithArticle(variantId).orElseGet(null)
+                ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
 
         variant.apply {
             insideColorCode = request.insideColorCode
@@ -74,12 +58,12 @@ class MugVariantService(
 
     @Transactional
     fun delete(variantId: Long) {
-        if (!mugVariantRepository.existsById(variantId)) {
-            throw ResourceNotFoundException("Mug variant not found with id: $variantId")
-        }
+        mugVariantRepository.findById(variantId).orElseGet(null)
+            ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
         mugVariantRepository.deleteById(variantId)
     }
 
     @Transactional(readOnly = true)
-    fun findByArticleId(articleId: Long): List<ArticleMugVariantDto> = mugVariantRepository.findByArticleId(articleId).map { it.toDto() }
+    fun findByArticleId(articleId: Long): List<ArticleMugVariantDto> =
+        mugVariantRepository.findByArticleIdWithArticle(articleId).map(ArticleMugVariant::toDto)
 }

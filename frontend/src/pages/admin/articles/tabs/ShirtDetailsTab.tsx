@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { FieldLabel } from '@/components/ui/FieldLabel';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
@@ -38,12 +39,16 @@ export default function ShirtDetailsTab({ shirtDetails, onChange }: ShirtDetails
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="material">Material *</Label>
+          <FieldLabel htmlFor="material" required>
+            Material
+          </FieldLabel>
           <Input id="material" value={details.material} onChange={(e) => handleChange('material', e.target.value)} placeholder="100% Cotton" />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="fitType">Fit Type *</Label>
+          <FieldLabel htmlFor="fitType" required>
+            Fit Type
+          </FieldLabel>
           <Select value={details.fitType} onValueChange={(value) => handleChange('fitType', value as FitType)}>
             <SelectTrigger id="fitType">
               <SelectValue placeholder="Select fit type" />
@@ -57,7 +62,9 @@ export default function ShirtDetailsTab({ shirtDetails, onChange }: ShirtDetails
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="careInstructions">Care Instructions</Label>
+          <FieldLabel htmlFor="careInstructions" optional>
+            Care Instructions
+          </FieldLabel>
           <Textarea
             id="careInstructions"
             value={details.careInstructions}
@@ -68,7 +75,7 @@ export default function ShirtDetailsTab({ shirtDetails, onChange }: ShirtDetails
         </div>
 
         <div className="space-y-2">
-          <Label>Available Sizes *</Label>
+          <FieldLabel required>Available Sizes</FieldLabel>
           <div className="grid grid-cols-4 gap-3">
             {AVAILABLE_SIZES.map((size) => (
               <div key={size} className="flex items-center space-x-2">

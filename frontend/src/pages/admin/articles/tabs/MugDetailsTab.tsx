@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { FieldLabel } from '@/components/ui/FieldLabel';
 import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
 import { Switch } from '@/components/ui/Switch';
 import type { CreateMugDetailsRequest } from '@/types/article';
 
@@ -36,7 +36,9 @@ export default function MugDetailsTab({ mugDetails, onChange }: MugDetailsTabPro
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="heightMm">Height (mm) *</Label>
+            <FieldLabel htmlFor="heightMm" required>
+              Height (mm)
+            </FieldLabel>
             <Input
               id="heightMm"
               type="number"
@@ -49,7 +51,9 @@ export default function MugDetailsTab({ mugDetails, onChange }: MugDetailsTabPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="diameterMm">Diameter (mm) *</Label>
+            <FieldLabel htmlFor="diameterMm" required>
+              Diameter (mm)
+            </FieldLabel>
             <Input
               id="diameterMm"
               type="number"
@@ -64,7 +68,9 @@ export default function MugDetailsTab({ mugDetails, onChange }: MugDetailsTabPro
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="printTemplateWidthMm">Print Template Width (mm) *</Label>
+            <FieldLabel htmlFor="printTemplateWidthMm" required>
+              Print Template Width (mm)
+            </FieldLabel>
             <Input
               id="printTemplateWidthMm"
               type="number"
@@ -77,7 +83,9 @@ export default function MugDetailsTab({ mugDetails, onChange }: MugDetailsTabPro
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="printTemplateHeightMm">Print Template Height (mm) *</Label>
+            <FieldLabel htmlFor="printTemplateHeightMm" required>
+              Print Template Height (mm)
+            </FieldLabel>
             <Input
               id="printTemplateHeightMm"
               type="number"
@@ -91,7 +99,9 @@ export default function MugDetailsTab({ mugDetails, onChange }: MugDetailsTabPro
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="fillingQuantity">Filling Quantity</Label>
+          <FieldLabel htmlFor="fillingQuantity" optional>
+            Filling Quantity
+          </FieldLabel>
           <Input
             id="fillingQuantity"
             value={details.fillingQuantity}
@@ -102,7 +112,7 @@ export default function MugDetailsTab({ mugDetails, onChange }: MugDetailsTabPro
 
         <div className="flex items-center space-x-2">
           <Switch id="dishwasherSafe" checked={details.dishwasherSafe} onCheckedChange={(checked) => handleChange('dishwasherSafe', checked)} />
-          <Label htmlFor="dishwasherSafe">Dishwasher Safe</Label>
+          <FieldLabel htmlFor="dishwasherSafe">Dishwasher Safe</FieldLabel>
         </div>
       </CardContent>
     </Card>

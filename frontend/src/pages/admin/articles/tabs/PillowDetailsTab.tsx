@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { FieldLabel } from '@/components/ui/FieldLabel';
 import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
 import { Switch } from '@/components/ui/Switch';
 import type { CreatePillowDetailsRequest } from '@/types/article';
 
@@ -33,7 +33,9 @@ export default function PillowDetailsTab({ pillowDetails, onChange }: PillowDeta
       <CardContent className="space-y-4">
         <div className="grid grid-cols-3 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="widthCm">Width (cm) *</Label>
+            <FieldLabel htmlFor="widthCm" required>
+              Width (cm)
+            </FieldLabel>
             <Input
               id="widthCm"
               type="number"
@@ -45,7 +47,9 @@ export default function PillowDetailsTab({ pillowDetails, onChange }: PillowDeta
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="heightCm">Height (cm) *</Label>
+            <FieldLabel htmlFor="heightCm" required>
+              Height (cm)
+            </FieldLabel>
             <Input
               id="heightCm"
               type="number"
@@ -57,7 +61,9 @@ export default function PillowDetailsTab({ pillowDetails, onChange }: PillowDeta
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="depthCm">Depth (cm) *</Label>
+            <FieldLabel htmlFor="depthCm" required>
+              Depth (cm)
+            </FieldLabel>
             <Input
               id="depthCm"
               type="number"
@@ -71,12 +77,16 @@ export default function PillowDetailsTab({ pillowDetails, onChange }: PillowDeta
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="material">Material *</Label>
+            <FieldLabel htmlFor="material" required>
+              Material
+            </FieldLabel>
             <Input id="material" value={details.material} onChange={(e) => handleChange('material', e.target.value)} placeholder="Cotton blend" />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="fillingType">Filling Type *</Label>
+            <FieldLabel htmlFor="fillingType" required>
+              Filling Type
+            </FieldLabel>
             <Input
               id="fillingType"
               value={details.fillingType}
@@ -89,12 +99,12 @@ export default function PillowDetailsTab({ pillowDetails, onChange }: PillowDeta
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <Switch id="coverRemovable" checked={details.coverRemovable} onCheckedChange={(checked) => handleChange('coverRemovable', checked)} />
-            <Label htmlFor="coverRemovable">Removable Cover</Label>
+            <FieldLabel htmlFor="coverRemovable">Removable Cover</FieldLabel>
           </div>
 
           <div className="flex items-center space-x-2">
             <Switch id="washable" checked={details.washable} onCheckedChange={(checked) => handleChange('washable', checked)} />
-            <Label htmlFor="washable">Machine Washable</Label>
+            <FieldLabel htmlFor="washable">Machine Washable</FieldLabel>
           </div>
         </div>
       </CardContent>
