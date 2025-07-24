@@ -53,7 +53,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
   const [purchasePriceCorresponds, setPurchasePriceCorresponds] = useState(false);
   const [salesPriceCorresponds, setSalesPriceCorresponds] = useState(false);
   const [purchaseActiveRow, setPurchaseActiveRow] = useState<'cost' | 'costPercent'>('cost');
-  const [salesActiveRow, setSalesActiveRow] = useState<'margin' | 'marginPercent'>('margin');
+  const [salesActiveRow, setSalesActiveRow] = useState<'margin' | 'marginPercent' | 'total'>('margin');
 
   // Update parent when data changes
   useEffect(() => {
@@ -109,6 +109,11 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
 
   // Calculate sales totals and margins
   useEffect(() => {
+    // Skip automatic calculation if user is directly editing sales total
+    if (salesActiveRow === 'total') {
+      return;
+    }
+
     const salesNet = data.purchaseTotalNet * (1 + data.marginPercent / 100);
     const salesTax = salesNet * (data.salesVatRatePercent / 100);
     const salesGross = salesNet + salesTax;
@@ -126,7 +131,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
       marginTax: marginTax,
       marginGross: marginGross,
     }));
-  }, [data.purchaseTotalNet, data.purchaseTotalTax, data.purchaseTotalGross, data.marginPercent, data.salesVatRatePercent]);
+  }, [data.purchaseTotalNet, data.purchaseTotalTax, data.purchaseTotalGross, data.marginPercent, data.salesVatRatePercent, salesActiveRow]);
 
   const handlePurchasePriceChange = (field: 'net' | 'tax' | 'gross', value: number) => {
     const taxRate = data.purchaseVatRatePercent / 100;
@@ -252,6 +257,52 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
           salesTotalNet: newSalesNet,
           salesTotalTax: newSalesTax,
           salesTotalGross: newSalesGross,
+        }));
+      }
+    }
+  };
+
+  const handleSalesTotalChange = (field: 'net' | 'tax' | 'gross', value: number) => {
+    const taxRate = data.salesVatRatePercent / 100;
+
+    if (data.salesCalculationMode === 'NET') {
+      if (field === 'net') {
+        const tax = value * taxRate;
+        const gross = value + tax;
+        const marginNet = value - data.purchaseTotalNet;
+        const marginTax = tax - data.purchaseTotalTax;
+        const marginGross = gross - data.purchaseTotalGross;
+        const marginPercent = data.purchaseTotalNet > 0 ? (marginNet / data.purchaseTotalNet) * 100 : 0;
+
+        setData((prev) => ({
+          ...prev,
+          salesTotalNet: value,
+          salesTotalTax: tax,
+          salesTotalGross: gross,
+          marginNet: marginNet,
+          marginTax: marginTax,
+          marginGross: marginGross,
+          marginPercent: marginPercent,
+        }));
+      }
+    } else {
+      if (field === 'gross') {
+        const net = value / (1 + taxRate);
+        const tax = value - net;
+        const marginNet = net - data.purchaseTotalNet;
+        const marginTax = tax - data.purchaseTotalTax;
+        const marginGross = value - data.purchaseTotalGross;
+        const marginPercent = data.purchaseTotalNet > 0 ? (marginNet / data.purchaseTotalNet) * 100 : 0;
+
+        setData((prev) => ({
+          ...prev,
+          salesTotalNet: net,
+          salesTotalTax: tax,
+          salesTotalGross: value,
+          marginNet: marginNet,
+          marginTax: marginTax,
+          marginGross: marginGross,
+          marginPercent: marginPercent,
         }));
       }
     }
@@ -571,13 +622,33 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
           {/* Sales Total */}
           <div className="grid grid-cols-4 items-center gap-4 font-semibold">
             <div className="flex items-center gap-2">
-              <input type="radio" id="salesTotalRadio" name="salesActiveField" value="total" checked={false} disabled className="h-4 w-4" />
+              <input
+                type="radio"
+                id="salesTotalRadio"
+                name="salesActiveField"
+                value="total"
+                checked={salesActiveRow === 'total'}
+                onChange={() => setSalesActiveRow('total')}
+                className="h-4 w-4"
+              />
               <Label htmlFor="salesTotalRadio">Sales Total:</Label>
             </div>
-            <Input type="number" value={formatCurrency(data.salesTotalNet)} disabled step="0.01" />
+            <Input
+              type="number"
+              value={formatCurrency(data.salesTotalNet)}
+              onChange={(e) => handleSalesTotalChange('net', parseFloat(e.target.value) || 0)}
+              disabled={data.salesCalculationMode === 'GROSS' || salesActiveRow !== 'total'}
+              step="0.01"
+            />
             <Input type="number" value={formatCurrency(data.salesTotalTax)} disabled step="0.01" />
             <div className="flex items-center space-x-2">
-              <Input type="number" value={formatCurrency(data.salesTotalGross)} disabled step="0.01" />
+              <Input
+                type="number"
+                value={formatCurrency(data.salesTotalGross)}
+                onChange={(e) => handleSalesTotalChange('gross', parseFloat(e.target.value) || 0)}
+                disabled={data.salesCalculationMode === 'NET' || salesActiveRow !== 'total'}
+                step="0.01"
+              />
               <span className="text-muted-foreground text-sm">EUR</span>
             </div>
           </div>
