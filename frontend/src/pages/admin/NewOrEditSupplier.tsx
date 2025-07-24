@@ -2,6 +2,8 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { useCountries } from '@/hooks/queries/useCountries';
 import { useCreateSupplier, useSupplier, useUpdateSupplier } from '@/hooks/queries/useSuppliers';
 import type { CreateSupplierRequest, UpdateSupplierRequest } from '@/types/supplier';
 import { ArrowLeft } from 'lucide-react';
@@ -14,7 +16,22 @@ export default function NewOrEditSupplier() {
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    title: string;
+    firstName: string;
+    lastName: string;
+    street: string;
+    houseNumber: string;
+    city: string;
+    postalCode: string;
+    countryId: string;
+    phoneNumber1: string;
+    phoneNumber2: string;
+    phoneNumber3: string;
+    email: string;
+    website: string;
+  }>({
     name: '',
     title: '',
     firstName: '',
@@ -23,7 +40,7 @@ export default function NewOrEditSupplier() {
     houseNumber: '',
     city: '',
     postalCode: '',
-    country: '',
+    countryId: '',
     phoneNumber1: '',
     phoneNumber2: '',
     phoneNumber3: '',
@@ -33,11 +50,12 @@ export default function NewOrEditSupplier() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { data: existingSupplier, isLoading: isLoadingSupplier } = useSupplier(id ? parseInt(id) : undefined);
+  const { data: countries, isLoading: isLoadingCountries } = useCountries();
   const createSupplierMutation = useCreateSupplier();
   const updateSupplierMutation = useUpdateSupplier();
 
   useEffect(() => {
-    if (existingSupplier && isEditing) {
+    if (existingSupplier && isEditing && countries) {
       setFormData({
         name: existingSupplier.name || '',
         title: existingSupplier.title || '',
@@ -47,7 +65,7 @@ export default function NewOrEditSupplier() {
         houseNumber: existingSupplier.houseNumber || '',
         city: existingSupplier.city || '',
         postalCode: existingSupplier.postalCode?.toString() || '',
-        country: existingSupplier.country || '',
+        countryId: existingSupplier.country?.id ? existingSupplier.country.id.toString() : '',
         phoneNumber1: existingSupplier.phoneNumber1 || '',
         phoneNumber2: existingSupplier.phoneNumber2 || '',
         phoneNumber3: existingSupplier.phoneNumber3 || '',
@@ -55,7 +73,7 @@ export default function NewOrEditSupplier() {
         website: existingSupplier.website || '',
       });
     }
-  }, [existingSupplier, isEditing]);
+  }, [existingSupplier, isEditing, countries]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -88,7 +106,7 @@ export default function NewOrEditSupplier() {
       houseNumber: formData.houseNumber.trim() || null,
       city: formData.city.trim() || null,
       postalCode: formData.postalCode ? parseInt(formData.postalCode) : null,
-      country: formData.country.trim() || null,
+      countryId: formData.countryId ? parseInt(formData.countryId) : null,
       phoneNumber1: formData.phoneNumber1.trim() || null,
       phoneNumber2: formData.phoneNumber2.trim() || null,
       phoneNumber3: formData.phoneNumber3.trim() || null,
@@ -115,11 +133,11 @@ export default function NewOrEditSupplier() {
     navigate('/admin/suppliers');
   };
 
-  if (isEditing && isLoadingSupplier) {
+  if ((isEditing && isLoadingSupplier) || isLoadingCountries || (isEditing && !existingSupplier)) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading supplier data...</p>
+          <p className="text-gray-500">Loading...</p>
         </div>
       </div>
     );
@@ -274,12 +292,18 @@ export default function NewOrEditSupplier() {
 
               <div>
                 <Label htmlFor="country">Country</Label>
-                <Input
-                  id="country"
-                  value={formData.country}
-                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                  placeholder="e.g., Germany"
-                />
+                <Select value={formData.countryId || undefined} onValueChange={(value) => setFormData({ ...formData, countryId: value })}>
+                  <SelectTrigger id="country">
+                    <SelectValue placeholder="Select a country" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countries?.map((country) => (
+                      <SelectItem key={country.id} value={country.id.toString()}>
+                        {country.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardContent>

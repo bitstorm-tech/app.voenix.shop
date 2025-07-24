@@ -1,3 +1,5 @@
+import type { Country } from './country';
+
 export interface Supplier {
   id: number;
   name: string | null;
@@ -8,7 +10,7 @@ export interface Supplier {
   houseNumber: string | null;
   city: string | null;
   postalCode: number | null;
-  country: string | null;
+  country: Country | null;
   phoneNumber1: string | null;
   phoneNumber2: string | null;
   phoneNumber3: string | null;
@@ -27,7 +29,7 @@ export interface CreateSupplierRequest {
   houseNumber: string | null;
   city: string | null;
   postalCode: number | null;
-  country: string | null;
+  countryId: number | null;
   phoneNumber1: string | null;
   phoneNumber2: string | null;
   phoneNumber3: string | null;
@@ -44,7 +46,7 @@ export interface UpdateSupplierRequest {
   houseNumber: string | null;
   city: string | null;
   postalCode: number | null;
-  country: string | null;
+  countryId: number | null;
   phoneNumber1: string | null;
   phoneNumber2: string | null;
   phoneNumber3: string | null;

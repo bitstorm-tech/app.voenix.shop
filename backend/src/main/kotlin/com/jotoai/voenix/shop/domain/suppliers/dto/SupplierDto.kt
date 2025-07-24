@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.domain.suppliers.dto
 
+import com.jotoai.voenix.shop.domain.countries.dto.CountryDto
 import java.time.LocalDateTime
 
 data class SupplierDto(
@@ -12,7 +13,7 @@ data class SupplierDto(
     val houseNumber: String?,
     val city: String?,
     val postalCode: Int?,
-    val country: String?,
+    val country: CountryDto?,
     val phoneNumber1: String?,
     val phoneNumber2: String?,
     val phoneNumber3: String?,

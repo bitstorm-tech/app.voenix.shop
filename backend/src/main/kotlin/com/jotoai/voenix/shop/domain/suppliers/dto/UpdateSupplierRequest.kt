@@ -13,7 +13,7 @@ data class UpdateSupplierRequest(
     val city: String?,
     @field:Min(value = 1, message = "Postal code must be positive")
     val postalCode: Int?,
-    val country: String?,
+    val countryId: Long?,
     val phoneNumber1: String?,
     val phoneNumber2: String?,
     val phoneNumber3: String?,

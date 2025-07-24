@@ -11,6 +11,7 @@ import type {
   UpdateArticleRequest,
 } from '@/types/article';
 import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
+import type { Country } from '@/types/country';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
 import type { PromptSlotType, PromptSlotVariant } from '@/types/promptSlotVariant';
@@ -536,6 +537,11 @@ export const supplierApi = {
   create: (data: CreateSupplierRequest) => api.post<Supplier>('/admin/suppliers', data),
   update: (id: number, data: UpdateSupplierRequest) => api.put<Supplier>(`/admin/suppliers/${id}`, data),
   delete: (id: number) => api.delete(`/admin/suppliers/${id}`),
+};
+
+// Country API
+export const countryApi = {
+  getAll: () => api.get<Country[]>('/public/countries'),
 };
 
 // Type definitions for new API requests

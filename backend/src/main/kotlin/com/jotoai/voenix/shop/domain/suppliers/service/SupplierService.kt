@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.domain.suppliers.service
 
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.domain.countries.repository.CountryRepository
 import com.jotoai.voenix.shop.domain.suppliers.dto.CreateSupplierRequest
 import com.jotoai.voenix.shop.domain.suppliers.dto.SupplierDto
 import com.jotoai.voenix.shop.domain.suppliers.dto.UpdateSupplierRequest
@@ -14,6 +15,7 @@ import java.time.LocalDateTime
 @Transactional
 class SupplierService(
     private val supplierRepository: SupplierRepository,
+    private val countryRepository: CountryRepository,
 ) {
     fun getAllSuppliers(): List<SupplierDto> = supplierRepository.findAll().map { it.toDto() }
 
@@ -34,6 +36,14 @@ class SupplierService(
             throw IllegalArgumentException("Supplier with email '${request.email}' already exists")
         }
 
+        // Fetch country if provided
+        val country =
+            request.countryId?.let { countryId ->
+                countryRepository
+                    .findById(countryId)
+                    .orElseThrow { ResourceNotFoundException("Country", "id", countryId) }
+            }
+
         val supplier =
             Supplier(
                 name = request.name?.trim(),
@@ -44,7 +54,7 @@ class SupplierService(
                 houseNumber = request.houseNumber?.trim(),
                 city = request.city?.trim(),
                 postalCode = request.postalCode,
-                country = request.country?.trim(),
+                country = country,
                 phoneNumber1 = request.phoneNumber1?.trim(),
                 phoneNumber2 = request.phoneNumber2?.trim(),
                 phoneNumber3 = request.phoneNumber3?.trim(),
@@ -72,6 +82,14 @@ class SupplierService(
             throw IllegalArgumentException("Supplier with email '${request.email}' already exists")
         }
 
+        // Fetch country if provided
+        val country =
+            request.countryId?.let { countryId ->
+                countryRepository
+                    .findById(countryId)
+                    .orElseThrow { ResourceNotFoundException("Country", "id", countryId) }
+            }
+
         val updatedSupplier =
             existingSupplier.copy(
                 name = request.name?.trim(),
@@ -82,7 +100,7 @@ class SupplierService(
                 houseNumber = request.houseNumber?.trim(),
                 city = request.city?.trim(),
                 postalCode = request.postalCode,
-                country = request.country?.trim(),
+                country = country,
                 phoneNumber1 = request.phoneNumber1?.trim(),
                 phoneNumber2 = request.phoneNumber2?.trim(),
                 phoneNumber3 = request.phoneNumber3?.trim(),

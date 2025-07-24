@@ -1,11 +1,15 @@
 package com.jotoai.voenix.shop.domain.suppliers.entity
 
+import com.jotoai.voenix.shop.domain.countries.entity.Country
 import com.jotoai.voenix.shop.domain.suppliers.dto.SupplierDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import java.time.LocalDateTime
 
@@ -31,8 +35,9 @@ data class Supplier(
     val city: String? = null,
     @Column(name = "postal_code")
     val postalCode: Int? = null,
-    @Column(name = "country")
-    val country: String? = null,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "country_id")
+    val country: Country? = null,
     @Column(name = "phone_number1")
     val phoneNumber1: String? = null,
     @Column(name = "phone_number2")
@@ -59,7 +64,7 @@ data class Supplier(
             houseNumber = houseNumber,
             city = city,
             postalCode = postalCode,
-            country = country,
+            country = country?.toDto(),
             phoneNumber1 = phoneNumber1,
             phoneNumber2 = phoneNumber2,
             phoneNumber3 = phoneNumber3,
