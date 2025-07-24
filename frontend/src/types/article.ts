@@ -92,6 +92,7 @@ export interface Article {
   mugDetails?: ArticleMugDetails;
   shirtDetails?: ArticleShirtDetails;
   pillowDetails?: ArticlePillowDetails;
+  costCalculation?: CostCalculation;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -113,6 +114,7 @@ export interface CreateArticleRequest {
   mugDetails?: CreateMugDetailsRequest;
   shirtDetails?: CreateShirtDetailsRequest;
   pillowDetails?: CreatePillowDetailsRequest;
+  costCalculation?: CreateCostCalculationRequest;
 }
 
 export interface CreateArticleMugVariantRequest {
@@ -167,6 +169,7 @@ export interface UpdateArticleRequest extends Omit<CreateArticleRequest, 'articl
   mugDetails?: UpdateMugDetailsRequest;
   shirtDetails?: UpdateShirtDetailsRequest;
   pillowDetails?: UpdatePillowDetailsRequest;
+  costCalculation?: UpdateCostCalculationRequest;
 }
 
 export interface UpdateMugDetailsRequest extends CreateMugDetailsRequest {}
@@ -174,6 +177,41 @@ export interface UpdateMugDetailsRequest extends CreateMugDetailsRequest {}
 export interface UpdateShirtDetailsRequest extends CreateShirtDetailsRequest {}
 
 export interface UpdatePillowDetailsRequest extends CreatePillowDetailsRequest {}
+
+export interface CostCalculation {
+  // Purchase section
+  purchasePriceNet: number;
+  purchasePriceTax: number;
+  purchasePriceGross: number;
+  purchaseCostNet: number;
+  purchaseCostTax: number;
+  purchaseCostGross: number;
+  purchaseCostPercent: number;
+  purchaseTotalNet: number;
+  purchaseTotalTax: number;
+  purchaseTotalGross: number;
+  purchasePriceUnit?: string;
+
+  // Sales section
+  vatRateId?: number;
+  vatRatePercent: number;
+  marginNet: number;
+  marginTax: number;
+  marginGross: number;
+  marginPercent: number;
+  salesTotalNet: number;
+  salesTotalTax: number;
+  salesTotalGross: number;
+  salesPriceUnit?: string;
+
+  // Calculation mode
+  purchaseCalculationMode: 'NET' | 'GROSS';
+  salesCalculationMode: 'NET' | 'GROSS';
+}
+
+export interface CreateCostCalculationRequest extends Partial<CostCalculation> {}
+
+export interface UpdateCostCalculationRequest extends Partial<CostCalculation> {}
 
 export interface PaginatedResponse<T> {
   content: T[];

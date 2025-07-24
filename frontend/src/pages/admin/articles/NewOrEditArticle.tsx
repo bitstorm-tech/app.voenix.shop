@@ -16,6 +16,7 @@ import type {
   CreateArticlePillowVariantRequest,
   CreateArticleRequest,
   CreateArticleShirtVariantRequest,
+  CreateCostCalculationRequest,
   CreateMugDetailsRequest,
   CreatePillowDetailsRequest,
   CreateShirtDetailsRequest,
@@ -26,15 +27,17 @@ import { ArrowLeft, Loader2, Save } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import CostCalculationTab from './tabs/CostCalculationTab';
 import MugDetailsTab from './tabs/MugDetailsTab';
 import PillowDetailsTab from './tabs/PillowDetailsTab';
 import ShirtDetailsTab from './tabs/ShirtDetailsTab';
 import VariantsTab from './tabs/VariantsTab';
 
-type ArticleFormData = Omit<Article, 'mugDetails' | 'shirtDetails' | 'pillowDetails'> & {
+type ArticleFormData = Omit<Article, 'mugDetails' | 'shirtDetails' | 'pillowDetails' | 'costCalculation'> & {
   mugDetails?: CreateMugDetailsRequest;
   shirtDetails?: CreateShirtDetailsRequest;
   pillowDetails?: CreatePillowDetailsRequest;
+  costCalculation?: CreateCostCalculationRequest;
 };
 
 export default function NewOrEditArticle() {
@@ -69,6 +72,30 @@ export default function NewOrEditArticle() {
       printTemplateHeightMm: 0,
       fillingQuantity: '',
       dishwasherSafe: true,
+    },
+    costCalculation: {
+      purchasePriceNet: 0,
+      purchasePriceTax: 0,
+      purchasePriceGross: 0,
+      purchaseCostNet: 0,
+      purchaseCostTax: 0,
+      purchaseCostGross: 0,
+      purchaseCostPercent: 0,
+      purchaseTotalNet: 0,
+      purchaseTotalTax: 0,
+      purchaseTotalGross: 0,
+      purchasePriceUnit: '1.00',
+      vatRatePercent: 19,
+      marginNet: 0,
+      marginTax: 0,
+      marginGross: 0,
+      marginPercent: 100,
+      salesTotalNet: 0,
+      salesTotalTax: 0,
+      salesTotalGross: 0,
+      salesPriceUnit: '1.00',
+      purchaseCalculationMode: 'NET',
+      salesCalculationMode: 'NET',
     },
   });
   const [categories, setCategories] = useState<ArticleCategory[]>([]);
@@ -192,6 +219,7 @@ export default function NewOrEditArticle() {
           mugDetails: article.mugDetails,
           shirtDetails: article.shirtDetails,
           pillowDetails: article.pillowDetails,
+          costCalculation: article.costCalculation,
         };
         console.log('Updating article with data:', updateData);
         updateArticleMutation.mutate(
@@ -220,6 +248,7 @@ export default function NewOrEditArticle() {
           mugDetails: article.mugDetails,
           shirtDetails: article.shirtDetails,
           pillowDetails: article.pillowDetails,
+          costCalculation: article.costCalculation,
         };
         console.log('Creating article with data:', createData);
         createArticleMutation.mutate(createData, {
@@ -274,6 +303,7 @@ export default function NewOrEditArticle() {
           {article.articleType === 'SHIRT' && <TabsTrigger value="details">Materials & Sizes</TabsTrigger>}
           {article.articleType === 'PILLOW' && <TabsTrigger value="dimensions">Dimensions & Materials</TabsTrigger>}
           <TabsTrigger value="variants">Variants</TabsTrigger>
+          <TabsTrigger value="costCalculation">Cost Calculation</TabsTrigger>
         </TabsList>
 
         <TabsContent value="description">
@@ -501,6 +531,13 @@ export default function NewOrEditArticle() {
             onDeleteTemporaryMugVariant={handleDeleteTemporaryMugVariant}
             onDeleteTemporaryShirtVariant={handleDeleteTemporaryShirtVariant}
             onDeleteTemporaryPillowVariant={handleDeleteTemporaryPillowVariant}
+          />
+        </TabsContent>
+
+        <TabsContent value="costCalculation">
+          <CostCalculationTab
+            costCalculation={article.costCalculation || {}}
+            onChange={(costCalculation) => setArticle({ ...article, costCalculation })}
           />
         </TabsContent>
       </Tabs>
