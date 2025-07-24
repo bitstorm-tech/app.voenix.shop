@@ -153,7 +153,7 @@ export default function NewOrEditPromptSlotVariant() {
   };
 
   const handleCancel = () => {
-    navigate('/admin/slots');
+    navigate('/admin/slot-variants');
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
