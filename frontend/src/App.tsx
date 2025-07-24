@@ -11,6 +11,7 @@ import NewOrEditArticleSubCategory from '@/pages/admin/NewOrEditArticleSubCatego
 import NewOrEditPrompt from '@/pages/admin/NewOrEditPrompt';
 import NewOrEditPromptSlotType from '@/pages/admin/NewOrEditPromptSlotType';
 import NewOrEditPromptSlotVariant from '@/pages/admin/NewOrEditPromptSlotVariant';
+import NewOrEditSupplier from '@/pages/admin/NewOrEditSupplier';
 import NewOrEditVat from '@/pages/admin/NewOrEditVat';
 import OpenOrders from '@/pages/admin/OpenOrders';
 import PromptCategories from '@/pages/admin/PromptCategories';
@@ -63,6 +64,8 @@ export default function App() {
               <Route path="orders/open" element={<OpenOrders />} />
               <Route path="orders/completed" element={<CompletedOrders />} />
               <Route path="suppliers" element={<Suppliers />} />
+              <Route path="suppliers/new" element={<NewOrEditSupplier />} />
+              <Route path="suppliers/:id/edit" element={<NewOrEditSupplier />} />
               <Route path="logistics" element={<Logistics />} />
               <Route path="vat" element={<Vat />} />
               <Route path="vat/new" element={<NewOrEditVat />} />
