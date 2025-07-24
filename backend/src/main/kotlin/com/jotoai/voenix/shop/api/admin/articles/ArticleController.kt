@@ -2,10 +2,8 @@ package com.jotoai.voenix.shop.api.admin.articles
 
 import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleDto
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleRequest
-import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
 import com.jotoai.voenix.shop.domain.articles.service.ArticleService
@@ -82,32 +80,6 @@ class ArticleController(
         @PathVariable id: Long,
     ): ResponseEntity<Void> {
         articleService.delete(id)
-        return ResponseEntity.noContent().build()
-    }
-
-    @PostMapping("/{articleId}/variants")
-    fun createVariant(
-        @PathVariable articleId: Long,
-        @Valid @RequestBody request: CreateArticleVariantRequest,
-    ): ResponseEntity<ArticleVariantDto> {
-        val variant = articleService.createVariant(articleId, request)
-        return ResponseEntity.status(HttpStatus.CREATED).body(variant)
-    }
-
-    @PutMapping("/variants/{variantId}")
-    fun updateVariant(
-        @PathVariable variantId: Long,
-        @Valid @RequestBody request: CreateArticleVariantRequest,
-    ): ResponseEntity<ArticleVariantDto> {
-        val variant = articleService.updateVariant(variantId, request)
-        return ResponseEntity.ok(variant)
-    }
-
-    @DeleteMapping("/variants/{variantId}")
-    fun deleteVariant(
-        @PathVariable variantId: Long,
-    ): ResponseEntity<Void> {
-        articleService.deleteVariant(variantId)
         return ResponseEntity.noContent().build()
     }
 }

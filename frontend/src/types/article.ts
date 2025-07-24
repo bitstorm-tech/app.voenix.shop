@@ -1,14 +1,35 @@
 export type ArticleType = 'MUG' | 'SHIRT' | 'PILLOW';
 
-export type VariantType = 'COLOR' | 'SIZE' | 'MATERIAL';
-
 export type FitType = 'REGULAR' | 'SLIM' | 'LOOSE';
 
-export interface ArticleVariant {
+export interface ArticleMugVariant {
   id: number;
   articleId: number;
-  variantType: VariantType;
-  variantValue: string;
+  insideColorCode: string;
+  outsideColorCode: string;
+  name: string;
+  sku?: string;
+  exampleImageUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ArticleShirtVariant {
+  id: number;
+  articleId: number;
+  color: string;
+  size: string;
+  sku?: string;
+  exampleImageUrl?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface ArticlePillowVariant {
+  id: number;
+  articleId: number;
+  color: string;
+  material: string;
   sku?: string;
   exampleImageUrl?: string;
   createdAt?: string;
@@ -63,7 +84,9 @@ export interface Article {
   categoryName: string;
   subcategoryId?: number;
   subcategoryName?: string;
-  variants: ArticleVariant[];
+  mugVariants?: ArticleMugVariant[];
+  shirtVariants?: ArticleShirtVariant[];
+  pillowVariants?: ArticlePillowVariant[];
   mugDetails?: ArticleMugDetails;
   shirtDetails?: ArticleShirtDetails;
   pillowDetails?: ArticlePillowDetails;
@@ -81,15 +104,32 @@ export interface CreateArticleRequest {
   articleType: ArticleType;
   categoryId: number;
   subcategoryId?: number;
-  variants: CreateArticleVariantRequest[];
+  mugVariants?: CreateArticleMugVariantRequest[];
+  shirtVariants?: CreateArticleShirtVariantRequest[];
+  pillowVariants?: CreateArticlePillowVariantRequest[];
   mugDetails?: CreateMugDetailsRequest;
   shirtDetails?: CreateShirtDetailsRequest;
   pillowDetails?: CreatePillowDetailsRequest;
 }
 
-export interface CreateArticleVariantRequest {
-  variantType: string;
-  variantValue: string;
+export interface CreateArticleMugVariantRequest {
+  insideColorCode: string;
+  outsideColorCode: string;
+  name: string;
+  sku?: string;
+  exampleImageFilename?: string;
+}
+
+export interface CreateArticleShirtVariantRequest {
+  color: string;
+  size: string;
+  sku?: string;
+  exampleImageFilename?: string;
+}
+
+export interface CreateArticlePillowVariantRequest {
+  color: string;
+  material: string;
   sku?: string;
   exampleImageFilename?: string;
 }
@@ -120,7 +160,7 @@ export interface CreatePillowDetailsRequest {
   washable: boolean;
 }
 
-export interface UpdateArticleRequest extends Omit<CreateArticleRequest, 'articleType' | 'variants'> {
+export interface UpdateArticleRequest extends Omit<CreateArticleRequest, 'articleType' | 'mugVariants' | 'shirtVariants' | 'pillowVariants'> {
   mugDetails?: UpdateMugDetailsRequest;
   shirtDetails?: UpdateShirtDetailsRequest;
   pillowDetails?: UpdatePillowDetailsRequest;

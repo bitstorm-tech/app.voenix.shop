@@ -24,20 +24,15 @@ data class CreateArticleRequest(
     @field:NotNull(message = "Category ID is required")
     val categoryId: Long,
     val subcategoryId: Long? = null,
-    val variants: List<CreateArticleVariantRequest> = emptyList(),
+    val mugVariants: List<CreateArticleMugVariantRequest>? = null,
+    val shirtVariants: List<CreateArticleShirtVariantRequest>? = null,
+    val pillowVariants: List<CreateArticlePillowVariantRequest>? = null,
     // Mug-specific details
     val mugDetails: CreateMugDetailsRequest? = null,
     // Shirt-specific details
     val shirtDetails: CreateShirtDetailsRequest? = null,
     // Pillow-specific details
     val pillowDetails: CreatePillowDetailsRequest? = null,
-)
-
-data class CreateArticleVariantRequest(
-    val variantType: String,
-    val variantValue: String,
-    val sku: String? = null,
-    val exampleImageFilename: String? = null,
 )
 
 data class CreateMugDetailsRequest(

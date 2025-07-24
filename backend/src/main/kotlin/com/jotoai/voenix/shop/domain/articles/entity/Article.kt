@@ -49,7 +49,11 @@ data class Article(
     @JoinColumn(name = "subcategory_id")
     var subcategory: ArticleSubCategory? = null,
     @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    var variants: MutableList<ArticleVariant> = mutableListOf(),
+    var mugVariants: MutableList<ArticleMugVariant> = mutableListOf(),
+    @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    var shirtVariants: MutableList<ArticleShirtVariant> = mutableListOf(),
+    @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
+    var pillowVariants: MutableList<ArticlePillowVariant> = mutableListOf(),
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,
@@ -71,7 +75,9 @@ data class Article(
             categoryName = this.category.name,
             subcategoryId = this.subcategory?.id,
             subcategoryName = this.subcategory?.name,
-            variants = this.variants.map { it.toDto() },
+            mugVariants = if (this.articleType == ArticleType.MUG) this.mugVariants.map { it.toDto() } else null,
+            shirtVariants = if (this.articleType == ArticleType.SHIRT) this.shirtVariants.map { it.toDto() } else null,
+            pillowVariants = if (this.articleType == ArticleType.PILLOW) this.pillowVariants.map { it.toDto() } else null,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )

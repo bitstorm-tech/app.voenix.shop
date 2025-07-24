@@ -5,17 +5,21 @@ import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleCategoryRepository
 import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleSubCategoryRepository
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleDto
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleWithDetailsDto
+import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleMugVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.CreateArticlePillowVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleRequest
-import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleShirtVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.domain.articles.entity.Article
-import com.jotoai.voenix.shop.domain.articles.entity.ArticleVariant
+import com.jotoai.voenix.shop.domain.articles.entity.ArticleMugVariant
+import com.jotoai.voenix.shop.domain.articles.entity.ArticlePillowVariant
+import com.jotoai.voenix.shop.domain.articles.entity.ArticleShirtVariant
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
-import com.jotoai.voenix.shop.domain.articles.enums.VariantType
+import com.jotoai.voenix.shop.domain.articles.repository.ArticleMugVariantRepository
+import com.jotoai.voenix.shop.domain.articles.repository.ArticlePillowVariantRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
-import com.jotoai.voenix.shop.domain.articles.repository.ArticleVariantRepository
+import com.jotoai.voenix.shop.domain.articles.repository.ArticleShirtVariantRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -24,7 +28,9 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class ArticleService(
     private val articleRepository: ArticleRepository,
-    private val articleVariantRepository: ArticleVariantRepository,
+    private val articleMugVariantRepository: ArticleMugVariantRepository,
+    private val articleShirtVariantRepository: ArticleShirtVariantRepository,
+    private val articlePillowVariantRepository: ArticlePillowVariantRepository,
     private val articleCategoryRepository: ArticleCategoryRepository,
     private val articleSubCategoryRepository: ArticleSubCategoryRepository,
     private val mugDetailsService: MugDetailsService,
@@ -120,9 +126,20 @@ class ArticleService(
                 }
         }
 
-        // Create variants
-        request.variants.forEach { variantRequest ->
-            createVariant(savedArticle, variantRequest)
+        // Create type-specific variants
+        when (request.articleType) {
+            ArticleType.MUG ->
+                request.mugVariants?.forEach { variantRequest ->
+                    createMugVariant(savedArticle, variantRequest)
+                }
+            ArticleType.SHIRT ->
+                request.shirtVariants?.forEach { variantRequest ->
+                    createShirtVariant(savedArticle, variantRequest)
+                }
+            ArticleType.PILLOW ->
+                request.pillowVariants?.forEach { variantRequest ->
+                    createPillowVariant(savedArticle, variantRequest)
+                }
         }
 
         return findById(savedArticle.id!!)
@@ -193,68 +210,74 @@ class ArticleService(
         articleRepository.deleteById(id)
     }
 
-    @Transactional
-    fun createVariant(
-        articleId: Long,
-        request: CreateArticleVariantRequest,
-    ): ArticleVariantDto {
-        val article =
-            articleRepository
-                .findById(articleId)
-                .orElseThrow { ResourceNotFoundException("Article not found with id: $articleId") }
-
-        return createVariant(article, request).toDto()
-    }
-
-    @Transactional
-    fun updateVariant(
-        variantId: Long,
-        request: CreateArticleVariantRequest,
-    ): ArticleVariantDto {
-        val variant =
-            articleVariantRepository
-                .findById(variantId)
-                .orElseThrow { ResourceNotFoundException("Variant not found with id: $variantId") }
-
-        variant.apply {
-            variantType = VariantType.valueOf(request.variantType)
-            variantValue = request.variantValue
-            sku = request.sku
-            exampleImageFilename = request.exampleImageFilename
-        }
-
-        return articleVariantRepository.save(variant).toDto()
-    }
-
-    @Transactional
-    fun deleteVariant(variantId: Long) {
-        if (!articleVariantRepository.existsById(variantId)) {
-            throw ResourceNotFoundException("Variant not found with id: $variantId")
-        }
-        articleVariantRepository.deleteById(variantId)
-    }
-
-    private fun createVariant(
+    private fun createMugVariant(
         article: Article,
-        request: CreateArticleVariantRequest,
-    ): ArticleVariant {
+        request: CreateArticleMugVariantRequest,
+    ): ArticleMugVariant {
         // Validate SKU uniqueness if provided
         request.sku?.let {
-            if (articleVariantRepository.existsBySku(it)) {
+            if (articleMugVariantRepository.existsBySku(it)) {
                 throw IllegalArgumentException("SKU already exists: $it")
             }
         }
 
         val variant =
-            ArticleVariant(
+            ArticleMugVariant(
                 article = article,
-                variantType = VariantType.valueOf(request.variantType),
-                variantValue = request.variantValue,
+                insideColorCode = request.insideColorCode,
+                outsideColorCode = request.outsideColorCode,
+                name = request.name,
                 sku = request.sku,
                 exampleImageFilename = request.exampleImageFilename,
             )
 
-        return articleVariantRepository.save(variant)
+        return articleMugVariantRepository.save(variant)
+    }
+
+    private fun createShirtVariant(
+        article: Article,
+        request: CreateArticleShirtVariantRequest,
+    ): ArticleShirtVariant {
+        // Validate SKU uniqueness if provided
+        request.sku?.let {
+            if (articleShirtVariantRepository.existsBySku(it)) {
+                throw IllegalArgumentException("SKU already exists: $it")
+            }
+        }
+
+        val variant =
+            ArticleShirtVariant(
+                article = article,
+                color = request.color,
+                size = request.size,
+                sku = request.sku,
+                exampleImageFilename = request.exampleImageFilename,
+            )
+
+        return articleShirtVariantRepository.save(variant)
+    }
+
+    private fun createPillowVariant(
+        article: Article,
+        request: CreateArticlePillowVariantRequest,
+    ): ArticlePillowVariant {
+        // Validate SKU uniqueness if provided
+        request.sku?.let {
+            if (articlePillowVariantRepository.existsBySku(it)) {
+                throw IllegalArgumentException("SKU already exists: $it")
+            }
+        }
+
+        val variant =
+            ArticlePillowVariant(
+                article = article,
+                color = request.color,
+                material = request.material,
+                sku = request.sku,
+                exampleImageFilename = request.exampleImageFilename,
+            )
+
+        return articlePillowVariantRepository.save(variant)
     }
 
     private fun validateTypeSpecificDetails(
@@ -312,7 +335,9 @@ class ArticleService(
             categoryName = article.category.name,
             subcategoryId = article.subcategory?.id,
             subcategoryName = article.subcategory?.name,
-            variants = article.variants.map { it.toDto() },
+            mugVariants = if (article.articleType == ArticleType.MUG) article.mugVariants.map { it.toDto() } else null,
+            shirtVariants = if (article.articleType == ArticleType.SHIRT) article.shirtVariants.map { it.toDto() } else null,
+            pillowVariants = if (article.articleType == ArticleType.PILLOW) article.pillowVariants.map { it.toDto() } else null,
             mugDetails = mugDetails,
             shirtDetails = shirtDetails,
             pillowDetails = pillowDetails,

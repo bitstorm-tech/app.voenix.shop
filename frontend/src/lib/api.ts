@@ -1,4 +1,15 @@
-import type { Article, CreateArticleRequest, PaginatedResponse, UpdateArticleRequest } from '@/types/article';
+import type {
+  Article,
+  ArticleMugVariant,
+  ArticlePillowVariant,
+  ArticleShirtVariant,
+  CreateArticleMugVariantRequest,
+  CreateArticlePillowVariantRequest,
+  CreateArticleRequest,
+  CreateArticleShirtVariantRequest,
+  PaginatedResponse,
+  UpdateArticleRequest,
+} from '@/types/article';
 import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
@@ -207,10 +218,24 @@ export const articlesApi = {
   create: (data: CreateArticleRequest) => api.post<Article>('/admin/articles', data),
   update: (id: number, data: UpdateArticleRequest) => api.put<Article>(`/admin/articles/${id}`, data),
   delete: (id: number) => api.delete<void>(`/admin/articles/${id}`),
-  // Variant management
-  createVariant: (articleId: number, data: any) => api.post<any>(`/admin/articles/${articleId}/variants`, data),
-  updateVariant: (variantId: number, data: any) => api.put<any>(`/admin/articles/variants/${variantId}`, data),
-  deleteVariant: (variantId: number) => api.delete<void>(`/admin/articles/variants/${variantId}`),
+  // Mug variant management
+  createMugVariant: (articleId: number, data: CreateArticleMugVariantRequest) =>
+    api.post<ArticleMugVariant>(`/admin/articles/mugs/${articleId}/variants`, data),
+  updateMugVariant: (variantId: number, data: CreateArticleMugVariantRequest) =>
+    api.put<ArticleMugVariant>(`/admin/articles/mugs/variants/${variantId}`, data),
+  deleteMugVariant: (variantId: number) => api.delete<void>(`/admin/articles/mugs/variants/${variantId}`),
+  // Shirt variant management
+  createShirtVariant: (articleId: number, data: CreateArticleShirtVariantRequest) =>
+    api.post<ArticleShirtVariant>(`/admin/articles/shirts/${articleId}/variants`, data),
+  updateShirtVariant: (variantId: number, data: CreateArticleShirtVariantRequest) =>
+    api.put<ArticleShirtVariant>(`/admin/articles/shirts/variants/${variantId}`, data),
+  deleteShirtVariant: (variantId: number) => api.delete<void>(`/admin/articles/shirts/variants/${variantId}`),
+  // Pillow variant management
+  createPillowVariant: (articleId: number, data: CreateArticlePillowVariantRequest) =>
+    api.post<ArticlePillowVariant>(`/admin/articles/pillows/${articleId}/variants`, data),
+  updatePillowVariant: (variantId: number, data: CreateArticlePillowVariantRequest) =>
+    api.put<ArticlePillowVariant>(`/admin/articles/pillows/variants/${variantId}`, data),
+  deletePillowVariant: (variantId: number) => api.delete<void>(`/admin/articles/pillows/variants/${variantId}`),
 };
 
 // Mug API endpoints

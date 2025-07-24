@@ -11,8 +11,10 @@ import { articleCategoriesApi, articlesApi, articleSubCategoriesApi } from '@/li
 import type {
   Article,
   ArticleType,
+  CreateArticleMugVariantRequest,
+  CreateArticlePillowVariantRequest,
   CreateArticleRequest,
-  CreateArticleVariantRequest,
+  CreateArticleShirtVariantRequest,
   CreateMugDetailsRequest,
   CreatePillowDetailsRequest,
   CreateShirtDetailsRequest,
@@ -53,7 +55,9 @@ export default function NewOrEditArticle() {
     active: true,
     articleType: 'MUG',
     categoryId: 0,
-    variants: [],
+    mugVariants: [],
+    shirtVariants: [],
+    pillowVariants: [],
     // Initialize default mug details since MUG is the default type
     mugDetails: {
       heightMm: 0,
@@ -66,7 +70,9 @@ export default function NewOrEditArticle() {
   });
   const [categories, setCategories] = useState<ArticleCategory[]>([]);
   const [subcategories, setSubcategories] = useState<ArticleSubCategory[]>([]);
-  const [temporaryVariants, setTemporaryVariants] = useState<CreateArticleVariantRequest[]>([]);
+  const [temporaryMugVariants, setTemporaryMugVariants] = useState<CreateArticleMugVariantRequest[]>([]);
+  const [temporaryShirtVariants, setTemporaryShirtVariants] = useState<CreateArticleShirtVariantRequest[]>([]);
+  const [temporaryPillowVariants, setTemporaryPillowVariants] = useState<CreateArticlePillowVariantRequest[]>([]);
 
   useEffect(() => {
     fetchCategories();
@@ -114,12 +120,28 @@ export default function NewOrEditArticle() {
     }
   };
 
-  const handleAddTemporaryVariant = (variant: CreateArticleVariantRequest) => {
-    setTemporaryVariants([...temporaryVariants, variant]);
+  const handleAddTemporaryMugVariant = (variant: CreateArticleMugVariantRequest) => {
+    setTemporaryMugVariants([...temporaryMugVariants, variant]);
   };
 
-  const handleDeleteTemporaryVariant = (index: number) => {
-    setTemporaryVariants(temporaryVariants.filter((_, i) => i !== index));
+  const handleDeleteTemporaryMugVariant = (index: number) => {
+    setTemporaryMugVariants(temporaryMugVariants.filter((_, i) => i !== index));
+  };
+
+  const handleAddTemporaryShirtVariant = (variant: CreateArticleShirtVariantRequest) => {
+    setTemporaryShirtVariants([...temporaryShirtVariants, variant]);
+  };
+
+  const handleDeleteTemporaryShirtVariant = (index: number) => {
+    setTemporaryShirtVariants(temporaryShirtVariants.filter((_, i) => i !== index));
+  };
+
+  const handleAddTemporaryPillowVariant = (variant: CreateArticlePillowVariantRequest) => {
+    setTemporaryPillowVariants([...temporaryPillowVariants, variant]);
+  };
+
+  const handleDeleteTemporaryPillowVariant = (index: number) => {
+    setTemporaryPillowVariants(temporaryPillowVariants.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async () => {
@@ -187,7 +209,9 @@ export default function NewOrEditArticle() {
           articleType: article.articleType as ArticleType,
           categoryId: article.categoryId || 0,
           subcategoryId: article.subcategoryId,
-          variants: temporaryVariants,
+          mugVariants: article.articleType === 'MUG' ? temporaryMugVariants : undefined,
+          shirtVariants: article.articleType === 'SHIRT' ? temporaryShirtVariants : undefined,
+          pillowVariants: article.articleType === 'PILLOW' ? temporaryPillowVariants : undefined,
           mugDetails: article.mugDetails,
           shirtDetails: article.shirtDetails,
           pillowDetails: article.pillowDetails,
@@ -440,10 +464,18 @@ export default function NewOrEditArticle() {
           <VariantsTab
             articleId={article.id}
             articleType={article.articleType as ArticleType}
-            variants={article.variants || []}
-            temporaryVariants={temporaryVariants}
-            onAddTemporaryVariant={handleAddTemporaryVariant}
-            onDeleteTemporaryVariant={handleDeleteTemporaryVariant}
+            mugVariants={article.mugVariants || []}
+            shirtVariants={article.shirtVariants || []}
+            pillowVariants={article.pillowVariants || []}
+            temporaryMugVariants={temporaryMugVariants}
+            temporaryShirtVariants={temporaryShirtVariants}
+            temporaryPillowVariants={temporaryPillowVariants}
+            onAddTemporaryMugVariant={handleAddTemporaryMugVariant}
+            onAddTemporaryShirtVariant={handleAddTemporaryShirtVariant}
+            onAddTemporaryPillowVariant={handleAddTemporaryPillowVariant}
+            onDeleteTemporaryMugVariant={handleDeleteTemporaryMugVariant}
+            onDeleteTemporaryShirtVariant={handleDeleteTemporaryShirtVariant}
+            onDeleteTemporaryPillowVariant={handleDeleteTemporaryPillowVariant}
           />
         </TabsContent>
       </Tabs>
