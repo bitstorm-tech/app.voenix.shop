@@ -191,10 +191,12 @@ export interface CostCalculation {
   purchaseTotalTax: number;
   purchaseTotalGross: number;
   purchasePriceUnit?: string;
+  purchaseVatRateId?: number;
+  purchaseVatRatePercent: number;
 
   // Sales section
-  vatRateId?: number;
-  vatRatePercent: number;
+  salesVatRateId?: number;
+  salesVatRatePercent: number;
   marginNet: number;
   marginTax: number;
   marginGross: number;

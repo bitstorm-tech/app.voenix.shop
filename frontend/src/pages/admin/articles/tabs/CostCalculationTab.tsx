@@ -29,9 +29,13 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
     purchaseTotalGross: costCalculation?.purchaseTotalGross || 0,
     purchasePriceUnit: costCalculation?.purchasePriceUnit || '1.00',
 
+    // Purchase tax rate
+    purchaseVatRateId: costCalculation?.purchaseVatRateId,
+    purchaseVatRatePercent: costCalculation?.purchaseVatRatePercent || 19,
+
     // Sales section
-    vatRateId: costCalculation?.vatRateId,
-    vatRatePercent: costCalculation?.vatRatePercent || 19,
+    salesVatRateId: costCalculation?.salesVatRateId,
+    salesVatRatePercent: costCalculation?.salesVatRatePercent || 19,
     marginNet: costCalculation?.marginNet || 0,
     marginTax: costCalculation?.marginTax || 0,
     marginGross: costCalculation?.marginGross || 0,
@@ -48,7 +52,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
 
   const [purchasePriceCorresponds, setPurchasePriceCorresponds] = useState(false);
   const [salesPriceCorresponds, setSalesPriceCorresponds] = useState(false);
-  const [purchaseActiveRow, setPurchaseActiveRow] = useState<'price' | 'cost' | 'costPercent'>('price');
+  const [purchaseActiveRow, setPurchaseActiveRow] = useState<'cost' | 'costPercent'>('cost');
   const [salesActiveRow, setSalesActiveRow] = useState<'margin' | 'marginPercent'>('margin');
 
   // Update parent when data changes
@@ -70,10 +74,43 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
     }));
   }, [data.purchasePriceNet, data.purchasePriceTax, data.purchasePriceGross, data.purchaseCostNet, data.purchaseCostTax, data.purchaseCostGross]);
 
+  // Recalculate purchase values when purchase VAT rate changes
+  useEffect(() => {
+    const taxRate = data.purchaseVatRatePercent / 100;
+
+    if (data.purchaseCalculationMode === 'NET') {
+      // Recalculate tax and gross from net values
+      const priceTax = data.purchasePriceNet * taxRate;
+      const costTax = data.purchaseCostNet * taxRate;
+
+      setData((prev) => ({
+        ...prev,
+        purchasePriceTax: priceTax,
+        purchasePriceGross: data.purchasePriceNet + priceTax,
+        purchaseCostTax: costTax,
+        purchaseCostGross: data.purchaseCostNet + costTax,
+      }));
+    } else {
+      // Recalculate net and tax from gross values
+      const priceNet = data.purchasePriceGross / (1 + taxRate);
+      const priceTax = data.purchasePriceGross - priceNet;
+      const costNet = data.purchaseCostGross / (1 + taxRate);
+      const costTax = data.purchaseCostGross - costNet;
+
+      setData((prev) => ({
+        ...prev,
+        purchasePriceNet: priceNet,
+        purchasePriceTax: priceTax,
+        purchaseCostNet: costNet,
+        purchaseCostTax: costTax,
+      }));
+    }
+  }, [data.purchaseVatRatePercent]);
+
   // Calculate sales totals and margins
   useEffect(() => {
     const salesNet = data.purchaseTotalNet * (1 + data.marginPercent / 100);
-    const salesTax = salesNet * (data.vatRatePercent / 100);
+    const salesTax = salesNet * (data.salesVatRatePercent / 100);
     const salesGross = salesNet + salesTax;
 
     const marginNet = salesNet - data.purchaseTotalNet;
@@ -89,12 +126,13 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
       marginTax: marginTax,
       marginGross: marginGross,
     }));
-  }, [data.purchaseTotalNet, data.purchaseTotalTax, data.purchaseTotalGross, data.marginPercent, data.vatRatePercent]);
+  }, [data.purchaseTotalNet, data.purchaseTotalTax, data.purchaseTotalGross, data.marginPercent, data.salesVatRatePercent]);
 
   const handlePurchasePriceChange = (field: 'net' | 'tax' | 'gross', value: number) => {
+    const taxRate = data.purchaseVatRatePercent / 100;
     if (data.purchaseCalculationMode === 'NET') {
       if (field === 'net') {
-        const tax = value * 0.19; // Default 19% tax
+        const tax = value * taxRate;
         setData((prev) => ({
           ...prev,
           purchasePriceNet: value,
@@ -104,7 +142,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
       }
     } else {
       if (field === 'gross') {
-        const net = value / 1.19; // Default 19% tax
+        const net = value / (1 + taxRate);
         const tax = value - net;
         setData((prev) => ({
           ...prev,
@@ -117,9 +155,10 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
   };
 
   const handlePurchaseCostChange = (field: 'net' | 'tax' | 'gross', value: number) => {
+    const taxRate = data.purchaseVatRatePercent / 100;
     if (data.purchaseCalculationMode === 'NET') {
       if (field === 'net') {
-        const tax = value * 0.19; // Default 19% tax
+        const tax = value * taxRate;
         setData((prev) => ({
           ...prev,
           purchaseCostNet: value,
@@ -129,7 +168,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
       }
     } else {
       if (field === 'gross') {
-        const net = value / 1.19; // Default 19% tax
+        const net = value / (1 + taxRate);
         const tax = value - net;
         setData((prev) => ({
           ...prev,
@@ -143,7 +182,8 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
 
   const handlePurchaseCostPercentChange = (value: number) => {
     const costNet = data.purchasePriceNet * (value / 100);
-    const costTax = costNet * 0.19; // Default 19% tax
+    const taxRate = data.purchaseVatRatePercent / 100;
+    const costTax = costNet * taxRate;
     const costGross = costNet + costTax;
 
     setData((prev) => ({
@@ -155,13 +195,24 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
     }));
   };
 
-  const handleVatRateChange = (vatRateId: string) => {
+  const handlePurchaseVatRateChange = (vatRateId: string) => {
     const selectedVat = vats.find((v) => v.id.toString() === vatRateId);
     if (selectedVat) {
       setData((prev) => ({
         ...prev,
-        vatRateId: selectedVat.id,
-        vatRatePercent: selectedVat.percent,
+        purchaseVatRateId: selectedVat.id,
+        purchaseVatRatePercent: selectedVat.percent,
+      }));
+    }
+  };
+
+  const handleSalesVatRateChange = (vatRateId: string) => {
+    const selectedVat = vats.find((v) => v.id.toString() === vatRateId);
+    if (selectedVat) {
+      setData((prev) => ({
+        ...prev,
+        salesVatRateId: selectedVat.id,
+        salesVatRatePercent: selectedVat.percent,
       }));
     }
   };
@@ -170,7 +221,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
     if (data.salesCalculationMode === 'NET') {
       if (field === 'net') {
         const newSalesNet = data.purchaseTotalNet + value;
-        const newSalesTax = newSalesNet * (data.vatRatePercent / 100);
+        const newSalesTax = newSalesNet * (data.salesVatRatePercent / 100);
         const newSalesGross = newSalesNet + newSalesTax;
         const newMarginPercent = data.purchaseTotalNet > 0 ? (value / data.purchaseTotalNet) * 100 : 0;
 
@@ -188,7 +239,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
     } else {
       if (field === 'gross') {
         const newSalesGross = data.purchaseTotalGross + value;
-        const newSalesNet = newSalesGross / (1 + data.vatRatePercent / 100);
+        const newSalesNet = newSalesGross / (1 + data.salesVatRatePercent / 100);
         const newSalesTax = newSalesGross - newSalesNet;
         const newMarginPercent = data.purchaseTotalNet > 0 ? ((newSalesNet - data.purchaseTotalNet) / data.purchaseTotalNet) * 100 : 0;
 
@@ -219,6 +270,24 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
           <CardDescription>Purchase price and cost calculations</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Tax Rate */}
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label>Tax Rate:</Label>
+            <Select value={data.purchaseVatRateId?.toString() || ''} onValueChange={handlePurchaseVatRateChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select VAT rate" />
+              </SelectTrigger>
+              <SelectContent>
+                {vats.map((vat) => (
+                  <SelectItem key={vat.id} value={vat.id.toString()}>
+                    {vat.name} ({vat.percent}%)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <div className="text-muted-foreground col-span-2 text-sm">(from article or service group)</div>
+          </div>
+
           {/* Calculation Mode */}
           <div className="flex items-center space-x-4">
             <label className="flex items-center space-x-2">
@@ -255,23 +324,12 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
 
           {/* Purchase Price */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <div className="flex items-center gap-2">
-              <input
-                type="radio"
-                id="purchasePriceRadio"
-                name="purchaseActiveField"
-                value="price"
-                checked={purchaseActiveRow === 'price'}
-                onChange={() => setPurchaseActiveRow('price')}
-                className="h-4 w-4"
-              />
-              <Label htmlFor="purchasePriceRadio">Purchase Price:</Label>
-            </div>
+            <Label>Purchase Price:</Label>
             <Input
               type="number"
               value={formatCurrency(data.purchasePriceNet)}
               onChange={(e) => handlePurchasePriceChange('net', parseFloat(e.target.value) || 0)}
-              disabled={data.purchaseCalculationMode === 'GROSS' || purchaseActiveRow !== 'price'}
+              disabled={data.purchaseCalculationMode === 'GROSS'}
               step="0.01"
               min="0"
             />
@@ -281,7 +339,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
                 type="number"
                 value={formatCurrency(data.purchasePriceGross)}
                 onChange={(e) => handlePurchasePriceChange('gross', parseFloat(e.target.value) || 0)}
-                disabled={data.purchaseCalculationMode === 'NET' || purchaseActiveRow !== 'price'}
+                disabled={data.purchaseCalculationMode === 'NET'}
                 step="0.01"
                 min="0"
               />
@@ -398,7 +456,7 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
           {/* Tax Rate */}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label>Tax Rate:</Label>
-            <Select value={data.vatRateId?.toString() || ''} onValueChange={handleVatRateChange}>
+            <Select value={data.salesVatRateId?.toString() || ''} onValueChange={handleSalesVatRateChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Select VAT rate" />
               </SelectTrigger>
