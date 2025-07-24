@@ -35,9 +35,6 @@ interface ArticleRepository : JpaRepository<Article, Long> {
         SELECT a FROM Article a 
         LEFT JOIN FETCH a.category 
         LEFT JOIN FETCH a.subcategory 
-        LEFT JOIN FETCH a.mugVariants 
-        LEFT JOIN FETCH a.shirtVariants 
-        LEFT JOIN FETCH a.pillowVariants 
         WHERE a.id = :id
     """,
     )
