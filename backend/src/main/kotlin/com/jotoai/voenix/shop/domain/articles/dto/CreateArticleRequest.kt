@@ -24,6 +24,7 @@ data class CreateArticleRequest(
     @field:NotNull(message = "Category ID is required")
     val categoryId: Long,
     val subcategoryId: Long? = null,
+    val supplierId: Long? = null,
     val mugVariants: List<CreateArticleMugVariantRequest>? = null,
     val shirtVariants: List<CreateArticleShirtVariantRequest>? = null,
     val pillowVariants: List<CreateArticlePillowVariantRequest>? = null,

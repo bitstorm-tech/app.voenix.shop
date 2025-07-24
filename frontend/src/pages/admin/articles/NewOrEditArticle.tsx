@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/Switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Textarea } from '@/components/ui/Textarea';
 import { useCreateArticle, useUpdateArticle } from '@/hooks/queries/useArticles';
+import { useSuppliers } from '@/hooks/queries/useSuppliers';
 import { articleCategoriesApi, articlesApi, articleSubCategoriesApi } from '@/lib/api';
 import type {
   Article,
@@ -43,6 +44,7 @@ export default function NewOrEditArticle() {
 
   const createArticleMutation = useCreateArticle();
   const updateArticleMutation = useUpdateArticle();
+  const { data: suppliers = [] } = useSuppliers();
 
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -55,6 +57,7 @@ export default function NewOrEditArticle() {
     active: true,
     articleType: 'MUG',
     categoryId: 0,
+    supplierId: undefined,
     mugVariants: [],
     shirtVariants: [],
     pillowVariants: [],
@@ -185,6 +188,7 @@ export default function NewOrEditArticle() {
           active: article.active || false,
           categoryId: article.categoryId || 0,
           subcategoryId: article.subcategoryId,
+          supplierId: article.supplierId,
           mugDetails: article.mugDetails,
           shirtDetails: article.shirtDetails,
           pillowDetails: article.pillowDetails,
@@ -209,6 +213,7 @@ export default function NewOrEditArticle() {
           articleType: article.articleType as ArticleType,
           categoryId: article.categoryId || 0,
           subcategoryId: article.subcategoryId,
+          supplierId: article.supplierId,
           mugVariants: article.articleType === 'MUG' ? temporaryMugVariants : undefined,
           shirtVariants: article.articleType === 'SHIRT' ? temporaryShirtVariants : undefined,
           pillowVariants: article.articleType === 'PILLOW' ? temporaryPillowVariants : undefined,
@@ -390,6 +395,26 @@ export default function NewOrEditArticle() {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="supplier">Supplier</Label>
+                <Select
+                  value={article.supplierId?.toString() || 'none'}
+                  onValueChange={(value) => setArticle({ ...article, supplierId: value === 'none' ? undefined : Number(value) })}
+                >
+                  <SelectTrigger id="supplier">
+                    <SelectValue placeholder="Select supplier (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {suppliers.map((supplier) => (
+                      <SelectItem key={supplier.id} value={supplier.id.toString()}>
+                        {supplier.name || `${supplier.firstName} ${supplier.lastName}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">

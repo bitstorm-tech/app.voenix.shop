@@ -21,6 +21,7 @@ data class UpdateArticleRequest(
     @field:NotNull(message = "Category ID is required")
     val categoryId: Long,
     val subcategoryId: Long? = null,
+    val supplierId: Long? = null,
     // Mug-specific details
     val mugDetails: UpdateMugDetailsRequest? = null,
     // Shirt-specific details

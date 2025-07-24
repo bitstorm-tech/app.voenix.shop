@@ -16,6 +16,8 @@ data class ArticleWithDetailsDto(
     val categoryName: String,
     val subcategoryId: Long? = null,
     val subcategoryName: String? = null,
+    val supplierId: Long? = null,
+    val supplierName: String? = null,
     val mugVariants: List<ArticleMugVariantDto>? = null,
     val shirtVariants: List<ArticleShirtVariantDto>? = null,
     val pillowVariants: List<ArticlePillowVariantDto>? = null,

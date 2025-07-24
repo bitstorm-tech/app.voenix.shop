@@ -84,6 +84,8 @@ export interface Article {
   categoryName: string;
   subcategoryId?: number;
   subcategoryName?: string;
+  supplierId?: number;
+  supplierName?: string;
   mugVariants?: ArticleMugVariant[];
   shirtVariants?: ArticleShirtVariant[];
   pillowVariants?: ArticlePillowVariant[];
@@ -104,6 +106,7 @@ export interface CreateArticleRequest {
   articleType: ArticleType;
   categoryId: number;
   subcategoryId?: number;
+  supplierId?: number;
   mugVariants?: CreateArticleMugVariantRequest[];
   shirtVariants?: CreateArticleShirtVariantRequest[];
   pillowVariants?: CreateArticlePillowVariantRequest[];

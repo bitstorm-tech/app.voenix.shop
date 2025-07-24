@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleSubCategory
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleDto
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
+import com.jotoai.voenix.shop.domain.suppliers.entity.Supplier
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -49,6 +50,9 @@ data class Article(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id")
     var subcategory: ArticleSubCategory? = null,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "supplier_id")
+    var supplier: Supplier? = null,
     @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     @BatchSize(size = 10)
     var mugVariants: MutableList<ArticleMugVariant> = mutableListOf(),
@@ -79,6 +83,8 @@ data class Article(
             categoryName = this.category.name,
             subcategoryId = this.subcategory?.id,
             subcategoryName = this.subcategory?.name,
+            supplierId = this.supplier?.id,
+            supplierName = this.supplier?.name,
             mugVariants = if (this.articleType == ArticleType.MUG) this.mugVariants.map { it.toDto() } else null,
             shirtVariants = if (this.articleType == ArticleType.SHIRT) this.shirtVariants.map { it.toDto() } else null,
             pillowVariants = if (this.articleType == ArticleType.PILLOW) this.pillowVariants.map { it.toDto() } else null,

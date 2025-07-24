@@ -16,6 +16,7 @@ interface ArticleRepository : JpaRepository<Article, Long> {
         SELECT a FROM Article a 
         LEFT JOIN FETCH a.category 
         LEFT JOIN FETCH a.subcategory 
+        LEFT JOIN FETCH a.supplier 
         WHERE (:articleType IS NULL OR a.articleType = :articleType)
         AND (:categoryId IS NULL OR a.category.id = :categoryId)
         AND (:subcategoryId IS NULL OR a.subcategory.id = :subcategoryId)
@@ -35,6 +36,7 @@ interface ArticleRepository : JpaRepository<Article, Long> {
         SELECT a FROM Article a 
         LEFT JOIN FETCH a.category 
         LEFT JOIN FETCH a.subcategory 
+        LEFT JOIN FETCH a.supplier 
         WHERE a.id = :id
     """,
     )

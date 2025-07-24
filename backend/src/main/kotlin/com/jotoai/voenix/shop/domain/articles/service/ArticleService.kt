@@ -20,6 +20,7 @@ import com.jotoai.voenix.shop.domain.articles.repository.ArticleMugVariantReposi
 import com.jotoai.voenix.shop.domain.articles.repository.ArticlePillowVariantRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleShirtVariantRepository
+import com.jotoai.voenix.shop.domain.suppliers.repository.SupplierRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -33,6 +34,7 @@ class ArticleService(
     private val articlePillowVariantRepository: ArticlePillowVariantRepository,
     private val articleCategoryRepository: ArticleCategoryRepository,
     private val articleSubCategoryRepository: ArticleSubCategoryRepository,
+    private val supplierRepository: SupplierRepository,
     private val mugDetailsService: MugDetailsService,
     private val shirtDetailsService: ShirtDetailsService,
     private val pillowDetailsService: PillowDetailsService,
@@ -91,6 +93,14 @@ class ArticleService(
                     .orElseThrow { ResourceNotFoundException("Subcategory not found with id: $it") }
             }
 
+        // Validate supplier exists if provided
+        val supplier =
+            request.supplierId?.let { supplierId ->
+                supplierRepository
+                    .findById(supplierId)
+                    .orElseThrow { ResourceNotFoundException("Supplier not found with id: $supplierId") }
+            }
+
         // Validate type-specific details are provided
         validateTypeSpecificDetails(request.articleType, request)
 
@@ -106,6 +116,7 @@ class ArticleService(
                 articleType = request.articleType,
                 category = category,
                 subcategory = subcategory,
+                supplier = supplier,
             )
 
         val savedArticle = articleRepository.save(article)
@@ -169,6 +180,14 @@ class ArticleService(
                     .orElseThrow { ResourceNotFoundException("Subcategory not found with id: $it") }
             }
 
+        // Validate supplier exists if provided
+        val supplier =
+            request.supplierId?.let { supplierId ->
+                supplierRepository
+                    .findById(supplierId)
+                    .orElseThrow { ResourceNotFoundException("Supplier not found with id: $supplierId") }
+            }
+
         // Update article
         article.apply {
             name = request.name
@@ -179,6 +198,7 @@ class ArticleService(
             active = request.active
             this.category = category
             this.subcategory = subcategory
+            this.supplier = supplier
         }
 
         val updatedArticle = articleRepository.save(article)
@@ -335,6 +355,8 @@ class ArticleService(
             categoryName = article.category.name,
             subcategoryId = article.subcategory?.id,
             subcategoryName = article.subcategory?.name,
+            supplierId = article.supplier?.id,
+            supplierName = article.supplier?.name,
             mugVariants = if (article.articleType == ArticleType.MUG) article.mugVariants.map { it.toDto() } else null,
             shirtVariants = if (article.articleType == ArticleType.SHIRT) article.shirtVariants.map { it.toDto() } else null,
             pillowVariants = if (article.articleType == ArticleType.PILLOW) article.pillowVariants.map { it.toDto() } else null,
