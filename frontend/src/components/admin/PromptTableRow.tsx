@@ -34,15 +34,15 @@ export default function PromptTableRow({ prompt, onEdit, onDelete, onTest }: Pro
           {prompt.promptText || '-'}
         </span>
       </TableCell>
-      <TableCell>
-        <div className="flex gap-2">
-          <Button variant="ghost" size="sm" onClick={() => onEdit(prompt)}>
+      <TableCell className="text-right">
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={() => onEdit(prompt)}>
             <Edit className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => onTest(prompt.id)}>
+          <Button variant="outline" size="sm" onClick={() => onTest(prompt.id)}>
             <Play className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => onDelete(prompt.id)}>
+          <Button variant="outline" size="sm" onClick={() => onDelete(prompt.id)}>
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>

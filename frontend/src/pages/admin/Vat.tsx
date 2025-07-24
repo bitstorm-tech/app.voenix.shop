@@ -1,7 +1,8 @@
-import { Card } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useDeleteVat, useVats } from '@/hooks/queries/useVat';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -71,53 +72,51 @@ export default function Vat() {
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">VAT Management</h1>
-        <button onClick={handleNewVat} className="flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
-          <Plus className="h-4 w-4" />
+        <Button onClick={handleNewVat}>
+          <Plus className="mr-2 h-4 w-4" />
           Add New VAT
-        </button>
+        </Button>
       </div>
 
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Percent</th>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Description</th>
-                <th className="px-6 py-3 text-left text-xs font-medium tracking-wider text-gray-500 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y">
-              {vats.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
-                    No VAT entries found
-                  </td>
-                </tr>
-              ) : (
-                vats.map((vat) => (
-                  <tr key={vat.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{vat.name}</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{vat.percent}%</td>
-                    <td className="px-6 py-4 text-sm text-gray-500">{vat.description || '-'}</td>
-                    <td className="px-6 py-4 text-sm">
-                      <div className="flex gap-2">
-                        <button onClick={() => handleEdit(vat.id)} className="rounded p-1 text-blue-600 hover:bg-blue-100" title="Edit VAT">
-                          <Pencil className="h-4 w-4" />
-                        </button>
-                        <button onClick={() => handleDelete(vat.id)} className="rounded p-1 text-red-600 hover:bg-red-100" title="Delete VAT">
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+      <div className="rounded-md border">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Percent</TableHead>
+              <TableHead>Description</TableHead>
+              <TableHead className="text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {vats.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center text-gray-500">
+                  No VAT entries found
+                </TableCell>
+              </TableRow>
+            ) : (
+              vats.map((vat) => (
+                <TableRow key={vat.id}>
+                  <TableCell className="font-medium">{vat.name}</TableCell>
+                  <TableCell>{vat.percent}%</TableCell>
+                  <TableCell>{vat.description || '-'}</TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(vat.id)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDelete(vat.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
       <ConfirmationDialog
         isOpen={isDeleteDialogOpen}

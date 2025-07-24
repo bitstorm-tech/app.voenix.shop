@@ -191,10 +191,10 @@ export default function ArticleCategories() {
                   </div>
                 </AccordionTrigger>
                 <div className="flex items-center gap-2 py-4">
-                  <Button variant="ghost" size="sm" onClick={() => handleEditCategory(category)}>
+                  <Button variant="outline" size="sm" onClick={() => handleEditCategory(category)}>
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDeleteCategory(category)} disabled={category.subcategories.length > 0}>
+                  <Button variant="outline" size="sm" onClick={() => handleDeleteCategory(category)} disabled={category.subcategories.length > 0}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
@@ -228,17 +228,19 @@ export default function ArticleCategories() {
                             <TableCell>{subcategory.articlesCount || 0}</TableCell>
                             <TableCell>{subcategory.createdAt ? new Date(subcategory.createdAt).toLocaleDateString() : '-'}</TableCell>
                             <TableCell className="text-right">
-                              <Button variant="ghost" size="sm" onClick={() => handleEditSubcategory(subcategory)} className="mr-1">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteSubcategory(subcategory)}
-                                disabled={!!subcategory.articlesCount && subcategory.articlesCount > 0}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                              <div className="flex justify-end gap-2">
+                                <Button variant="outline" size="sm" onClick={() => handleEditSubcategory(subcategory)}>
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleDeleteSubcategory(subcategory)}
+                                  disabled={!!subcategory.articlesCount && subcategory.articlesCount > 0}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         ))}

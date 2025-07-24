@@ -20,7 +20,7 @@ export default function PromptTable({ prompts, onEdit, onDelete, onTest }: Promp
             <TableHead>Name</TableHead>
             <TableHead>Category</TableHead>
             <TableHead>Prompt</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

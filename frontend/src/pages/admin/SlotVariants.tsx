@@ -151,12 +151,14 @@ export default function SlotVariants() {
                   </TableCell>
                   <TableCell>{slot.createdAt ? new Date(slot.createdAt).toLocaleDateString() : '-'}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => navigate(`/admin/slot-variants/${slot.id}/edit`)} className="mr-2">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(slot.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="sm" onClick={() => navigate(`/admin/slot-variants/${slot.id}/edit`)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDelete(slot.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))
