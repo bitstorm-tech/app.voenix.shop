@@ -14,6 +14,8 @@ import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
 import type { PromptSlotType, PromptSlotVariant } from '@/types/promptSlotVariant';
+import type { CreateValueAddedTaxRequest, UpdateValueAddedTaxRequest, ValueAddedTax } from '@/types/vat';
+export type { CreateValueAddedTaxRequest, UpdateValueAddedTaxRequest } from '@/types/vat';
 
 export class ApiError extends Error {
   constructor(
@@ -470,6 +472,15 @@ export const adminUsersApi = {
   create: (data: CreateUserRequest) => api.post<UserDto>('/admin/users', data),
   update: (id: number, data: UpdateUserRequest) => api.put<UserDto>(`/admin/users/${id}`, data),
   delete: (id: number) => api.delete<void>(`/admin/users/${id}`),
+};
+
+// VAT API endpoints
+export const vatApi = {
+  getAll: () => api.get<ValueAddedTax[]>('/admin/vat'),
+  getById: (id: number) => api.get<ValueAddedTax>(`/admin/vat/${id}`),
+  create: (data: CreateValueAddedTaxRequest) => api.post<ValueAddedTax>('/admin/vat', data),
+  update: (id: number, data: UpdateValueAddedTaxRequest) => api.put<ValueAddedTax>(`/admin/vat/${id}`, data),
+  delete: (id: number) => api.delete<void>(`/admin/vat/${id}`),
 };
 
 // Service API endpoints

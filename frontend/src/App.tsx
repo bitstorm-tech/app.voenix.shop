@@ -11,6 +11,7 @@ import NewOrEditArticleSubCategory from '@/pages/admin/NewOrEditArticleSubCatego
 import NewOrEditPrompt from '@/pages/admin/NewOrEditPrompt';
 import NewOrEditPromptSlotType from '@/pages/admin/NewOrEditPromptSlotType';
 import NewOrEditPromptSlotVariant from '@/pages/admin/NewOrEditPromptSlotVariant';
+import NewOrEditVat from '@/pages/admin/NewOrEditVat';
 import OpenOrders from '@/pages/admin/OpenOrders';
 import PromptCategories from '@/pages/admin/PromptCategories';
 import Prompts from '@/pages/admin/Prompts';
@@ -18,6 +19,7 @@ import PromptSlotTypes from '@/pages/admin/PromptSlotTypes';
 import PromptTester from '@/pages/admin/PromptTester';
 import SlotVariants from '@/pages/admin/SlotVariants';
 import Suppliers from '@/pages/admin/Suppliers';
+import Vat from '@/pages/admin/Vat';
 import CartPage from '@/pages/Cart';
 import CheckoutPage from '@/pages/Checkout';
 import Editor from '@/pages/Editor';
@@ -62,6 +64,9 @@ export default function App() {
               <Route path="orders/completed" element={<CompletedOrders />} />
               <Route path="suppliers" element={<Suppliers />} />
               <Route path="logistics" element={<Logistics />} />
+              <Route path="vat" element={<Vat />} />
+              <Route path="vat/new" element={<NewOrEditVat />} />
+              <Route path="vat/:id/edit" element={<NewOrEditVat />} />
               <Route path="prompt-tester" element={<PromptTester />} />
             </Route>
           </Route>
