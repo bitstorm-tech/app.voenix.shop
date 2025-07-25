@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
+import { CurrencyInput } from '@/components/ui/CurrencyInput';
 import { FieldLabel } from '@/components/ui/FieldLabel';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
@@ -308,10 +309,6 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
     }
   };
 
-  const formatCurrency = (value: number) => {
-    return value.toFixed(2);
-  };
-
   return (
     <div className="space-y-6">
       {/* Purchase Section */}
@@ -376,26 +373,19 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
           {/* Purchase Price */}
           <div className="grid grid-cols-4 items-center gap-4">
             <FieldLabel optional>Purchase Price</FieldLabel>
-            <Input
-              type="number"
-              value={formatCurrency(data.purchasePriceNet)}
-              onChange={(e) => handlePurchasePriceChange('net', parseFloat(e.target.value) || 0)}
+            <CurrencyInput
+              value={data.purchasePriceNet}
+              onChange={(value) => handlePurchasePriceChange('net', value)}
               disabled={data.purchaseCalculationMode === 'GROSS'}
-              step="0.01"
-              min="0"
+              min={0}
             />
-            <Input type="number" value={formatCurrency(data.purchasePriceTax)} disabled step="0.01" min="0" />
-            <div className="flex items-center space-x-2">
-              <Input
-                type="number"
-                value={formatCurrency(data.purchasePriceGross)}
-                onChange={(e) => handlePurchasePriceChange('gross', parseFloat(e.target.value) || 0)}
-                disabled={data.purchaseCalculationMode === 'NET'}
-                step="0.01"
-                min="0"
-              />
-              <span className="text-muted-foreground text-sm">EUR</span>
-            </div>
+            <CurrencyInput value={data.purchasePriceTax} onChange={() => {}} disabled min={0} />
+            <CurrencyInput
+              value={data.purchasePriceGross}
+              onChange={(value) => handlePurchasePriceChange('gross', value)}
+              disabled={data.purchaseCalculationMode === 'NET'}
+              min={0}
+            />
           </div>
 
           {/* Purchase Cost */}
@@ -414,26 +404,19 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
                 Purchase Cost
               </FieldLabel>
             </div>
-            <Input
-              type="number"
-              value={formatCurrency(data.purchaseCostNet)}
-              onChange={(e) => handlePurchaseCostChange('net', parseFloat(e.target.value) || 0)}
+            <CurrencyInput
+              value={data.purchaseCostNet}
+              onChange={(value) => handlePurchaseCostChange('net', value)}
               disabled={data.purchaseCalculationMode === 'GROSS' || purchaseActiveRow !== 'cost'}
-              step="0.01"
-              min="0"
+              min={0}
             />
-            <Input type="number" value={formatCurrency(data.purchaseCostTax)} disabled step="0.01" min="0" />
-            <div className="flex items-center space-x-2">
-              <Input
-                type="number"
-                value={formatCurrency(data.purchaseCostGross)}
-                onChange={(e) => handlePurchaseCostChange('gross', parseFloat(e.target.value) || 0)}
-                disabled={data.purchaseCalculationMode === 'NET' || purchaseActiveRow !== 'cost'}
-                step="0.01"
-                min="0"
-              />
-              <span className="text-muted-foreground text-sm">EUR</span>
-            </div>
+            <CurrencyInput value={data.purchaseCostTax} onChange={() => {}} disabled min={0} />
+            <CurrencyInput
+              value={data.purchaseCostGross}
+              onChange={(value) => handlePurchaseCostChange('gross', value)}
+              disabled={data.purchaseCalculationMode === 'NET' || purchaseActiveRow !== 'cost'}
+              min={0}
+            />
           </div>
 
           {/* Purchase Cost % */}
@@ -452,31 +435,26 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
                 Purchase Cost %
               </FieldLabel>
             </div>
-            <Input
-              type="number"
-              value={formatCurrency(data.purchaseCostPercent)}
-              onChange={(e) => handlePurchaseCostPercentChange(parseFloat(e.target.value) || 0)}
+            <CurrencyInput
+              value={data.purchaseCostPercent}
+              onChange={handlePurchaseCostPercentChange}
               disabled={purchaseActiveRow !== 'costPercent'}
-              step="0.01"
-              min="0"
-              max="100"
+              min={0}
+              max={100}
+              currency="%"
             />
             <div></div>
             <div className="flex items-center space-x-2">
-              <Input type="number" value={formatCurrency(data.purchaseCostPercent)} disabled step="0.01" min="0" />
-              <span className="text-muted-foreground text-sm">%</span>
+              <CurrencyInput value={data.purchaseCostPercent} onChange={() => {}} disabled min={0} currency="%" />
             </div>
           </div>
 
           {/* Purchase Total */}
           <div className="grid grid-cols-4 items-center gap-4 font-semibold">
             <FieldLabel>Purchase Total</FieldLabel>
-            <Input type="number" value={formatCurrency(data.purchaseTotalNet)} disabled step="0.01" />
-            <Input type="number" value={formatCurrency(data.purchaseTotalTax)} disabled step="0.01" />
-            <div className="flex items-center space-x-2">
-              <Input type="number" value={formatCurrency(data.purchaseTotalGross)} disabled step="0.01" />
-              <span className="text-muted-foreground text-sm">EUR</span>
-            </div>
+            <CurrencyInput value={data.purchaseTotalNet} onChange={() => {}} disabled />
+            <CurrencyInput value={data.purchaseTotalTax} onChange={() => {}} disabled />
+            <CurrencyInput value={data.purchaseTotalGross} onChange={() => {}} disabled />
           </div>
 
           {/* Price corresponds checkbox */}
@@ -576,24 +554,17 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
                 Margin
               </FieldLabel>
             </div>
-            <Input
-              type="number"
-              value={formatCurrency(data.marginNet)}
-              onChange={(e) => handleMarginChange('net', parseFloat(e.target.value) || 0)}
+            <CurrencyInput
+              value={data.marginNet}
+              onChange={(value) => handleMarginChange('net', value)}
               disabled={data.salesCalculationMode === 'GROSS' || salesActiveRow !== 'margin'}
-              step="0.01"
             />
-            <Input type="number" value={formatCurrency(data.marginTax)} disabled step="0.01" />
-            <div className="flex items-center space-x-2">
-              <Input
-                type="number"
-                value={formatCurrency(data.marginGross)}
-                onChange={(e) => handleMarginChange('gross', parseFloat(e.target.value) || 0)}
-                disabled={data.salesCalculationMode === 'NET' || salesActiveRow !== 'margin'}
-                step="0.01"
-              />
-              <span className="text-muted-foreground text-sm">EUR</span>
-            </div>
+            <CurrencyInput value={data.marginTax} onChange={() => {}} disabled />
+            <CurrencyInput
+              value={data.marginGross}
+              onChange={(value) => handleMarginChange('gross', value)}
+              disabled={data.salesCalculationMode === 'NET' || salesActiveRow !== 'margin'}
+            />
           </div>
 
           {/* Margin % */}
@@ -612,18 +583,16 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
                 Margin %
               </FieldLabel>
             </div>
-            <Input
-              type="number"
-              value={formatCurrency(data.marginPercent)}
-              onChange={(e) => setData((prev) => ({ ...prev, marginPercent: parseFloat(e.target.value) || 0 }))}
+            <CurrencyInput
+              value={data.marginPercent}
+              onChange={(value) => setData((prev) => ({ ...prev, marginPercent: value }))}
               disabled={salesActiveRow !== 'marginPercent'}
-              step="0.01"
-              min="0"
+              min={0}
+              currency="%"
             />
             <div></div>
             <div className="flex items-center space-x-2">
-              <Input type="number" value={formatCurrency(data.marginPercent)} disabled step="0.01" />
-              <span className="text-muted-foreground text-sm">%</span>
+              <CurrencyInput value={data.marginPercent} onChange={() => {}} disabled min={0} currency="%" />
             </div>
           </div>
 
@@ -641,24 +610,17 @@ export default function CostCalculationTab({ costCalculation, onChange }: CostCa
               />
               <FieldLabel htmlFor="salesTotalRadio">Sales Total</FieldLabel>
             </div>
-            <Input
-              type="number"
-              value={formatCurrency(data.salesTotalNet)}
-              onChange={(e) => handleSalesTotalChange('net', parseFloat(e.target.value) || 0)}
+            <CurrencyInput
+              value={data.salesTotalNet}
+              onChange={(value) => handleSalesTotalChange('net', value)}
               disabled={data.salesCalculationMode === 'GROSS' || salesActiveRow !== 'total'}
-              step="0.01"
             />
-            <Input type="number" value={formatCurrency(data.salesTotalTax)} disabled step="0.01" />
-            <div className="flex items-center space-x-2">
-              <Input
-                type="number"
-                value={formatCurrency(data.salesTotalGross)}
-                onChange={(e) => handleSalesTotalChange('gross', parseFloat(e.target.value) || 0)}
-                disabled={data.salesCalculationMode === 'NET' || salesActiveRow !== 'total'}
-                step="0.01"
-              />
-              <span className="text-muted-foreground text-sm">EUR</span>
-            </div>
+            <CurrencyInput value={data.salesTotalTax} onChange={() => {}} disabled />
+            <CurrencyInput
+              value={data.salesTotalGross}
+              onChange={(value) => handleSalesTotalChange('gross', value)}
+              disabled={data.salesCalculationMode === 'NET' || salesActiveRow !== 'total'}
+            />
           </div>
 
           {/* Price corresponds checkbox */}

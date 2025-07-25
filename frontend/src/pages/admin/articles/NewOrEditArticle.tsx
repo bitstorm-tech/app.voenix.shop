@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { CurrencyInput } from '@/components/ui/CurrencyInput';
 import { FieldLabel } from '@/components/ui/FieldLabel';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
@@ -315,7 +316,7 @@ export default function NewOrEditArticle() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-2">
-                <Switch id="active" checked={article.active} onCheckedChange={(checked) => setArticle({ ...article, active: checked })} />
+                <Switch id="active" checked={article.active} onCheckedChange={(checked: boolean) => setArticle({ ...article, active: checked })} />
                 <FieldLabel htmlFor="active">Active</FieldLabel>
               </div>
 
@@ -499,16 +500,15 @@ export default function NewOrEditArticle() {
 
                 <div className="space-y-2">
                   <FieldLabel htmlFor="price" required>
-                    Price ($)
+                    Price
                   </FieldLabel>
-                  <Input
+                  <CurrencyInput
                     id="price"
-                    type="number"
-                    value={article.price ? (article.price / 100).toFixed(2) : ''}
-                    onChange={(e) => setArticle({ ...article, price: Math.round(Number(e.target.value) * 100) })}
+                    value={article.price ? article.price / 100 : 0}
+                    onChange={(value) => setArticle({ ...article, price: Math.round(value * 100) })}
                     placeholder="0.00"
-                    min="0"
-                    step="0.01"
+                    min={0}
+                    currency="$"
                   />
                 </div>
               </div>
