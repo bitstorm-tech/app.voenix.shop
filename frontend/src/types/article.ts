@@ -8,7 +8,6 @@ export interface ArticleMugVariant {
   insideColorCode: string;
   outsideColorCode: string;
   name: string;
-  sku?: string;
   exampleImageUrl?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -19,7 +18,6 @@ export interface ArticleShirtVariant {
   articleId: number;
   color: string;
   size: string;
-  sku?: string;
   exampleImageUrl?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -30,7 +28,6 @@ export interface ArticlePillowVariant {
   articleId: number;
   color: string;
   material: string;
-  sku?: string;
   exampleImageUrl?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -121,21 +118,18 @@ export interface CreateArticleMugVariantRequest {
   insideColorCode: string;
   outsideColorCode: string;
   name: string;
-  sku?: string;
   exampleImageFilename?: string;
 }
 
 export interface CreateArticleShirtVariantRequest {
   color: string;
   size: string;
-  sku?: string;
   exampleImageFilename?: string;
 }
 
 export interface CreateArticlePillowVariantRequest {
   color: string;
   material: string;
-  sku?: string;
   exampleImageFilename?: string;
 }
 

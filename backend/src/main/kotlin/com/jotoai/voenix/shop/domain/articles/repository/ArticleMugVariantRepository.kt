@@ -25,11 +25,4 @@ interface ArticleMugVariantRepository : JpaRepository<ArticleMugVariant, Long> {
     ): List<ArticleMugVariant>
 
     fun deleteByArticleId(articleId: Long)
-
-    fun existsBySku(sku: String): Boolean
-
-    fun existsBySkuAndIdNot(
-        sku: String,
-        id: Long,
-    ): Boolean
 }

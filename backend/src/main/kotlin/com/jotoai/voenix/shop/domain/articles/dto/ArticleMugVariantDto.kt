@@ -8,7 +8,6 @@ data class ArticleMugVariantDto(
     val insideColorCode: String,
     val outsideColorCode: String,
     val name: String,
-    val sku: String?,
     val exampleImageUrl: String?,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,

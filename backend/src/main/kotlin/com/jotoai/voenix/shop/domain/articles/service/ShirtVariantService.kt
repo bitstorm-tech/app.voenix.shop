@@ -24,19 +24,11 @@ class ShirtVariantService(
                 .findById(articleId)
                 .orElseThrow { ResourceNotFoundException("Article not found with id: $articleId") }
 
-        // Validate SKU uniqueness if provided
-        request.sku?.let {
-            if (shirtVariantRepository.existsBySku(it)) {
-                throw IllegalArgumentException("SKU already exists: $it")
-            }
-        }
-
         val variant =
             ArticleShirtVariant(
                 article = article,
                 color = request.color,
                 size = request.size,
-                sku = request.sku,
                 exampleImageFilename = request.exampleImageFilename,
             )
 
@@ -53,17 +45,9 @@ class ShirtVariantService(
                 .findById(variantId)
                 .orElseThrow { ResourceNotFoundException("Shirt variant not found with id: $variantId") }
 
-        // Validate SKU uniqueness if provided
-        request.sku?.let {
-            if (shirtVariantRepository.existsBySkuAndIdNot(it, variantId)) {
-                throw IllegalArgumentException("SKU already exists: $it")
-            }
-        }
-
         variant.apply {
             color = request.color
             size = request.size
-            sku = request.sku
             exampleImageFilename = request.exampleImageFilename
         }
 

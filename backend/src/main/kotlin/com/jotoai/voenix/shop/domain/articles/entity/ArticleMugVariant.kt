@@ -29,8 +29,6 @@ data class ArticleMugVariant(
     var outsideColorCode: String = "#ffffff",
     @Column(nullable = false)
     var name: String,
-    @Column(unique = true)
-    var sku: String? = null,
     @Column(name = "example_image_filename", length = 500)
     var exampleImageFilename: String? = null,
     @CreationTimestamp
@@ -47,7 +45,6 @@ data class ArticleMugVariant(
             insideColorCode = this.insideColorCode,
             outsideColorCode = this.outsideColorCode,
             name = this.name,
-            sku = this.sku,
             exampleImageUrl = this.exampleImageFilename?.let { "/images/$it" },
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,

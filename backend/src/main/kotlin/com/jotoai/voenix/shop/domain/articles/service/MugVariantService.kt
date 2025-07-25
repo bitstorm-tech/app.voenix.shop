@@ -29,7 +29,6 @@ class MugVariantService(
                 insideColorCode = request.insideColorCode,
                 outsideColorCode = request.outsideColorCode,
                 name = request.name,
-                sku = request.sku,
                 exampleImageFilename = request.exampleImageFilename,
             )
 
@@ -49,7 +48,6 @@ class MugVariantService(
             insideColorCode = request.insideColorCode
             outsideColorCode = request.outsideColorCode
             name = request.name
-            sku = request.sku
             exampleImageFilename = request.exampleImageFilename
         }
 

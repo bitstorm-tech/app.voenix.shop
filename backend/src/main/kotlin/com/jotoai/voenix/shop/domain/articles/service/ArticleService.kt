@@ -234,20 +234,12 @@ class ArticleService(
         article: Article,
         request: CreateArticleMugVariantRequest,
     ): ArticleMugVariant {
-        // Validate SKU uniqueness if provided
-        request.sku?.let {
-            if (articleMugVariantRepository.existsBySku(it)) {
-                throw IllegalArgumentException("SKU already exists: $it")
-            }
-        }
-
         val variant =
             ArticleMugVariant(
                 article = article,
                 insideColorCode = request.insideColorCode,
                 outsideColorCode = request.outsideColorCode,
                 name = request.name,
-                sku = request.sku,
                 exampleImageFilename = request.exampleImageFilename,
             )
 
@@ -258,19 +250,11 @@ class ArticleService(
         article: Article,
         request: CreateArticleShirtVariantRequest,
     ): ArticleShirtVariant {
-        // Validate SKU uniqueness if provided
-        request.sku?.let {
-            if (articleShirtVariantRepository.existsBySku(it)) {
-                throw IllegalArgumentException("SKU already exists: $it")
-            }
-        }
-
         val variant =
             ArticleShirtVariant(
                 article = article,
                 color = request.color,
                 size = request.size,
-                sku = request.sku,
                 exampleImageFilename = request.exampleImageFilename,
             )
 
@@ -281,19 +265,11 @@ class ArticleService(
         article: Article,
         request: CreateArticlePillowVariantRequest,
     ): ArticlePillowVariant {
-        // Validate SKU uniqueness if provided
-        request.sku?.let {
-            if (articlePillowVariantRepository.existsBySku(it)) {
-                throw IllegalArgumentException("SKU already exists: $it")
-            }
-        }
-
         val variant =
             ArticlePillowVariant(
                 article = article,
                 color = request.color,
                 material = request.material,
-                sku = request.sku,
                 exampleImageFilename = request.exampleImageFilename,
             )
 

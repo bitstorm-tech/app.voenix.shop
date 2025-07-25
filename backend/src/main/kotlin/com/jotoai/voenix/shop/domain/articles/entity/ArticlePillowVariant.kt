@@ -27,8 +27,6 @@ data class ArticlePillowVariant(
     var color: String,
     @Column(nullable = false)
     var material: String,
-    @Column(unique = true)
-    var sku: String? = null,
     @Column(name = "example_image_filename", length = 500)
     var exampleImageFilename: String? = null,
     @CreationTimestamp
@@ -44,7 +42,6 @@ data class ArticlePillowVariant(
             articleId = this.article.id!!,
             color = this.color,
             material = this.material,
-            sku = this.sku,
             exampleImageUrl = this.exampleImageFilename?.let { "/images/$it" },
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,

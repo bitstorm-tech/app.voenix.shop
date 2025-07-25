@@ -7,7 +7,6 @@ data class ArticleShirtVariantDto(
     val articleId: Long,
     val color: String,
     val size: String,
-    val sku: String?,
     val exampleImageUrl: String?,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,

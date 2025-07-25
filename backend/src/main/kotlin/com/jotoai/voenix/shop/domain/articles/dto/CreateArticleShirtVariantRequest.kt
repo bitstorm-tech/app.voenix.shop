@@ -7,6 +7,5 @@ data class CreateArticleShirtVariantRequest(
     val color: String,
     @field:NotBlank(message = "Size is required")
     val size: String,
-    val sku: String? = null,
     val exampleImageFilename: String? = null,
 )

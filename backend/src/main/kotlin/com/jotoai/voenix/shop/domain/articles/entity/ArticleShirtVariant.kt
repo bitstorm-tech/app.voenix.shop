@@ -27,8 +27,6 @@ data class ArticleShirtVariant(
     var color: String,
     @Column(nullable = false, length = 50)
     var size: String,
-    @Column(unique = true)
-    var sku: String? = null,
     @Column(name = "example_image_filename", length = 500)
     var exampleImageFilename: String? = null,
     @CreationTimestamp
@@ -44,7 +42,6 @@ data class ArticleShirtVariant(
             articleId = this.article.id!!,
             color = this.color,
             size = this.size,
-            sku = this.sku,
             exampleImageUrl = this.exampleImageFilename?.let { "/images/$it" },
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,

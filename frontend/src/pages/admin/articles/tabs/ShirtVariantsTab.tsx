@@ -31,7 +31,6 @@ export default function ShirtVariantsTab({
   const [newVariant, setNewVariant] = useState<CreateArticleShirtVariantRequest>({
     color: '',
     size: 'M',
-    sku: '',
     exampleImageFilename: '',
   });
 
@@ -58,7 +57,6 @@ export default function ShirtVariantsTab({
         setNewVariant({
           color: '',
           size: 'M',
-          sku: '',
           exampleImageFilename: '',
         });
         toast.success('Variant added (will be saved with article)');
@@ -138,11 +136,6 @@ export default function ShirtVariantsTab({
             </div>
 
             <div className="space-y-2">
-              <Label>SKU</Label>
-              <Input value={newVariant.sku} onChange={(e) => setNewVariant({ ...newVariant, sku: e.target.value })} placeholder="Optional" />
-            </div>
-
-            <div className="space-y-2">
               <Label>Example Image</Label>
               <Input
                 value={newVariant.exampleImageFilename}
@@ -168,7 +161,7 @@ export default function ShirtVariantsTab({
                 <TableRow>
                   <TableHead>Color</TableHead>
                   <TableHead>Size</TableHead>
-                  <TableHead>SKU</TableHead>
+
                   <TableHead>Example Image</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -178,7 +171,7 @@ export default function ShirtVariantsTab({
                   <TableRow key={variant.id}>
                     <TableCell>{variant.color}</TableCell>
                     <TableCell>{variant.size}</TableCell>
-                    <TableCell>{variant.sku || '-'}</TableCell>
+
                     <TableCell>{variant.exampleImageUrl ? 'Yes' : '-'}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => handleDeleteVariant(variant.id)}>
@@ -200,7 +193,7 @@ export default function ShirtVariantsTab({
                 <TableRow>
                   <TableHead>Color</TableHead>
                   <TableHead>Size</TableHead>
-                  <TableHead>SKU</TableHead>
+
                   <TableHead>Example Image</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -210,7 +203,7 @@ export default function ShirtVariantsTab({
                   <TableRow key={index}>
                     <TableCell>{variant.color}</TableCell>
                     <TableCell>{variant.size}</TableCell>
-                    <TableCell>{variant.sku || '-'}</TableCell>
+
                     <TableCell>{variant.exampleImageFilename || '-'}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => handleDeleteTemporaryVariant(index)}>

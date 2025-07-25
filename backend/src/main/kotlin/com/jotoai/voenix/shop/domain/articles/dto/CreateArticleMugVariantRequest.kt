@@ -12,6 +12,5 @@ data class CreateArticleMugVariantRequest(
     val outsideColorCode: String = "#ffffff",
     @field:NotBlank(message = "Name is required")
     val name: String,
-    val sku: String? = null,
     val exampleImageFilename: String? = null,
 )

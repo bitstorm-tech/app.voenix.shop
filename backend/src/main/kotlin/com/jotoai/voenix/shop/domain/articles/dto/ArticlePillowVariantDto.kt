@@ -7,7 +7,6 @@ data class ArticlePillowVariantDto(
     val articleId: Long,
     val color: String,
     val material: String,
-    val sku: String?,
     val exampleImageUrl: String?,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,

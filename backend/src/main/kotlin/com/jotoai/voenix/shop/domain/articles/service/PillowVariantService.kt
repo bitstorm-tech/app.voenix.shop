@@ -24,19 +24,11 @@ class PillowVariantService(
                 .findById(articleId)
                 .orElseThrow { ResourceNotFoundException("Article not found with id: $articleId") }
 
-        // Validate SKU uniqueness if provided
-        request.sku?.let {
-            if (pillowVariantRepository.existsBySku(it)) {
-                throw IllegalArgumentException("SKU already exists: $it")
-            }
-        }
-
         val variant =
             ArticlePillowVariant(
                 article = article,
                 color = request.color,
                 material = request.material,
-                sku = request.sku,
                 exampleImageFilename = request.exampleImageFilename,
             )
 
@@ -53,17 +45,9 @@ class PillowVariantService(
                 .findById(variantId)
                 .orElseThrow { ResourceNotFoundException("Pillow variant not found with id: $variantId") }
 
-        // Validate SKU uniqueness if provided
-        request.sku?.let {
-            if (pillowVariantRepository.existsBySkuAndIdNot(it, variantId)) {
-                throw IllegalArgumentException("SKU already exists: $it")
-            }
-        }
-
         variant.apply {
             color = request.color
             material = request.material
-            sku = request.sku
             exampleImageFilename = request.exampleImageFilename
         }
 

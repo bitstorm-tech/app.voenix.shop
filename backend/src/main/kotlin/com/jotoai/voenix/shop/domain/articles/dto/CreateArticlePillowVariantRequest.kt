@@ -7,6 +7,5 @@ data class CreateArticlePillowVariantRequest(
     val color: String,
     @field:NotBlank(message = "Material is required")
     val material: String,
-    val sku: String? = null,
     val exampleImageFilename: String? = null,
 )

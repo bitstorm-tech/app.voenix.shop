@@ -28,7 +28,6 @@ export default function PillowVariantsTab({
   const [newVariant, setNewVariant] = useState<CreateArticlePillowVariantRequest>({
     color: '',
     material: '',
-    sku: '',
     exampleImageFilename: '',
   });
 
@@ -55,7 +54,6 @@ export default function PillowVariantsTab({
         setNewVariant({
           color: '',
           material: '',
-          sku: '',
           exampleImageFilename: '',
         });
         toast.success('Variant added (will be saved with article)');
@@ -132,11 +130,6 @@ export default function PillowVariantsTab({
             </div>
 
             <div className="space-y-2">
-              <Label>SKU</Label>
-              <Input value={newVariant.sku} onChange={(e) => setNewVariant({ ...newVariant, sku: e.target.value })} placeholder="Optional" />
-            </div>
-
-            <div className="space-y-2">
               <Label>Example Image</Label>
               <Input
                 value={newVariant.exampleImageFilename}
@@ -162,7 +155,7 @@ export default function PillowVariantsTab({
                 <TableRow>
                   <TableHead>Color</TableHead>
                   <TableHead>Material</TableHead>
-                  <TableHead>SKU</TableHead>
+
                   <TableHead>Example Image</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -172,7 +165,7 @@ export default function PillowVariantsTab({
                   <TableRow key={variant.id}>
                     <TableCell>{variant.color}</TableCell>
                     <TableCell>{variant.material}</TableCell>
-                    <TableCell>{variant.sku || '-'}</TableCell>
+
                     <TableCell>{variant.exampleImageUrl ? 'Yes' : '-'}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => handleDeleteVariant(variant.id)}>
@@ -194,7 +187,7 @@ export default function PillowVariantsTab({
                 <TableRow>
                   <TableHead>Color</TableHead>
                   <TableHead>Material</TableHead>
-                  <TableHead>SKU</TableHead>
+
                   <TableHead>Example Image</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -204,7 +197,7 @@ export default function PillowVariantsTab({
                   <TableRow key={index}>
                     <TableCell>{variant.color}</TableCell>
                     <TableCell>{variant.material}</TableCell>
-                    <TableCell>{variant.sku || '-'}</TableCell>
+
                     <TableCell>{variant.exampleImageFilename || '-'}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => handleDeleteTemporaryVariant(index)}>

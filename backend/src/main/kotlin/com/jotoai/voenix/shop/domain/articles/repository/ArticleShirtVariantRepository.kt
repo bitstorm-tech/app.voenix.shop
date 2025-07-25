@@ -9,11 +9,4 @@ interface ArticleShirtVariantRepository : JpaRepository<ArticleShirtVariant, Lon
     fun findByArticleId(articleId: Long): List<ArticleShirtVariant>
 
     fun deleteByArticleId(articleId: Long)
-
-    fun existsBySku(sku: String): Boolean
-
-    fun existsBySkuAndIdNot(
-        sku: String,
-        id: Long,
-    ): Boolean
 }

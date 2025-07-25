@@ -30,7 +30,6 @@ export default function MugVariantsTab({
     insideColorCode: '#ffffff',
     outsideColorCode: '#ffffff',
     name: '',
-    sku: '',
     exampleImageFilename: '',
   });
 
@@ -56,7 +55,6 @@ export default function MugVariantsTab({
           insideColorCode: '#ffffff',
           outsideColorCode: '#ffffff',
           name: '',
-          sku: '',
           exampleImageFilename: '',
         });
         toast.success('Variant added (will be saved with article)');
@@ -72,7 +70,6 @@ export default function MugVariantsTab({
         insideColorCode: '#ffffff',
         outsideColorCode: '#ffffff',
         name: '',
-        sku: '',
         exampleImageFilename: '',
       });
       toast.success('Variant added successfully');
@@ -135,11 +132,6 @@ export default function MugVariantsTab({
             </div>
 
             <div className="space-y-2">
-              <Label>SKU</Label>
-              <Input value={newVariant.sku} onChange={(e) => setNewVariant({ ...newVariant, sku: e.target.value })} placeholder="Optional" />
-            </div>
-
-            <div className="space-y-2">
               <Label>Example Image</Label>
               <Input
                 value={newVariant.exampleImageFilename}
@@ -166,7 +158,7 @@ export default function MugVariantsTab({
                   <TableHead>Name</TableHead>
                   <TableHead>Inside Color</TableHead>
                   <TableHead>Outside Color</TableHead>
-                  <TableHead>SKU</TableHead>
+
                   <TableHead>Example Image</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -187,7 +179,7 @@ export default function MugVariantsTab({
                         <span className="text-sm text-gray-600">{variant.outsideColorCode}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{variant.sku || '-'}</TableCell>
+
                     <TableCell>{variant.exampleImageUrl ? 'Yes' : '-'}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => handleDeleteVariant(variant.id)}>
@@ -210,7 +202,7 @@ export default function MugVariantsTab({
                   <TableHead>Name</TableHead>
                   <TableHead>Inside Color</TableHead>
                   <TableHead>Outside Color</TableHead>
-                  <TableHead>SKU</TableHead>
+
                   <TableHead>Example Image</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -231,7 +223,7 @@ export default function MugVariantsTab({
                         <span className="text-sm text-gray-600">{variant.outsideColorCode}</span>
                       </div>
                     </TableCell>
-                    <TableCell>{variant.sku || '-'}</TableCell>
+
                     <TableCell>{variant.exampleImageFilename || '-'}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => handleDeleteTemporaryVariant(index)}>

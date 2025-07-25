@@ -9,11 +9,4 @@ interface ArticlePillowVariantRepository : JpaRepository<ArticlePillowVariant, L
     fun findByArticleId(articleId: Long): List<ArticlePillowVariant>
 
     fun deleteByArticleId(articleId: Long)
-
-    fun existsBySku(sku: String): Boolean
-
-    fun existsBySkuAndIdNot(
-        sku: String,
-        id: Long,
-    ): Boolean
 }
