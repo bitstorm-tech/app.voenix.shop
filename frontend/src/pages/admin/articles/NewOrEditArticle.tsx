@@ -305,7 +305,7 @@ export default function NewOrEditArticle() {
           {article.articleType === 'SHIRT' && <TabsTrigger value="details">Materials & Sizes</TabsTrigger>}
           {article.articleType === 'PILLOW' && <TabsTrigger value="dimensions">Dimensions & Materials</TabsTrigger>}
           <TabsTrigger value="variants">Variants</TabsTrigger>
-          <TabsTrigger value="costCalculation">Cost Calculation</TabsTrigger>
+          <TabsTrigger value="costCalculation">Calculation</TabsTrigger>
         </TabsList>
 
         <TabsContent value="description">
