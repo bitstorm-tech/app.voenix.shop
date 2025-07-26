@@ -43,6 +43,10 @@ export default function MugVariantsTab({
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
   const [cropData, setCropData] = useState<PixelCrop | null>(null);
+  const [imageDimensions, setImageDimensions] = useState<{
+    natural: { width: number; height: number };
+    displayed: { width: number; height: number };
+  } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteVariantId, setDeleteVariantId] = useState<number | null>(null);
@@ -83,13 +87,18 @@ export default function MugVariantsTab({
     }
   };
 
-  const handleCropComplete = (crop: PixelCrop) => {
+  const handleCropComplete = (
+    crop: PixelCrop,
+    dimensions: { natural: { width: number; height: number }; displayed: { width: number; height: number } },
+  ) => {
     setCropData(crop);
+    setImageDimensions(dimensions);
   };
 
   const handleCropCancel = () => {
     setShowCropper(false);
     setCropData(null);
+    setImageDimensions(null);
     if (imagePreviewUrl) {
       URL.revokeObjectURL(imagePreviewUrl);
     }
@@ -108,6 +117,7 @@ export default function MugVariantsTab({
     setImagePreviewUrl(null);
     setImageFile(null);
     setCropData(null);
+    setImageDimensions(null);
     setNewVariant({ ...newVariant, exampleImageFilename: '' });
   };
 
@@ -165,11 +175,37 @@ export default function MugVariantsTab({
       // Upload image if present
       if (imageFile && response.id && cropData) {
         try {
+          // Calculate the scaling factor if we have image dimensions
+          let scaledCropData = cropData;
+          if (imageDimensions) {
+            // Calculate scale factors from stored dimensions
+            const scaleX = imageDimensions.natural.width / imageDimensions.displayed.width;
+            const scaleY = imageDimensions.natural.height / imageDimensions.displayed.height;
+
+            // Scale the crop coordinates to match the original image dimensions
+            scaledCropData = {
+              x: cropData.x * scaleX,
+              y: cropData.y * scaleY,
+              width: cropData.width * scaleX,
+              height: cropData.height * scaleY,
+              unit: 'px' as const,
+            };
+
+            console.log('Image crop scaling:', {
+              cropData,
+              scaledCropData,
+              natural: imageDimensions.natural,
+              displayed: imageDimensions.displayed,
+              scaleX,
+              scaleY,
+            });
+          }
+
           const imageResponse = await articlesApi.uploadMugVariantImage(response.id, imageFile, {
-            x: cropData.x,
-            y: cropData.y,
-            width: cropData.width,
-            height: cropData.height,
+            x: scaledCropData.x,
+            y: scaledCropData.y,
+            width: scaledCropData.width,
+            height: scaledCropData.height,
           });
           // Update the response with the data returned from the backend
           response.exampleImageFilename = imageResponse.exampleImageFilename;
@@ -190,6 +226,7 @@ export default function MugVariantsTab({
         isDefault: false,
       });
       handleRemoveImage();
+      setImageDimensions(null);
       toast.success('Variant added successfully');
     } catch (error) {
       console.error('Error adding variant:', error);

@@ -5,7 +5,11 @@ import { MugOption } from '../../types';
 
 interface ImageCropperProps {
   imageUrl: string;
-  onCropComplete: (pixelCrop: PixelCrop) => void;
+  onCropComplete: (
+    pixelCrop: PixelCrop,
+    imageDimensions: { natural: { width: number; height: number }; displayed: { width: number; height: number } },
+  ) => void;
+  onImageLoad?: (dimensions: { width: number; height: number }) => void;
   aspect?: number;
   mug?: MugOption;
   showGrid?: boolean;
@@ -19,6 +23,7 @@ interface ImageCropperProps {
 export default function ImageCropper({
   imageUrl,
   onCropComplete,
+  onImageLoad: onImageLoadProp,
   aspect,
   mug,
   showGrid = true,
@@ -28,13 +33,29 @@ export default function ImageCropper({
 }: ImageCropperProps) {
   const imgRef = useRef<HTMLImageElement>(null);
   const [crop, setCrop] = useState<Crop>();
+  const [imageDimensions, setImageDimensions] = useState<{
+    natural: { width: number; height: number };
+    displayed: { width: number; height: number };
+  } | null>(null);
 
   // Calculate aspect ratio from mug dimensions if provided
   const aspectRatio =
     mug?.print_template_width_mm && mug?.print_template_height_mm ? mug.print_template_width_mm / mug.print_template_height_mm : aspect;
 
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { naturalWidth: width, naturalHeight: height } = e.currentTarget;
+    const img = e.currentTarget;
+    const { naturalWidth: width, naturalHeight: height } = img;
+
+    // Store dimensions
+    setImageDimensions({
+      natural: { width, height },
+      displayed: { width: img.offsetWidth, height: img.offsetHeight },
+    });
+
+    // Pass the natural dimensions to the parent component
+    if (onImageLoadProp) {
+      onImageLoadProp({ width, height });
+    }
 
     // Calculate the maximum crop size that fits within the image
     // while maintaining the desired aspect ratio
@@ -101,7 +122,9 @@ export default function ImageCropper({
   };
 
   const handleCropComplete = (pixelCrop: PixelCrop) => {
-    onCropComplete(pixelCrop);
+    if (imageDimensions) {
+      onCropComplete(pixelCrop, imageDimensions);
+    }
   };
 
   return (

@@ -77,10 +77,16 @@ class ImageService(
 
             // Apply cropping if requested
             if (request.cropArea != null) {
-                logger.debug(
-                    "Applying crop - x: ${request.cropArea.x}, y: ${request.cropArea.y}, width: ${request.cropArea.width}, height: ${request.cropArea.height}",
+                // Get original image dimensions for logging
+                val originalImage = imageConversionService.getImageDimensions(imageBytes)
+                logger.info(
+                    "Applying crop - Original image: ${originalImage.width}x${originalImage.height}, " +
+                        "Crop area: x=${request.cropArea.x}, y=${request.cropArea.y}, " +
+                        "width=${request.cropArea.width}, height=${request.cropArea.height}",
                 )
                 imageBytes = imageConversionService.cropImage(imageBytes, request.cropArea)
+                val croppedImage = imageConversionService.getImageDimensions(imageBytes)
+                logger.info("Crop result - New dimensions: ${croppedImage.width}x${croppedImage.height}")
             }
 
             if (request.imageType == ImageType.PROMPT_EXAMPLE ||

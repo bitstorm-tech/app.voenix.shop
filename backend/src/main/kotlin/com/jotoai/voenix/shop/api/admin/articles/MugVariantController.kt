@@ -8,6 +8,7 @@ import com.jotoai.voenix.shop.domain.images.dto.CropArea
 import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.service.ImageService
 import jakarta.validation.Valid
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -30,6 +31,10 @@ class MugVariantController(
     private val mugVariantService: MugVariantService,
     private val imageService: ImageService,
 ) {
+    companion object {
+        private val logger = LoggerFactory.getLogger(MugVariantController::class.java)
+    }
+
     @GetMapping("/{articleId}/variants")
     fun findByArticleId(
         @PathVariable articleId: Long,
@@ -73,6 +78,11 @@ class MugVariantController(
         @RequestParam("cropWidth", required = false) cropWidth: Double?,
         @RequestParam("cropHeight", required = false) cropHeight: Double?,
     ): ResponseEntity<ArticleMugVariantDto> {
+        logger.info(
+            "Received image upload for variant $variantId - File: ${file.originalFilename}, " +
+                "Size: ${file.size} bytes, Crop params: x=$cropX, y=$cropY, width=$cropWidth, height=$cropHeight",
+        )
+
         val cropArea =
             if (cropX != null && cropY != null && cropWidth != null && cropHeight != null) {
                 CropArea(x = cropX, y = cropY, width = cropWidth, height = cropHeight)

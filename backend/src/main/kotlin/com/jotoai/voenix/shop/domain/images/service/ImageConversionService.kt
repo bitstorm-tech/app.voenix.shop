@@ -54,4 +54,14 @@ class ImageConversionService {
     }
 
     fun isWebPSupported(): Boolean = true
+
+    fun getImageDimensions(imageBytes: ByteArray): ImageDimensions {
+        val image = ImmutableImage.loader().fromBytes(imageBytes)
+        return ImageDimensions(width = image.width, height = image.height)
+    }
+
+    data class ImageDimensions(
+        val width: Int,
+        val height: Int,
+    )
 }
