@@ -38,6 +38,7 @@
     "clsx": "^2.1.1",
     "framer-motion": "^12.18.1",
     "globals": "^15.14.0",
+    "immer": "^10.1.1",
     "lucide-react": "^0.515.0",
     "react": "^19.1.0",
     "react-compiler-runtime": "^19.1.0-rc.2",
