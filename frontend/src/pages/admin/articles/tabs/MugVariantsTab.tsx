@@ -41,6 +41,7 @@ export default function MugVariantsTab({
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
+  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
   const [cropData, setCropData] = useState<PixelCrop | null>(null);
   const [imageDimensions, setImageDimensions] = useState<{
@@ -52,6 +53,66 @@ export default function MugVariantsTab({
   const [deleteVariantId, setDeleteVariantId] = useState<number | null>(null);
   const [deleteVariantIndex, setDeleteVariantIndex] = useState<number | null>(null);
   const [isTemporaryVariant, setIsTemporaryVariant] = useState(false);
+
+  const createCroppedImage = async (
+    imageUrl: string,
+    crop: PixelCrop,
+    dimensions: { natural: { width: number; height: number }; displayed: { width: number; height: number } },
+  ): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          reject(new Error('Failed to get canvas context'));
+          return;
+        }
+
+        // Calculate the scale factor between displayed and natural dimensions
+        const scaleX = dimensions.natural.width / dimensions.displayed.width;
+        const scaleY = dimensions.natural.height / dimensions.displayed.height;
+
+        // Scale crop coordinates to match natural image dimensions
+        const scaledCrop = {
+          x: crop.x * scaleX,
+          y: crop.y * scaleY,
+          width: crop.width * scaleX,
+          height: crop.height * scaleY,
+        };
+
+        // Set canvas size to the crop dimensions
+        canvas.width = scaledCrop.width;
+        canvas.height = scaledCrop.height;
+
+        // Draw the cropped portion of the image
+        ctx.drawImage(image, scaledCrop.x, scaledCrop.y, scaledCrop.width, scaledCrop.height, 0, 0, scaledCrop.width, scaledCrop.height);
+
+        // Convert to blob and create URL
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const croppedUrl = URL.createObjectURL(blob);
+              resolve(croppedUrl);
+            } else {
+              reject(new Error('Failed to create blob from canvas'));
+            }
+          },
+          'image/jpeg',
+          0.9,
+        );
+      };
+
+      image.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+
+      image.src = imageUrl;
+    });
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -70,14 +131,18 @@ export default function MugVariantsTab({
       return;
     }
 
-    // Clean up previous blob URL if exists
+    // Clean up previous blob URLs if exist
     if (imagePreviewUrl) {
       URL.revokeObjectURL(imagePreviewUrl);
+    }
+    if (originalImageUrl) {
+      URL.revokeObjectURL(originalImageUrl);
     }
 
     // Create blob URL for preview
     const blobUrl = URL.createObjectURL(file);
     setImageFile(file);
+    setOriginalImageUrl(blobUrl);
     setImagePreviewUrl(blobUrl);
     setShowCropper(true);
 
@@ -102,11 +167,30 @@ export default function MugVariantsTab({
     if (imagePreviewUrl) {
       URL.revokeObjectURL(imagePreviewUrl);
     }
+    if (originalImageUrl) {
+      URL.revokeObjectURL(originalImageUrl);
+    }
     setImagePreviewUrl(null);
+    setOriginalImageUrl(null);
     setImageFile(null);
   };
 
-  const handleCropConfirm = () => {
+  const handleCropConfirm = async () => {
+    if (cropData && imageDimensions && originalImageUrl) {
+      try {
+        // Create cropped image preview
+        const croppedUrl = await createCroppedImage(originalImageUrl, cropData, imageDimensions);
+
+        // Update the preview URL to show the cropped version
+        if (imagePreviewUrl && imagePreviewUrl !== originalImageUrl) {
+          URL.revokeObjectURL(imagePreviewUrl);
+        }
+        setImagePreviewUrl(croppedUrl);
+      } catch (error) {
+        console.error('Failed to create cropped preview:', error);
+        toast.error('Failed to create image preview');
+      }
+    }
     setShowCropper(false);
   };
 
@@ -114,7 +198,11 @@ export default function MugVariantsTab({
     if (imagePreviewUrl) {
       URL.revokeObjectURL(imagePreviewUrl);
     }
+    if (originalImageUrl && originalImageUrl !== imagePreviewUrl) {
+      URL.revokeObjectURL(originalImageUrl);
+    }
     setImagePreviewUrl(null);
+    setOriginalImageUrl(null);
     setImageFile(null);
     setCropData(null);
     setImageDimensions(null);
@@ -286,7 +374,7 @@ export default function MugVariantsTab({
         )}
 
         {/* Image Cropper Modal */}
-        {showCropper && imagePreviewUrl && (
+        {showCropper && originalImageUrl && (
           <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
             <div className="w-full max-w-2xl rounded-lg bg-white p-6">
               <div className="mb-4 flex items-center justify-between">
@@ -297,7 +385,7 @@ export default function MugVariantsTab({
               </div>
               <div className="mb-4">
                 <ImageCropper
-                  imageUrl={imagePreviewUrl}
+                  imageUrl={originalImageUrl}
                   onCropComplete={handleCropComplete}
                   aspect={1}
                   showGrid={true}
