@@ -23,7 +23,7 @@ import type {
   UpdateArticleRequest,
 } from '@/types/article';
 import type { ArticleCategory, ArticleSubCategory } from '@/types/mug';
-import { ArrowLeft, Loader2, Save } from 'lucide-react';
+import { ArrowLeft, Calculator, ChevronRight, Coffee, FileText, Layers, Loader2, Package, Save, Settings, Shirt, Square } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -38,6 +38,12 @@ type ArticleFormData = Omit<Article, 'mugDetails' | 'shirtDetails' | 'pillowDeta
   shirtDetails?: CreateShirtDetailsRequest;
   pillowDetails?: CreatePillowDetailsRequest;
   costCalculation?: CreateCostCalculationRequest;
+};
+
+const articleTypeIcons = {
+  MUG: Coffee,
+  SHIRT: Shirt,
+  PILLOW: Square,
 };
 
 export default function NewOrEditArticle() {
@@ -266,58 +272,121 @@ export default function NewOrEditArticle() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="container mx-auto max-w-7xl p-4 md:p-6">
+        <div className="space-y-6">
+          {/* Header Skeleton */}
+          <div className="flex items-center gap-4">
+            <div className="bg-muted h-10 w-10 animate-pulse rounded" />
+            <div className="bg-muted h-8 w-48 animate-pulse rounded" />
+          </div>
+
+          {/* Tabs Skeleton */}
+          <div className="bg-muted h-10 w-full animate-pulse rounded" />
+
+          {/* Content Skeleton */}
+          <div className="space-y-4">
+            <div className="bg-muted h-32 animate-pulse rounded-lg" />
+            <div className="bg-muted h-32 animate-pulse rounded-lg" />
+          </div>
+        </div>
       </div>
     );
   }
 
+  const ArticleIcon = article.articleType ? articleTypeIcons[article.articleType] : Package;
+
   return (
-    <div className="container mx-auto p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => navigate('/admin/articles')}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-2xl font-bold">{isEdit ? 'Edit Article' : 'New Article'}</h1>
+    <div className="bg-background min-h-screen">
+      {/* Sticky Header */}
+      <div className="bg-background sticky top-0 z-10 border-b">
+        <div className="container mx-auto max-w-7xl px-4 md:px-6">
+          <div className="flex h-16 items-center justify-between">
+            {/* Breadcrumb */}
+            <div className="flex items-center gap-2 text-sm">
+              <Button variant="ghost" size="sm" onClick={() => navigate('/admin/articles')} className="gap-1">
+                <ArrowLeft className="h-4 w-4" />
+                Articles
+              </Button>
+              <ChevronRight className="text-muted-foreground h-4 w-4" />
+              <span className="font-medium">{isEdit ? 'Edit' : 'New'} Article</span>
+            </div>
+
+            {/* Save Button */}
+            <Button onClick={handleSubmit} disabled={saving || createArticleMutation.isPending || updateArticleMutation.isPending} size="sm">
+              {saving || createArticleMutation.isPending || updateArticleMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="mr-2 h-4 w-4" />
+              )}
+              Save Article
+            </Button>
+          </div>
         </div>
-        <Button onClick={handleSubmit} disabled={saving || createArticleMutation.isPending || updateArticleMutation.isPending}>
-          {saving || createArticleMutation.isPending || updateArticleMutation.isPending ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Save className="mr-2 h-4 w-4" />
-          )}
-          Save
-        </Button>
       </div>
 
-      <Tabs defaultValue="description" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="description">Description</TabsTrigger>
-          {article.articleType === 'MUG' && <TabsTrigger value="specifications">Specifications</TabsTrigger>}
-          {article.articleType === 'SHIRT' && <TabsTrigger value="details">Materials & Sizes</TabsTrigger>}
-          {article.articleType === 'PILLOW' && <TabsTrigger value="dimensions">Dimensions & Materials</TabsTrigger>}
-          <TabsTrigger value="variants">Variants</TabsTrigger>
-          <TabsTrigger value="costCalculation">Calculation</TabsTrigger>
-        </TabsList>
+      {/* Main Content */}
+      <div className="container mx-auto max-w-7xl p-4 md:p-6">
+        {/* Page Title */}
+        <div className="mb-8">
+          <div className="mb-2 flex items-center gap-3">
+            <div className="bg-primary/10 rounded-lg p-2">
+              <ArticleIcon className="text-primary h-6 w-6" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">{isEdit ? 'Edit Article' : 'Create New Article'}</h1>
+              <p className="text-muted-foreground mt-1">
+                {isEdit ? `Editing ${article.name || 'article'}` : 'Fill in the details to create a new product'}
+              </p>
+            </div>
+          </div>
+        </div>
 
-        <TabsContent value="description">
-          <Card>
-            <CardHeader>
-              <CardTitle>Basic Information</CardTitle>
-              <CardDescription>General article details</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <Switch id="active" checked={article.active} onCheckedChange={(checked: boolean) => setArticle({ ...article, active: checked })} />
-                <FieldLabel htmlFor="active">Active</FieldLabel>
-              </div>
+        <Tabs defaultValue="general" className="space-y-6">
+          <TabsList className="grid h-auto w-full grid-cols-2 p-1 md:grid-cols-5">
+            <TabsTrigger value="general" className="gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">General</span>
+            </TabsTrigger>
 
-              {!isEdit && (
-                <div className="space-y-2">
-                  <FieldLabel htmlFor="articleType" required>
-                    Article Type
-                  </FieldLabel>
+            {article.articleType === 'MUG' && (
+              <TabsTrigger value="specifications" className="gap-2">
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Specs</span>
+              </TabsTrigger>
+            )}
+            {article.articleType === 'SHIRT' && (
+              <TabsTrigger value="details" className="gap-2">
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Details</span>
+              </TabsTrigger>
+            )}
+            {article.articleType === 'PILLOW' && (
+              <TabsTrigger value="dimensions" className="gap-2">
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Dimensions</span>
+              </TabsTrigger>
+            )}
+
+            <TabsTrigger value="variants" className="gap-2">
+              <Layers className="h-4 w-4" />
+              <span className="hidden sm:inline">Variants</span>
+            </TabsTrigger>
+
+            <TabsTrigger value="pricing" className="gap-2">
+              <Calculator className="h-4 w-4" />
+              <span className="hidden sm:inline">Pricing</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="general" className="space-y-6">
+            {/* Article Type & Status Card */}
+            {!isEdit && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Article Type</CardTitle>
+                  <CardDescription>Choose the type of product you want to create</CardDescription>
+                </CardHeader>
+                <CardContent>
                   <Select
                     value={article.articleType}
                     onValueChange={(value) => {
@@ -366,165 +435,219 @@ export default function NewOrEditArticle() {
                       setArticle(updates);
                     }}
                   >
-                    <SelectTrigger id="articleType">
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select article type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="MUG">Mug</SelectItem>
-                      <SelectItem value="SHIRT">T-Shirt</SelectItem>
-                      <SelectItem value="PILLOW">Pillow</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <FieldLabel htmlFor="name" required>
-                  Name
-                </FieldLabel>
-                <Input id="name" value={article.name} onChange={(e) => setArticle({ ...article, name: e.target.value })} placeholder="Article name" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <FieldLabel htmlFor="category" required>
-                    Category
-                  </FieldLabel>
-                  <Select
-                    value={article.categoryId?.toString() || ''}
-                    onValueChange={(value) => setArticle({ ...article, categoryId: Number(value), subcategoryId: undefined })}
-                  >
-                    <SelectTrigger id="category">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id.toString()}>
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <FieldLabel htmlFor="subcategory" optional>
-                    Subcategory
-                  </FieldLabel>
-                  <Select
-                    value={article.subcategoryId?.toString() || ''}
-                    onValueChange={(value) => setArticle({ ...article, subcategoryId: value ? Number(value) : undefined })}
-                    disabled={!article.categoryId}
-                  >
-                    <SelectTrigger id="subcategory">
-                      <SelectValue placeholder="Select subcategory" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {subcategories.map((subcategory) => (
-                        <SelectItem key={subcategory.id} value={subcategory.id.toString()}>
-                          {subcategory.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <FieldLabel htmlFor="supplier" optional>
-                  Supplier
-                </FieldLabel>
-                <Select
-                  value={article.supplierId?.toString() || 'none'}
-                  onValueChange={(value) => setArticle({ ...article, supplierId: value === 'none' ? undefined : Number(value) })}
-                >
-                  <SelectTrigger id="supplier">
-                    <SelectValue placeholder="Select supplier (optional)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {suppliers.map((supplier) => (
-                      <SelectItem key={supplier.id} value={supplier.id.toString()}>
-                        {supplier.name || `${supplier.firstName} ${supplier.lastName}`}
+                      <SelectItem value="MUG">
+                        <div className="flex items-center gap-2">
+                          <Coffee className="h-4 w-4" />
+                          Mug
+                        </div>
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                      <SelectItem value="SHIRT">
+                        <div className="flex items-center gap-2">
+                          <Shirt className="h-4 w-4" />
+                          T-Shirt
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="PILLOW">
+                        <div className="flex items-center gap-2">
+                          <Square className="h-4 w-4" />
+                          Pillow
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </CardContent>
+              </Card>
+            )}
 
-              <div className="space-y-2">
-                <FieldLabel htmlFor="descriptionShort" required>
-                  Short Description
-                </FieldLabel>
-                <Textarea
-                  id="descriptionShort"
-                  value={article.descriptionShort}
-                  onChange={(e) => setArticle({ ...article, descriptionShort: e.target.value })}
-                  placeholder="Brief description"
-                  rows={2}
-                />
-              </div>
+            {/* Basic Information Card */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Basic Information</CardTitle>
+                    <CardDescription>Essential details about your article</CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FieldLabel htmlFor="active" className="text-sm font-normal">
+                      Active
+                    </FieldLabel>
+                    <Switch
+                      id="active"
+                      checked={article.active}
+                      onCheckedChange={(checked: boolean) => setArticle({ ...article, active: checked })}
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-2">
+                  <FieldLabel htmlFor="name" required>
+                    Article Name
+                  </FieldLabel>
+                  <Input
+                    id="name"
+                    value={article.name}
+                    onChange={(e) => setArticle({ ...article, name: e.target.value })}
+                    placeholder="e.g., Premium Coffee Mug"
+                    className="max-w-xl"
+                  />
+                </div>
 
-              <div className="space-y-2">
-                <FieldLabel htmlFor="descriptionLong" required>
-                  Long Description
-                </FieldLabel>
-                <Textarea
-                  id="descriptionLong"
-                  value={article.descriptionLong}
-                  onChange={(e) => setArticle({ ...article, descriptionLong: e.target.value })}
-                  placeholder="Detailed description"
-                  rows={4}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+                <div className="space-y-2">
+                  <FieldLabel htmlFor="descriptionShort" required>
+                    Short Description
+                  </FieldLabel>
+                  <Textarea
+                    id="descriptionShort"
+                    value={article.descriptionShort}
+                    onChange={(e) => setArticle({ ...article, descriptionShort: e.target.value })}
+                    placeholder="Brief description for product listings"
+                    rows={2}
+                    className="max-w-xl"
+                  />
+                </div>
 
-        {article.articleType === 'MUG' && (
-          <TabsContent value="specifications">
-            <MugDetailsTab mugDetails={article.mugDetails || {}} onChange={(mugDetails) => setArticle({ ...article, mugDetails })} />
+                <div className="space-y-2">
+                  <FieldLabel htmlFor="descriptionLong" required>
+                    Detailed Description
+                  </FieldLabel>
+                  <Textarea
+                    id="descriptionLong"
+                    value={article.descriptionLong}
+                    onChange={(e) => setArticle({ ...article, descriptionLong: e.target.value })}
+                    placeholder="Full product description with features and benefits"
+                    rows={4}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Organization Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Organization</CardTitle>
+                <CardDescription>Categorize and organize your article</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <FieldLabel htmlFor="category" required>
+                      Category
+                    </FieldLabel>
+                    <Select
+                      value={article.categoryId?.toString() || ''}
+                      onValueChange={(value) => setArticle({ ...article, categoryId: Number(value), subcategoryId: undefined })}
+                    >
+                      <SelectTrigger id="category">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id.toString()}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <FieldLabel htmlFor="subcategory" optional>
+                      Subcategory
+                    </FieldLabel>
+                    <Select
+                      value={article.subcategoryId?.toString() || ''}
+                      onValueChange={(value) => setArticle({ ...article, subcategoryId: value ? Number(value) : undefined })}
+                      disabled={!article.categoryId}
+                    >
+                      <SelectTrigger id="subcategory">
+                        <SelectValue placeholder={article.categoryId ? 'Select a subcategory' : 'Select category first'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {subcategories.map((subcategory) => (
+                          <SelectItem key={subcategory.id} value={subcategory.id.toString()}>
+                            {subcategory.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <FieldLabel htmlFor="supplier" optional>
+                    Supplier
+                  </FieldLabel>
+                  <Select
+                    value={article.supplierId?.toString() || 'none'}
+                    onValueChange={(value) => setArticle({ ...article, supplierId: value === 'none' ? undefined : Number(value) })}
+                  >
+                    <SelectTrigger id="supplier" className="max-w-xl">
+                      <SelectValue placeholder="Select a supplier (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No supplier</SelectItem>
+                      {suppliers.map((supplier) => (
+                        <SelectItem key={supplier.id} value={supplier.id.toString()}>
+                          {supplier.name || `${supplier.firstName} ${supplier.lastName}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
-        )}
 
-        {article.articleType === 'SHIRT' && (
-          <TabsContent value="details">
-            <ShirtDetailsTab shirtDetails={article.shirtDetails || {}} onChange={(shirtDetails) => setArticle({ ...article, shirtDetails })} />
+          {article.articleType === 'MUG' && (
+            <TabsContent value="specifications">
+              <MugDetailsTab mugDetails={article.mugDetails || {}} onChange={(mugDetails) => setArticle({ ...article, mugDetails })} />
+            </TabsContent>
+          )}
+
+          {article.articleType === 'SHIRT' && (
+            <TabsContent value="details">
+              <ShirtDetailsTab shirtDetails={article.shirtDetails || {}} onChange={(shirtDetails) => setArticle({ ...article, shirtDetails })} />
+            </TabsContent>
+          )}
+
+          {article.articleType === 'PILLOW' && (
+            <TabsContent value="dimensions">
+              <PillowDetailsTab pillowDetails={article.pillowDetails || {}} onChange={(pillowDetails) => setArticle({ ...article, pillowDetails })} />
+            </TabsContent>
+          )}
+
+          <TabsContent value="variants">
+            <VariantsTab
+              articleId={article.id}
+              articleType={article.articleType as ArticleType}
+              mugVariants={article.mugVariants || []}
+              shirtVariants={article.shirtVariants || []}
+              pillowVariants={article.pillowVariants || []}
+              temporaryMugVariants={temporaryMugVariants}
+              temporaryShirtVariants={temporaryShirtVariants}
+              temporaryPillowVariants={temporaryPillowVariants}
+              onAddTemporaryMugVariant={handleAddTemporaryMugVariant}
+              onAddTemporaryShirtVariant={handleAddTemporaryShirtVariant}
+              onAddTemporaryPillowVariant={handleAddTemporaryPillowVariant}
+              onDeleteTemporaryMugVariant={handleDeleteTemporaryMugVariant}
+              onDeleteTemporaryShirtVariant={handleDeleteTemporaryShirtVariant}
+              onDeleteTemporaryPillowVariant={handleDeleteTemporaryPillowVariant}
+            />
           </TabsContent>
-        )}
 
-        {article.articleType === 'PILLOW' && (
-          <TabsContent value="dimensions">
-            <PillowDetailsTab pillowDetails={article.pillowDetails || {}} onChange={(pillowDetails) => setArticle({ ...article, pillowDetails })} />
+          <TabsContent value="pricing">
+            <CostCalculationTab
+              costCalculation={article.costCalculation || {}}
+              onChange={(costCalculation) => setArticle({ ...article, costCalculation })}
+            />
           </TabsContent>
-        )}
-
-        <TabsContent value="variants">
-          <VariantsTab
-            articleId={article.id}
-            articleType={article.articleType as ArticleType}
-            mugVariants={article.mugVariants || []}
-            shirtVariants={article.shirtVariants || []}
-            pillowVariants={article.pillowVariants || []}
-            temporaryMugVariants={temporaryMugVariants}
-            temporaryShirtVariants={temporaryShirtVariants}
-            temporaryPillowVariants={temporaryPillowVariants}
-            onAddTemporaryMugVariant={handleAddTemporaryMugVariant}
-            onAddTemporaryShirtVariant={handleAddTemporaryShirtVariant}
-            onAddTemporaryPillowVariant={handleAddTemporaryPillowVariant}
-            onDeleteTemporaryMugVariant={handleDeleteTemporaryMugVariant}
-            onDeleteTemporaryShirtVariant={handleDeleteTemporaryShirtVariant}
-            onDeleteTemporaryPillowVariant={handleDeleteTemporaryPillowVariant}
-          />
-        </TabsContent>
-
-        <TabsContent value="costCalculation">
-          <CostCalculationTab
-            costCalculation={article.costCalculation || {}}
-            onChange={(costCalculation) => setArticle({ ...article, costCalculation })}
-          />
-        </TabsContent>
-      </Tabs>
+        </Tabs>
+      </div>
     </div>
   );
 }
