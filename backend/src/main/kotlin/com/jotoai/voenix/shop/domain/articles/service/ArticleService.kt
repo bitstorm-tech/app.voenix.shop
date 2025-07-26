@@ -7,17 +7,14 @@ import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleSubCa
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleDto
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleMugVariantRequest
-import com.jotoai.voenix.shop.domain.articles.dto.CreateArticlePillowVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleRequest
 import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleShirtVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.ArticleMugVariant
-import com.jotoai.voenix.shop.domain.articles.entity.ArticlePillowVariant
 import com.jotoai.voenix.shop.domain.articles.entity.ArticleShirtVariant
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleMugVariantRepository
-import com.jotoai.voenix.shop.domain.articles.repository.ArticlePillowVariantRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleShirtVariantRepository
 import com.jotoai.voenix.shop.domain.suppliers.repository.SupplierRepository
@@ -31,13 +28,11 @@ class ArticleService(
     private val articleRepository: ArticleRepository,
     private val articleMugVariantRepository: ArticleMugVariantRepository,
     private val articleShirtVariantRepository: ArticleShirtVariantRepository,
-    private val articlePillowVariantRepository: ArticlePillowVariantRepository,
     private val articleCategoryRepository: ArticleCategoryRepository,
     private val articleSubCategoryRepository: ArticleSubCategoryRepository,
     private val supplierRepository: SupplierRepository,
     private val mugDetailsService: MugDetailsService,
     private val shirtDetailsService: ShirtDetailsService,
-    private val pillowDetailsService: PillowDetailsService,
 ) {
     @Transactional(readOnly = true)
     fun findAll(
@@ -129,10 +124,6 @@ class ArticleService(
                 request.shirtDetails?.let {
                     shirtDetailsService.create(savedArticle, it)
                 }
-            ArticleType.PILLOW ->
-                request.pillowDetails?.let {
-                    pillowDetailsService.create(savedArticle, it)
-                }
         }
 
         // Create type-specific variants
@@ -144,10 +135,6 @@ class ArticleService(
             ArticleType.SHIRT ->
                 request.shirtVariants?.forEach { variantRequest ->
                     createShirtVariant(savedArticle, variantRequest)
-                }
-            ArticleType.PILLOW ->
-                request.pillowVariants?.forEach { variantRequest ->
-                    createPillowVariant(savedArticle, variantRequest)
                 }
         }
 
@@ -209,10 +196,6 @@ class ArticleService(
                 request.shirtDetails?.let {
                     shirtDetailsService.update(updatedArticle, it)
                 }
-            ArticleType.PILLOW ->
-                request.pillowDetails?.let {
-                    pillowDetailsService.update(updatedArticle, it)
-                }
         }
 
         return findById(updatedArticle.id!!)
@@ -257,21 +240,6 @@ class ArticleService(
         return articleShirtVariantRepository.save(variant)
     }
 
-    private fun createPillowVariant(
-        article: Article,
-        request: CreateArticlePillowVariantRequest,
-    ): ArticlePillowVariant {
-        val variant =
-            ArticlePillowVariant(
-                article = article,
-                color = request.color,
-                material = request.material,
-                exampleImageFilename = request.exampleImageFilename,
-            )
-
-        return articlePillowVariantRepository.save(variant)
-    }
-
     private fun validateTypeSpecificDetails(
         type: ArticleType,
         request: CreateArticleRequest,
@@ -284,10 +252,6 @@ class ArticleService(
             ArticleType.SHIRT ->
                 require(request.shirtDetails != null) {
                     "Shirt details are required for SHIRT article type"
-                }
-            ArticleType.PILLOW ->
-                require(request.pillowDetails != null) {
-                    "Pillow details are required for PILLOW article type"
                 }
         }
     }
@@ -307,13 +271,6 @@ class ArticleService(
                 null
             }
 
-        val pillowDetails =
-            if (article.articleType == ArticleType.PILLOW) {
-                pillowDetailsService.findByArticleId(article.id!!)
-            } else {
-                null
-            }
-
         return ArticleWithDetailsDto(
             id = article.id!!,
             name = article.name,
@@ -329,10 +286,8 @@ class ArticleService(
             supplierName = article.supplier?.name,
             mugVariants = if (article.articleType == ArticleType.MUG) article.mugVariants.map { it.toDto() } else null,
             shirtVariants = if (article.articleType == ArticleType.SHIRT) article.shirtVariants.map { it.toDto() } else null,
-            pillowVariants = if (article.articleType == ArticleType.PILLOW) article.pillowVariants.map { it.toDto() } else null,
             mugDetails = mugDetails,
             shirtDetails = shirtDetails,
-            pillowDetails = pillowDetails,
             createdAt = article.createdAt,
             updatedAt = article.updatedAt,
         )

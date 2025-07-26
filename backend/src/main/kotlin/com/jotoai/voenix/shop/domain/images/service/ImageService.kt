@@ -29,7 +29,6 @@ class ImageService(
     private val promptExampleImagesPath: Path = rootPath.resolve("public/images/prompt-example-images")
     private val promptSlotVariantExampleImagesPath: Path = rootPath.resolve("public/images/prompt-slot-variant-example-images")
     private val mugVariantExampleImagesPath: Path = rootPath.resolve("public/images/articles/mugs/variant-example-images")
-    private val pillowVariantExampleImagesPath: Path = rootPath.resolve("public/images/articles/pillows/variant-example-images")
     private val shirtVariantExampleImagesPath: Path = rootPath.resolve("public/images/articles/shirts/variant-example-images")
 
     init {
@@ -39,7 +38,6 @@ class ImageService(
         logger.info("Prompt example images path: $promptExampleImagesPath")
         logger.info("Prompt slot variant example images path: $promptSlotVariantExampleImagesPath")
         logger.info("Mug variant example images path: $mugVariantExampleImagesPath")
-        logger.info("Pillow variant example images path: $pillowVariantExampleImagesPath")
         logger.info("Shirt variant example images path: $shirtVariantExampleImagesPath")
         createDirectories()
     }
@@ -58,7 +56,6 @@ class ImageService(
             if (request.imageType == ImageType.PROMPT_EXAMPLE ||
                 request.imageType == ImageType.PROMPT_SLOT_VARIANT_EXAMPLE ||
                 request.imageType == ImageType.MUG_VARIANT_EXAMPLE ||
-                request.imageType == ImageType.PILLOW_VARIANT_EXAMPLE ||
                 request.imageType == ImageType.SHIRT_VARIANT_EXAMPLE
             ) {
                 ".webp"
@@ -92,7 +89,6 @@ class ImageService(
             if (request.imageType == ImageType.PROMPT_EXAMPLE ||
                 request.imageType == ImageType.PROMPT_SLOT_VARIANT_EXAMPLE ||
                 request.imageType == ImageType.MUG_VARIANT_EXAMPLE ||
-                request.imageType == ImageType.PILLOW_VARIANT_EXAMPLE ||
                 request.imageType == ImageType.SHIRT_VARIANT_EXAMPLE
             ) {
                 // Convert to WebP for prompt, slot and all variant examples
@@ -177,7 +173,6 @@ class ImageService(
                 ImageType.PROMPT_EXAMPLE to promptExampleImagesPath,
                 ImageType.PROMPT_SLOT_VARIANT_EXAMPLE to promptSlotVariantExampleImagesPath,
                 ImageType.MUG_VARIANT_EXAMPLE to mugVariantExampleImagesPath,
-                ImageType.PILLOW_VARIANT_EXAMPLE to pillowVariantExampleImagesPath,
                 ImageType.SHIRT_VARIANT_EXAMPLE to shirtVariantExampleImagesPath,
             )
 
@@ -217,7 +212,6 @@ class ImageService(
             ImageType.PROMPT_EXAMPLE -> promptExampleImagesPath
             ImageType.PROMPT_SLOT_VARIANT_EXAMPLE -> promptSlotVariantExampleImagesPath
             ImageType.MUG_VARIANT_EXAMPLE -> mugVariantExampleImagesPath
-            ImageType.PILLOW_VARIANT_EXAMPLE -> pillowVariantExampleImagesPath
             ImageType.SHIRT_VARIANT_EXAMPLE -> shirtVariantExampleImagesPath
         }
 
@@ -237,9 +231,6 @@ class ImageService(
 
             Files.createDirectories(mugVariantExampleImagesPath)
             logger.info("Created/verified directory: ${mugVariantExampleImagesPath.toAbsolutePath()}")
-
-            Files.createDirectories(pillowVariantExampleImagesPath)
-            logger.info("Created/verified directory: ${pillowVariantExampleImagesPath.toAbsolutePath()}")
 
             Files.createDirectories(shirtVariantExampleImagesPath)
             logger.info("Created/verified directory: ${shirtVariantExampleImagesPath.toAbsolutePath()}")

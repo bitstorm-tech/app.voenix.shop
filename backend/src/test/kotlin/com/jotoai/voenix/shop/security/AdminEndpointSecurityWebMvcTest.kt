@@ -56,9 +56,6 @@ class AdminEndpointSecurityWebMvcTest {
     private lateinit var shirtDetailsService: com.jotoai.voenix.shop.domain.articles.service.ShirtDetailsService
 
     @MockitoBean
-    private lateinit var pillowDetailsService: com.jotoai.voenix.shop.domain.articles.service.PillowDetailsService
-
-    @MockitoBean
     private lateinit var customUserDetailsService: CustomUserDetailsService
 
     @Test

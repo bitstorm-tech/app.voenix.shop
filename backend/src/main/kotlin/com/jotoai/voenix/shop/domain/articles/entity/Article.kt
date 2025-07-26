@@ -55,9 +55,6 @@ data class Article(
     @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     @BatchSize(size = 10)
     var shirtVariants: MutableList<ArticleShirtVariant> = mutableListOf(),
-    @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    @BatchSize(size = 10)
-    var pillowVariants: MutableList<ArticlePillowVariant> = mutableListOf(),
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,
@@ -81,7 +78,6 @@ data class Article(
             supplierName = this.supplier?.name,
             mugVariants = if (this.articleType == ArticleType.MUG) this.mugVariants.map { it.toDto() } else null,
             shirtVariants = if (this.articleType == ArticleType.SHIRT) this.shirtVariants.map { it.toDto() } else null,
-            pillowVariants = if (this.articleType == ArticleType.PILLOW) this.pillowVariants.map { it.toDto() } else null,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )

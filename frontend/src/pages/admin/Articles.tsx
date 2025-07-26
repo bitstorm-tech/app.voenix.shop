@@ -13,13 +13,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 const articleTypeLabels: Record<ArticleType, string> = {
   MUG: 'Mug',
   SHIRT: 'T-Shirt',
-  PILLOW: 'Pillow',
 };
 
 const articleTypeColors: Record<ArticleType, string> = {
   MUG: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
   SHIRT: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-  PILLOW: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
 };
 
 export default function Articles() {
@@ -97,7 +95,6 @@ export default function Articles() {
                   <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="MUG">Mugs</SelectItem>
                   <SelectItem value="SHIRT">T-Shirts</SelectItem>
-                  <SelectItem value="PILLOW">Pillows</SelectItem>
                 </SelectContent>
               </Select>
             </div>

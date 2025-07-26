@@ -21,8 +21,6 @@ data class UpdateArticleRequest(
     val mugDetails: UpdateMugDetailsRequest? = null,
     // Shirt-specific details
     val shirtDetails: UpdateShirtDetailsRequest? = null,
-    // Pillow-specific details
-    val pillowDetails: UpdatePillowDetailsRequest? = null,
 )
 
 data class UpdateMugDetailsRequest(
@@ -50,22 +48,4 @@ data class UpdateShirtDetailsRequest(
     val fitType: FitType,
     @field:NotNull(message = "Available sizes are required")
     val availableSizes: List<String>,
-)
-
-data class UpdatePillowDetailsRequest(
-    @field:NotNull(message = "Width is required")
-    @field:Positive(message = "Width must be positive")
-    val widthCm: Int,
-    @field:NotNull(message = "Height is required")
-    @field:Positive(message = "Height must be positive")
-    val heightCm: Int,
-    @field:NotNull(message = "Depth is required")
-    @field:Positive(message = "Depth must be positive")
-    val depthCm: Int,
-    @field:NotBlank(message = "Material is required")
-    val material: String,
-    @field:NotBlank(message = "Filling type is required")
-    val fillingType: String,
-    val coverRemovable: Boolean = true,
-    val washable: Boolean = true,
 )

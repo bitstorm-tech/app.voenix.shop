@@ -1,4 +1,4 @@
-export type ArticleType = 'MUG' | 'SHIRT' | 'PILLOW';
+export type ArticleType = 'MUG' | 'SHIRT';
 
 export type FitType = 'REGULAR' | 'SLIM' | 'LOOSE';
 
@@ -26,16 +26,6 @@ export interface ArticleShirtVariant {
   updatedAt?: string;
 }
 
-export interface ArticlePillowVariant {
-  id: number;
-  articleId: number;
-  color: string;
-  material: string;
-  exampleImageUrl?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
 export interface ArticleMugDetails {
   articleId: number;
   heightMm: number;
@@ -58,19 +48,6 @@ export interface ArticleShirtDetails {
   updatedAt?: string;
 }
 
-export interface ArticlePillowDetails {
-  articleId: number;
-  widthCm: number;
-  heightCm: number;
-  depthCm: number;
-  material: string;
-  fillingType: string;
-  coverRemovable: boolean;
-  washable: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
 export interface Article {
   id: number;
   name: string;
@@ -86,10 +63,8 @@ export interface Article {
   supplierName?: string;
   mugVariants?: ArticleMugVariant[];
   shirtVariants?: ArticleShirtVariant[];
-  pillowVariants?: ArticlePillowVariant[];
   mugDetails?: ArticleMugDetails;
   shirtDetails?: ArticleShirtDetails;
-  pillowDetails?: ArticlePillowDetails;
   costCalculation?: CostCalculation;
   createdAt?: string;
   updatedAt?: string;
@@ -106,10 +81,8 @@ export interface CreateArticleRequest {
   supplierId?: number;
   mugVariants?: CreateArticleMugVariantRequest[];
   shirtVariants?: CreateArticleShirtVariantRequest[];
-  pillowVariants?: CreateArticlePillowVariantRequest[];
   mugDetails?: CreateMugDetailsRequest;
   shirtDetails?: CreateShirtDetailsRequest;
-  pillowDetails?: CreatePillowDetailsRequest;
   costCalculation?: CreateCostCalculationRequest;
 }
 
@@ -125,12 +98,6 @@ export interface CreateArticleMugVariantRequest {
 export interface CreateArticleShirtVariantRequest {
   color: string;
   size: string;
-  exampleImageFilename?: string;
-}
-
-export interface CreateArticlePillowVariantRequest {
-  color: string;
-  material: string;
   exampleImageFilename?: string;
 }
 
@@ -150,28 +117,15 @@ export interface CreateShirtDetailsRequest {
   availableSizes: string[];
 }
 
-export interface CreatePillowDetailsRequest {
-  widthCm: number;
-  heightCm: number;
-  depthCm: number;
-  material: string;
-  fillingType: string;
-  coverRemovable: boolean;
-  washable: boolean;
-}
-
-export interface UpdateArticleRequest extends Omit<CreateArticleRequest, 'articleType' | 'mugVariants' | 'shirtVariants' | 'pillowVariants'> {
+export interface UpdateArticleRequest extends Omit<CreateArticleRequest, 'articleType' | 'mugVariants' | 'shirtVariants'> {
   mugDetails?: UpdateMugDetailsRequest;
   shirtDetails?: UpdateShirtDetailsRequest;
-  pillowDetails?: UpdatePillowDetailsRequest;
   costCalculation?: UpdateCostCalculationRequest;
 }
 
 export interface UpdateMugDetailsRequest extends CreateMugDetailsRequest {}
 
 export interface UpdateShirtDetailsRequest extends CreateShirtDetailsRequest {}
-
-export interface UpdatePillowDetailsRequest extends CreatePillowDetailsRequest {}
 
 export interface CostCalculation {
   // Purchase section

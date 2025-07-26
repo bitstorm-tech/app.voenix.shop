@@ -1,10 +1,8 @@
 import type {
   Article,
   ArticleMugVariant,
-  ArticlePillowVariant,
   ArticleShirtVariant,
   CreateArticleMugVariantRequest,
-  CreateArticlePillowVariantRequest,
   CreateArticleRequest,
   CreateArticleShirtVariantRequest,
   PaginatedResponse,
@@ -251,12 +249,6 @@ export const articlesApi = {
   updateShirtVariant: (variantId: number, data: CreateArticleShirtVariantRequest) =>
     api.put<ArticleShirtVariant>(`/admin/articles/shirts/variants/${variantId}`, data),
   deleteShirtVariant: (variantId: number) => api.delete<void>(`/admin/articles/shirts/variants/${variantId}`),
-  // Pillow variant management
-  createPillowVariant: (articleId: number, data: CreateArticlePillowVariantRequest) =>
-    api.post<ArticlePillowVariant>(`/admin/articles/pillows/${articleId}/variants`, data),
-  updatePillowVariant: (variantId: number, data: CreateArticlePillowVariantRequest) =>
-    api.put<ArticlePillowVariant>(`/admin/articles/pillows/variants/${variantId}`, data),
-  deletePillowVariant: (variantId: number) => api.delete<void>(`/admin/articles/pillows/variants/${variantId}`),
 };
 
 // Mug API endpoints

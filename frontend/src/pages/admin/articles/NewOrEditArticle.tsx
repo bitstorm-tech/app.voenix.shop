@@ -13,37 +13,32 @@ import type {
   Article,
   ArticleType,
   CreateArticleMugVariantRequest,
-  CreateArticlePillowVariantRequest,
   CreateArticleRequest,
   CreateArticleShirtVariantRequest,
   CreateCostCalculationRequest,
   CreateMugDetailsRequest,
-  CreatePillowDetailsRequest,
   CreateShirtDetailsRequest,
   UpdateArticleRequest,
 } from '@/types/article';
 import type { ArticleCategory, ArticleSubCategory } from '@/types/mug';
-import { ArrowLeft, Calculator, ChevronRight, Coffee, FileText, Layers, Loader2, Package, Save, Settings, Shirt, Square } from 'lucide-react';
+import { ArrowLeft, Calculator, ChevronRight, Coffee, FileText, Layers, Loader2, Package, Save, Settings, Shirt } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import CostCalculationTab from './tabs/CostCalculationTab';
 import MugDetailsTab from './tabs/MugDetailsTab';
-import PillowDetailsTab from './tabs/PillowDetailsTab';
 import ShirtDetailsTab from './tabs/ShirtDetailsTab';
 import VariantsTab from './tabs/VariantsTab';
 
-type ArticleFormData = Omit<Article, 'mugDetails' | 'shirtDetails' | 'pillowDetails' | 'costCalculation'> & {
+type ArticleFormData = Omit<Article, 'mugDetails' | 'shirtDetails' | 'costCalculation'> & {
   mugDetails?: CreateMugDetailsRequest;
   shirtDetails?: CreateShirtDetailsRequest;
-  pillowDetails?: CreatePillowDetailsRequest;
   costCalculation?: CreateCostCalculationRequest;
 };
 
 const articleTypeIcons = {
   MUG: Coffee,
   SHIRT: Shirt,
-  PILLOW: Square,
 };
 
 export default function NewOrEditArticle() {
@@ -67,7 +62,6 @@ export default function NewOrEditArticle() {
     supplierId: undefined,
     mugVariants: [],
     shirtVariants: [],
-    pillowVariants: [],
     // Initialize default mug details since MUG is the default type
     mugDetails: {
       heightMm: 0,
@@ -107,7 +101,6 @@ export default function NewOrEditArticle() {
   const [subcategories, setSubcategories] = useState<ArticleSubCategory[]>([]);
   const [temporaryMugVariants, setTemporaryMugVariants] = useState<CreateArticleMugVariantRequest[]>([]);
   const [temporaryShirtVariants, setTemporaryShirtVariants] = useState<CreateArticleShirtVariantRequest[]>([]);
-  const [temporaryPillowVariants, setTemporaryPillowVariants] = useState<CreateArticlePillowVariantRequest[]>([]);
 
   useEffect(() => {
     fetchCategories();
@@ -179,18 +172,6 @@ export default function NewOrEditArticle() {
     setTemporaryShirtVariants(temporaryShirtVariants.map((v, i) => (i === index ? variant : v)));
   };
 
-  const handleAddTemporaryPillowVariant = (variant: CreateArticlePillowVariantRequest) => {
-    setTemporaryPillowVariants([...temporaryPillowVariants, variant]);
-  };
-
-  const handleDeleteTemporaryPillowVariant = (index: number) => {
-    setTemporaryPillowVariants(temporaryPillowVariants.filter((_, i) => i !== index));
-  };
-
-  const handleUpdateTemporaryPillowVariant = (index: number, variant: CreateArticlePillowVariantRequest) => {
-    setTemporaryPillowVariants(temporaryPillowVariants.map((v, i) => (i === index ? variant : v)));
-  };
-
   const handleSubmit = async () => {
     try {
       setSaving(true);
@@ -214,12 +195,6 @@ export default function NewOrEditArticle() {
             return;
           }
           break;
-        case 'PILLOW':
-          if (!article.pillowDetails) {
-            toast.error('Please fill in pillow details');
-            return;
-          }
-          break;
       }
 
       if (isEdit) {
@@ -233,7 +208,6 @@ export default function NewOrEditArticle() {
           supplierId: article.supplierId,
           mugDetails: article.mugDetails,
           shirtDetails: article.shirtDetails,
-          pillowDetails: article.pillowDetails,
           costCalculation: article.costCalculation,
         };
         console.log('Updating article with data:', updateData);
@@ -257,10 +231,8 @@ export default function NewOrEditArticle() {
           supplierId: article.supplierId,
           mugVariants: article.articleType === 'MUG' ? temporaryMugVariants : undefined,
           shirtVariants: article.articleType === 'SHIRT' ? temporaryShirtVariants : undefined,
-          pillowVariants: article.articleType === 'PILLOW' ? temporaryPillowVariants : undefined,
           mugDetails: article.mugDetails,
           shirtDetails: article.shirtDetails,
-          pillowDetails: article.pillowDetails,
           costCalculation: article.costCalculation,
         };
         console.log('Creating article with data:', createData);
@@ -372,12 +344,6 @@ export default function NewOrEditArticle() {
                 <span className="hidden sm:inline">Details</span>
               </TabsTrigger>
             )}
-            {article.articleType === 'PILLOW' && (
-              <TabsTrigger value="dimensions" className="gap-2">
-                <Settings className="h-4 w-4" />
-                <span className="hidden sm:inline">Dimensions</span>
-              </TabsTrigger>
-            )}
 
             <TabsTrigger value="variants" className="gap-2">
               <Layers className="h-4 w-4" />
@@ -417,7 +383,6 @@ export default function NewOrEditArticle() {
                             dishwasherSafe: true,
                           };
                           delete updates.shirtDetails;
-                          delete updates.pillowDetails;
                           break;
                         case 'SHIRT':
                           updates.shirtDetails = {
@@ -427,20 +392,6 @@ export default function NewOrEditArticle() {
                             availableSizes: [],
                           };
                           delete updates.mugDetails;
-                          delete updates.pillowDetails;
-                          break;
-                        case 'PILLOW':
-                          updates.pillowDetails = {
-                            widthCm: 0,
-                            heightCm: 0,
-                            depthCm: 0,
-                            material: '',
-                            fillingType: '',
-                            coverRemovable: true,
-                            washable: true,
-                          };
-                          delete updates.mugDetails;
-                          delete updates.shirtDetails;
                           break;
                       }
 
@@ -461,12 +412,6 @@ export default function NewOrEditArticle() {
                         <div className="flex items-center gap-2">
                           <Shirt className="h-4 w-4" />
                           T-Shirt
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="PILLOW">
-                        <div className="flex items-center gap-2">
-                          <Square className="h-4 w-4" />
-                          Pillow
                         </div>
                       </SelectItem>
                     </SelectContent>
@@ -627,31 +572,20 @@ export default function NewOrEditArticle() {
             </TabsContent>
           )}
 
-          {article.articleType === 'PILLOW' && (
-            <TabsContent value="dimensions">
-              <PillowDetailsTab pillowDetails={article.pillowDetails || {}} onChange={(pillowDetails) => setArticle({ ...article, pillowDetails })} />
-            </TabsContent>
-          )}
-
           <TabsContent value="variants">
             <VariantsTab
               articleId={article.id}
               articleType={article.articleType as ArticleType}
               mugVariants={article.mugVariants || []}
               shirtVariants={article.shirtVariants || []}
-              pillowVariants={article.pillowVariants || []}
               temporaryMugVariants={temporaryMugVariants}
               temporaryShirtVariants={temporaryShirtVariants}
-              temporaryPillowVariants={temporaryPillowVariants}
               onAddTemporaryMugVariant={handleAddTemporaryMugVariant}
               onAddTemporaryShirtVariant={handleAddTemporaryShirtVariant}
-              onAddTemporaryPillowVariant={handleAddTemporaryPillowVariant}
               onDeleteTemporaryMugVariant={handleDeleteTemporaryMugVariant}
               onDeleteTemporaryShirtVariant={handleDeleteTemporaryShirtVariant}
-              onDeleteTemporaryPillowVariant={handleDeleteTemporaryPillowVariant}
               onUpdateTemporaryMugVariant={handleUpdateTemporaryMugVariant}
               onUpdateTemporaryShirtVariant={handleUpdateTemporaryShirtVariant}
-              onUpdateTemporaryPillowVariant={handleUpdateTemporaryPillowVariant}
             />
           </TabsContent>
 
