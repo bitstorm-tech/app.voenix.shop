@@ -2,7 +2,7 @@ import { articlesApi } from '@/lib/api';
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
 import type { CreateArticleRequest, UpdateArticleRequest } from '@/types/article';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { articleKeys } from './useArticles';
@@ -24,11 +24,14 @@ export function useArticleFormQueries(articleId?: number) {
     queryKey: articleKeys.detail(articleId!),
     queryFn: () => articlesApi.getById(articleId!),
     enabled: !!articleId,
-    onSuccess: (data) => {
-      // Initialize form with fetched data
-      initializeForm(articleId, data);
-    },
   });
+
+  // Initialize form when article data is fetched
+  useEffect(() => {
+    if (articleData && articleId) {
+      initializeForm(articleId, articleData);
+    }
+  }, [articleData, articleId, initializeForm]);
 
   // Fetch categories
   const { data: categories = [], isLoading: isLoadingCategories } = useArticleCategories();

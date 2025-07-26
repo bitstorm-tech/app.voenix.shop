@@ -141,7 +141,7 @@ const initialCostCalculation: CostCalculation = {
 };
 
 export const useArticleFormStore = create<ArticleFormState>()(
-  immer((set, get) => ({
+  immer((set) => ({
     // ========== Initial State ==========
     article: { ...initialArticle },
     costCalculation: { ...initialCostCalculation },

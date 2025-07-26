@@ -31,7 +31,7 @@ export default function CostCalculationTab() {
     setSalesPriceCorresponds,
     setPurchaseActiveRow,
     setSalesActiveRow,
-  } = useCostCalculationStore();
+  } = useArticleFormStore();
 
   const handlePurchaseVatRateChange = (vatRateId: string) => {
     const selectedVat = vats.find((v) => v.id.toString() === vatRateId);

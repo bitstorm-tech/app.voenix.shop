@@ -22,7 +22,7 @@ export default function NewOrEditArticle() {
   const articleId = id ? Number(id) : undefined;
 
   // Use the new consolidated store
-  const { article, activeTab, setActiveTab, initializeForm, resetForm } = useArticleFormStore();
+  const { article, activeTab, setActiveTab, initializeForm, resetForm, updateShirtDetails } = useArticleFormStore();
 
   // Use the new React Query based hook
   const { isLoading, isSaving, saveArticle, categories, subcategories } = useArticleForm(articleId);
@@ -152,7 +152,7 @@ export default function NewOrEditArticle() {
 
             {article.articleType === 'SHIRT' && (
               <TabsContent value="shirt-details">
-                <ShirtDetailsTab />
+                <ShirtDetailsTab shirtDetails={article.shirtDetails} onChange={updateShirtDetails} />
               </TabsContent>
             )}
 
