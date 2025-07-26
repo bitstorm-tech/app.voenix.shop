@@ -9,9 +9,14 @@ import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore
 import type { ArticleType } from '@/types/article';
 import { Coffee, Shirt } from 'lucide-react';
 
-export default function GeneralTab() {
+interface GeneralTabProps {
+  categories: any[];
+  subcategories: any[];
+}
+
+export default function GeneralTab({ categories, subcategories }: GeneralTabProps) {
   const { data: suppliers = [] } = useSuppliers();
-  const { article, categories, subcategories, isEdit, updateArticle, setArticleType, setCategory, setSubcategory } = useArticleFormStore();
+  const { article, isEdit, updateArticle, setArticleType, setCategory, setSubcategory } = useArticleFormStore();
 
   return (
     <div className="space-y-6">

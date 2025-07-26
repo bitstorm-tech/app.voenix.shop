@@ -1,11 +1,10 @@
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
-import { useVariantStore } from '@/stores/admin/articles/useVariantStore';
 import MugVariantsTab from '../tabs/MugVariantsTab';
 import ShirtVariantsTab from '../tabs/ShirtVariantsTab';
 
 export default function VariantsTab() {
-  const { article } = useArticleFormStore();
   const {
+    article,
     mugVariants,
     shirtVariants,
     temporaryMugVariants,
@@ -16,7 +15,7 @@ export default function VariantsTab() {
     deleteTemporaryShirtVariant,
     updateTemporaryMugVariant,
     updateTemporaryShirtVariant,
-  } = useVariantStore();
+  } = useArticleFormStore();
 
   if (!article.articleType) {
     return null;

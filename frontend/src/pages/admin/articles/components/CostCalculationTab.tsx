@@ -5,7 +5,7 @@ import { FieldLabel } from '@/components/ui/FieldLabel';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useVats } from '@/hooks/queries/useVat';
-import { useCostCalculationStore } from '@/stores/admin/articles/useCostCalculationStore';
+import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
 
 export default function CostCalculationTab() {
   const { data: vats = [] } = useVats();
@@ -16,7 +16,7 @@ export default function CostCalculationTab() {
     salesPriceCorresponds,
     purchaseActiveRow,
     salesActiveRow,
-    updateField,
+    updateCostField,
     updatePurchasePrice,
     updatePurchaseCost,
     updatePurchaseCostPercent,
@@ -208,7 +208,7 @@ export default function CostCalculationTab() {
             <Input
               type="text"
               value={costCalculation.purchasePriceUnit}
-              onChange={(e) => updateField('purchasePriceUnit', e.target.value)}
+              onChange={(e) => updateCostField('purchasePriceUnit', e.target.value)}
               className="w-32"
               placeholder="1.00"
             />
@@ -374,7 +374,7 @@ export default function CostCalculationTab() {
             <Input
               type="text"
               value={costCalculation.salesPriceUnit}
-              onChange={(e) => updateField('salesPriceUnit', e.target.value)}
+              onChange={(e) => updateCostField('salesPriceUnit', e.target.value)}
               className="w-32"
               placeholder="1.00"
             />
