@@ -110,8 +110,6 @@ class ArticleService(
                 name = request.name,
                 descriptionShort = request.descriptionShort,
                 descriptionLong = request.descriptionLong,
-                exampleImageFilename = request.exampleImageFilename,
-                price = request.price,
                 active = request.active,
                 articleType = request.articleType,
                 category = category,
@@ -193,8 +191,6 @@ class ArticleService(
             name = request.name
             descriptionShort = request.descriptionShort
             descriptionLong = request.descriptionLong
-            exampleImageFilename = request.exampleImageFilename
-            price = request.price
             active = request.active
             this.category = category
             this.subcategory = subcategory
@@ -323,8 +319,6 @@ class ArticleService(
             name = article.name,
             descriptionShort = article.descriptionShort,
             descriptionLong = article.descriptionLong,
-            exampleImageFilename = article.exampleImageFilename,
-            price = article.price,
             active = article.active,
             articleType = article.articleType,
             categoryId = article.category.id!!,

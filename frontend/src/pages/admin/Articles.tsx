@@ -105,7 +105,6 @@ export default function Articles() {
               <TableHead>Type</TableHead>
               <TableHead>Category</TableHead>
               <TableHead>Supplier</TableHead>
-              <TableHead>Price</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -113,13 +112,13 @@ export default function Articles() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-gray-500">
+                <TableCell colSpan={6} className="text-center text-gray-500">
                   Loading...
                 </TableCell>
               </TableRow>
             ) : articles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-gray-500">
+                <TableCell colSpan={6} className="text-center text-gray-500">
                   No articles found
                 </TableCell>
               </TableRow>
@@ -135,7 +134,6 @@ export default function Articles() {
                     {article.subcategoryName && <span className="text-sm text-gray-500"> / {article.subcategoryName}</span>}
                   </TableCell>
                   <TableCell>{article.supplierName || '-'}</TableCell>
-                  <TableCell>${(article.price / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                   <TableCell>
                     <Badge variant={article.active ? 'default' : 'secondary'}>{article.active ? 'Active' : 'Inactive'}</Badge>
                   </TableCell>

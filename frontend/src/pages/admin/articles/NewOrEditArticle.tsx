@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { CurrencyInput } from '@/components/ui/CurrencyInput';
 import { FieldLabel } from '@/components/ui/FieldLabel';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
@@ -56,8 +55,6 @@ export default function NewOrEditArticle() {
     name: '',
     descriptionShort: '',
     descriptionLong: '',
-    exampleImageFilename: '',
-    price: 0,
     active: true,
     articleType: 'MUG',
     categoryId: 0,
@@ -212,8 +209,6 @@ export default function NewOrEditArticle() {
           name: article.name || '',
           descriptionShort: article.descriptionShort || '',
           descriptionLong: article.descriptionLong || '',
-          exampleImageFilename: article.exampleImageFilename || '',
-          price: article.price || 0,
           active: article.active || false,
           categoryId: article.categoryId || 0,
           subcategoryId: article.subcategoryId,
@@ -237,8 +232,6 @@ export default function NewOrEditArticle() {
           name: article.name || '',
           descriptionShort: article.descriptionShort || '',
           descriptionLong: article.descriptionLong || '',
-          exampleImageFilename: article.exampleImageFilename || '',
-          price: article.price || 0,
           active: article.active || false,
           articleType: article.articleType as ArticleType,
           categoryId: article.categoryId || 0,
@@ -483,34 +476,6 @@ export default function NewOrEditArticle() {
                   placeholder="Detailed description"
                   rows={4}
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <FieldLabel htmlFor="exampleImageFilename" required>
-                    Example Image Filename
-                  </FieldLabel>
-                  <Input
-                    id="exampleImageFilename"
-                    value={article.exampleImageFilename}
-                    onChange={(e) => setArticle({ ...article, exampleImageFilename: e.target.value })}
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <FieldLabel htmlFor="price" required>
-                    Price
-                  </FieldLabel>
-                  <CurrencyInput
-                    id="price"
-                    value={article.price ? article.price / 100 : 0}
-                    onChange={(value) => setArticle({ ...article, price: Math.round(value * 100) })}
-                    placeholder="0.00"
-                    min={0}
-                    currency="$"
-                  />
-                </div>
               </div>
             </CardContent>
           </Card>

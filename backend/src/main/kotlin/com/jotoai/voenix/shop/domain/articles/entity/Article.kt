@@ -35,10 +35,6 @@ data class Article(
     var descriptionShort: String,
     @Column(name = "description_long", nullable = false, columnDefinition = "TEXT")
     var descriptionLong: String,
-    @Column(name = "example_image_filename", nullable = false, length = 500)
-    var exampleImageFilename: String,
-    @Column(nullable = false)
-    var price: Int,
     @Column(nullable = false)
     var active: Boolean = true,
     @Enumerated(EnumType.STRING)
@@ -75,8 +71,6 @@ data class Article(
             name = this.name,
             descriptionShort = this.descriptionShort,
             descriptionLong = this.descriptionLong,
-            exampleImageFilename = this.exampleImageFilename,
-            price = this.price,
             active = this.active,
             articleType = this.articleType,
             categoryId = this.category.id!!,

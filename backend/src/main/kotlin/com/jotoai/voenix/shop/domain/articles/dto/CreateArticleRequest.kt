@@ -13,11 +13,6 @@ data class CreateArticleRequest(
     val descriptionShort: String,
     @field:NotBlank(message = "Long description is required")
     val descriptionLong: String,
-    @field:NotBlank(message = "Example image filename is required")
-    val exampleImageFilename: String,
-    @field:NotNull(message = "Price is required")
-    @field:Positive(message = "Price must be positive")
-    val price: Int,
     val active: Boolean = true,
     @field:NotNull(message = "Article type is required")
     val articleType: ArticleType,
