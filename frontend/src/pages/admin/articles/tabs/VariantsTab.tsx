@@ -26,6 +26,9 @@ interface VariantsTabProps {
   onDeleteTemporaryMugVariant?: (index: number) => void;
   onDeleteTemporaryShirtVariant?: (index: number) => void;
   onDeleteTemporaryPillowVariant?: (index: number) => void;
+  onUpdateTemporaryMugVariant?: (index: number, variant: CreateArticleMugVariantRequest) => void;
+  onUpdateTemporaryShirtVariant?: (index: number, variant: CreateArticleShirtVariantRequest) => void;
+  onUpdateTemporaryPillowVariant?: (index: number, variant: CreateArticlePillowVariantRequest) => void;
 }
 
 export default function VariantsTab({
@@ -43,6 +46,9 @@ export default function VariantsTab({
   onDeleteTemporaryMugVariant,
   onDeleteTemporaryShirtVariant,
   onDeleteTemporaryPillowVariant,
+  onUpdateTemporaryMugVariant,
+  onUpdateTemporaryShirtVariant,
+  onUpdateTemporaryPillowVariant,
 }: VariantsTabProps) {
   switch (articleType) {
     case 'MUG':
@@ -53,6 +59,7 @@ export default function VariantsTab({
           temporaryVariants={temporaryMugVariants}
           onAddTemporaryVariant={onAddTemporaryMugVariant}
           onDeleteTemporaryVariant={onDeleteTemporaryMugVariant}
+          onUpdateTemporaryVariant={onUpdateTemporaryMugVariant}
         />
       );
     case 'SHIRT':
@@ -63,6 +70,7 @@ export default function VariantsTab({
           temporaryVariants={temporaryShirtVariants}
           onAddTemporaryVariant={onAddTemporaryShirtVariant}
           onDeleteTemporaryVariant={onDeleteTemporaryShirtVariant}
+          onUpdateTemporaryVariant={onUpdateTemporaryShirtVariant}
         />
       );
     case 'PILLOW':
@@ -73,6 +81,7 @@ export default function VariantsTab({
           temporaryVariants={temporaryPillowVariants}
           onAddTemporaryVariant={onAddTemporaryPillowVariant}
           onDeleteTemporaryVariant={onDeleteTemporaryPillowVariant}
+          onUpdateTemporaryVariant={onUpdateTemporaryPillowVariant}
         />
       );
     default:

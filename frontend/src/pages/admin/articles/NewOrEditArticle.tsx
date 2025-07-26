@@ -163,6 +163,10 @@ export default function NewOrEditArticle() {
     setTemporaryMugVariants(temporaryMugVariants.filter((_, i) => i !== index));
   };
 
+  const handleUpdateTemporaryMugVariant = (index: number, variant: CreateArticleMugVariantRequest) => {
+    setTemporaryMugVariants(temporaryMugVariants.map((v, i) => (i === index ? variant : v)));
+  };
+
   const handleAddTemporaryShirtVariant = (variant: CreateArticleShirtVariantRequest) => {
     setTemporaryShirtVariants([...temporaryShirtVariants, variant]);
   };
@@ -171,12 +175,20 @@ export default function NewOrEditArticle() {
     setTemporaryShirtVariants(temporaryShirtVariants.filter((_, i) => i !== index));
   };
 
+  const handleUpdateTemporaryShirtVariant = (index: number, variant: CreateArticleShirtVariantRequest) => {
+    setTemporaryShirtVariants(temporaryShirtVariants.map((v, i) => (i === index ? variant : v)));
+  };
+
   const handleAddTemporaryPillowVariant = (variant: CreateArticlePillowVariantRequest) => {
     setTemporaryPillowVariants([...temporaryPillowVariants, variant]);
   };
 
   const handleDeleteTemporaryPillowVariant = (index: number) => {
     setTemporaryPillowVariants(temporaryPillowVariants.filter((_, i) => i !== index));
+  };
+
+  const handleUpdateTemporaryPillowVariant = (index: number, variant: CreateArticlePillowVariantRequest) => {
+    setTemporaryPillowVariants(temporaryPillowVariants.map((v, i) => (i === index ? variant : v)));
   };
 
   const handleSubmit = async () => {
@@ -637,6 +649,9 @@ export default function NewOrEditArticle() {
               onDeleteTemporaryMugVariant={handleDeleteTemporaryMugVariant}
               onDeleteTemporaryShirtVariant={handleDeleteTemporaryShirtVariant}
               onDeleteTemporaryPillowVariant={handleDeleteTemporaryPillowVariant}
+              onUpdateTemporaryMugVariant={handleUpdateTemporaryMugVariant}
+              onUpdateTemporaryShirtVariant={handleUpdateTemporaryShirtVariant}
+              onUpdateTemporaryPillowVariant={handleUpdateTemporaryPillowVariant}
             />
           </TabsContent>
 

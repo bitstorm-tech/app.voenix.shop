@@ -16,6 +16,7 @@ interface ShirtVariantsTabProps {
   temporaryVariants?: CreateArticleShirtVariantRequest[];
   onAddTemporaryVariant?: (variant: CreateArticleShirtVariantRequest) => void;
   onDeleteTemporaryVariant?: (index: number) => void;
+  onUpdateTemporaryVariant?: (index: number, variant: CreateArticleShirtVariantRequest) => void;
 }
 
 const SHIRT_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
@@ -71,7 +72,6 @@ export default function ShirtVariantsTab({
       setNewVariant({
         color: '',
         size: 'M',
-        sku: '',
         exampleImageFilename: '',
       });
       toast.success('Variant added successfully');

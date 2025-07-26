@@ -15,6 +15,7 @@ interface PillowVariantsTabProps {
   temporaryVariants?: CreateArticlePillowVariantRequest[];
   onAddTemporaryVariant?: (variant: CreateArticlePillowVariantRequest) => void;
   onDeleteTemporaryVariant?: (index: number) => void;
+  onUpdateTemporaryVariant?: (index: number, variant: CreateArticlePillowVariantRequest) => void;
 }
 
 export default function PillowVariantsTab({
@@ -68,7 +69,6 @@ export default function PillowVariantsTab({
       setNewVariant({
         color: '',
         material: '',
-        sku: '',
         exampleImageFilename: '',
       });
       toast.success('Variant added successfully');

@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/Label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { articlesApi } from '@/lib/api';
 import type { ArticleMugVariant, CreateArticleMugVariantRequest } from '@/types/article';
-import { Image as ImageIcon, Plus, Trash2, Upload, X } from 'lucide-react';
+import { Edit, Image as ImageIcon, Plus, Trash2, Upload, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -21,6 +21,7 @@ interface MugVariantsTabProps {
   temporaryVariants?: CreateArticleMugVariantRequest[];
   onAddTemporaryVariant?: (variant: CreateArticleMugVariantRequest) => void;
   onDeleteTemporaryVariant?: (index: number) => void;
+  onUpdateTemporaryVariant?: (index: number, variant: CreateArticleMugVariantRequest) => void;
 }
 
 export default function MugVariantsTab({
@@ -29,6 +30,7 @@ export default function MugVariantsTab({
   temporaryVariants = [],
   onAddTemporaryVariant,
   onDeleteTemporaryVariant,
+  onUpdateTemporaryVariant,
 }: MugVariantsTabProps) {
   const [variants, setVariants] = useState<ArticleMugVariant[]>(initialVariants);
   const [newVariant, setNewVariant] = useState<CreateArticleMugVariantRequest>({
@@ -53,6 +55,9 @@ export default function MugVariantsTab({
   const [deleteVariantId, setDeleteVariantId] = useState<number | null>(null);
   const [deleteVariantIndex, setDeleteVariantIndex] = useState<number | null>(null);
   const [isTemporaryVariant, setIsTemporaryVariant] = useState(false);
+  const [editingVariantId, setEditingVariantId] = useState<number | null>(null);
+  const [editingTemporaryIndex, setEditingTemporaryIndex] = useState<number | null>(null);
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
 
   const createCroppedImage = async (
     imageUrl: string,
@@ -195,7 +200,7 @@ export default function MugVariantsTab({
   };
 
   const handleRemoveImage = () => {
-    if (imagePreviewUrl) {
+    if (imagePreviewUrl && imagePreviewUrl !== existingImageUrl) {
       URL.revokeObjectURL(imagePreviewUrl);
     }
     if (originalImageUrl && originalImageUrl !== imagePreviewUrl) {
@@ -209,23 +214,76 @@ export default function MugVariantsTab({
     setNewVariant({ ...newVariant, exampleImageFilename: '' });
   };
 
-  const handleAddVariant = async () => {
+  const handleEditVariant = (variant: ArticleMugVariant) => {
+    setEditingVariantId(variant.id);
+    setEditingTemporaryIndex(null);
+    setNewVariant({
+      insideColorCode: variant.insideColorCode,
+      outsideColorCode: variant.outsideColorCode,
+      name: variant.name,
+      exampleImageFilename: variant.exampleImageFilename || '',
+      supplierArticleNumber: variant.supplierArticleNumber || '',
+      isDefault: variant.isDefault || false,
+    });
+
+    // Handle existing image preview
+    if (variant.exampleImageUrl) {
+      setImagePreviewUrl(variant.exampleImageUrl);
+      setExistingImageUrl(variant.exampleImageUrl);
+    }
+  };
+
+  const handleEditTemporaryVariant = (index: number, variant: CreateArticleMugVariantRequest) => {
+    setEditingTemporaryIndex(index);
+    setEditingVariantId(null);
+    setNewVariant({
+      insideColorCode: variant.insideColorCode,
+      outsideColorCode: variant.outsideColorCode,
+      name: variant.name,
+      exampleImageFilename: variant.exampleImageFilename || '',
+      supplierArticleNumber: variant.supplierArticleNumber || '',
+      isDefault: variant.isDefault || false,
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingVariantId(null);
+    setEditingTemporaryIndex(null);
+    setExistingImageUrl(null);
+    setNewVariant({
+      insideColorCode: '#ffffff',
+      outsideColorCode: '#ffffff',
+      name: '',
+      exampleImageFilename: '',
+      supplierArticleNumber: '',
+      isDefault: false,
+    });
+    handleRemoveImage();
+  };
+
+  const handleAddOrUpdateVariant = async () => {
     if (!newVariant.name) {
       toast.error('Please enter a variant name');
       return;
     }
 
-    // Check for duplicate variants
-    const isDuplicate = articleId ? variants.some((v) => v.name === newVariant.name) : temporaryVariants.some((v) => v.name === newVariant.name);
+    const isEditing = editingVariantId !== null || editingTemporaryIndex !== null;
+
+    // Check for duplicate variants (excluding the one being edited)
+    const isDuplicate = articleId
+      ? variants.some((v) => v.name === newVariant.name && v.id !== editingVariantId)
+      : temporaryVariants.some((v, index) => v.name === newVariant.name && index !== editingTemporaryIndex);
 
     if (isDuplicate) {
       toast.error('A variant with this name already exists');
       return;
     }
 
-    // Check if setting as default when another default exists
+    // Check if setting as default when another default exists (excluding the one being edited)
     if (newVariant.isDefault) {
-      const hasDefault = articleId ? variants.some((v) => v.isDefault) : temporaryVariants.some((v) => v.isDefault);
+      const hasDefault = articleId
+        ? variants.some((v) => v.isDefault && v.id !== editingVariantId)
+        : temporaryVariants.some((v, index) => v.isDefault && index !== editingTemporaryIndex);
       if (hasDefault) {
         toast.error('Another variant is already set as default. Please unset it first.');
         return;
@@ -234,33 +292,39 @@ export default function MugVariantsTab({
 
     if (!articleId) {
       // Handle temporary variant for unsaved article
-      if (onAddTemporaryVariant) {
-        // Store image data if present
-        const variantToAdd = { ...newVariant };
-        if (imageFile) {
-          // For temporary variants, we'll store the filename and handle upload when article is saved
-          variantToAdd.exampleImageFilename = imageFile.name;
-        }
-        onAddTemporaryVariant(variantToAdd);
-        setNewVariant({
-          insideColorCode: '#ffffff',
-          outsideColorCode: '#ffffff',
-          name: '',
-          exampleImageFilename: '',
-          supplierArticleNumber: '',
-          isDefault: false,
-        });
-        handleRemoveImage();
+      const variantToSave = { ...newVariant };
+      if (imageFile) {
+        // For temporary variants, we'll store the filename and handle upload when article is saved
+        variantToSave.exampleImageFilename = imageFile.name;
+      }
+
+      if (editingTemporaryIndex !== null && onUpdateTemporaryVariant) {
+        // Update existing temporary variant
+        onUpdateTemporaryVariant(editingTemporaryIndex, variantToSave);
+        toast.success('Variant updated (will be saved with article)');
+      } else if (onAddTemporaryVariant) {
+        // Add new temporary variant
+        onAddTemporaryVariant(variantToSave);
         toast.success('Variant added (will be saved with article)');
       }
+
+      handleCancelEdit();
       return;
     }
 
     // Handle variant for saved article
     try {
-      const response = await articlesApi.createMugVariant(articleId, newVariant);
+      let response: ArticleMugVariant;
 
-      // Upload image if present
+      if (isEditing && editingVariantId) {
+        // Update existing variant
+        response = await articlesApi.updateMugVariant(editingVariantId, newVariant);
+      } else {
+        // Create new variant
+        response = await articlesApi.createMugVariant(articleId, newVariant);
+      }
+
+      // Upload image if a new file was selected
       if (imageFile && response.id && cropData) {
         try {
           // Calculate the scaling factor if we have image dimensions
@@ -300,25 +364,25 @@ export default function MugVariantsTab({
           response.exampleImageUrl = imageResponse.exampleImageUrl;
         } catch (imageError) {
           console.error('Error uploading variant image:', imageError);
-          toast.error('Variant created but image upload failed');
+          toast.error(isEditing ? 'Variant updated but image upload failed' : 'Variant created but image upload failed');
         }
       }
 
-      setVariants([...variants, response]);
-      setNewVariant({
-        insideColorCode: '#ffffff',
-        outsideColorCode: '#ffffff',
-        name: '',
-        exampleImageFilename: '',
-        supplierArticleNumber: '',
-        isDefault: false,
-      });
-      handleRemoveImage();
+      if (isEditing) {
+        // Update the variant in the list
+        setVariants(variants.map((v) => (v.id === editingVariantId ? response : v)));
+        toast.success('Variant updated successfully');
+      } else {
+        // Add new variant to the list
+        setVariants([...variants, response]);
+        toast.success('Variant added successfully');
+      }
+
+      handleCancelEdit();
       setImageDimensions(null);
-      toast.success('Variant added successfully');
     } catch (error) {
-      console.error('Error adding variant:', error);
-      toast.error('Failed to add variant');
+      console.error(isEditing ? 'Error updating variant:' : 'Error adding variant:', error);
+      toast.error(isEditing ? 'Failed to update variant' : 'Failed to add variant');
     }
   };
 
@@ -364,7 +428,11 @@ export default function MugVariantsTab({
     <Card>
       <CardHeader>
         <CardTitle>Mug Variants</CardTitle>
-        <CardDescription>Add different color combinations for this mug. Each variant can have different inside and outside colors.</CardDescription>
+        <CardDescription>
+          {editingVariantId || editingTemporaryIndex !== null
+            ? 'Edit the variant details below'
+            : 'Add different color combinations for this mug. Each variant can have different inside and outside colors.'}
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {!articleId && temporaryVariants.length > 0 && (
@@ -478,10 +546,21 @@ export default function MugVariantsTab({
             </div>
           </div>
 
-          <div className="flex justify-end">
-            <Button onClick={handleAddVariant} className="min-w-[120px]">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Variant
+          <div className="flex justify-end gap-2">
+            {(editingVariantId || editingTemporaryIndex !== null) && (
+              <Button onClick={handleCancelEdit} variant="outline" className="min-w-[120px]">
+                Cancel
+              </Button>
+            )}
+            <Button onClick={handleAddOrUpdateVariant} className="min-w-[120px]">
+              {editingVariantId || editingTemporaryIndex !== null ? (
+                <>Update Variant</>
+              ) : (
+                <>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Variant
+                </>
+              )}
             </Button>
           </div>
         </div>
@@ -503,7 +582,7 @@ export default function MugVariantsTab({
               </TableHeader>
               <TableBody>
                 {variants.map((variant) => (
-                  <TableRow key={variant.id}>
+                  <TableRow key={variant.id} className={editingVariantId === variant.id ? 'bg-blue-50' : ''}>
                     <TableCell className="font-medium">{variant.name}</TableCell>
                     <TableCell>{variant.supplierArticleNumber || '-'}</TableCell>
                     <TableCell>
@@ -535,9 +614,14 @@ export default function MugVariantsTab({
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteVariant(variant.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleEditVariant(variant)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteVariant(variant.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -563,7 +647,7 @@ export default function MugVariantsTab({
               </TableHeader>
               <TableBody>
                 {temporaryVariants.map((variant, index) => (
-                  <TableRow key={index}>
+                  <TableRow key={index} className={editingTemporaryIndex === index ? 'bg-blue-50' : ''}>
                     <TableCell className="font-medium">{variant.name}</TableCell>
                     <TableCell>{variant.supplierArticleNumber || '-'}</TableCell>
                     <TableCell>
@@ -597,9 +681,14 @@ export default function MugVariantsTab({
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteTemporaryVariant(index)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        <Button variant="ghost" size="sm" onClick={() => handleEditTemporaryVariant(index, variant)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteTemporaryVariant(index)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
