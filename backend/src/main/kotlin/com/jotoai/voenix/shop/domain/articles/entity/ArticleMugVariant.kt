@@ -31,6 +31,10 @@ data class ArticleMugVariant(
     var name: String,
     @Column(name = "example_image_filename", length = 500)
     var exampleImageFilename: String? = null,
+    @Column(name = "supplier_article_number", length = 100)
+    var supplierArticleNumber: String? = null,
+    @Column(name = "is_default", nullable = false)
+    var isDefault: Boolean = false,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,
@@ -45,7 +49,9 @@ data class ArticleMugVariant(
             insideColorCode = this.insideColorCode,
             outsideColorCode = this.outsideColorCode,
             name = this.name,
-            exampleImageUrl = this.exampleImageFilename?.let { "/images/$it" },
+            exampleImageUrl = this.exampleImageFilename?.let { "/images/articles/mugs/variant-example-images/$it" },
+            supplierArticleNumber = this.supplierArticleNumber,
+            isDefault = this.isDefault,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )

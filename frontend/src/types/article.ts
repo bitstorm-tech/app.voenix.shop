@@ -9,6 +9,9 @@ export interface ArticleMugVariant {
   outsideColorCode: string;
   name: string;
   exampleImageUrl?: string;
+  supplierArticleNumber?: string;
+  isDefault: boolean;
+  exampleImageFilename?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -115,6 +118,8 @@ export interface CreateArticleMugVariantRequest {
   outsideColorCode: string;
   name: string;
   exampleImageFilename?: string;
+  supplierArticleNumber?: string;
+  isDefault?: boolean;
 }
 
 export interface CreateArticleShirtVariantRequest {

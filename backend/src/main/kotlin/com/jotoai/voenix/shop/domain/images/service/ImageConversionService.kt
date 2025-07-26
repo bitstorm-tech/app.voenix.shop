@@ -37,13 +37,13 @@ class ImageConversionService {
             "Crop area exceeds image height"
         }
 
-        // Create rectangle for cropping
+        // Create rectangle for cropping (convert Double to Int for AWT Rectangle)
         val rectangle =
             Rectangle(
-                cropArea.x,
-                cropArea.y,
-                cropArea.width,
-                cropArea.height,
+                cropArea.x.toInt(),
+                cropArea.y.toInt(),
+                cropArea.width.toInt(),
+                cropArea.height.toInt(),
             )
 
         // Crop the image and return bytes in PNG format to maintain quality

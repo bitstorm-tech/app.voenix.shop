@@ -42,7 +42,7 @@ data class ArticleShirtVariant(
             articleId = this.article.id!!,
             color = this.color,
             size = this.size,
-            exampleImageUrl = this.exampleImageFilename?.let { "/images/$it" },
+            exampleImageUrl = this.exampleImageFilename?.let { "/images/articles/shirts/variant-example-images/$it" },
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )

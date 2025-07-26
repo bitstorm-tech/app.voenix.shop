@@ -44,6 +44,9 @@ export interface MugVariant {
   mugId: number;
   colorCode: string;
   exampleImageUrl: string;
+  supplierArticleNumber?: string;
+  isDefault: boolean;
+  exampleImageFilename?: string;
   createdAt?: string;
   updatedAt?: string;
 }

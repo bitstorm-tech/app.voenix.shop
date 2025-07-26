@@ -28,6 +28,9 @@ class ImageService(
     private val publicImagesPath: Path = rootPath.resolve("public/images")
     private val promptExampleImagesPath: Path = rootPath.resolve("public/images/prompt-example-images")
     private val promptSlotVariantExampleImagesPath: Path = rootPath.resolve("public/images/prompt-slot-variant-example-images")
+    private val mugVariantExampleImagesPath: Path = rootPath.resolve("public/images/articles/mugs/variant-example-images")
+    private val pillowVariantExampleImagesPath: Path = rootPath.resolve("public/images/articles/pillows/variant-example-images")
+    private val shirtVariantExampleImagesPath: Path = rootPath.resolve("public/images/articles/shirts/variant-example-images")
 
     init {
         logger.info("Initializing ImageService with storage root: $rootPath")
@@ -35,6 +38,9 @@ class ImageService(
         logger.info("Public images path: $publicImagesPath")
         logger.info("Prompt example images path: $promptExampleImagesPath")
         logger.info("Prompt slot variant example images path: $promptSlotVariantExampleImagesPath")
+        logger.info("Mug variant example images path: $mugVariantExampleImagesPath")
+        logger.info("Pillow variant example images path: $pillowVariantExampleImagesPath")
+        logger.info("Shirt variant example images path: $shirtVariantExampleImagesPath")
         createDirectories()
     }
 
@@ -47,10 +53,13 @@ class ImageService(
 
         val originalFilename = file.originalFilename ?: "unknown"
 
-        // For prompt and slot examples, always use .webp extension
+        // For prompt, slot and all variant examples, always use .webp extension
         val fileExtension =
             if (request.imageType == ImageType.PROMPT_EXAMPLE ||
-                request.imageType == ImageType.PROMPT_SLOT_VARIANT_EXAMPLE
+                request.imageType == ImageType.PROMPT_SLOT_VARIANT_EXAMPLE ||
+                request.imageType == ImageType.MUG_VARIANT_EXAMPLE ||
+                request.imageType == ImageType.PILLOW_VARIANT_EXAMPLE ||
+                request.imageType == ImageType.SHIRT_VARIANT_EXAMPLE
             ) {
                 ".webp"
             } else {
@@ -74,8 +83,13 @@ class ImageService(
                 imageBytes = imageConversionService.cropImage(imageBytes, request.cropArea)
             }
 
-            if (request.imageType == ImageType.PROMPT_EXAMPLE || request.imageType == ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) {
-                // Convert to WebP for prompt and slot examples
+            if (request.imageType == ImageType.PROMPT_EXAMPLE ||
+                request.imageType == ImageType.PROMPT_SLOT_VARIANT_EXAMPLE ||
+                request.imageType == ImageType.MUG_VARIANT_EXAMPLE ||
+                request.imageType == ImageType.PILLOW_VARIANT_EXAMPLE ||
+                request.imageType == ImageType.SHIRT_VARIANT_EXAMPLE
+            ) {
+                // Convert to WebP for prompt, slot and all variant examples
                 logger.debug("Converting image to WebP format")
                 val webpBytes = imageConversionService.convertToWebP(imageBytes)
                 Files.write(filePath, webpBytes)
@@ -156,6 +170,9 @@ class ImageService(
                 ImageType.PUBLIC to publicImagesPath,
                 ImageType.PROMPT_EXAMPLE to promptExampleImagesPath,
                 ImageType.PROMPT_SLOT_VARIANT_EXAMPLE to promptSlotVariantExampleImagesPath,
+                ImageType.MUG_VARIANT_EXAMPLE to mugVariantExampleImagesPath,
+                ImageType.PILLOW_VARIANT_EXAMPLE to pillowVariantExampleImagesPath,
+                ImageType.SHIRT_VARIANT_EXAMPLE to shirtVariantExampleImagesPath,
             )
 
         for ((imageType, path) in imageTypePaths) {
@@ -193,6 +210,9 @@ class ImageService(
             ImageType.PRIVATE -> privateImagesPath
             ImageType.PROMPT_EXAMPLE -> promptExampleImagesPath
             ImageType.PROMPT_SLOT_VARIANT_EXAMPLE -> promptSlotVariantExampleImagesPath
+            ImageType.MUG_VARIANT_EXAMPLE -> mugVariantExampleImagesPath
+            ImageType.PILLOW_VARIANT_EXAMPLE -> pillowVariantExampleImagesPath
+            ImageType.SHIRT_VARIANT_EXAMPLE -> shirtVariantExampleImagesPath
         }
 
     private fun createDirectories() {
@@ -208,6 +228,15 @@ class ImageService(
 
             Files.createDirectories(promptSlotVariantExampleImagesPath)
             logger.info("Created/verified directory: ${promptSlotVariantExampleImagesPath.toAbsolutePath()}")
+
+            Files.createDirectories(mugVariantExampleImagesPath)
+            logger.info("Created/verified directory: ${mugVariantExampleImagesPath.toAbsolutePath()}")
+
+            Files.createDirectories(pillowVariantExampleImagesPath)
+            logger.info("Created/verified directory: ${pillowVariantExampleImagesPath.toAbsolutePath()}")
+
+            Files.createDirectories(shirtVariantExampleImagesPath)
+            logger.info("Created/verified directory: ${shirtVariantExampleImagesPath.toAbsolutePath()}")
         } catch (e: IOException) {
             logger.error("Failed to create storage directories: ${e.message}", e)
             throw RuntimeException("Failed to create storage directories: ${e.message}", e)

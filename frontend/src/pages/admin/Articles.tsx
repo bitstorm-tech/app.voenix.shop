@@ -168,9 +168,13 @@ export default function Articles() {
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        <div className="flex flex-col">
+                        <div className="flex">
                           <span className="font-medium">{article.categoryName || '-'}</span>
-                          {article.subcategoryName && <span className="text-muted-foreground text-sm">{article.subcategoryName}</span>}
+                          {article.subcategoryName && (
+                            <>
+                              <span className="px-1">&gt;</span> <span className="text-muted-foreground text-sm">{article.subcategoryName}</span>
+                            </>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell className="text-muted-foreground">{article.supplierName || '-'}</TableCell>

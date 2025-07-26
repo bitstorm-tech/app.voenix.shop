@@ -228,6 +228,23 @@ export const articlesApi = {
   updateMugVariant: (variantId: number, data: CreateArticleMugVariantRequest) =>
     api.put<ArticleMugVariant>(`/admin/articles/mugs/variants/${variantId}`, data),
   deleteMugVariant: (variantId: number) => api.delete<void>(`/admin/articles/mugs/variants/${variantId}`),
+  uploadMugVariantImage: async (variantId: number, file: File, cropArea?: { x: number; y: number; width: number; height: number }) => {
+    const formData = new FormData();
+    formData.append('image', file); // Changed from 'file' to 'image' to match backend
+    if (cropArea) {
+      // Send as individual parameters to match backend expectations
+      formData.append('cropX', cropArea.x.toString());
+      formData.append('cropY', cropArea.y.toString());
+      formData.append('cropWidth', cropArea.width.toString());
+      formData.append('cropHeight', cropArea.height.toString());
+    }
+    const response = await fetch(`/api/admin/articles/mugs/variants/${variantId}/image`, {
+      method: 'POST',
+      credentials: 'include',
+      body: formData,
+    });
+    return handleResponse<ArticleMugVariant>(response); // Return proper type matching backend response
+  },
   // Shirt variant management
   createShirtVariant: (articleId: number, data: CreateArticleShirtVariantRequest) =>
     api.post<ArticleShirtVariant>(`/admin/articles/shirts/${articleId}/variants`, data),

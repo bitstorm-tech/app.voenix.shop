@@ -42,7 +42,7 @@ data class ArticlePillowVariant(
             articleId = this.article.id!!,
             color = this.color,
             material = this.material,
-            exampleImageUrl = this.exampleImageFilename?.let { "/images/$it" },
+            exampleImageUrl = this.exampleImageFilename?.let { "/images/articles/pillows/variant-example-images/$it" },
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )

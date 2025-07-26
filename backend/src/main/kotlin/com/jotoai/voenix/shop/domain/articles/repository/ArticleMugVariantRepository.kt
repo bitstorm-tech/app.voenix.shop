@@ -2,6 +2,7 @@ package com.jotoai.voenix.shop.domain.articles.repository
 
 import com.jotoai.voenix.shop.domain.articles.entity.ArticleMugVariant
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
@@ -25,4 +26,10 @@ interface ArticleMugVariantRepository : JpaRepository<ArticleMugVariant, Long> {
     ): List<ArticleMugVariant>
 
     fun deleteByArticleId(articleId: Long)
+
+    @Query("UPDATE ArticleMugVariant v SET v.isDefault = false WHERE v.article.id = :articleId AND v.isDefault = true")
+    @Modifying
+    fun unsetDefaultForArticle(
+        @Param("articleId") articleId: Long,
+    )
 }
