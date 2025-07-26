@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
-data class CreateArticleMugVariantRequest(
+data class CreateMugArticleVariantRequest(
     @field:NotBlank(message = "Inside color code is required")
     @field:Pattern(regexp = "^#[0-9A-Fa-f]{6}$", message = "Inside color code must be a valid hex color")
     val insideColorCode: String = "#ffffff",

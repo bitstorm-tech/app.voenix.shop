@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.api.admin.articles
 
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleShirtVariantDto
-import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleShirtVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtArticleVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.service.ShirtVariantService
 import com.jotoai.voenix.shop.domain.images.dto.CreateImageRequest
 import com.jotoai.voenix.shop.domain.images.dto.CropArea
@@ -33,7 +33,7 @@ class ShirtVariantController(
     @GetMapping("/{articleId}/variants")
     fun findByArticleId(
         @PathVariable articleId: Long,
-    ): ResponseEntity<List<ArticleShirtVariantDto>> {
+    ): ResponseEntity<List<ShirtArticleVariantDto>> {
         val variants = shirtVariantService.findByArticleId(articleId)
         return ResponseEntity.ok(variants)
     }
@@ -41,8 +41,8 @@ class ShirtVariantController(
     @PostMapping("/{articleId}/variants")
     fun create(
         @PathVariable articleId: Long,
-        @Valid @RequestBody request: CreateArticleShirtVariantRequest,
-    ): ResponseEntity<ArticleShirtVariantDto> {
+        @Valid @RequestBody request: CreateShirtArticleVariantRequest,
+    ): ResponseEntity<ShirtArticleVariantDto> {
         val variant = shirtVariantService.create(articleId, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(variant)
     }
@@ -50,8 +50,8 @@ class ShirtVariantController(
     @PutMapping("/variants/{variantId}")
     fun update(
         @PathVariable variantId: Long,
-        @Valid @RequestBody request: CreateArticleShirtVariantRequest,
-    ): ResponseEntity<ArticleShirtVariantDto> {
+        @Valid @RequestBody request: CreateShirtArticleVariantRequest,
+    ): ResponseEntity<ShirtArticleVariantDto> {
         val variant = shirtVariantService.update(variantId, request)
         return ResponseEntity.ok(variant)
     }
@@ -72,7 +72,7 @@ class ShirtVariantController(
         @RequestParam("cropY", required = false) cropY: Double?,
         @RequestParam("cropWidth", required = false) cropWidth: Double?,
         @RequestParam("cropHeight", required = false) cropHeight: Double?,
-    ): ResponseEntity<ArticleShirtVariantDto> {
+    ): ResponseEntity<ShirtArticleVariantDto> {
         val cropArea =
             if (cropX != null && cropY != null && cropWidth != null && cropHeight != null) {
                 CropArea(x = cropX, y = cropY, width = cropWidth, height = cropHeight)

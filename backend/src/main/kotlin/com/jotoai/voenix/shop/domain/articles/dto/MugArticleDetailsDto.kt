@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.domain.articles.dto
 
 import java.time.OffsetDateTime
 
-data class ArticleMugDetailsDto(
+data class MugArticleDetailsDto(
     val articleId: Long,
     val heightMm: Int,
     val diameterMm: Int,

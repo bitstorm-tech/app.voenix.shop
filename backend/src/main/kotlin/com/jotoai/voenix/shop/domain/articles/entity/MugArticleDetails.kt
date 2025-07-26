@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.domain.articles.entity
 
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleMugDetailsDto
+import com.jotoai.voenix.shop.domain.articles.dto.MugArticleDetailsDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -11,7 +11,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "article_mug_details")
-data class ArticleMugDetails(
+data class MugArticleDetails(
     @Id
     @Column(name = "article_id")
     val articleId: Long,
@@ -35,7 +35,7 @@ data class ArticleMugDetails(
     var updatedAt: OffsetDateTime? = null,
 ) {
     fun toDto() =
-        ArticleMugDetailsDto(
+        MugArticleDetailsDto(
             articleId = this.articleId,
             heightMm = this.heightMm,
             diameterMm = this.diameterMm,

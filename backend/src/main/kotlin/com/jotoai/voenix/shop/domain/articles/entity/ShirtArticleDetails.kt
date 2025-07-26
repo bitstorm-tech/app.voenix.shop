@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.domain.articles.entity
 
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleShirtDetailsDto
+import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleDetailsDto
 import com.jotoai.voenix.shop.domain.articles.enums.FitType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -14,7 +14,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "article_shirt_details")
-data class ArticleShirtDetails(
+data class ShirtArticleDetails(
     @Id
     @Column(name = "article_id")
     val articleId: Long,
@@ -35,7 +35,7 @@ data class ArticleShirtDetails(
     var updatedAt: OffsetDateTime? = null,
 ) {
     fun toDto() =
-        ArticleShirtDetailsDto(
+        ShirtArticleDetailsDto(
             articleId = this.articleId,
             material = this.material,
             careInstructions = this.careInstructions,

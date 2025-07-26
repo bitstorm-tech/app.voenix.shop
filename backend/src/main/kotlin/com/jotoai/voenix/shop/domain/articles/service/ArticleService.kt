@@ -6,17 +6,17 @@ import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleCateg
 import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleSubCategoryRepository
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleDto
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleWithDetailsDto
-import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleMugVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleRequest
-import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleShirtVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.domain.articles.entity.Article
-import com.jotoai.voenix.shop.domain.articles.entity.ArticleMugVariant
-import com.jotoai.voenix.shop.domain.articles.entity.ArticleShirtVariant
+import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
+import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
-import com.jotoai.voenix.shop.domain.articles.repository.ArticleMugVariantRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
-import com.jotoai.voenix.shop.domain.articles.repository.ArticleShirtVariantRepository
+import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
+import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepository
 import com.jotoai.voenix.shop.domain.suppliers.repository.SupplierRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -26,8 +26,8 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class ArticleService(
     private val articleRepository: ArticleRepository,
-    private val articleMugVariantRepository: ArticleMugVariantRepository,
-    private val articleShirtVariantRepository: ArticleShirtVariantRepository,
+    private val articleMugVariantRepository: MugArticleVariantRepository,
+    private val articleShirtVariantRepository: ShirtArticleVariantRepository,
     private val articleCategoryRepository: ArticleCategoryRepository,
     private val articleSubCategoryRepository: ArticleSubCategoryRepository,
     private val supplierRepository: SupplierRepository,
@@ -211,10 +211,10 @@ class ArticleService(
 
     private fun createMugVariant(
         article: Article,
-        request: CreateArticleMugVariantRequest,
-    ): ArticleMugVariant {
+        request: CreateMugArticleVariantRequest,
+    ): MugArticleVariant {
         val variant =
-            ArticleMugVariant(
+            MugArticleVariant(
                 article = article,
                 insideColorCode = request.insideColorCode,
                 outsideColorCode = request.outsideColorCode,
@@ -227,10 +227,10 @@ class ArticleService(
 
     private fun createShirtVariant(
         article: Article,
-        request: CreateArticleShirtVariantRequest,
-    ): ArticleShirtVariant {
+        request: CreateShirtArticleVariantRequest,
+    ): ShirtArticleVariant {
         val variant =
-            ArticleShirtVariant(
+            ShirtArticleVariant(
                 article = article,
                 color = request.color,
                 size = request.size,

@@ -51,10 +51,10 @@ data class Article(
     var supplier: Supplier? = null,
     @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     @BatchSize(size = 10)
-    var mugVariants: MutableList<ArticleMugVariant> = mutableListOf(),
+    var mugVariants: MutableList<MugArticleVariant> = mutableListOf(),
     @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     @BatchSize(size = 10)
-    var shirtVariants: MutableList<ArticleShirtVariant> = mutableListOf(),
+    var shirtVariants: MutableList<ShirtArticleVariant> = mutableListOf(),
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,

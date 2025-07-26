@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.api.admin.articles
 
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleMugVariantDto
-import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleMugVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.service.MugVariantService
 import com.jotoai.voenix.shop.domain.images.dto.CreateImageRequest
 import com.jotoai.voenix.shop.domain.images.dto.CropArea
@@ -38,7 +38,7 @@ class MugVariantController(
     @GetMapping("/{articleId}/variants")
     fun findByArticleId(
         @PathVariable articleId: Long,
-    ): ResponseEntity<List<ArticleMugVariantDto>> {
+    ): ResponseEntity<List<MugArticleVariantDto>> {
         val variants = mugVariantService.findByArticleId(articleId)
         return ResponseEntity.ok(variants)
     }
@@ -46,8 +46,8 @@ class MugVariantController(
     @PostMapping("/{articleId}/variants")
     fun create(
         @PathVariable articleId: Long,
-        @Valid @RequestBody request: CreateArticleMugVariantRequest,
-    ): ResponseEntity<ArticleMugVariantDto> {
+        @Valid @RequestBody request: CreateMugArticleVariantRequest,
+    ): ResponseEntity<MugArticleVariantDto> {
         val variant = mugVariantService.create(articleId, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(variant)
     }
@@ -55,8 +55,8 @@ class MugVariantController(
     @PutMapping("/variants/{variantId}")
     fun update(
         @PathVariable variantId: Long,
-        @Valid @RequestBody request: CreateArticleMugVariantRequest,
-    ): ResponseEntity<ArticleMugVariantDto> {
+        @Valid @RequestBody request: CreateMugArticleVariantRequest,
+    ): ResponseEntity<MugArticleVariantDto> {
         val variant = mugVariantService.update(variantId, request)
         return ResponseEntity.ok(variant)
     }
@@ -77,7 +77,7 @@ class MugVariantController(
         @RequestParam("cropY", required = false) cropY: Double?,
         @RequestParam("cropWidth", required = false) cropWidth: Double?,
         @RequestParam("cropHeight", required = false) cropHeight: Double?,
-    ): ResponseEntity<ArticleMugVariantDto> {
+    ): ResponseEntity<MugArticleVariantDto> {
         logger.info(
             "Received image upload for variant $variantId - File: ${file.originalFilename}, " +
                 "Size: ${file.size} bytes, Crop params: x=$cropX, y=$cropY, width=$cropWidth, height=$cropHeight",

@@ -16,8 +16,8 @@ data class ArticleDto(
     val subcategoryName: String? = null,
     val supplierId: Long? = null,
     val supplierName: String? = null,
-    val mugVariants: List<ArticleMugVariantDto>? = null,
-    val shirtVariants: List<ArticleShirtVariantDto>? = null,
+    val mugVariants: List<MugArticleVariantDto>? = null,
+    val shirtVariants: List<ShirtArticleVariantDto>? = null,
     val createdAt: OffsetDateTime? = null,
     val updatedAt: OffsetDateTime? = null,
 )

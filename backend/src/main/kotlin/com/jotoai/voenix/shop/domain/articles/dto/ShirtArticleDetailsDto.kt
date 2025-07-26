@@ -3,7 +3,7 @@ package com.jotoai.voenix.shop.domain.articles.dto
 import com.jotoai.voenix.shop.domain.articles.enums.FitType
 import java.time.OffsetDateTime
 
-data class ArticleShirtDetailsDto(
+data class ShirtArticleDetailsDto(
     val articleId: Long,
     val material: String,
     val careInstructions: String? = null,

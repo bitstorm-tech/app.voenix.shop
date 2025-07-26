@@ -1,11 +1,11 @@
 package com.jotoai.voenix.shop.domain.articles.service
 
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleShirtVariantDto
-import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleShirtVariantRequest
-import com.jotoai.voenix.shop.domain.articles.entity.ArticleShirtVariant
+import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtArticleVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleVariantDto
+import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
-import com.jotoai.voenix.shop.domain.articles.repository.ArticleShirtVariantRepository
+import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepository
 import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.service.ImageService
 import org.slf4j.LoggerFactory
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class ShirtVariantService(
     private val articleRepository: ArticleRepository,
-    private val shirtVariantRepository: ArticleShirtVariantRepository,
+    private val shirtVariantRepository: ShirtArticleVariantRepository,
     private val imageService: ImageService,
 ) {
     companion object {
@@ -25,15 +25,15 @@ class ShirtVariantService(
     @Transactional
     fun create(
         articleId: Long,
-        request: CreateArticleShirtVariantRequest,
-    ): ArticleShirtVariantDto {
+        request: CreateShirtArticleVariantRequest,
+    ): ShirtArticleVariantDto {
         val article =
             articleRepository
                 .findById(articleId)
                 .orElseThrow { ResourceNotFoundException("Article not found with id: $articleId") }
 
         val variant =
-            ArticleShirtVariant(
+            ShirtArticleVariant(
                 article = article,
                 color = request.color,
                 size = request.size,
@@ -46,8 +46,8 @@ class ShirtVariantService(
     @Transactional
     fun update(
         variantId: Long,
-        request: CreateArticleShirtVariantRequest,
-    ): ArticleShirtVariantDto {
+        request: CreateShirtArticleVariantRequest,
+    ): ShirtArticleVariantDto {
         val variant =
             shirtVariantRepository
                 .findById(variantId)
@@ -82,14 +82,14 @@ class ShirtVariantService(
     }
 
     @Transactional(readOnly = true)
-    fun findByArticleId(articleId: Long): List<ArticleShirtVariantDto> =
+    fun findByArticleId(articleId: Long): List<ShirtArticleVariantDto> =
         shirtVariantRepository.findByArticleId(articleId).map { it.toDto() }
 
     @Transactional
     fun updateExampleImage(
         variantId: Long,
         filename: String,
-    ): ArticleShirtVariantDto {
+    ): ShirtArticleVariantDto {
         val variant =
             shirtVariantRepository
                 .findById(variantId)

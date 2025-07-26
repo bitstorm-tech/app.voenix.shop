@@ -1,11 +1,11 @@
 package com.jotoai.voenix.shop.domain.articles.service
 
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleMugVariantDto
-import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleMugVariantRequest
-import com.jotoai.voenix.shop.domain.articles.entity.ArticleMugVariant
-import com.jotoai.voenix.shop.domain.articles.repository.ArticleMugVariantRepository
+import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
+import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.service.ImageService
 import org.slf4j.LoggerFactory
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class MugVariantService(
     private val articleRepository: ArticleRepository,
-    private val mugVariantRepository: ArticleMugVariantRepository,
+    private val mugVariantRepository: MugArticleVariantRepository,
     private val imageService: ImageService,
 ) {
     companion object {
@@ -25,8 +25,8 @@ class MugVariantService(
     @Transactional
     fun create(
         articleId: Long,
-        request: CreateArticleMugVariantRequest,
-    ): ArticleMugVariantDto {
+        request: CreateMugArticleVariantRequest,
+    ): MugArticleVariantDto {
         val article =
             articleRepository.findById(articleId).orElseGet(null)
                 ?: throw ResourceNotFoundException("Article not found with id: $articleId")
@@ -41,7 +41,7 @@ class MugVariantService(
         }
 
         val variant =
-            ArticleMugVariant(
+            MugArticleVariant(
                 article = article,
                 insideColorCode = request.insideColorCode,
                 outsideColorCode = request.outsideColorCode,
@@ -57,8 +57,8 @@ class MugVariantService(
     @Transactional
     fun update(
         variantId: Long,
-        request: CreateArticleMugVariantRequest,
-    ): ArticleMugVariantDto {
+        request: CreateMugArticleVariantRequest,
+    ): MugArticleVariantDto {
         val variant =
             mugVariantRepository.findByIdWithArticle(variantId).orElseGet(null)
                 ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
@@ -112,14 +112,14 @@ class MugVariantService(
     }
 
     @Transactional(readOnly = true)
-    fun findByArticleId(articleId: Long): List<ArticleMugVariantDto> =
-        mugVariantRepository.findByArticleIdWithArticle(articleId).map(ArticleMugVariant::toDto)
+    fun findByArticleId(articleId: Long): List<MugArticleVariantDto> =
+        mugVariantRepository.findByArticleIdWithArticle(articleId).map(MugArticleVariant::toDto)
 
     @Transactional
     fun updateExampleImage(
         variantId: Long,
         filename: String,
-    ): ArticleMugVariantDto {
+    ): MugArticleVariantDto {
         val variant =
             mugVariantRepository.findByIdWithArticle(variantId).orElseGet(null)
                 ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")

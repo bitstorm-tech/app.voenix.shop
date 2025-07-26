@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.domain.articles.dto
 
 import jakarta.validation.constraints.NotBlank
 
-data class CreateArticleShirtVariantRequest(
+data class CreateShirtArticleVariantRequest(
     @field:NotBlank(message = "Color is required")
     val color: String,
     @field:NotBlank(message = "Size is required")
