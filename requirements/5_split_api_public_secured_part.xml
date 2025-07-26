@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<requirements>
+    <title>Split the API into a public and secured part</title>
+    <description>Think hard to create the best possible architecture and plan.</description>
+    
+    <requirement-list>
+        <requirement id="1">
+            <description>Split the backend API into a public part and a secured part</description>
+        </requirement>
+        
+        <requirement id="2">
+            <description>The public part is accessible without any authentication</description>
+            <api-access>
+                <type>public</type>
+                <authentication>none</authentication>
+            </api-access>
+        </requirement>
+        
+        <requirement id="3">
+            <description>The secured part is only accessible when the user is authenticated</description>
+            <api-access>
+                <type>secured</type>
+                <authentication>required</authentication>
+            </api-access>
+        </requirement>
+        
+        <requirement id="4">
+            <description>The secured part also has a role system (the roles are `ADMIN` and `USER` for now)</description>
+            <roles>
+                <role>ADMIN</role>
+                <role>USER</role>
+            </roles>
+        </requirement>
+        
+        <requirement id="5">
+            <description>Refactor the package structure to express the intention of splitting the code into public and secured endpoints</description>
+        </requirement>
+        
+        <requirement id="6">
+            <description>Refactor the API endpoint URLs (e.g., admin routes start with `/api/admin`)</description>
+            <url-pattern>
+                <admin-prefix>/api/admin</admin-prefix>
+            </url-pattern>
+        </requirement>
+        
+        <requirement id="7">
+            <description>Refactor the Spring security configuration</description>
+        </requirement>
+    </requirement-list>
+</requirements>

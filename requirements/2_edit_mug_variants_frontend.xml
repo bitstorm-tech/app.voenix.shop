@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<requirements>
+    <title>Edit Mug Variants in the Frontend</title>
+    <description>Think hard to create the best possible architecture and plan.</description>
+    
+    <requirement-list>
+        <requirement id="1">
+            <description>Add the possibility to add and remove variants in @frontend/src/pages/admin/mugs/tabs/VariantsTab.tsx</description>
+        </requirement>
+        
+        <requirement id="2">
+            <description>See the mug variants controller to see how the work in the backend @backend/src/main/kotlin/com/jotoai/voenix/shop/mugs/controller/MugVariantController.kt</description>
+        </requirement>
+        
+        <requirement id="3">
+            <description>Added variants shall be displayed in a list with cards</description>
+        </requirement>
+        
+        <requirement id="4">
+            <description>It shall be possible to add or remove variants and persist these changes in the backend</description>
+        </requirement>
+        
+        <requirement id="5">
+            <description>It shall be possible to add variants to new mugs that are not yet stored in the backend</description>
+        </requirement>
+    </requirement-list>
+</requirements>

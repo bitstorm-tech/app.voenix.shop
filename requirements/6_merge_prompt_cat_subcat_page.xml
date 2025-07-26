@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<requirements>
+    <title>Merge prompt category and subcategory page into one page</title>
+    <description>The prompt categories page @frontend/src/pages/admin/PromptCategories.tsx and prompt subcategories page @frontend/src/pages/admin/PromptSubCategories.tsx shall be merged into one page with the name `Categories`. Think hard to create the best possible architecture and plan.</description>
+    
+    <requirement-list>
+        <requirement id="1">
+            <description>Implement one single page that includes prompt categories and prompt subcategories.</description>
+            <page>
+                <name>Categories</name>
+                <includes>
+                    <component>prompt categories</component>
+                    <component>prompt subcategories</component>
+                </includes>
+            </page>
+        </requirement>
+        
+        <requirement id="2">
+            <description>The page must have an easy-to-use design and user experience.</description>
+            <ux-requirement>easy-to-use</ux-requirement>
+        </requirement>
+        
+        <requirement id="3">
+            <description>It must be possible to add and edit categories and subcategories.</description>
+            <operations>
+                <operation>add categories</operation>
+                <operation>edit categories</operation>
+                <operation>add subcategories</operation>
+                <operation>edit subcategories</operation>
+            </operations>
+        </requirement>
+        
+        <requirement id="4">
+            <description>It must be visible clear to see the dependency between a category and its subcategories.</description>
+            <ui-requirement>clear-dependency-visualization</ui-requirement>
+        </requirement>
+    </requirement-list>
+</requirements>

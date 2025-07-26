@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<requirements>
+    <title>Add Lieferant and Versand Tab to the Mug Edit Page</title>
+    <description>Think hard to create the best possible architecture and plan.</description>
+    
+    <requirement-list>
+        <requirement id="1">
+            <description>Add two new tabs to @frontend/src/pages/admin/mugs/tabs/VariantsTab.tsx</description>
+        </requirement>
+        
+        <requirement id="2">
+            <description>Both tabs are empty for now</description>
+        </requirement>
+        
+        <requirement id="3">
+            <description>First tab is called `Lieferant`</description>
+            <tab>
+                <name>Lieferant</name>
+                <position>before Variants tab</position>
+            </tab>
+        </requirement>
+        
+        <requirement id="4">
+            <description>Second tab is called `Versand`</description>
+            <tab>
+                <name>Versand</name>
+                <position>before Variants tab</position>
+            </tab>
+        </requirement>
+        
+        <requirement id="5">
+            <description>The tabs should be placed before the `Variants` tab</description>
+        </requirement>
+    </requirement-list>
+</requirements>

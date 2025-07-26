@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<requirements>
+    <title>New feature for Suppliers</title>
+    <description>Implement a new feature `Supplier` for managing suppliers. Implement the necessary files in the backend and the frontend. Think hard to create the best possible architecture and plan.</description>
+    
+    <requirement-list>
+        <backend-requirements>
+            <requirement id="1">
+                <description>New Entity with all relevant code (Entity, Controller, DTOs, etc.)</description>
+            </requirement>
+            
+            <requirement id="2">
+                <description>The API should live in the admin package</description>
+                <api-location>admin package</api-location>
+            </requirement>
+            
+            <requirement id="3">
+                <description>Fields for the entity:</description>
+                <entity-fields>
+                    <field>
+                        <name>name</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>title</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>firstName</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>lastName</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>street</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>houseNumber</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>city</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>postalCode</name>
+                        <type>int</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>country</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>phoneNumber1</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>phoneNumber2</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>phoneNumber3</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>email</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                    <field>
+                        <name>website</name>
+                        <type>string</type>
+                        <nullable>true</nullable>
+                    </field>
+                </entity-fields>
+            </requirement>
+        </backend-requirements>
+        
+        <frontend-requirements>
+            <requirement id="4">
+                <description>The page to list all suppliers already exists: @frontend/src/pages/admin/Suppliers.tsx</description>
+                <existing-page>@frontend/src/pages/admin/Suppliers.tsx</existing-page>
+                <action>Add missing logic to the page and remove unnecessary code</action>
+            </requirement>
+            
+            <requirement id="5">
+                <description>Add a page to edit existing or create new supplier entries</description>
+            </requirement>
+            
+            <requirement id="6">
+                <description>Follow the design principles of existing NewOrEdit* pages</description>
+                <reference-pattern>NewOrEdit* pages</reference-pattern>
+            </requirement>
+        </frontend-requirements>
+    </requirement-list>
+</requirements>

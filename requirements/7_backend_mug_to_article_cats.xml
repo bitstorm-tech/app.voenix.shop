@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<requirements>
+    <title>Backend: Refactor Mug Categories to Article Categories</title>
+    <description>Because we unite every article (e.g., Mugs, T-Shirts, Pillows, etc.) under Articles. We need to refactor the package `mugs` to an article package with the name `articles`. Think hard to create the best possible architecture and plan.</description>
+    
+    <requirement-list>
+        <requirement id="1">
+            <description>Refactor the API package @backend/src/main/kotlin/com/jotoai/voenix/shop/api/admin/mugs</description>
+            <refactoring>
+                <from>api/admin/mugs</from>
+                <to>api/admin/articles</to>
+            </refactoring>
+        </requirement>
+        
+        <requirement id="2">
+            <description>Refactor the domain package @backend/src/main/kotlin/com/jotoai/voenix/shop/domain/mugs</description>
+            <refactoring>
+                <from>domain/mugs</from>
+                <to>domain/articles/mugs</to>
+            </refactoring>
+        </requirement>
+        
+        <requirement id="3">
+            <description>Add an intermediate package called `articles`</description>
+            <package-structure>
+                <create>domain/articles</create>
+            </package-structure>
+        </requirement>
+        
+        <requirement id="4">
+            <description>Move the package `mugs` inside the new package `articles`</description>
+            <package-structure>
+                <move>
+                    <from>domain/mugs</from>
+                    <to>domain/articles/mugs</to>
+                </move>
+            </package-structure>
+        </requirement>
+        
+        <requirement id="5">
+            <description>Think about all other related code that must be refactored</description>
+            <considerations>
+                <item>Import statements</item>
+                <item>Package declarations</item>
+                <item>Related services</item>
+                <item>Related controllers</item>
+            </considerations>
+        </requirement>
+    </requirement-list>
+</requirements>
