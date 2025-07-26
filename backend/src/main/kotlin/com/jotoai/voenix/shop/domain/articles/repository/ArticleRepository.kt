@@ -40,7 +40,35 @@ interface ArticleRepository : JpaRepository<Article, Long> {
         WHERE a.id = :id
     """,
     )
-    fun findByIdWithDetails(
+    fun findByIdWithBasicDetails(
+        @Param("id") id: Long,
+    ): Article?
+
+    @Query(
+        """
+        SELECT a FROM Article a 
+        LEFT JOIN FETCH a.category 
+        LEFT JOIN FETCH a.subcategory 
+        LEFT JOIN FETCH a.supplier 
+        LEFT JOIN FETCH a.mugVariants 
+        WHERE a.id = :id
+    """,
+    )
+    fun findMugByIdWithDetails(
+        @Param("id") id: Long,
+    ): Article?
+
+    @Query(
+        """
+        SELECT a FROM Article a 
+        LEFT JOIN FETCH a.category 
+        LEFT JOIN FETCH a.subcategory 
+        LEFT JOIN FETCH a.supplier 
+        LEFT JOIN FETCH a.shirtVariants 
+        WHERE a.id = :id
+    """,
+    )
+    fun findShirtByIdWithDetails(
         @Param("id") id: Long,
     ): Article?
 

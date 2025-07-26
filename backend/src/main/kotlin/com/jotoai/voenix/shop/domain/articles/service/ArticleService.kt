@@ -65,9 +65,17 @@ class ArticleService(
 
     @Transactional(readOnly = true)
     fun findById(id: Long): ArticleWithDetailsDto {
-        val article =
-            articleRepository.findByIdWithDetails(id)
+        // First, fetch article with basic details to determine the type
+        val articleBasic =
+            articleRepository.findByIdWithBasicDetails(id)
                 ?: throw ResourceNotFoundException("Article not found with id: $id")
+
+        // Then fetch with appropriate variants based on article type
+        val article =
+            when (articleBasic.articleType) {
+                ArticleType.MUG -> articleRepository.findMugByIdWithDetails(id)
+                ArticleType.SHIRT -> articleRepository.findShirtByIdWithDetails(id)
+            } ?: throw ResourceNotFoundException("Article not found with id: $id")
 
         return buildArticleWithDetailsDto(article)
     }
