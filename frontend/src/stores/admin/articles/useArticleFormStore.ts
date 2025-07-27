@@ -31,11 +31,6 @@ interface ArticleFormState {
   // ========== UI State ==========
   isEdit: boolean;
   activeTab: string;
-  // Price calculation UI state
-  purchasePriceCorresponds: boolean;
-  salesPriceCorresponds: boolean;
-  purchaseActiveRow: 'cost' | 'costPercent';
-  salesActiveRow: 'margin' | 'marginPercent' | 'total';
 
   // ========== Article Actions ==========
   initializeForm: (articleId?: number, articleData?: Article) => void;
@@ -61,11 +56,6 @@ interface ArticleFormState {
   updateSalesTotal: (field: 'net' | 'gross', value: number) => void;
   updateSalesVatRate: (percent: number, vatRateId?: number) => void;
   setSalesCalculationMode: (mode: 'NET' | 'GROSS') => void;
-  // Cost UI state actions
-  setPurchasePriceCorresponds: (value: boolean) => void;
-  setSalesPriceCorresponds: (value: boolean) => void;
-  setPurchaseActiveRow: (row: 'cost' | 'costPercent') => void;
-  setSalesActiveRow: (row: 'margin' | 'marginPercent' | 'total') => void;
 
   // ========== Variant Actions ==========
   // Mug variant actions
@@ -140,6 +130,12 @@ const initialCostCalculation: CostCalculation = {
   // Calculation mode
   purchaseCalculationMode: 'NET',
   salesCalculationMode: 'NET',
+
+  // UI state
+  purchasePriceCorresponds: false,
+  salesPriceCorresponds: false,
+  purchaseActiveRow: 'cost',
+  salesActiveRow: 'margin',
 };
 
 export const useArticleFormStore = create<ArticleFormState>()(
@@ -153,10 +149,6 @@ export const useArticleFormStore = create<ArticleFormState>()(
     temporaryShirtVariants: [],
     isEdit: false,
     activeTab: 'general',
-    purchasePriceCorresponds: false,
-    salesPriceCorresponds: false,
-    purchaseActiveRow: 'cost',
-    salesActiveRow: 'margin',
 
     // ========== Article Actions ==========
     initializeForm: (articleId, articleData) => {
@@ -516,7 +508,7 @@ export const useArticleFormStore = create<ArticleFormState>()(
         }
 
         // Recalculate sales totals with new VAT rate if not directly editing sales total
-        if (state.salesActiveRow !== 'total') {
+        if (state.costCalculation.salesActiveRow !== 'total') {
           const salesNet = state.costCalculation.purchaseTotalNet * (1 + state.costCalculation.marginPercent / 100);
           const salesTax = salesNet * (percent / 100);
           const salesGross = salesNet + salesTax;
@@ -538,30 +530,6 @@ export const useArticleFormStore = create<ArticleFormState>()(
     setSalesCalculationMode: (mode) => {
       set((state) => {
         state.costCalculation.salesCalculationMode = mode;
-      });
-    },
-
-    setPurchasePriceCorresponds: (value) => {
-      set((state) => {
-        state.purchasePriceCorresponds = value;
-      });
-    },
-
-    setSalesPriceCorresponds: (value) => {
-      set((state) => {
-        state.salesPriceCorresponds = value;
-      });
-    },
-
-    setPurchaseActiveRow: (row) => {
-      set((state) => {
-        state.purchaseActiveRow = row;
-      });
-    },
-
-    setSalesActiveRow: (row) => {
-      set((state) => {
-        state.salesActiveRow = row;
       });
     },
 
@@ -652,10 +620,6 @@ export const useArticleFormStore = create<ArticleFormState>()(
         state.temporaryShirtVariants = [];
         state.isEdit = false;
         state.activeTab = 'general';
-        state.purchasePriceCorresponds = false;
-        state.salesPriceCorresponds = false;
-        state.purchaseActiveRow = 'cost';
-        state.salesActiveRow = 'margin';
       });
     },
   })),

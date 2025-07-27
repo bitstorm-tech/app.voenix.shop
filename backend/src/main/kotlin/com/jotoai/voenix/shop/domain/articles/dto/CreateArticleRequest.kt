@@ -28,6 +28,8 @@ data class CreateArticleRequest(
     val mugDetails: CreateMugDetailsRequest? = null,
     // Shirt-specific details
     val shirtDetails: CreateShirtDetailsRequest? = null,
+    // Cost calculation
+    val costCalculation: CreateCostCalculationRequest? = null,
 )
 
 data class CreateMugDetailsRequest(

@@ -13,10 +13,6 @@ export default function PriceCalculationTab() {
 
   const {
     costCalculation,
-    purchasePriceCorresponds,
-    salesPriceCorresponds,
-    purchaseActiveRow,
-    salesActiveRow,
     updateCostField,
     updatePurchasePrice,
     updatePurchaseCost,
@@ -28,10 +24,6 @@ export default function PriceCalculationTab() {
     updateSalesTotal,
     updateSalesVatRate,
     setSalesCalculationMode,
-    setPurchasePriceCorresponds,
-    setSalesPriceCorresponds,
-    setPurchaseActiveRow,
-    setSalesActiveRow,
   } = useArticleFormStore();
 
   const handlePurchaseVatRateChange = (vatRateId: string) => {
@@ -151,8 +143,8 @@ export default function PriceCalculationTab() {
                 id="purchaseCostRadio"
                 name="purchaseActiveField"
                 value="cost"
-                checked={purchaseActiveRow === 'cost'}
-                onChange={() => setPurchaseActiveRow('cost')}
+                checked={costCalculation.purchaseActiveRow === 'cost'}
+                onChange={() => updateCostField('purchaseActiveRow', 'cost')}
                 className="h-4 w-4"
               />
               <FieldLabel htmlFor="purchaseCostRadio" optional>
@@ -162,14 +154,14 @@ export default function PriceCalculationTab() {
             <CurrencyInput
               value={costCalculation.purchaseCostNet}
               onChange={(value) => updatePurchaseCost('net', value)}
-              disabled={costCalculation.purchaseCalculationMode === 'GROSS' || purchaseActiveRow !== 'cost'}
+              disabled={costCalculation.purchaseCalculationMode === 'GROSS' || costCalculation.purchaseActiveRow !== 'cost'}
               min={0}
             />
             <CurrencyInput value={costCalculation.purchaseCostTax} onChange={() => {}} disabled min={0} />
             <CurrencyInput
               value={costCalculation.purchaseCostGross}
               onChange={(value) => updatePurchaseCost('gross', value)}
-              disabled={costCalculation.purchaseCalculationMode === 'NET' || purchaseActiveRow !== 'cost'}
+              disabled={costCalculation.purchaseCalculationMode === 'NET' || costCalculation.purchaseActiveRow !== 'cost'}
               min={0}
             />
           </div>
@@ -182,8 +174,8 @@ export default function PriceCalculationTab() {
                 id="purchaseCostPercentRadio"
                 name="purchaseActiveField"
                 value="costPercent"
-                checked={purchaseActiveRow === 'costPercent'}
-                onChange={() => setPurchaseActiveRow('costPercent')}
+                checked={costCalculation.purchaseActiveRow === 'costPercent'}
+                onChange={() => updateCostField('purchaseActiveRow', 'costPercent')}
                 className="h-4 w-4"
               />
               <FieldLabel htmlFor="purchaseCostPercentRadio" optional>
@@ -193,7 +185,7 @@ export default function PriceCalculationTab() {
             <CurrencyInput
               value={costCalculation.purchaseCostPercent}
               onChange={updatePurchaseCostPercent}
-              disabled={purchaseActiveRow !== 'costPercent'}
+              disabled={costCalculation.purchaseActiveRow !== 'costPercent'}
               min={0}
               max={100}
               currency="%"
@@ -216,8 +208,8 @@ export default function PriceCalculationTab() {
           <div className="flex items-center space-x-2 pt-2">
             <Checkbox
               id="purchasePriceCorresponds"
-              checked={purchasePriceCorresponds}
-              onCheckedChange={(checked) => setPurchasePriceCorresponds(checked === true)}
+              checked={costCalculation.purchasePriceCorresponds}
+              onCheckedChange={(checked) => updateCostField('purchasePriceCorresponds', checked === true)}
             />
             <FieldLabel htmlFor="purchasePriceCorresponds" className="text-sm font-normal" optional>
               Price corresponds to
@@ -301,8 +293,8 @@ export default function PriceCalculationTab() {
                 id="salesMarginRadio"
                 name="salesActiveField"
                 value="margin"
-                checked={salesActiveRow === 'margin'}
-                onChange={() => setSalesActiveRow('margin')}
+                checked={costCalculation.salesActiveRow === 'margin'}
+                onChange={() => updateCostField('salesActiveRow', 'margin')}
                 className="h-4 w-4"
               />
               <FieldLabel htmlFor="salesMarginRadio" optional>
@@ -312,13 +304,13 @@ export default function PriceCalculationTab() {
             <CurrencyInput
               value={costCalculation.marginNet}
               onChange={(value) => updateMargin('net', value)}
-              disabled={costCalculation.salesCalculationMode === 'GROSS' || salesActiveRow !== 'margin'}
+              disabled={costCalculation.salesCalculationMode === 'GROSS' || costCalculation.salesActiveRow !== 'margin'}
             />
             <CurrencyInput value={costCalculation.marginTax} onChange={() => {}} disabled />
             <CurrencyInput
               value={costCalculation.marginGross}
               onChange={(value) => updateMargin('gross', value)}
-              disabled={costCalculation.salesCalculationMode === 'NET' || salesActiveRow !== 'margin'}
+              disabled={costCalculation.salesCalculationMode === 'NET' || costCalculation.salesActiveRow !== 'margin'}
             />
           </div>
 
@@ -330,8 +322,8 @@ export default function PriceCalculationTab() {
                 id="salesMarginPercentRadio"
                 name="salesActiveField"
                 value="marginPercent"
-                checked={salesActiveRow === 'marginPercent'}
-                onChange={() => setSalesActiveRow('marginPercent')}
+                checked={costCalculation.salesActiveRow === 'marginPercent'}
+                onChange={() => updateCostField('salesActiveRow', 'marginPercent')}
                 className="h-4 w-4"
               />
               <FieldLabel htmlFor="salesMarginPercentRadio" optional>
@@ -341,7 +333,7 @@ export default function PriceCalculationTab() {
             <CurrencyInput
               value={costCalculation.marginPercent}
               onChange={updateMarginPercent}
-              disabled={salesActiveRow !== 'marginPercent'}
+              disabled={costCalculation.salesActiveRow !== 'marginPercent'}
               min={0}
               currency="%"
             />
@@ -359,8 +351,8 @@ export default function PriceCalculationTab() {
                 id="salesTotalRadio"
                 name="salesActiveField"
                 value="total"
-                checked={salesActiveRow === 'total'}
-                onChange={() => setSalesActiveRow('total')}
+                checked={costCalculation.salesActiveRow === 'total'}
+                onChange={() => updateCostField('salesActiveRow', 'total')}
                 className="h-4 w-4"
               />
               <FieldLabel htmlFor="salesTotalRadio">Sales Total</FieldLabel>
@@ -368,13 +360,13 @@ export default function PriceCalculationTab() {
             <CurrencyInput
               value={costCalculation.salesTotalNet}
               onChange={(value) => updateSalesTotal('net', value)}
-              disabled={costCalculation.salesCalculationMode === 'GROSS' || salesActiveRow !== 'total'}
+              disabled={costCalculation.salesCalculationMode === 'GROSS' || costCalculation.salesActiveRow !== 'total'}
             />
             <CurrencyInput value={costCalculation.salesTotalTax} onChange={() => {}} disabled />
             <CurrencyInput
               value={costCalculation.salesTotalGross}
               onChange={(value) => updateSalesTotal('gross', value)}
-              disabled={costCalculation.salesCalculationMode === 'NET' || salesActiveRow !== 'total'}
+              disabled={costCalculation.salesCalculationMode === 'NET' || costCalculation.salesActiveRow !== 'total'}
             />
           </div>
 
@@ -382,8 +374,8 @@ export default function PriceCalculationTab() {
           <div className="flex items-center space-x-2 pt-2">
             <Checkbox
               id="salesPriceCorresponds"
-              checked={salesPriceCorresponds}
-              onCheckedChange={(checked) => setSalesPriceCorresponds(checked === true)}
+              checked={costCalculation.salesPriceCorresponds}
+              onCheckedChange={(checked) => updateCostField('salesPriceCorresponds', checked === true)}
             />
             <FieldLabel htmlFor="salesPriceCorresponds" className="text-sm font-normal" optional>
               Price corresponds to

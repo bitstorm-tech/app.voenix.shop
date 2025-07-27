@@ -161,6 +161,12 @@ export interface CostCalculation {
   // Calculation mode
   purchaseCalculationMode: 'NET' | 'GROSS';
   salesCalculationMode: 'NET' | 'GROSS';
+
+  // UI state
+  purchasePriceCorresponds: boolean;
+  salesPriceCorresponds: boolean;
+  purchaseActiveRow: 'cost' | 'costPercent';
+  salesActiveRow: 'margin' | 'marginPercent' | 'total';
 }
 
 export interface CreateCostCalculationRequest extends Partial<CostCalculation> {}

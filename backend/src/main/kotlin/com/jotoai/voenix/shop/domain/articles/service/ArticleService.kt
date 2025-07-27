@@ -7,17 +7,22 @@ import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleSubCa
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleDto
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleRequest
+import com.jotoai.voenix.shop.domain.articles.dto.CreateCostCalculationRequest
 import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.UpdateArticleRequest
+import com.jotoai.voenix.shop.domain.articles.dto.UpdateCostCalculationRequest
 import com.jotoai.voenix.shop.domain.articles.entity.Article
+import com.jotoai.voenix.shop.domain.articles.entity.CostCalculation
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
 import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
+import com.jotoai.voenix.shop.domain.articles.repository.CostCalculationRepository
 import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepository
 import com.jotoai.voenix.shop.domain.suppliers.repository.SupplierRepository
+import com.jotoai.voenix.shop.domain.vat.repository.ValueAddedTaxRepository
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -31,6 +36,8 @@ class ArticleService(
     private val articleCategoryRepository: ArticleCategoryRepository,
     private val articleSubCategoryRepository: ArticleSubCategoryRepository,
     private val supplierRepository: SupplierRepository,
+    private val costCalculationRepository: CostCalculationRepository,
+    private val valueAddedTaxRepository: ValueAddedTaxRepository,
     private val mugDetailsService: MugDetailsService,
     private val shirtDetailsService: ShirtDetailsService,
 ) {
@@ -148,6 +155,11 @@ class ArticleService(
                 }
         }
 
+        // Create cost calculation if provided
+        request.costCalculation?.let { costCalcRequest ->
+            createCostCalculation(savedArticle, costCalcRequest)
+        }
+
         return findById(savedArticle.id!!)
     }
 
@@ -208,6 +220,11 @@ class ArticleService(
                 request.shirtDetails?.let {
                     shirtDetailsService.update(updatedArticle, it)
                 }
+        }
+
+        // Update cost calculation if provided
+        request.costCalculation?.let { costCalcRequest ->
+            updateCostCalculation(updatedArticle, costCalcRequest)
         }
 
         return findById(updatedArticle.id!!)
@@ -301,8 +318,162 @@ class ArticleService(
             shirtVariants = if (article.articleType == ArticleType.SHIRT) article.shirtVariants.map { it.toDto() } else null,
             mugDetails = mugDetails,
             shirtDetails = shirtDetails,
+            costCalculation = article.costCalculation?.toDto(),
             createdAt = article.createdAt,
             updatedAt = article.updatedAt,
         )
+    }
+
+    private fun createCostCalculation(
+        article: Article,
+        request: CreateCostCalculationRequest,
+    ) {
+        val purchaseVatRate =
+            request.purchaseVatRateId?.let {
+                valueAddedTaxRepository
+                    .findById(it)
+                    .orElseThrow { ResourceNotFoundException("Purchase VAT rate not found with id: $it") }
+            }
+
+        val salesVatRate =
+            request.salesVatRateId?.let {
+                valueAddedTaxRepository
+                    .findById(it)
+                    .orElseThrow { ResourceNotFoundException("Sales VAT rate not found with id: $it") }
+            }
+
+        val costCalculation =
+            CostCalculation(
+                article = article,
+                purchasePriceNet = request.purchasePriceNet,
+                purchasePriceTax = request.purchasePriceTax,
+                purchasePriceGross = request.purchasePriceGross,
+                purchaseCostNet = request.purchaseCostNet,
+                purchaseCostTax = request.purchaseCostTax,
+                purchaseCostGross = request.purchaseCostGross,
+                purchaseCostPercent = request.purchaseCostPercent,
+                purchaseTotalNet = request.purchaseTotalNet,
+                purchaseTotalTax = request.purchaseTotalTax,
+                purchaseTotalGross = request.purchaseTotalGross,
+                purchasePriceUnit = request.purchasePriceUnit,
+                purchaseVatRate = purchaseVatRate,
+                purchaseVatRatePercent = request.purchaseVatRatePercent,
+                purchaseCalculationMode = request.purchaseCalculationMode,
+                salesVatRate = salesVatRate,
+                salesVatRatePercent = request.salesVatRatePercent,
+                salesMarginNet = request.salesMarginNet,
+                salesMarginTax = request.salesMarginTax,
+                salesMarginGross = request.salesMarginGross,
+                salesMarginPercent = request.salesMarginPercent,
+                salesTotalNet = request.salesTotalNet,
+                salesTotalTax = request.salesTotalTax,
+                salesTotalGross = request.salesTotalGross,
+                salesPriceUnit = request.salesPriceUnit,
+                salesCalculationMode = request.salesCalculationMode,
+                purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum(),
+                salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum(),
+                purchaseActiveRow = request.purchaseActiveRow,
+                salesActiveRow = request.salesActiveRow,
+            )
+
+        costCalculationRepository.save(costCalculation)
+    }
+
+    private fun updateCostCalculation(
+        article: Article,
+        request: UpdateCostCalculationRequest,
+    ) {
+        val costCalculation =
+            costCalculationRepository
+                .findByArticleId(article.id!!)
+                .orElse(null)
+
+        if (costCalculation != null) {
+            // Update existing cost calculation
+            val purchaseVatRate =
+                request.purchaseVatRateId?.let {
+                    valueAddedTaxRepository
+                        .findById(it)
+                        .orElseThrow { ResourceNotFoundException("Purchase VAT rate not found with id: $it") }
+                }
+
+            val salesVatRate =
+                request.salesVatRateId?.let {
+                    valueAddedTaxRepository
+                        .findById(it)
+                        .orElseThrow { ResourceNotFoundException("Sales VAT rate not found with id: $it") }
+                }
+
+            val updatedCostCalculation =
+                costCalculation.copy(
+                    purchasePriceNet = request.purchasePriceNet,
+                    purchasePriceTax = request.purchasePriceTax,
+                    purchasePriceGross = request.purchasePriceGross,
+                    purchaseCostNet = request.purchaseCostNet,
+                    purchaseCostTax = request.purchaseCostTax,
+                    purchaseCostGross = request.purchaseCostGross,
+                    purchaseCostPercent = request.purchaseCostPercent,
+                    purchaseTotalNet = request.purchaseTotalNet,
+                    purchaseTotalTax = request.purchaseTotalTax,
+                    purchaseTotalGross = request.purchaseTotalGross,
+                    purchasePriceUnit = request.purchasePriceUnit,
+                    purchaseVatRate = purchaseVatRate,
+                    purchaseVatRatePercent = request.purchaseVatRatePercent,
+                    purchaseCalculationMode = request.purchaseCalculationMode,
+                    salesVatRate = salesVatRate,
+                    salesVatRatePercent = request.salesVatRatePercent,
+                    salesMarginNet = request.salesMarginNet,
+                    salesMarginTax = request.salesMarginTax,
+                    salesMarginGross = request.salesMarginGross,
+                    salesMarginPercent = request.salesMarginPercent,
+                    salesTotalNet = request.salesTotalNet,
+                    salesTotalTax = request.salesTotalTax,
+                    salesTotalGross = request.salesTotalGross,
+                    salesPriceUnit = request.salesPriceUnit,
+                    salesCalculationMode = request.salesCalculationMode,
+                    purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum(),
+                    salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum(),
+                    purchaseActiveRow = request.purchaseActiveRow,
+                    salesActiveRow = request.salesActiveRow,
+                )
+
+            costCalculationRepository.save(updatedCostCalculation)
+        } else {
+            // Create new cost calculation if it doesn't exist
+            createCostCalculation(
+                article,
+                CreateCostCalculationRequest(
+                    purchasePriceNet = request.purchasePriceNet,
+                    purchasePriceTax = request.purchasePriceTax,
+                    purchasePriceGross = request.purchasePriceGross,
+                    purchaseCostNet = request.purchaseCostNet,
+                    purchaseCostTax = request.purchaseCostTax,
+                    purchaseCostGross = request.purchaseCostGross,
+                    purchaseCostPercent = request.purchaseCostPercent,
+                    purchaseTotalNet = request.purchaseTotalNet,
+                    purchaseTotalTax = request.purchaseTotalTax,
+                    purchaseTotalGross = request.purchaseTotalGross,
+                    purchasePriceUnit = request.purchasePriceUnit,
+                    purchaseVatRateId = request.purchaseVatRateId,
+                    purchaseVatRatePercent = request.purchaseVatRatePercent,
+                    purchaseCalculationMode = request.purchaseCalculationMode,
+                    salesVatRateId = request.salesVatRateId,
+                    salesVatRatePercent = request.salesVatRatePercent,
+                    salesMarginNet = request.salesMarginNet,
+                    salesMarginTax = request.salesMarginTax,
+                    salesMarginGross = request.salesMarginGross,
+                    salesMarginPercent = request.salesMarginPercent,
+                    salesTotalNet = request.salesTotalNet,
+                    salesTotalTax = request.salesTotalTax,
+                    salesTotalGross = request.salesTotalGross,
+                    salesPriceUnit = request.salesPriceUnit,
+                    salesCalculationMode = request.salesCalculationMode,
+                    purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum(),
+                    salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum(),
+                    purchaseActiveRow = request.purchaseActiveRow,
+                    salesActiveRow = request.salesActiveRow,
+                ),
+            )
+        }
     }
 }
