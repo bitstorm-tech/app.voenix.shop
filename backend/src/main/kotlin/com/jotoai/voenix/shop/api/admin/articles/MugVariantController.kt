@@ -101,4 +101,13 @@ class MugVariantController(
 
         return ResponseEntity.ok(updatedVariant)
     }
+
+    @DeleteMapping("/variants/{variantId}/image")
+    fun deleteVariantImage(
+        @PathVariable variantId: Long,
+    ): ResponseEntity<MugArticleVariantDto> {
+        logger.info("Deleting image for variant $variantId")
+        val updatedVariant = mugVariantService.removeExampleImage(variantId)
+        return ResponseEntity.ok(updatedVariant)
+    }
 }

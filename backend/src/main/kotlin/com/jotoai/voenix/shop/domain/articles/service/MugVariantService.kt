@@ -46,7 +46,6 @@ class MugVariantService(
                 insideColorCode = request.insideColorCode,
                 outsideColorCode = request.outsideColorCode,
                 name = request.name,
-                exampleImageFilename = request.exampleImageFilename,
                 supplierArticleNumber = request.supplierArticleNumber,
                 isDefault = shouldBeDefault,
             )
@@ -72,7 +71,6 @@ class MugVariantService(
             insideColorCode = request.insideColorCode
             outsideColorCode = request.outsideColorCode
             name = request.name
-            exampleImageFilename = request.exampleImageFilename
             supplierArticleNumber = request.supplierArticleNumber
             isDefault = request.isDefault
         }
@@ -125,6 +123,26 @@ class MugVariantService(
                 ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
 
         variant.exampleImageFilename = filename
+        return mugVariantRepository.save(variant).toDto()
+    }
+
+    @Transactional
+    fun removeExampleImage(variantId: Long): MugArticleVariantDto {
+        val variant =
+            mugVariantRepository.findByIdWithArticle(variantId).orElseGet(null)
+                ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
+
+        // Delete the image file if it exists
+        variant.exampleImageFilename?.let { filename ->
+            try {
+                imageService.delete(filename, ImageType.MUG_VARIANT_EXAMPLE)
+            } catch (e: Exception) {
+                logger.warn("Failed to delete mug variant example image: $filename", e)
+            }
+        }
+
+        // Clear the filename in the database
+        variant.exampleImageFilename = null
         return mugVariantRepository.save(variant).toDto()
     }
 }

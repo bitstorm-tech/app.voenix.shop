@@ -13,7 +13,6 @@ data class CreateMugArticleVariantRequest(
     val outsideColorCode: String = "#ffffff",
     @field:NotBlank(message = "Name is required")
     val name: String,
-    val exampleImageFilename: String? = null,
     @field:Size(max = 100, message = "Supplier article number must not exceed 100 characters")
     val supplierArticleNumber: String? = null,
     val isDefault: Boolean = false,

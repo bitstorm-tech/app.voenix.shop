@@ -243,6 +243,7 @@ export const articlesApi = {
     });
     return handleResponse<ArticleMugVariant>(response); // Return proper type matching backend response
   },
+  removeMugVariantImage: (variantId: number) => api.delete<ArticleMugVariant>(`/admin/articles/mugs/variants/${variantId}/image`),
   // Shirt variant management
   createShirtVariant: (articleId: number, data: CreateArticleShirtVariantRequest) =>
     api.post<ArticleShirtVariant>(`/admin/articles/shirts/${articleId}/variants`, data),

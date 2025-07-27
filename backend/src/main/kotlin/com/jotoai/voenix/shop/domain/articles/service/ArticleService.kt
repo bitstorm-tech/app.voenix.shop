@@ -231,7 +231,6 @@ class ArticleService(
                 insideColorCode = request.insideColorCode,
                 outsideColorCode = request.outsideColorCode,
                 name = request.name,
-                exampleImageFilename = request.exampleImageFilename,
             )
 
         return articleMugVariantRepository.save(variant)

@@ -8,10 +8,10 @@ export interface ArticleMugVariant {
   insideColorCode: string;
   outsideColorCode: string;
   name: string;
-  exampleImageUrl?: string;
+  exampleImageUrl?: string | null;
   supplierArticleNumber?: string;
   isDefault: boolean;
-  exampleImageFilename?: string;
+  exampleImageFilename?: string | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -94,7 +94,6 @@ export interface CreateArticleMugVariantRequest {
   insideColorCode: string;
   outsideColorCode: string;
   name: string;
-  exampleImageFilename?: string;
   supplierArticleNumber?: string;
   isDefault?: boolean;
 }

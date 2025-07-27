@@ -37,7 +37,6 @@ export default function MugVariantsTab({
     insideColorCode: '#ffffff',
     outsideColorCode: '#ffffff',
     name: '',
-    exampleImageFilename: '',
     supplierArticleNumber: '',
     isDefault: false,
   });
@@ -58,6 +57,7 @@ export default function MugVariantsTab({
   const [editingVariantId, setEditingVariantId] = useState<number | null>(null);
   const [editingTemporaryIndex, setEditingTemporaryIndex] = useState<number | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [imageRemoved, setImageRemoved] = useState(false);
 
   const createCroppedImage = async (
     imageUrl: string,
@@ -211,7 +211,11 @@ export default function MugVariantsTab({
     setImageFile(null);
     setCropData(null);
     setImageDimensions(null);
-    setNewVariant({ ...newVariant, exampleImageFilename: '' });
+    // Clear the existing image URL when removing image
+    if (existingImageUrl) {
+      setImageRemoved(true);
+    }
+    setExistingImageUrl(null);
   };
 
   const handleEditVariant = (variant: ArticleMugVariant) => {
@@ -221,15 +225,18 @@ export default function MugVariantsTab({
       insideColorCode: variant.insideColorCode,
       outsideColorCode: variant.outsideColorCode,
       name: variant.name,
-      exampleImageFilename: variant.exampleImageFilename || '',
       supplierArticleNumber: variant.supplierArticleNumber || '',
       isDefault: variant.isDefault || false,
     });
+    setImageRemoved(false);
 
     // Handle existing image preview
     if (variant.exampleImageUrl) {
       setImagePreviewUrl(variant.exampleImageUrl);
       setExistingImageUrl(variant.exampleImageUrl);
+    } else {
+      setImagePreviewUrl(null);
+      setExistingImageUrl(null);
     }
   };
 
@@ -240,21 +247,21 @@ export default function MugVariantsTab({
       insideColorCode: variant.insideColorCode,
       outsideColorCode: variant.outsideColorCode,
       name: variant.name,
-      exampleImageFilename: variant.exampleImageFilename || '',
       supplierArticleNumber: variant.supplierArticleNumber || '',
       isDefault: variant.isDefault || false,
     });
+    setImageRemoved(false);
   };
 
   const handleCancelEdit = () => {
     setEditingVariantId(null);
     setEditingTemporaryIndex(null);
     setExistingImageUrl(null);
+    setImageRemoved(false);
     setNewVariant({
       insideColorCode: '#ffffff',
       outsideColorCode: '#ffffff',
       name: '',
-      exampleImageFilename: '',
       supplierArticleNumber: '',
       isDefault: false,
     });
@@ -293,10 +300,10 @@ export default function MugVariantsTab({
     if (!articleId) {
       // Handle temporary variant for unsaved article
       const variantToSave = { ...newVariant };
-      if (imageFile) {
-        // For temporary variants, we'll store the filename and handle upload when article is saved
-        variantToSave.exampleImageFilename = imageFile.name;
-      }
+
+      // Store image file reference separately to be handled when article is saved
+      // NOTE: Image files for temporary variants need to be stored in the parent component
+      // and uploaded after the article and variant are created
 
       if (editingTemporaryIndex !== null && onUpdateTemporaryVariant) {
         // Update existing temporary variant
@@ -317,10 +324,31 @@ export default function MugVariantsTab({
       let response: ArticleMugVariant;
 
       if (isEditing && editingVariantId) {
-        // Update existing variant
-        response = await articlesApi.updateMugVariant(editingVariantId, newVariant);
+        // Update existing variant without image data
+        const updateRequest: CreateArticleMugVariantRequest = {
+          insideColorCode: newVariant.insideColorCode,
+          outsideColorCode: newVariant.outsideColorCode,
+          name: newVariant.name,
+          supplierArticleNumber: newVariant.supplierArticleNumber,
+          isDefault: newVariant.isDefault,
+        };
+
+        response = await articlesApi.updateMugVariant(editingVariantId, updateRequest);
+
+        // Handle image removal if user removed the existing image
+        if (imageRemoved && existingImageUrl && !imageFile) {
+          try {
+            await articlesApi.removeMugVariantImage(editingVariantId);
+            response.exampleImageFilename = null;
+            response.exampleImageUrl = null;
+            toast.success('Image removed successfully');
+          } catch (error) {
+            console.error('Error removing variant image:', error);
+            toast.error('Failed to remove image');
+          }
+        }
       } else {
-        // Create new variant
+        // Create new variant without image data
         response = await articlesApi.createMugVariant(articleId, newVariant);
       }
 
@@ -670,15 +698,9 @@ export default function MugVariantsTab({
                       )}
                     </TableCell>
                     <TableCell>
-                      {variant.exampleImageFilename ? (
-                        <div className="flex h-10 w-10 items-center justify-center rounded border bg-blue-100">
-                          <ImageIcon className="h-4 w-4 text-blue-600" />
-                        </div>
-                      ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded border bg-gray-100">
-                          <ImageIcon className="h-4 w-4 text-gray-400" />
-                        </div>
-                      )}
+                      <div className="flex h-10 w-10 items-center justify-center rounded border bg-gray-100">
+                        <ImageIcon className="h-4 w-4 text-gray-400" />
+                      </div>
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
