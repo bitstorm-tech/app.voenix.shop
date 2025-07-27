@@ -3,11 +3,13 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
+import { InputWithCopy } from '@/components/ui/InputWithCopy';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import type { CreatePromptRequest, PromptSlotUpdate, UpdatePromptRequest } from '@/lib/api';
 import { imagesApi, promptCategoriesApi, promptsApi, promptSubCategoriesApi } from '@/lib/api';
+import { generatePromptNumber, getArticleNumberPlaceholder } from '@/lib/articleNumberUtils';
 import type { PromptCategory, PromptSubCategory } from '@/types/prompt';
 import { Upload, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -25,6 +27,7 @@ export default function NewOrEditPrompt() {
     subcategoryId: 0,
     active: true,
   });
+  const [promptId, setPromptId] = useState<number | null>(null);
   const [selectedSlotIds, setSelectedSlotIds] = useState<number[]>([]);
   const [categories, setCategories] = useState<PromptCategory[]>([]);
   const [subcategories, setSubcategories] = useState<PromptSubCategory[]>([]);
@@ -70,6 +73,7 @@ export default function NewOrEditPrompt() {
     try {
       setInitialLoading(true);
       const prompt = await promptsApi.getById(parseInt(id));
+      setPromptId(prompt.id);
       setFormData({
         title: prompt.title || '',
         promptText: prompt.promptText || '',
@@ -262,6 +266,16 @@ export default function NewOrEditPrompt() {
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Enter prompt title"
                 required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="promptNumber">Prompt Number</Label>
+              <InputWithCopy
+                id="promptNumber"
+                value={generatePromptNumber(formData.categoryId || null, formData.subcategoryId || null, promptId) || getArticleNumberPlaceholder()}
+                placeholder={getArticleNumberPlaceholder()}
+                className="[&_input]:bg-muted"
               />
             </div>
 

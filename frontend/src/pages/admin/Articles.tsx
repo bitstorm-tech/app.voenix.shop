@@ -1,17 +1,17 @@
 import { ArticleVariants } from '@/components/admin/articles/ArticleVariants';
 import { Accordion, AccordionContent, AccordionItem } from '@/components/ui/Accordion';
-import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useArticles, useDeleteArticle } from '@/hooks/queries/useArticles';
+import { cn } from '@/lib/utils';
 import type { ArticleType } from '@/types/article';
+import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { ChevronDownIcon, Edit, Filter, Package, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { cn } from '@/lib/utils';
 
 const articleTypeLabels: Record<ArticleType, string> = {
   MUG: 'Mug',
@@ -203,7 +203,7 @@ export default function Articles() {
                       </AccordionPrimitive.Header>
 
                       {/* Actions - Positioned absolutely */}
-                      <div className="absolute right-6 top-1/2 flex -translate-y-1/2 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                      <div className="absolute top-1/2 right-6 flex -translate-y-1/2 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                         <Button
                           variant="ghost"
                           size="sm"

@@ -1,10 +1,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { FieldLabel } from '@/components/ui/FieldLabel';
 import { Input } from '@/components/ui/Input';
+import { InputWithCopy } from '@/components/ui/InputWithCopy';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Switch } from '@/components/ui/Switch';
 import { Textarea } from '@/components/ui/Textarea';
 import { useSuppliers } from '@/hooks/queries/useSuppliers';
+import { generateArticleNumber, getArticleNumberPlaceholder } from '@/lib/articleNumberUtils';
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
 import type { ArticleType } from '@/types/article';
 import { Coffee, Shirt } from 'lucide-react';
@@ -79,6 +81,18 @@ export default function GeneralTab({ categories, subcategories }: GeneralTabProp
               placeholder="e.g., Premium Coffee Mug"
               className="max-w-xl"
             />
+          </div>
+
+          <div className="space-y-2">
+            <FieldLabel htmlFor="articleNumber">Article Number</FieldLabel>
+            <div className="max-w-xl">
+              <InputWithCopy
+                id="articleNumber"
+                value={generateArticleNumber(article.categoryId, article.subcategoryId, article.id) || getArticleNumberPlaceholder()}
+                placeholder={getArticleNumberPlaceholder()}
+                className="[&_input]:bg-muted"
+              />
+            </div>
           </div>
 
           <div className="space-y-2">
