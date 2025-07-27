@@ -84,18 +84,6 @@ export default function GeneralTab({ categories, subcategories }: GeneralTabProp
           </div>
 
           <div className="space-y-2">
-            <FieldLabel htmlFor="articleNumber">Article Number</FieldLabel>
-            <div className="max-w-xl">
-              <InputWithCopy
-                id="articleNumber"
-                value={generateArticleNumber(article.categoryId, article.subcategoryId, article.id) || getArticleNumberPlaceholder()}
-                placeholder={getArticleNumberPlaceholder()}
-                className="[&_input]:bg-muted"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
             <FieldLabel htmlFor="descriptionShort" required>
               Short Description
             </FieldLabel>
@@ -173,27 +161,67 @@ export default function GeneralTab({ categories, subcategories }: GeneralTabProp
             </div>
           </div>
 
-          <div className="space-y-2">
-            <FieldLabel htmlFor="supplier" optional>
-              Supplier
-            </FieldLabel>
-            <Select
-              value={article.supplierId?.toString() || 'none'}
-              onValueChange={(value) => updateArticle('supplierId', value === 'none' ? undefined : Number(value))}
-            >
-              <SelectTrigger id="supplier" className="max-w-xl">
-                <SelectValue placeholder="Select a supplier (optional)" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">No supplier</SelectItem>
-                {suppliers.map((supplier) => (
-                  <SelectItem key={supplier.id} value={supplier.id.toString()}>
-                    {supplier.name || `${supplier.firstName} ${supplier.lastName}`}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="space-y-2">
+              <FieldLabel htmlFor="supplier" optional>
+                Supplier
+              </FieldLabel>
+              <Select
+                value={article.supplierId?.toString() || 'none'}
+                onValueChange={(value) => updateArticle('supplierId', value === 'none' ? undefined : Number(value))}
+              >
+                <SelectTrigger id="supplier">
+                  <SelectValue placeholder="Select a supplier (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No supplier</SelectItem>
+                  {suppliers.map((supplier) => (
+                    <SelectItem key={supplier.id} value={supplier.id.toString()}>
+                      {supplier.name || `${supplier.firstName} ${supplier.lastName}`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <FieldLabel htmlFor="articleNumber">Article Number</FieldLabel>
+              <InputWithCopy
+                id="articleNumber"
+                value={generateArticleNumber(article.categoryId, article.subcategoryId, article.id) || getArticleNumberPlaceholder()}
+                placeholder={getArticleNumberPlaceholder()}
+                className="[&_input]:bg-muted"
+              />
+            </div>
           </div>
+
+          {article.supplierId && (
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <FieldLabel htmlFor="supplierArticleName" optional>
+                  Supplier Article Name
+                </FieldLabel>
+                <Input
+                  id="supplierArticleName"
+                  value={article.supplierArticleName || ''}
+                  onChange={(e) => updateArticle('supplierArticleName', e.target.value || undefined)}
+                  placeholder="e.g., Premium Ceramic Mug"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <FieldLabel htmlFor="supplierArticleNumber" optional>
+                  Supplier Article Number
+                </FieldLabel>
+                <Input
+                  id="supplierArticleNumber"
+                  value={article.supplierArticleNumber || ''}
+                  onChange={(e) => updateArticle('supplierArticleNumber', e.target.value || undefined)}
+                  placeholder="e.g., SKU-12345"
+                />
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

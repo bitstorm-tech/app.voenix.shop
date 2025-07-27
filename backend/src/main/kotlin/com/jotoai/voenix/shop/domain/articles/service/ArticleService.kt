@@ -118,6 +118,8 @@ class ArticleService(
                 category = category,
                 subcategory = subcategory,
                 supplier = supplier,
+                supplierArticleName = request.supplierArticleName,
+                supplierArticleNumber = request.supplierArticleNumber,
             )
 
         val savedArticle = articleRepository.save(article)
@@ -190,6 +192,8 @@ class ArticleService(
             this.category = category
             this.subcategory = subcategory
             this.supplier = supplier
+            this.supplierArticleName = request.supplierArticleName
+            this.supplierArticleNumber = request.supplierArticleNumber
         }
 
         val updatedArticle = articleRepository.save(article)
@@ -292,6 +296,8 @@ class ArticleService(
             subcategoryName = article.subcategory?.name,
             supplierId = article.supplier?.id,
             supplierName = article.supplier?.name,
+            supplierArticleName = article.supplierArticleName,
+            supplierArticleNumber = article.supplierArticleNumber,
             mugVariants = if (article.articleType == ArticleType.MUG) article.mugVariants.map { it.toDto() } else null,
             shirtVariants = if (article.articleType == ArticleType.SHIRT) article.shirtVariants.map { it.toDto() } else null,
             mugDetails = mugDetails,

@@ -49,6 +49,10 @@ data class Article(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id")
     var supplier: Supplier? = null,
+    @Column(name = "supplier_article_name")
+    var supplierArticleName: String? = null,
+    @Column(name = "supplier_article_number")
+    var supplierArticleNumber: String? = null,
     @OneToMany(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
     @BatchSize(size = 10)
     var mugVariants: MutableList<MugArticleVariant> = mutableListOf(),
@@ -76,6 +80,8 @@ data class Article(
             subcategoryName = this.subcategory?.name,
             supplierId = this.supplier?.id,
             supplierName = this.supplier?.name,
+            supplierArticleName = this.supplierArticleName,
+            supplierArticleNumber = this.supplierArticleNumber,
             mugVariants = if (this.articleType == ArticleType.MUG) this.mugVariants.map { it.toDto() } else null,
             shirtVariants = if (this.articleType == ArticleType.SHIRT) this.shirtVariants.map { it.toDto() } else null,
             createdAt = this.createdAt,

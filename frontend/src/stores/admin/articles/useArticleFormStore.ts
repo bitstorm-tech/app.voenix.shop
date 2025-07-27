@@ -96,6 +96,8 @@ const initialArticle: Partial<Article> = {
   articleType: 'MUG',
   categoryId: 0,
   supplierId: undefined,
+  supplierArticleName: undefined,
+  supplierArticleNumber: undefined,
   mugVariants: [],
   shirtVariants: [],
   mugDetails: {

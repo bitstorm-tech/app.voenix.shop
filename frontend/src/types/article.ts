@@ -61,6 +61,8 @@ export interface Article {
   subcategoryName?: string;
   supplierId?: number;
   supplierName?: string;
+  supplierArticleName?: string;
+  supplierArticleNumber?: string;
   mugVariants?: ArticleMugVariant[];
   shirtVariants?: ArticleShirtVariant[];
   mugDetails?: ArticleMugDetails;
@@ -79,6 +81,8 @@ export interface CreateArticleRequest {
   categoryId: number;
   subcategoryId?: number;
   supplierId?: number;
+  supplierArticleName?: string;
+  supplierArticleNumber?: string;
   mugVariants?: CreateArticleMugVariantRequest[];
   shirtVariants?: CreateArticleShirtVariantRequest[];
   mugDetails?: CreateMugDetailsRequest;

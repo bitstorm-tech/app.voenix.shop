@@ -17,6 +17,8 @@ data class UpdateArticleRequest(
     val categoryId: Long,
     val subcategoryId: Long? = null,
     val supplierId: Long? = null,
+    val supplierArticleName: String? = null,
+    val supplierArticleNumber: String? = null,
     // Mug-specific details
     val mugDetails: UpdateMugDetailsRequest? = null,
     // Shirt-specific details

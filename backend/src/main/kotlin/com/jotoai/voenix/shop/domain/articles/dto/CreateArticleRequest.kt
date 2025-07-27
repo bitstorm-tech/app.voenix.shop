@@ -20,6 +20,8 @@ data class CreateArticleRequest(
     val categoryId: Long,
     val subcategoryId: Long? = null,
     val supplierId: Long? = null,
+    val supplierArticleName: String? = null,
+    val supplierArticleNumber: String? = null,
     val mugVariants: List<CreateMugArticleVariantRequest>? = null,
     val shirtVariants: List<CreateShirtArticleVariantRequest>? = null,
     // Mug-specific details
