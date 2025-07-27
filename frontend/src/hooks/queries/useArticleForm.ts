@@ -1,4 +1,5 @@
 import { articlesApi } from '@/lib/api';
+import { convertCostCalculationToCents } from '@/lib/currency';
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
 import type { CreateArticleRequest, UpdateArticleRequest } from '@/types/article';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -106,7 +107,7 @@ export function useArticleFormQueries(articleId?: number) {
           supplierArticleNumber: article.supplierArticleNumber,
           mugDetails: article.mugDetails as any,
           shirtDetails: article.shirtDetails as any,
-          costCalculation: costCalculation,
+          costCalculation: convertCostCalculationToCents(costCalculation),
         };
 
         await updateArticleMutation.mutateAsync({
@@ -129,7 +130,7 @@ export function useArticleFormQueries(articleId?: number) {
           shirtVariants: article.articleType === 'SHIRT' ? temporaryShirtVariants : undefined,
           mugDetails: article.mugDetails as any,
           shirtDetails: article.shirtDetails as any,
-          costCalculation: costCalculation,
+          costCalculation: convertCostCalculationToCents(costCalculation),
         };
 
         await createArticleMutation.mutateAsync(createData);

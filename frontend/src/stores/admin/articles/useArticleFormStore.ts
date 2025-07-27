@@ -1,3 +1,4 @@
+import { convertCostCalculationToEuros } from '@/lib/currency';
 import type {
   Article,
   ArticleMugVariant,
@@ -115,9 +116,11 @@ const initialCostCalculation: CostCalculation = {
   purchaseTotalGross: 0,
   purchasePriceUnit: '1.00',
   purchaseVatRatePercent: 19,
+  purchaseVatRateId: undefined,
 
   // Sales section
   salesVatRatePercent: 19,
+  salesVatRateId: undefined,
   marginNet: 0,
   marginTax: 0,
   marginGross: 0,
@@ -166,9 +169,9 @@ export const useArticleFormStore = create<ArticleFormState>()(
             state.shirtVariants = articleData.shirtVariants;
           }
 
-          // Set price calculation
+          // Set price calculation (convert from cents to euros)
           if (articleData.costCalculation) {
-            state.costCalculation = articleData.costCalculation;
+            state.costCalculation = convertCostCalculationToEuros(articleData.costCalculation);
           }
         } else {
           // Reset to initial state for new article

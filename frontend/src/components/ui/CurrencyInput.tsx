@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils';
 import { forwardRef, useEffect, useRef, useState } from 'react';
 
 interface CurrencyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange' | 'value' | 'type'> {
-  value: number;
+  value: number | undefined;
   onChange: (value: number) => void;
   currency?: string;
   decimalPlaces?: number;
@@ -24,7 +24,11 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
     const [userSeparator, setUserSeparator] = useState<'.' | ','>(getLocaleSeparator());
 
     // Format number for display
-    const formatNumber = (num: number, separator?: '.' | ','): string => {
+    const formatNumber = (num: number | undefined, separator?: '.' | ','): string => {
+      // Handle undefined or null values
+      if (num === undefined || num === null) {
+        return '0' + (separator === ',' ? ',' : '.') + '0'.repeat(decimalPlaces);
+      }
       const formatted = num.toFixed(decimalPlaces);
       if (separator === ',') {
         return formatted.replace('.', ',');
@@ -53,7 +57,7 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
     // Update display value when prop value changes (only when not focused)
     useEffect(() => {
       if (!isFocused) {
-        setDisplayValue(formatNumber(value, userSeparator));
+        setDisplayValue(formatNumber(value ?? 0, userSeparator));
       }
     }, [value, isFocused, decimalPlaces, userSeparator]);
 
@@ -73,7 +77,7 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
         setDisplayValue(formatNumber(parsed, userSeparator));
       } else {
         // Reset to previous value if parsing failed
-        setDisplayValue(formatNumber(value, userSeparator));
+        setDisplayValue(formatNumber(value ?? 0, userSeparator));
       }
       props.onBlur?.(e);
     };
