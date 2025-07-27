@@ -13,6 +13,8 @@ Voenix Shop is a full-stack e-commerce application for creating custom mugs with
 
 The test credentials to login into the admin site are `a@a` / `test`.
 
+**Note**: For development tasks that involve both frontend and backend changes, consider using specialized subagents (backend-expert and frontend-expert) to work in parallel for maximum efficiency.
+
 ### Backend (Spring Boot)
 
 ```bash
@@ -38,10 +40,62 @@ npm run lint             # Run linter
 npm run format           # Run code formatter
 ```
 
+## Subagent Usage Guidelines
+
+### When to Use Specialized Subagents
+
+**ALWAYS** consider using specialized subagents for domain-specific tasks:
+
+1. **backend-expert**: Use for all backend-only tasks
+   - Creating/modifying Kotlin entities, DTOs, services, controllers
+   - Database migrations and repository changes
+   - Spring Boot configuration and security updates
+   - Backend testing and API endpoint implementation
+
+2. **frontend-expert**: Use for all frontend-only tasks
+   - React component creation and updates
+   - TypeScript type definitions
+   - State management (Zustand stores)
+   - UI/UX implementations with Tailwind CSS
+   - Frontend routing and form handling
+
+3. **general-purpose**: Use for complex searches and analysis
+   - Multi-file searches across the codebase
+   - Understanding code relationships and dependencies
+   - Investigating bugs that span multiple files
+
+4. **requirements-engineer**: Use for planning and requirements
+   - Breaking down complex features into tasks
+   - Identifying edge cases and considerations
+   - Creating comprehensive requirement documents
+
+### Parallel Execution Examples
+
+**Full-stack feature implementation:**
+```
+// Launch both agents simultaneously:
+Task(description="Backend VAT feature", prompt="...", subagent_type="backend-expert")
+Task(description="Frontend VAT feature", prompt="...", subagent_type="frontend-expert")
+```
+
+**Complex refactoring:**
+```
+// Use general-purpose for analysis, then specialized agents for implementation:
+Task(description="Find all VAT usages", prompt="...", subagent_type="general-purpose")
+// Then launch specialized agents based on findings
+```
+
+### Key Principles
+- **Think parallel**: Can this task be split between frontend/backend?
+- **Use expertise**: Each agent is optimized for their domain
+- **Avoid sequential work**: Don't switch between frontend/backend yourself
+- **Delegate searches**: Use agents for multi-file searches instead of multiple Grep calls
+
 ## Quality Assurance
 
 ### Common
 - Skeptical mode: question everything, suggest simpler explanations, stay grounded
+- **ALWAYS** use specialized subagents for domain-specific tasks (see Subagent Usage Guidelines above)
 - Use and spawn subagents to run tasks in parallel whenever possible
 - ALWAYS read the latest documentation from context7 mcp server
 - Use the puppeteer mcp server to check if the implementation looks right in the browser
@@ -50,6 +104,7 @@ npm run format           # Run code formatter
 - Document WHY decisions were made, not just WHAT the code does
 
 ### Frontend
+- **Use frontend-expert agent** for all React/TypeScript implementations
 - Don't use `React.memo`, `useCallback` or `useMemo` since the React compiler handles these optimizations automatically
 - Run the formatter in the frontend folder for all new or changed files at the end of the implementation
 - Make all React components and web pages responsive → working on Mobile and Desktop
@@ -58,6 +113,7 @@ npm run format           # Run code formatter
 - Test admin features with different role permissions
 
 ### Backend
+- **Use backend-expert agent** for all Kotlin/Spring Boot implementations
 - Check for compiler errors at the end of the implementation in the backend folder
 - Run the linter and formatter at the end of the implementation in the backend folder
 - Fix all linter errors when they arise
@@ -224,14 +280,19 @@ frontend/src/pages/admin/
 
 ## Important Development Notes
 
-1. **Package Manager**: Frontend uses npm (package-lock.json present)
-2. **Kotlin/Java Version**: Backend requires JDK 21+ with Kotlin 2.2.0
-3. **TypeScript**: Strict mode enabled - ensure proper typing
-4. **API Communication**: Frontend expects backend on http://localhost:8080
-5. **Database**: Ensure PostgreSQL is running before starting backend
-6. **Testing**: Backend tests recently added - run with `./gradlew test`
-7. **Linting**: Backend uses Ktlint, frontend needs ESLint configuration
-8. **Environment**: Use `.env` files for configuration (supported by spring-dotenv)
+1. **Subagent Usage**: ALWAYS use specialized agents for better efficiency:
+   - Full-stack features: Launch backend-expert and frontend-expert in parallel
+   - Backend-only changes: Use backend-expert agent
+   - Frontend-only changes: Use frontend-expert agent
+   - Complex searches: Use general-purpose agent
+2. **Package Manager**: Frontend uses npm (package-lock.json present)
+3. **Kotlin/Java Version**: Backend requires JDK 21+ with Kotlin 2.2.0
+4. **TypeScript**: Strict mode enabled - ensure proper typing
+5. **API Communication**: Frontend expects backend on http://localhost:8080
+6. **Database**: Ensure PostgreSQL is running before starting backend
+7. **Testing**: Backend tests recently added - run with `./gradlew test`
+8. **Linting**: Backend uses Ktlint, frontend needs ESLint configuration
+9. **Environment**: Use `.env` files for configuration (supported by spring-dotenv)
 
 ## API Endpoints
 
@@ -414,15 +475,3 @@ frontend/src/pages/admin/
    npm run lint
    npm run format
    ```
-
-### Deployment Considerations
-- Set production environment variables
-- Configure JWT secret keys
-- Enable HTTPS for production
-- Set up proper CORS origins
-- Configure session timeout values
-- Enable production logging profiles
-
-## Migration Context
-
-This project was migrated from Laravel to Spring Boot, and then from Java to Kotlin (per git history). The frontend appears to be newly created with modern React patterns.
