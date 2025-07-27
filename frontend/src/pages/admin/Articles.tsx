@@ -2,7 +2,7 @@ import { ArticleVariants } from '@/components/admin/articles/ArticleVariants';
 import { Accordion, AccordionContent, AccordionItem } from '@/components/ui/Accordion';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useArticles, useDeleteArticle } from '@/hooks/queries/useArticles';
@@ -112,16 +112,7 @@ export default function Articles() {
       </div>
 
       {/* Table Card */}
-      <Card>
-        <CardHeader className="px-6 py-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-medium">{typeFilter ? `${articleTypeLabels[typeFilter]}s` : 'All Articles'}</CardTitle>
-            <CardDescription>
-              {articles.length} {articles.length === 1 ? 'item' : 'items'}
-            </CardDescription>
-          </div>
-        </CardHeader>
-
+      <Card className="py-0">
         <CardContent className="p-0">
           {loading ? (
             <div className="text-muted-foreground flex h-32 flex-col items-center justify-center gap-3">
@@ -152,8 +143,8 @@ export default function Articles() {
                             'focus-visible:border-ring focus-visible:ring-ring/50 flex w-full items-start gap-4 rounded-md px-6 py-0 text-left text-sm font-medium transition-all outline-none hover:no-underline focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50',
                           )}
                         >
-                          <ChevronDownIcon className="text-muted-foreground pointer-events-none mt-4 size-4 shrink-0 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
-                          <div className="flex w-full items-center justify-between py-4 pr-24">
+                          <ChevronDownIcon className="text-muted-foreground pointer-events-none mt-3 size-4 shrink-0 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                          <div className="flex w-full items-center justify-between py-3 pr-24">
                             <div className="grid flex-1 grid-cols-1 gap-4 text-left md:grid-cols-5">
                               {/* Name Column */}
                               <div className="md:col-span-2">
