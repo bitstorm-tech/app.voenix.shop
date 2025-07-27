@@ -9,4 +9,5 @@ data class UpdateValueAddedTaxRequest(
     @field:Positive(message = "Percent must be positive")
     val percent: Int?,
     val description: String?,
+    val isDefault: Boolean?,
 )

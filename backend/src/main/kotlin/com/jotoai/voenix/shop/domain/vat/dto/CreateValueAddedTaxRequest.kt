@@ -13,4 +13,5 @@ data class CreateValueAddedTaxRequest(
     @field:Positive(message = "Percent must be positive")
     val percent: Int,
     val description: String? = null,
+    val isDefault: Boolean? = false,
 )

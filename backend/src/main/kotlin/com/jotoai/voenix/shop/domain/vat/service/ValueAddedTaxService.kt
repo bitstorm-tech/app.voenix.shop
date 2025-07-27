@@ -16,6 +16,8 @@ class ValueAddedTaxService(
 ) {
     fun getAllVats(): List<ValueAddedTaxDto> = valueAddedTaxRepository.findAll().map { it.toDto() }
 
+    fun getDefaultVat(): ValueAddedTaxDto? = valueAddedTaxRepository.findByIsDefaultTrue().map { it.toDto() }.orElse(null)
+
     fun getVatById(id: Long): ValueAddedTaxDto =
         valueAddedTaxRepository
             .findById(id)
@@ -28,11 +30,17 @@ class ValueAddedTaxService(
             throw IllegalArgumentException("VAT with name '${request.name}' already exists")
         }
 
+        // If this VAT is marked as default, unset any existing default
+        if (request.isDefault == true) {
+            valueAddedTaxRepository.clearDefaultExcept(0) // 0 means clear all defaults
+        }
+
         val vat =
             ValueAddedTax(
                 name = request.name,
                 percent = request.percent,
                 description = request.description,
+                isDefault = request.isDefault ?: false,
             )
 
         val savedVat = valueAddedTaxRepository.save(vat)
@@ -58,6 +66,13 @@ class ValueAddedTaxService(
 
         request.percent?.let { vat.percent = it }
         request.description?.let { vat.description = it }
+        request.isDefault?.let { isDefault ->
+            if (isDefault) {
+                // If setting this VAT as default, unset any other defaults
+                valueAddedTaxRepository.clearDefaultExcept(id)
+            }
+            vat.isDefault = isDefault
+        }
 
         val updatedVat = valueAddedTaxRepository.save(vat)
         return updatedVat.toDto()
@@ -65,9 +80,17 @@ class ValueAddedTaxService(
 
     @Transactional
     fun deleteVat(id: Long) {
-        if (!valueAddedTaxRepository.existsById(id)) {
-            throw ResourceNotFoundException("ValueAddedTax", "id", id)
+        val vat =
+            valueAddedTaxRepository
+                .findById(id)
+                .orElseThrow { ResourceNotFoundException("ValueAddedTax", "id", id) }
+
+        // Check if this is the default VAT being deleted
+        if (vat.isDefault) {
+            // Log warning or notify that default VAT is being deleted
+            // After deletion, there will be no default VAT
         }
+
         valueAddedTaxRepository.deleteById(id)
     }
 }

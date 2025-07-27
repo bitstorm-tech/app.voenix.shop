@@ -1,3 +1,4 @@
+import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
@@ -12,21 +13,21 @@ export default function Vat() {
   const deleteVatMutation = useDeleteVat();
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
-  const [vatToDelete, setVatToDelete] = useState<number | undefined>(undefined);
+  const [vatToDelete, setVatToDelete] = useState<{ id: number; isDefault: boolean } | undefined>(undefined);
 
   const handleEdit = (vatId: number) => {
     navigate(`/admin/vat/${vatId}/edit`);
   };
 
-  const handleDelete = (vatId: number) => {
-    setVatToDelete(vatId);
+  const handleDelete = (vatId: number, isDefault: boolean) => {
+    setVatToDelete({ id: vatId, isDefault });
     setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = async () => {
     if (!vatToDelete) return;
 
-    deleteVatMutation.mutate(vatToDelete, {
+    deleteVatMutation.mutate(vatToDelete.id, {
       onSuccess: () => {
         setIsDeleteDialogOpen(false);
         setVatToDelete(undefined);
@@ -98,7 +99,16 @@ export default function Vat() {
             ) : (
               vats.map((vat) => (
                 <TableRow key={vat.id}>
-                  <TableCell className="font-medium">{vat.name}</TableCell>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      {vat.name}
+                      {vat.isDefault && (
+                        <Badge variant="default" className="text-xs">
+                          Default
+                        </Badge>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell>{vat.percent}%</TableCell>
                   <TableCell>{vat.description || '-'}</TableCell>
                   <TableCell className="text-right">
@@ -106,7 +116,7 @@ export default function Vat() {
                       <Button variant="outline" size="sm" onClick={() => handleEdit(vat.id)}>
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="outline" size="sm" onClick={() => handleDelete(vat.id)}>
+                      <Button variant="outline" size="sm" onClick={() => handleDelete(vat.id, vat.isDefault)}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -122,7 +132,11 @@ export default function Vat() {
         isOpen={isDeleteDialogOpen}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        description="This will permanently delete the VAT entry. This action cannot be undone."
+        description={
+          vatToDelete?.isDefault
+            ? 'This is the default VAT. After deletion, you will need to set a new default VAT. This action cannot be undone.'
+            : 'This will permanently delete the VAT entry. This action cannot be undone.'
+        }
       />
     </div>
   );

@@ -7,6 +7,7 @@ data class ValueAddedTaxDto(
     val name: String,
     val percent: Int,
     val description: String?,
+    val isDefault: Boolean = false,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,
 )

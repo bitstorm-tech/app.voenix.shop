@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Textarea } from '@/components/ui/Textarea';
@@ -19,6 +20,7 @@ export default function NewOrEditVat() {
     name: '',
     percent: '',
     description: '',
+    isDefault: false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -32,6 +34,7 @@ export default function NewOrEditVat() {
         name: existingVat.name,
         percent: existingVat.percent.toString(),
         description: existingVat.description || '',
+        isDefault: existingVat.isDefault || false,
       });
     }
   }, [existingVat, isEditing]);
@@ -67,6 +70,7 @@ export default function NewOrEditVat() {
       name: formData.name.trim(),
       percent: parseInt(formData.percent),
       description: formData.description.trim() || null,
+      isDefault: formData.isDefault,
     };
 
     try {
@@ -150,6 +154,17 @@ export default function NewOrEditVat() {
                 placeholder="Optional description for this VAT rate"
                 rows={3}
               />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isDefault"
+                checked={formData.isDefault}
+                onCheckedChange={(checked) => setFormData({ ...formData, isDefault: checked === true })}
+              />
+              <Label htmlFor="isDefault" className="cursor-pointer text-sm font-normal">
+                Set as default VAT
+              </Label>
             </div>
 
             <div className="flex gap-3 pt-4">

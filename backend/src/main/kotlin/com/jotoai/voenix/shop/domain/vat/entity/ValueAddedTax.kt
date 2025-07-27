@@ -23,6 +23,8 @@ data class ValueAddedTax(
     var percent: Int,
     @Column(columnDefinition = "TEXT")
     var description: String? = null,
+    @Column(name = "is_default", nullable = false)
+    var isDefault: Boolean = false,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,
@@ -36,6 +38,7 @@ data class ValueAddedTax(
             name = this.name,
             percent = this.percent,
             description = this.description,
+            isDefault = this.isDefault,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )

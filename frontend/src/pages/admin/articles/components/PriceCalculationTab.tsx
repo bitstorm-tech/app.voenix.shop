@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useVats } from '@/hooks/queries/useVat';
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
+import { useEffect } from 'react';
 
 export default function PriceCalculationTab() {
   const { data: vats = [] } = useVats();
@@ -46,6 +47,22 @@ export default function PriceCalculationTab() {
       updateSalesVatRate(selectedVat.percent, selectedVat.id);
     }
   };
+
+  // Auto-select default VAT when component loads or when VATs change
+  useEffect(() => {
+    if (vats.length > 0) {
+      const defaultVat = vats.find((v) => v.isDefault);
+      if (defaultVat) {
+        // Only set default if no VAT is currently selected
+        if (!costCalculation.purchaseVatRateId) {
+          updatePurchaseVatRate(defaultVat.percent, defaultVat.id);
+        }
+        if (!costCalculation.salesVatRateId) {
+          updateSalesVatRate(defaultVat.percent, defaultVat.id);
+        }
+      }
+    }
+  }, [vats]);
 
   return (
     <div className="space-y-6">
