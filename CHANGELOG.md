@@ -2,19 +2,60 @@
 
 All notable changes to Voenix Shop will be documented in this file.
 
-## [Unreleased] - 2025-07-25
+## [Unreleased] - 2025-07-27
+
+### Added
+- **Default VAT Configuration**: Set default VAT rates for easier product pricing
+- **Article Numbers**: Track supplier article numbers and names for better inventory management
+- **Custom ID Sequences**: Improved database organization for categories
+
+### Changed
+- **Price Calculator**: Renamed from "Cost Calculator" to better reflect its purpose
+- **Image Handling**: Improved variant image management with dedicated API endpoints
+
+### Improved
+- Cleaner table layouts with reduced spacing for better visibility
+- Fixed variant display in article overview
+- Enhanced product variant organization
+
+## 2025-07-26
+
+### Changed
+- **Article Structure**: Moved price and image fields from articles to variants for better flexibility
+
+### Improved
+- Visual enhancements to articles list and article editing pages
+- Added XML version of requirements for better documentation
+
+## 2025-07-25
 
 ### Added
 - **Country Selection**: You can now select countries when managing suppliers
-- **Cost Calculator**: New tool to calculate product costs including VAT rates
-- **Supplier Management**: Track and manage your product suppliers
+- **Required Field Indicators**: Forms now clearly show which fields are required with optional/mandatory markers
+- **Currency Input**: Better currency formatting for price fields
+
+### Fixed
+- Cancel button functionality on Prompt Slot Variant page
+
+### Removed
+- SKU field (simplified product management)
+
+## 2025-07-24
+
+### Added
+- **Article Type Variants**: Product variants now depend on article type for better organization
 - **VAT Management**: Configure different VAT rates for purchases and sales
-- **Required Field Indicators**: Forms now clearly show which fields are required
+- **Supplier Management**: Track and manage your product suppliers with article integration
+- **Cost Calculator**: New tool to calculate product costs including split purchase/sales VAT rates
+- **Editable Sales Total**: Make pricing calculations more flexible
 
 ### Improved
-- Better organization of product variants by type
-- Cleaner design for admin tables
-- Faster loading of product information
+- Optimized variant loading with batch fetching for better performance
+- Updated admin tables to use outline buttons for cleaner design
+- Backend performance enhancements
+
+### Removed
+- Example image column from prompt table for cleaner interface
 
 ## 2025-07-23
 
