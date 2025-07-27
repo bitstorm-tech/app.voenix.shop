@@ -110,6 +110,10 @@ export function useArticleFormQueries(articleId?: number) {
           costCalculation: convertCostCalculationToCents(costCalculation),
         };
 
+        console.log('Sending update data:', {
+          costCalculation: updateData.costCalculation,
+        });
+
         await updateArticleMutation.mutateAsync({
           id: article.id,
           data: updateData,
@@ -132,6 +136,10 @@ export function useArticleFormQueries(articleId?: number) {
           shirtDetails: article.shirtDetails as any,
           costCalculation: convertCostCalculationToCents(costCalculation),
         };
+
+        console.log('Sending create data:', {
+          costCalculation: createData.costCalculation,
+        });
 
         await createArticleMutation.mutateAsync(createData);
       }

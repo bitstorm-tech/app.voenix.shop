@@ -149,10 +149,10 @@ export interface CostCalculation {
   // Sales section
   salesVatRateId?: number;
   salesVatRatePercent: number;
-  marginNet: number;
-  marginTax: number;
-  marginGross: number;
-  marginPercent: number;
+  salesMarginNet: number;
+  salesMarginTax: number;
+  salesMarginGross: number;
+  salesMarginPercent: number;
   salesTotalNet: number;
   salesTotalTax: number;
   salesTotalGross: number;

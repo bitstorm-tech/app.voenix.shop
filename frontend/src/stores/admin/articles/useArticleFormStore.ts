@@ -121,10 +121,10 @@ const initialCostCalculation: CostCalculation = {
   // Sales section
   salesVatRatePercent: 19,
   salesVatRateId: undefined,
-  marginNet: 0,
-  marginTax: 0,
-  marginGross: 0,
-  marginPercent: 100,
+  salesMarginNet: 0,
+  salesMarginTax: 0,
+  salesMarginGross: 0,
+  salesMarginPercent: 100,
   salesTotalNet: 0,
   salesTotalTax: 0,
   salesTotalGross: 0,
@@ -411,10 +411,10 @@ export const useArticleFormStore = create<ArticleFormState>()(
             const newSalesGross = newSalesNet + newSalesTax;
             const newMarginPercent = state.costCalculation.purchaseTotalNet > 0 ? (value / state.costCalculation.purchaseTotalNet) * 100 : 0;
 
-            state.costCalculation.marginNet = value;
-            state.costCalculation.marginTax = newSalesTax - state.costCalculation.purchaseTotalTax;
-            state.costCalculation.marginGross = newSalesGross - state.costCalculation.purchaseTotalGross;
-            state.costCalculation.marginPercent = newMarginPercent;
+            state.costCalculation.salesMarginNet = value;
+            state.costCalculation.salesMarginTax = newSalesTax - state.costCalculation.purchaseTotalTax;
+            state.costCalculation.salesMarginGross = newSalesGross - state.costCalculation.purchaseTotalGross;
+            state.costCalculation.salesMarginPercent = newMarginPercent;
             state.costCalculation.salesTotalNet = newSalesNet;
             state.costCalculation.salesTotalTax = newSalesTax;
             state.costCalculation.salesTotalGross = newSalesGross;
@@ -429,10 +429,10 @@ export const useArticleFormStore = create<ArticleFormState>()(
                 ? ((newSalesNet - state.costCalculation.purchaseTotalNet) / state.costCalculation.purchaseTotalNet) * 100
                 : 0;
 
-            state.costCalculation.marginNet = newSalesNet - state.costCalculation.purchaseTotalNet;
-            state.costCalculation.marginTax = newSalesTax - state.costCalculation.purchaseTotalTax;
-            state.costCalculation.marginGross = value;
-            state.costCalculation.marginPercent = newMarginPercent;
+            state.costCalculation.salesMarginNet = newSalesNet - state.costCalculation.purchaseTotalNet;
+            state.costCalculation.salesMarginTax = newSalesTax - state.costCalculation.purchaseTotalTax;
+            state.costCalculation.salesMarginGross = value;
+            state.costCalculation.salesMarginPercent = newMarginPercent;
             state.costCalculation.salesTotalNet = newSalesNet;
             state.costCalculation.salesTotalTax = newSalesTax;
             state.costCalculation.salesTotalGross = newSalesGross;
@@ -451,10 +451,10 @@ export const useArticleFormStore = create<ArticleFormState>()(
         const marginTax = salesTax - state.costCalculation.purchaseTotalTax;
         const marginGross = salesGross - state.costCalculation.purchaseTotalGross;
 
-        state.costCalculation.marginPercent = value;
-        state.costCalculation.marginNet = marginNet;
-        state.costCalculation.marginTax = marginTax;
-        state.costCalculation.marginGross = marginGross;
+        state.costCalculation.salesMarginPercent = value;
+        state.costCalculation.salesMarginNet = marginNet;
+        state.costCalculation.salesMarginTax = marginTax;
+        state.costCalculation.salesMarginGross = marginGross;
         state.costCalculation.salesTotalNet = salesNet;
         state.costCalculation.salesTotalTax = salesTax;
         state.costCalculation.salesTotalGross = salesGross;
@@ -477,10 +477,10 @@ export const useArticleFormStore = create<ArticleFormState>()(
             state.costCalculation.salesTotalNet = value;
             state.costCalculation.salesTotalTax = tax;
             state.costCalculation.salesTotalGross = gross;
-            state.costCalculation.marginNet = marginNet;
-            state.costCalculation.marginTax = marginTax;
-            state.costCalculation.marginGross = marginGross;
-            state.costCalculation.marginPercent = marginPercent;
+            state.costCalculation.salesMarginNet = marginNet;
+            state.costCalculation.salesMarginTax = marginTax;
+            state.costCalculation.salesMarginGross = marginGross;
+            state.costCalculation.salesMarginPercent = marginPercent;
           }
         } else {
           if (field === 'gross') {
@@ -494,10 +494,10 @@ export const useArticleFormStore = create<ArticleFormState>()(
             state.costCalculation.salesTotalNet = net;
             state.costCalculation.salesTotalTax = tax;
             state.costCalculation.salesTotalGross = value;
-            state.costCalculation.marginNet = marginNet;
-            state.costCalculation.marginTax = marginTax;
-            state.costCalculation.marginGross = marginGross;
-            state.costCalculation.marginPercent = marginPercent;
+            state.costCalculation.salesMarginNet = marginNet;
+            state.costCalculation.salesMarginTax = marginTax;
+            state.costCalculation.salesMarginGross = marginGross;
+            state.costCalculation.salesMarginPercent = marginPercent;
           }
         }
       });
@@ -512,7 +512,7 @@ export const useArticleFormStore = create<ArticleFormState>()(
 
         // Recalculate sales totals with new VAT rate if not directly editing sales total
         if (state.costCalculation.salesActiveRow !== 'total') {
-          const salesNet = state.costCalculation.purchaseTotalNet * (1 + state.costCalculation.marginPercent / 100);
+          const salesNet = state.costCalculation.purchaseTotalNet * (1 + state.costCalculation.salesMarginPercent / 100);
           const salesTax = salesNet * (percent / 100);
           const salesGross = salesNet + salesTax;
 
@@ -523,9 +523,9 @@ export const useArticleFormStore = create<ArticleFormState>()(
           state.costCalculation.salesTotalNet = salesNet;
           state.costCalculation.salesTotalTax = salesTax;
           state.costCalculation.salesTotalGross = salesGross;
-          state.costCalculation.marginNet = marginNet;
-          state.costCalculation.marginTax = marginTax;
-          state.costCalculation.marginGross = marginGross;
+          state.costCalculation.salesMarginNet = marginNet;
+          state.costCalculation.salesMarginTax = marginTax;
+          state.costCalculation.salesMarginGross = marginGross;
         }
       });
     },

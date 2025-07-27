@@ -302,13 +302,13 @@ export default function PriceCalculationTab() {
               </FieldLabel>
             </div>
             <CurrencyInput
-              value={costCalculation.marginNet}
+              value={costCalculation.salesMarginNet}
               onChange={(value) => updateMargin('net', value)}
               disabled={costCalculation.salesCalculationMode === 'GROSS' || costCalculation.salesActiveRow !== 'margin'}
             />
-            <CurrencyInput value={costCalculation.marginTax} onChange={() => {}} disabled />
+            <CurrencyInput value={costCalculation.salesMarginTax} onChange={() => {}} disabled />
             <CurrencyInput
-              value={costCalculation.marginGross}
+              value={costCalculation.salesMarginGross}
               onChange={(value) => updateMargin('gross', value)}
               disabled={costCalculation.salesCalculationMode === 'NET' || costCalculation.salesActiveRow !== 'margin'}
             />
@@ -331,7 +331,7 @@ export default function PriceCalculationTab() {
               </FieldLabel>
             </div>
             <CurrencyInput
-              value={costCalculation.marginPercent}
+              value={costCalculation.salesMarginPercent}
               onChange={updateMarginPercent}
               disabled={costCalculation.salesActiveRow !== 'marginPercent'}
               min={0}
@@ -339,7 +339,7 @@ export default function PriceCalculationTab() {
             />
             <div></div>
             <div className="flex items-center space-x-2">
-              <CurrencyInput value={costCalculation.marginPercent} onChange={() => {}} disabled min={0} currency="%" />
+              <CurrencyInput value={costCalculation.salesMarginPercent} onChange={() => {}} disabled min={0} currency="%" />
             </div>
           </div>
 
