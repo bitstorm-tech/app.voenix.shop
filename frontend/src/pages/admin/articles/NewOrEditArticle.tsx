@@ -5,8 +5,8 @@ import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore
 import { ArrowLeft, Calculator, ChevronRight, Coffee, FileText, Layers, Loader2, Package, Save, Shirt } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import CostCalculationTab from './components/CostCalculationTab';
 import GeneralTab from './components/GeneralTab';
+import PriceCalculationTab from './components/PriceCalculationTab';
 import VariantsTab from './components/VariantsTab';
 import MugDetailsTab from './tabs/MugDetailsTab';
 import ShirtDetailsTab from './tabs/ShirtDetailsTab';
@@ -135,7 +135,7 @@ export default function NewOrEditArticle() {
 
               <TabsTrigger value="cost-calculation" className="gap-2">
                 <Calculator className="h-4 w-4" />
-                <span className="hidden sm:inline">Cost Calculation</span>
+                <span className="hidden sm:inline">Price Calculation</span>
               </TabsTrigger>
             </TabsList>
 
@@ -161,7 +161,7 @@ export default function NewOrEditArticle() {
             </TabsContent>
 
             <TabsContent value="cost-calculation">
-              <CostCalculationTab />
+              <PriceCalculationTab />
             </TabsContent>
           </Tabs>
         </div>

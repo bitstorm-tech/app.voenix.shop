@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useVats } from '@/hooks/queries/useVat';
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
 
-export default function CostCalculationTab() {
+export default function PriceCalculationTab() {
   const { data: vats = [] } = useVats();
 
   const {
@@ -53,7 +53,7 @@ export default function CostCalculationTab() {
       <Card>
         <CardHeader>
           <CardTitle>Purchase</CardTitle>
-          <CardDescription>Purchase price and cost calculations</CardDescription>
+          <CardDescription>Purchase price and price calculations</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Tax Rate */}

@@ -17,7 +17,7 @@ interface ArticleFormState {
   // ========== Form Data ==========
   article: Partial<Article>;
 
-  // ========== Cost Calculation Data ==========
+  // ========== Price Calculation Data ==========
   costCalculation: CostCalculation;
 
   // ========== Variant Data ==========
@@ -31,7 +31,7 @@ interface ArticleFormState {
   // ========== UI State ==========
   isEdit: boolean;
   activeTab: string;
-  // Cost calculation UI state
+  // Price calculation UI state
   purchasePriceCorresponds: boolean;
   salesPriceCorresponds: boolean;
   purchaseActiveRow: 'cost' | 'costPercent';
@@ -46,7 +46,7 @@ interface ArticleFormState {
   setCategory: (categoryId: number) => void;
   setSubcategory: (subcategoryId?: number) => void;
 
-  // ========== Cost Calculation Actions ==========
+  // ========== Price Calculation Actions ==========
   setCostCalculation: (data: Partial<CreateCostCalculationRequest>) => void;
   updateCostField: <K extends keyof CostCalculation>(field: K, value: CostCalculation[K]) => void;
   // Purchase calculations
@@ -174,7 +174,7 @@ export const useArticleFormStore = create<ArticleFormState>()(
             state.shirtVariants = articleData.shirtVariants;
           }
 
-          // Set cost calculation
+          // Set price calculation
           if (articleData.costCalculation) {
             state.costCalculation = articleData.costCalculation;
           }
@@ -272,7 +272,7 @@ export const useArticleFormStore = create<ArticleFormState>()(
       });
     },
 
-    // ========== Cost Calculation Actions ==========
+    // ========== Price Calculation Actions ==========
     setCostCalculation: (data) => {
       set((state) => {
         state.costCalculation = { ...initialCostCalculation, ...data };
