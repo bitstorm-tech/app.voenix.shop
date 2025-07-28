@@ -34,11 +34,7 @@ export default function ImageVariantSelector({ variants, selectedVariant, onVari
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-xs font-bold text-white">{index + 1}</div>
             </div>
 
-            <img
-              src={variant.startsWith('data:') ? variant : `/api/images/${variant}`}
-              alt={`Variant ${index + 1}`}
-              className="h-full w-full object-cover"
-            />
+            <img src={variant} alt={`Variant ${index + 1}`} className="h-full w-full object-cover" />
           </div>
         );
       })}
