@@ -1,7 +1,7 @@
 # Public Image Generation API
 
 ## Overview
-A public API endpoint has been created to allow users to generate AI images with rate limiting to prevent abuse.
+A public API endpoint has been created to allow users to generate AI images.
 
 ## Endpoint
 `POST /api/public/images/generate`
@@ -19,18 +19,12 @@ A public API endpoint has been created to allow users to generate AI images with
 ### Response
 ```json
 {
-  "imageUrls": ["http://localhost:8080/api/public/images/uuid-filename.png"],
-  "sessionToken": "uuid-session-token"
+  "imageUrls": ["http://localhost:8080/api/public/images/uuid-filename.png"]
 }
 ```
 
-### Rate Limiting
-- **Limit**: 5 image generations per hour
-- **Tracking**: Based on IP address + session token combination
-- **Session token**: Generated automatically and returned in response
-
 ### Error Responses
-- `400 Bad Request`: Invalid request parameters, rate limit exceeded, or inactive prompt
+- `400 Bad Request`: Invalid request parameters or inactive prompt
 - `404 Not Found`: Prompt not found
 - `500 Internal Server Error`: Server-side error during image generation
 
@@ -47,7 +41,6 @@ A public API endpoint has been created to allow users to generate AI images with
    - `PublicImageGenerationResponse.kt` - Response DTO
 
 2. **Services**:
-   - `RateLimitService.kt` - In-memory rate limiting with automatic cleanup
    - `PublicImageGenerationService.kt` - Public image generation logic
 
 3. **Controller**:
@@ -57,7 +50,6 @@ A public API endpoint has been created to allow users to generate AI images with
    - `BadRequestException.kt` - For 400 errors
 
 5. **Tests**:
-   - `RateLimitServiceTest.kt` - Unit tests for rate limiting
 
 ### Configuration Changes:
 - Updated `SecurityConfig.kt` to allow `/api/public/**` endpoints
@@ -67,6 +59,4 @@ A public API endpoint has been created to allow users to generate AI images with
 ### Security Considerations:
 - File validation: Max 10MB, only image formats (JPEG, PNG, WebP)
 - Prompt validation: Only active prompts can be used
-- Rate limiting prevents abuse (5 requests/hour per IP+session)
 - Images generated are stored as PRIVATE type
-- Session tokens are UUID-based for security

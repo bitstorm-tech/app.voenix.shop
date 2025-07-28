@@ -8,6 +8,4 @@ data class PublicPdfGenerationRequest(
     val mugId: Long,
     @field:NotBlank(message = "Image URL is required")
     val imageUrl: String,
-    val sessionToken: String? = null,
 )
-

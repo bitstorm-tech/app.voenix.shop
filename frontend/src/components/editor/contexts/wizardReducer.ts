@@ -14,7 +14,6 @@ export function createInitialWizardState(): WizardState {
     generatedImageUrls: null,
     selectedGeneratedImage: null,
     generatedImageCropData: null,
-    sessionToken: null,
     isProcessing: false,
     error: null,
     // Prompts state
@@ -142,10 +141,6 @@ export function wizardReducer(state: WizardState, action: WizardAction): WizardS
 
     case WIZARD_ACTIONS.UPDATE_GENERATED_IMAGE_CROP_DATA:
       newState = { ...state, generatedImageCropData: action.payload };
-      break;
-
-    case WIZARD_ACTIONS.SET_SESSION_TOKEN:
-      newState = { ...state, sessionToken: action.payload };
       break;
 
     case WIZARD_ACTIONS.SET_PROCESSING:

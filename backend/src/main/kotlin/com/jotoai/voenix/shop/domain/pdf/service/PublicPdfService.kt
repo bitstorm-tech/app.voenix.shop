@@ -5,7 +5,6 @@ import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.articles.service.ArticleService
 import com.jotoai.voenix.shop.domain.pdf.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.domain.pdf.dto.PublicPdfGenerationRequest
-import com.jotoai.voenix.shop.domain.ratelimit.service.RateLimitService
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -18,9 +17,7 @@ import java.net.URL
 class PublicPdfService(
     private val pdfService: PdfService,
     private val articleService: ArticleService,
-    private val rateLimitService: RateLimitService,
     @Value("\${app.base-url:http://localhost:8080}") private val baseUrl: String,
-    @Value("\${pdf.public.rate-limit:10}") private val publicPdfRateLimit: Int,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(PublicPdfService::class.java)
@@ -54,24 +51,7 @@ class PublicPdfService(
         // Extract filename from URL
         val filename = extractFilenameFromUrl(request.imageUrl)
 
-        // Generate identifier for rate limiting
-        val sessionToken =
-            request.sessionToken
-                ?: httpRequest.session.getAttribute("sessionToken") as? String
-                ?: rateLimitService.generateSessionToken().also {
-                    httpRequest.session.setAttribute("sessionToken", it)
-                }
-
-        val clientIp = getClientIp(httpRequest)
-        val rateLimitIdentifier = "pdf:$clientIp:$sessionToken"
-
-        // Check rate limit (using custom limit for PDFs)
-        if (!checkPdfRateLimit(rateLimitIdentifier)) {
-            val remaining = getPdfRemainingAttempts(rateLimitIdentifier)
-            throw BadRequestException("Rate limit exceeded. You have $remaining PDF generations remaining this hour.")
-        }
-
-        logger.info("Processing public PDF generation for mug ID: ${request.mugId}, IP: $clientIp")
+        logger.info("Processing public PDF generation for mug ID: ${request.mugId}")
 
         try {
             // Generate PDF using existing service
@@ -119,29 +99,4 @@ class PublicPdfService(
         } catch (e: Exception) {
             throw BadRequestException("Invalid image URL format")
         }
-
-    private fun checkPdfRateLimit(identifier: String): Boolean {
-        // Use the RateLimitService but with a different namespace and limit
-        // Since RateLimitService has a fixed limit, we'll check multiple times if needed
-        // For now, we'll use the existing 5 per hour limit
-        return rateLimitService.checkRateLimit(identifier)
-    }
-
-    private fun getPdfRemainingAttempts(identifier: String): Int = rateLimitService.getRemainingAttempts(identifier)
-
-    private fun getClientIp(request: HttpServletRequest): String {
-        // Check for forwarded IP (when behind proxy/load balancer)
-        val xForwardedFor = request.getHeader("X-Forwarded-For")
-        if (!xForwardedFor.isNullOrBlank()) {
-            return xForwardedFor.split(",")[0].trim()
-        }
-
-        val xRealIp = request.getHeader("X-Real-IP")
-        if (!xRealIp.isNullOrBlank()) {
-            return xRealIp
-        }
-
-        return request.remoteAddr
-    }
 }
-

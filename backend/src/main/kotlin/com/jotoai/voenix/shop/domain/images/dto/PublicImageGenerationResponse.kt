@@ -4,7 +4,5 @@ import com.fasterxml.jackson.annotation.JsonProperty
 
 data class PublicImageGenerationResponse(
     @JsonProperty("imageUrls")
-    val imageUrls: List<String>,
-    @JsonProperty("sessionToken")
-    val sessionToken: String,
+    val imageUrls: List<String>
 )

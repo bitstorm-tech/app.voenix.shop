@@ -4,14 +4,12 @@ import { useState } from 'react';
 interface UseImageGenerationReturn {
   isGenerating: boolean;
   error: string | null;
-  sessionToken: string | null;
   generateImages: (file: File, promptId: number) => Promise<string[] | null>;
 }
 
 export function useImageGeneration(): UseImageGenerationReturn {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [sessionToken, setSessionToken] = useState<string | null>(null);
 
   const generateImages = async (file: File, promptId: number): Promise<string[] | null> => {
     setIsGenerating(true);
@@ -19,9 +17,6 @@ export function useImageGeneration(): UseImageGenerationReturn {
 
     try {
       const response = await publicApi.generateImage(file, promptId);
-
-      // Store the session token for potential future use
-      setSessionToken(response.sessionToken);
 
       // Return the image URLs
       return response.imageUrls;
@@ -45,7 +40,6 @@ export function useImageGeneration(): UseImageGenerationReturn {
   return {
     isGenerating,
     error,
-    sessionToken,
     generateImages,
   };
 }

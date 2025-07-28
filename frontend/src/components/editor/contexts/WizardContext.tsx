@@ -27,7 +27,6 @@ interface WizardContextValue extends WizardState {
   setGeneratedImages: (urls: string[]) => void;
   selectGeneratedImage: (url: string) => void;
   updateGeneratedImageCropData: (cropData: GeneratedImageCropData | null) => void;
-  setSessionToken: (token: string | null) => void;
   setProcessing: (isProcessing: boolean) => void;
   setError: (error: string | null) => void;
 
@@ -96,7 +95,6 @@ export function WizardProvider({ children }: WizardProviderProps) {
   const setGeneratedImages = (urls: string[]) => dispatch(wizardActions.setGeneratedImages(urls));
   const selectGeneratedImage = (url: string) => dispatch(wizardActions.selectGeneratedImage(url));
   const updateGeneratedImageCropData = (cropData: GeneratedImageCropData | null) => dispatch(wizardActions.updateGeneratedImageCropData(cropData));
-  const setSessionToken = (token: string | null) => dispatch(wizardActions.setSessionToken(token));
   const setProcessing = (isProcessing: boolean) => dispatch(wizardActions.setProcessing(isProcessing));
   const setError = (error: string | null) => dispatch(wizardActions.setError(error));
 
@@ -129,7 +127,6 @@ export function WizardProvider({ children }: WizardProviderProps) {
     setGeneratedImages,
     selectGeneratedImage,
     updateGeneratedImageCropData,
-    setSessionToken,
     setProcessing,
     setError,
     getCompletedSteps,

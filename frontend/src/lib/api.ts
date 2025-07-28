@@ -581,7 +581,7 @@ export const publicApi = {
     return handleResponse<PublicImageGenerationResponse>(response);
   },
   // Generate PDF using public endpoint
-  generatePdf: async (mugId: number, imageUrl: string, sessionToken?: string): Promise<Blob> => {
+  generatePdf: async (mugId: number, imageUrl: string): Promise<Blob> => {
     const response = await fetch('/api/public/pdf/generate', {
       method: 'POST',
       headers: {
@@ -590,7 +590,6 @@ export const publicApi = {
       body: JSON.stringify({
         mugId,
         imageUrl,
-        sessionToken,
       }),
       // No credentials needed for public endpoints
     });
@@ -672,5 +671,4 @@ export interface PdfResponse {
 
 export interface PublicImageGenerationResponse {
   imageUrls: string[];
-  sessionToken: string;
 }

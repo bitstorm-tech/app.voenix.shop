@@ -5,8 +5,7 @@ import { useState } from 'react';
 import { useWizardContext } from '../contexts/WizardContext';
 
 export default function WizardNavigationButtons() {
-  const { currentStep, canGoNext, canGoPrevious, goNext, goPrevious, isProcessing, selectedMug, selectedGeneratedImage, sessionToken } =
-    useWizardContext();
+  const { currentStep, canGoNext, canGoPrevious, goNext, goPrevious, isProcessing, selectedMug, selectedGeneratedImage } = useWizardContext();
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   const handleNextStep = async () => {
@@ -31,7 +30,7 @@ export default function WizardNavigationButtons() {
         }
 
         // Use the public API endpoint for PDF generation
-        const blob = await publicApi.generatePdf(selectedMug.id, imageUrl, sessionToken || undefined);
+        const blob = await publicApi.generatePdf(selectedMug.id, imageUrl);
         const url = URL.createObjectURL(blob);
 
         // Generate a default filename since we can't access headers from the blob

@@ -7,7 +7,6 @@ import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
-import com.jotoai.voenix.shop.domain.ratelimit.service.RateLimitService
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -20,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile
 class PublicImageGenerationService(
     private val openAIImageService: OpenAIImageService,
     private val promptService: PromptService,
-    private val rateLimitService: RateLimitService,
     private val imageService: ImageService,
     @Value("\${app.base-url:http://localhost:8080}") private val baseUrl: String,
 ) {
@@ -45,23 +43,7 @@ class PublicImageGenerationService(
             throw BadRequestException("The selected prompt is not available")
         }
 
-        // Generate identifier for rate limiting (IP + session combination)
-        val sessionToken =
-            httpRequest.session.getAttribute("sessionToken") as? String
-                ?: rateLimitService.generateSessionToken().also {
-                    httpRequest.session.setAttribute("sessionToken", it)
-                }
-
-        val clientIp = getClientIp(httpRequest)
-        val rateLimitIdentifier = "$clientIp:$sessionToken"
-
-        // Check rate limit
-        if (!rateLimitService.checkRateLimit(rateLimitIdentifier)) {
-            val remaining = rateLimitService.getRemainingAttempts(rateLimitIdentifier)
-            throw BadRequestException("Rate limit exceeded. You have $remaining image generations remaining this hour.")
-        }
-
-        logger.info("Processing public image generation request for prompt ID: ${request.promptId}, IP: $clientIp")
+        logger.info("Processing public image generation request for prompt ID: ${request.promptId}")
 
         try {
             // Create OpenAI request with fixed parameters for public use
@@ -87,7 +69,6 @@ class PublicImageGenerationService(
 
             return PublicImageGenerationResponse(
                 imageUrls = imageUrls,
-                sessionToken = sessionToken,
             )
         } catch (e: Exception) {
             logger.error("Error generating image for public user", e)
@@ -112,20 +93,5 @@ class PublicImageGenerationService(
         if (contentType !in ALLOWED_CONTENT_TYPES) {
             throw BadRequestException("Invalid image format. Allowed formats: JPEG, PNG, WebP")
         }
-    }
-
-    private fun getClientIp(request: HttpServletRequest): String {
-        // Check for forwarded IP (when behind proxy/load balancer)
-        val xForwardedFor = request.getHeader("X-Forwarded-For")
-        if (!xForwardedFor.isNullOrBlank()) {
-            return xForwardedFor.split(",")[0].trim()
-        }
-
-        val xRealIp = request.getHeader("X-Real-IP")
-        if (!xRealIp.isNullOrBlank()) {
-            return xRealIp
-        }
-
-        return request.remoteAddr
     }
 }
