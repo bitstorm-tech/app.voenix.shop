@@ -29,10 +29,17 @@ export default function WizardNavigationButtons() {
           throw new Error('Please select a mug before downloading PDF');
         }
 
-        // Construct the image URL - if it's already a full URL, use it as is
-        // Otherwise, construct the API endpoint URL
+        // Handle different image URL formats:
+        // - http:// or https:// URLs are used as-is
+        // - data: URLs are used as-is
+        // - URLs starting with /api/ are already complete (e.g., /api/public/images/...)
+        // - Otherwise, assume it's just a filename and construct the full URL
         let imageUrl = selectedGeneratedImage;
-        if (!selectedGeneratedImage.startsWith('http') && !selectedGeneratedImage.startsWith('data:')) {
+        if (
+          !selectedGeneratedImage.startsWith('http') &&
+          !selectedGeneratedImage.startsWith('data:') &&
+          !selectedGeneratedImage.startsWith('/api/')
+        ) {
           imageUrl = `/api/images/${selectedGeneratedImage}`;
         }
 

@@ -7,17 +7,14 @@ import com.jotoai.voenix.shop.domain.pdf.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.domain.pdf.dto.PublicPdfGenerationRequest
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.net.URL
 
 @Service
 @Transactional(readOnly = true)
 class PublicPdfService(
     private val pdfService: PdfService,
     private val articleService: ArticleService,
-    @Value("\${app.base-url:http://localhost:8080}") private val baseUrl: String,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(PublicPdfService::class.java)
@@ -45,11 +42,9 @@ class PublicPdfService(
             throw BadRequestException("This mug is currently unavailable")
         }
 
-        // Validate imageUrl is from our system
-        validateImageUrl(request.imageUrl)
-
         // Extract filename from URL
-        val filename = extractFilenameFromUrl(request.imageUrl)
+//        val filename = extractFilenameFromUrl(request.imageUrl)
+        val filename = request.imageUrl.substringAfterLast("/")
 
         logger.info("Processing public PDF generation for mug ID: ${request.mugId}")
 
@@ -71,32 +66,4 @@ class PublicPdfService(
             }
         }
     }
-
-    private fun validateImageUrl(imageUrl: String) {
-        try {
-            val url = URL(imageUrl)
-            val expectedHost = URL(baseUrl).host
-
-            // Check if the URL is from our domain
-            if (url.host != expectedHost && !imageUrl.startsWith(baseUrl)) {
-                throw BadRequestException("Invalid image URL. Images must be from our system.")
-            }
-
-            // Check if it's from the public images endpoint
-            if (!url.path.contains("/api/public/images/") && !url.path.contains("/api/admin/images/")) {
-                throw BadRequestException("Invalid image URL. Images must be from our system.")
-            }
-        } catch (e: Exception) {
-            throw BadRequestException("Invalid image URL format")
-        }
-    }
-
-    private fun extractFilenameFromUrl(imageUrl: String): String =
-        try {
-            val url = URL(imageUrl)
-            val path = url.path
-            path.substringAfterLast("/")
-        } catch (e: Exception) {
-            throw BadRequestException("Invalid image URL format")
-        }
 }

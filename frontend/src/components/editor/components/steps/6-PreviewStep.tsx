@@ -39,7 +39,14 @@ export default function PreviewStep() {
     updateGeneratedImageCropData(newCropData);
   };
 
-  const imageUrl = selectedGeneratedImage.startsWith('data:') ? selectedGeneratedImage : `/api/images/${selectedGeneratedImage}`;
+  // Handle different image URL formats:
+  // - data: URLs are used as-is
+  // - URLs starting with /api/ are already complete (e.g., /api/public/images/...)
+  // - Otherwise, assume it's just a filename and construct the full URL
+  const imageUrl =
+    selectedGeneratedImage.startsWith('data:') || selectedGeneratedImage.startsWith('/api/')
+      ? selectedGeneratedImage
+      : `/api/images/${selectedGeneratedImage}`;
 
   return (
     <div className="space-y-8">
