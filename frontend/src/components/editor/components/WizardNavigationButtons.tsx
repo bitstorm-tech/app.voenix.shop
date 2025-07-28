@@ -1,11 +1,18 @@
 import { Button } from '@/components/ui/Button';
 import { ApiError, publicApi } from '@/lib/api';
+import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { ArrowLeft, ArrowRight, Download, Loader2 } from 'lucide-react';
 import { useState } from 'react';
-import { useWizardContext } from '../contexts/WizardContext';
 
 export default function WizardNavigationButtons() {
-  const { currentStep, canGoNext, canGoPrevious, goNext, goPrevious, isProcessing, selectedMug, selectedGeneratedImage } = useWizardContext();
+  const currentStep = useWizardStore((state) => state.currentStep);
+  const canGoNext = useWizardStore((state) => state.canGoNext);
+  const canGoPrevious = useWizardStore((state) => state.canGoPrevious);
+  const goNext = useWizardStore((state) => state.goNext);
+  const goPrevious = useWizardStore((state) => state.goPrevious);
+  const isProcessing = useWizardStore((state) => state.isProcessing);
+  const selectedMug = useWizardStore((state) => state.selectedMug);
+  const selectedGeneratedImage = useWizardStore((state) => state.selectedGeneratedImage);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   const handleNextStep = async () => {

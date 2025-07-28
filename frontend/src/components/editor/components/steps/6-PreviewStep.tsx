@@ -1,14 +1,18 @@
 import { useDebounce } from '@/hooks/useDebounce';
+import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { CheckCircle } from 'lucide-react';
 import { useState } from 'react';
 import type { PixelCrop } from 'react-image-crop';
-import { useWizardContext } from '../../contexts/WizardContext';
 import { GeneratedImageCropData } from '../../types';
 import ImageCropper from '../shared/ImageCropper';
 import MugPreview from '../shared/MugPreview';
 
 export default function PreviewStep() {
-  const { selectedMug, selectedGeneratedImage, generatedImageCropData, userData, updateGeneratedImageCropData } = useWizardContext();
+  const selectedMug = useWizardStore((state) => state.selectedMug);
+  const selectedGeneratedImage = useWizardStore((state) => state.selectedGeneratedImage);
+  const generatedImageCropData = useWizardStore((state) => state.generatedImageCropData);
+  const userData = useWizardStore((state) => state.userData);
+  const updateGeneratedImageCropData = useWizardStore((state) => state.updateGeneratedImageCropData);
 
   const [localCropData, setLocalCropData] = useState<GeneratedImageCropData | null>(generatedImageCropData);
   const debouncedCropData = useDebounce(localCropData, 200);

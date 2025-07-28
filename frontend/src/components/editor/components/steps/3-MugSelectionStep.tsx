@@ -1,10 +1,11 @@
 import { useMugs } from '@/hooks/useMugs';
 import { cn } from '@/lib/utils';
+import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Check, Loader2, Star } from 'lucide-react';
-import { useWizardContext } from '../../contexts/WizardContext';
 
 export default function MugSelectionStep() {
-  const { selectedMug, selectMug } = useWizardContext();
+  const selectedMug = useWizardStore((state) => state.selectedMug);
+  const selectMug = useWizardStore((state) => state.selectMug);
   const { mugs, loading, error } = useMugs();
   if (loading) {
     return (

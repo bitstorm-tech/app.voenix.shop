@@ -6,13 +6,25 @@ import MugSelectionStep from '@/components/editor/components/steps/3-MugSelectio
 import UserDataStep from '@/components/editor/components/steps/4-UserDataStep';
 import ImageGenerationStep from '@/components/editor/components/steps/5-ImageGenerationStep';
 import PreviewStep from '@/components/editor/components/steps/6-PreviewStep';
-import { WizardProvider, useWizardContext } from '@/components/editor/contexts/WizardContext';
+import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { useEffect } from 'react';
 
-function EditorContent() {
-  const wizard = useWizardContext();
+export default function Editor() {
+  const currentStep = useWizardStore((state) => state.currentStep);
+  const promptsLoading = useWizardStore((state) => state.promptsLoading);
+  const promptsError = useWizardStore((state) => state.promptsError);
+  const fetchPrompts = useWizardStore((state) => state.fetchPrompts);
 
-  if (wizard.promptsLoading) {
+  useEffect(() => {
+    document.title = 'Editor - Voenix Shop';
+  }, []);
+
+  // Fetch prompts on mount
+  useEffect(() => {
+    fetchPrompts();
+  }, [fetchPrompts]);
+
+  if (promptsLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
@@ -23,11 +35,11 @@ function EditorContent() {
     );
   }
 
-  if (wizard.promptsError) {
+  if (promptsError) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600">Error loading editor: {wizard.promptsError}</p>
+          <p className="text-red-600">Error loading editor: {promptsError}</p>
         </div>
       </div>
     );
@@ -46,17 +58,17 @@ function EditorContent() {
         </div>
 
         <div className="mb-8 min-h-[400px] rounded-lg bg-white p-6 shadow-sm">
-          {wizard.currentStep === 'image-upload' && <ImageUploadStep />}
+          {currentStep === 'image-upload' && <ImageUploadStep />}
 
-          {wizard.currentStep === 'prompt-selection' && <PromptSelectionStep />}
+          {currentStep === 'prompt-selection' && <PromptSelectionStep />}
 
-          {wizard.currentStep === 'mug-selection' && <MugSelectionStep />}
+          {currentStep === 'mug-selection' && <MugSelectionStep />}
 
-          {wizard.currentStep === 'user-data' && <UserDataStep />}
+          {currentStep === 'user-data' && <UserDataStep />}
 
-          {wizard.currentStep === 'image-generation' && <ImageGenerationStep />}
+          {currentStep === 'image-generation' && <ImageGenerationStep />}
 
-          {wizard.currentStep === 'preview' && <PreviewStep />}
+          {currentStep === 'preview' && <PreviewStep />}
         </div>
       </div>
 
@@ -67,17 +79,5 @@ function EditorContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function Editor() {
-  useEffect(() => {
-    document.title = 'Editor - Voenix Shop';
-  }, []);
-
-  return (
-    <WizardProvider>
-      <EditorContent />
-    </WizardProvider>
   );
 }

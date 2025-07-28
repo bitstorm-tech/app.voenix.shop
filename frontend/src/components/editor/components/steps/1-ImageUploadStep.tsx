@@ -1,13 +1,16 @@
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Upload, X } from 'lucide-react';
 import React, { useRef } from 'react';
 import type { PixelCrop } from 'react-image-crop';
-import { useWizardContext } from '../../contexts/WizardContext';
 import ImageCropper from '../shared/ImageCropper';
 
 export default function ImageUploadStep() {
-  const { uploadImage, cropImage, removeImage, uploadedImageUrl } = useWizardContext();
+  const uploadImage = useWizardStore((state) => state.uploadImage);
+  const cropImage = useWizardStore((state) => state.cropImage);
+  const removeImage = useWizardStore((state) => state.removeImage);
+  const uploadedImageUrl = useWizardStore((state) => state.uploadedImageUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
