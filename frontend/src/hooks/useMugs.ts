@@ -1,5 +1,5 @@
 import { MugOption } from '@/components/editor/types';
-import { mugsApi } from '@/lib/api';
+import { publicApi } from '@/lib/api';
 import type { Mug } from '@/types/mug';
 import { useEffect, useState } from 'react';
 
@@ -78,7 +78,7 @@ export function useMugs() {
   useEffect(() => {
     const fetchMugs = async () => {
       try {
-        const data = await mugsApi.getAll();
+        const data = await publicApi.fetchMugs();
         const mappedMugs = data.map(mapMugToOption);
         setMugs(mappedMugs);
       } catch (err) {

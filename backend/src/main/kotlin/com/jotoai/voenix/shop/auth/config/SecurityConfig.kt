@@ -67,6 +67,7 @@ class SecurityConfig {
                         "/api/mugs/**",
                         "/api/categories/**",
                         "/api/subcategories/**",
+                        "/api/public/**",
                     ).permitAll()
                     // Public service endpoints
                     .requestMatchers(

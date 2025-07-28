@@ -1,3 +1,4 @@
+import { publicApi } from '@/lib/api';
 import { Prompt } from '@/types/prompt';
 import { ReactNode, createContext, useContext, useEffect, useReducer } from 'react';
 import { WizardStep } from '../constants';
@@ -26,6 +27,7 @@ interface WizardContextValue extends WizardState {
   setGeneratedImages: (urls: string[]) => void;
   selectGeneratedImage: (url: string) => void;
   updateGeneratedImageCropData: (cropData: GeneratedImageCropData | null) => void;
+  setSessionToken: (token: string | null) => void;
   setProcessing: (isProcessing: boolean) => void;
   setError: (error: string | null) => void;
 
@@ -44,30 +46,31 @@ export function WizardProvider({ children }: WizardProviderProps) {
 
   // Fetch prompts on mount
   useEffect(() => {
-    const controller = new AbortController();
-    dispatch(wizardActions.setPromptsLoading(true));
-    dispatch(wizardActions.setPromptsError(null));
+    let mounted = true;
 
-    fetch('/api/admin/prompts', { signal: controller.signal, credentials: 'include' })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Failed to fetch prompts');
-        }
-        return response.json();
-      })
-      .then((data) => {
-        dispatch(wizardActions.setPrompts(data));
-        dispatch(wizardActions.setPromptsLoading(false));
-      })
-      .catch((error) => {
-        if (error.name !== 'AbortError') {
-          dispatch(wizardActions.setPromptsError(error.message));
+    const fetchPrompts = async () => {
+      dispatch(wizardActions.setPromptsLoading(true));
+      dispatch(wizardActions.setPromptsError(null));
+
+      try {
+        const data = await publicApi.fetchPrompts();
+        if (mounted) {
+          dispatch(wizardActions.setPrompts(data));
           dispatch(wizardActions.setPromptsLoading(false));
         }
-      });
+      } catch (error) {
+        if (mounted) {
+          const errorMessage = error instanceof Error ? error.message : 'Failed to fetch prompts';
+          dispatch(wizardActions.setPromptsError(errorMessage));
+          dispatch(wizardActions.setPromptsLoading(false));
+        }
+      }
+    };
+
+    fetchPrompts();
 
     return () => {
-      controller.abort();
+      mounted = false;
     };
   }, [dispatch]);
 
@@ -93,6 +96,7 @@ export function WizardProvider({ children }: WizardProviderProps) {
   const setGeneratedImages = (urls: string[]) => dispatch(wizardActions.setGeneratedImages(urls));
   const selectGeneratedImage = (url: string) => dispatch(wizardActions.selectGeneratedImage(url));
   const updateGeneratedImageCropData = (cropData: GeneratedImageCropData | null) => dispatch(wizardActions.updateGeneratedImageCropData(cropData));
+  const setSessionToken = (token: string | null) => dispatch(wizardActions.setSessionToken(token));
   const setProcessing = (isProcessing: boolean) => dispatch(wizardActions.setProcessing(isProcessing));
   const setError = (error: string | null) => dispatch(wizardActions.setError(error));
 
@@ -125,6 +129,7 @@ export function WizardProvider({ children }: WizardProviderProps) {
     setGeneratedImages,
     selectGeneratedImage,
     updateGeneratedImageCropData,
+    setSessionToken,
     setProcessing,
     setError,
     getCompletedSteps,

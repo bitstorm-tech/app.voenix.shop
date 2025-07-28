@@ -62,6 +62,7 @@ export interface WizardState {
   generatedImageUrls: string[] | null;
   selectedGeneratedImage: string | null;
   generatedImageCropData: GeneratedImageCropData | null;
+  sessionToken: string | null;
   isProcessing: boolean;
   error: string | null;
   prompts: Prompt[];

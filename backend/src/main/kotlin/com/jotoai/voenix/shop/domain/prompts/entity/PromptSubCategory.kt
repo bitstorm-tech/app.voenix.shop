@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.domain.prompts.entity
 
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptSubCategoryDto
+import com.jotoai.voenix.shop.domain.prompts.dto.PublicPromptSubCategoryDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -46,5 +47,12 @@ data class PromptSubCategory(
             promptsCount = this.prompts.size,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
+        )
+
+    fun toPublicDto() =
+        PublicPromptSubCategoryDto(
+            id = requireNotNull(this.id) { "PromptSubCategory ID cannot be null when converting to DTO" },
+            name = this.name,
+            description = this.description,
         )
 }

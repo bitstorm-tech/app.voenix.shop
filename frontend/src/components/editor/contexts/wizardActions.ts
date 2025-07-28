@@ -13,6 +13,7 @@ export const WIZARD_ACTIONS = {
   SET_GENERATED_IMAGES: 'SET_GENERATED_IMAGES',
   SELECT_GENERATED_IMAGE: 'SELECT_GENERATED_IMAGE',
   UPDATE_GENERATED_IMAGE_CROP_DATA: 'UPDATE_GENERATED_IMAGE_CROP_DATA',
+  SET_SESSION_TOKEN: 'SET_SESSION_TOKEN',
   SET_PROCESSING: 'SET_PROCESSING',
   SET_ERROR: 'SET_ERROR',
   RESET: 'RESET',
@@ -35,6 +36,7 @@ export type WizardAction =
   | { type: typeof WIZARD_ACTIONS.SET_GENERATED_IMAGES; payload: string[] }
   | { type: typeof WIZARD_ACTIONS.SELECT_GENERATED_IMAGE; payload: string }
   | { type: typeof WIZARD_ACTIONS.UPDATE_GENERATED_IMAGE_CROP_DATA; payload: GeneratedImageCropData | null }
+  | { type: typeof WIZARD_ACTIONS.SET_SESSION_TOKEN; payload: string | null }
   | { type: typeof WIZARD_ACTIONS.SET_PROCESSING; payload: boolean }
   | { type: typeof WIZARD_ACTIONS.SET_ERROR; payload: string | null }
   | { type: typeof WIZARD_ACTIONS.RESET }
@@ -94,6 +96,11 @@ export const wizardActions = {
   updateGeneratedImageCropData: (cropData: GeneratedImageCropData | null): WizardAction => ({
     type: WIZARD_ACTIONS.UPDATE_GENERATED_IMAGE_CROP_DATA,
     payload: cropData,
+  }),
+
+  setSessionToken: (token: string | null): WizardAction => ({
+    type: WIZARD_ACTIONS.SET_SESSION_TOKEN,
+    payload: token,
   }),
 
   setProcessing: (isProcessing: boolean): WizardAction => ({

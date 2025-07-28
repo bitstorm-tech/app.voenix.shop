@@ -19,9 +19,17 @@ const funnyMessages = [
 ];
 
 export default function ImageGenerationStep() {
-  const { uploadedImage, selectedPrompt, generatedImageUrls, selectedGeneratedImage, setProcessing, setGeneratedImages, selectGeneratedImage } =
-    useWizardContext();
-  const { isGenerating, error, generateImages } = useImageGeneration();
+  const {
+    uploadedImage,
+    selectedPrompt,
+    generatedImageUrls,
+    selectedGeneratedImage,
+    setProcessing,
+    setGeneratedImages,
+    selectGeneratedImage,
+    setSessionToken,
+  } = useWizardContext();
+  const { isGenerating, error, sessionToken, generateImages } = useImageGeneration();
   const hasStartedGeneration = useRef(false);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
 
@@ -43,12 +51,16 @@ export default function ImageGenerationStep() {
         const urls = await generateImages(uploadedImage, selectedPrompt.id);
         if (urls) {
           setGeneratedImages(urls);
+          // Store the session token in the context
+          if (sessionToken) {
+            setSessionToken(sessionToken);
+          }
         }
         setProcessing(false);
       };
       performGeneration();
     }
-  }, [uploadedImage, selectedPrompt?.id, generatedImageUrls, generateImages, setProcessing, setGeneratedImages]);
+  }, [uploadedImage, selectedPrompt?.id, generatedImageUrls, generateImages, setProcessing, setGeneratedImages, sessionToken, setSessionToken]);
 
   if (isGenerating) {
     return (

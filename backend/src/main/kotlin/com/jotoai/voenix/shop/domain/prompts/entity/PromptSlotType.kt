@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.domain.prompts.entity
 
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptSlotTypeDto
+import com.jotoai.voenix.shop.domain.prompts.dto.PublicPromptSlotTypeDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
@@ -35,5 +36,12 @@ data class PromptSlotType(
             position = this.position,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
+        )
+
+    fun toPublicDto() =
+        PublicPromptSlotTypeDto(
+            id = requireNotNull(this.id) { "PromptSlotType ID cannot be null when converting to DTO" },
+            name = this.name,
+            position = this.position,
         )
 }

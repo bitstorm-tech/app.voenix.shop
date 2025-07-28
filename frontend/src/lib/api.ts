@@ -554,6 +554,77 @@ export const countryApi = {
   getAll: () => api.get<Country[]>('/public/countries'),
 };
 
+// Public API endpoints (no authentication required)
+export const publicApi = {
+  // Fetch prompts for public use (filtered data without sensitive fields)
+  fetchPrompts: async (): Promise<Prompt[]> => {
+    const response = await fetch('/api/prompts', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // No credentials needed for public endpoints
+    });
+    return handleResponse<Prompt[]>(response);
+  },
+  // Generate images using public endpoint
+  generateImage: async (image: File, promptId: number): Promise<PublicImageGenerationResponse> => {
+    const formData = new FormData();
+    formData.append('image', image);
+    formData.append('promptId', promptId.toString());
+
+    const response = await fetch('/api/public/images/generate', {
+      method: 'POST',
+      body: formData,
+      // No credentials needed for public endpoints
+    });
+    return handleResponse<PublicImageGenerationResponse>(response);
+  },
+  // Generate PDF using public endpoint
+  generatePdf: async (mugId: number, imageUrl: string, sessionToken?: string): Promise<Blob> => {
+    const response = await fetch('/api/public/pdf/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        mugId,
+        imageUrl,
+        sessionToken,
+      }),
+      // No credentials needed for public endpoints
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ message: 'An error occurred' }));
+
+      // If validation errors exist, append them to the message
+      let errorMessage = errorData.message || `HTTP error! status: ${response.status}`;
+      if (errorData.validationErrors) {
+        const validationMessages = Object.entries(errorData.validationErrors)
+          .map(([field, message]) => `${field}: ${message}`)
+          .join(', ');
+        errorMessage = `${errorMessage} - ${validationMessages}`;
+      }
+
+      throw new ApiError(response.status, errorMessage);
+    }
+
+    return response.blob();
+  },
+  // Fetch mugs for public use (filtered data without sensitive fields)
+  fetchMugs: async (): Promise<Mug[]> => {
+    const response = await fetch('/api/mugs', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // No credentials needed for public endpoints
+    });
+    return handleResponse<Mug[]>(response);
+  },
+};
+
 // Type definitions for new API requests
 export interface UserDto {
   id: number;
@@ -597,4 +668,9 @@ export interface GeneratePdfRequest {
 
 export interface PdfResponse {
   pdfContent: string; // Base64 encoded
+}
+
+export interface PublicImageGenerationResponse {
+  imageUrls: string[];
+  sessionToken: string;
 }

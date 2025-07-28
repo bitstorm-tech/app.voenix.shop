@@ -503,7 +503,7 @@ class ArticleService(
                     id = article.id!!,
                     name = article.name,
                     price = price,
-                    image = defaultVariant?.exampleImageFilename?.let { "/api/admin/images/articles/mugs/variant-example-images/$it" },
+                    image = defaultVariant?.exampleImageFilename?.let { "/images/articles/mugs/variant-example-images/$it" },
                     fillingQuantity = it.fillingQuantity,
                     descriptionShort = article.descriptionShort,
                     descriptionLong = article.descriptionLong,
