@@ -33,9 +33,6 @@ class PublicImageController(
     fun generateImage(
         @RequestPart("image") imageFile: MultipartFile,
         @RequestParam("promptId") promptId: Long,
-        @RequestParam("background", required = false) background: String?,
-        @RequestParam("quality", required = false) quality: String?,
-        @RequestParam("size", required = false) size: String?,
         request: HttpServletRequest,
     ): PublicImageGenerationResponse {
         logger.info("Received public image generation request for prompt ID: $promptId")
@@ -44,21 +41,7 @@ class PublicImageController(
         val generationRequest =
             PublicImageGenerationRequest(
                 promptId = promptId,
-                background =
-                    background?.let {
-                        com.jotoai.voenix.shop.domain.openai.dto.enums.ImageBackground
-                            .valueOf(it.uppercase())
-                    } ?: com.jotoai.voenix.shop.domain.openai.dto.enums.ImageBackground.AUTO,
-                quality =
-                    quality?.let {
-                        com.jotoai.voenix.shop.domain.openai.dto.enums.ImageQuality
-                            .valueOf(it.uppercase())
-                    } ?: com.jotoai.voenix.shop.domain.openai.dto.enums.ImageQuality.LOW,
-                size =
-                    size?.let {
-                        com.jotoai.voenix.shop.domain.openai.dto.enums.ImageSize
-                            .valueOf(it.uppercase())
-                    } ?: com.jotoai.voenix.shop.domain.openai.dto.enums.ImageSize.LANDSCAPE_1536X1024,
+                n = 4,
             )
 
         return publicImageGenerationService.generateImage(imageFile, generationRequest, request)

@@ -9,7 +9,6 @@ import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -19,8 +18,6 @@ import org.springframework.web.multipart.MultipartFile
 class PublicImageGenerationService(
     private val openAIImageService: OpenAIImageService,
     private val promptService: PromptService,
-    private val imageService: ImageService,
-    @Value("\${app.base-url:http://localhost:8080}") private val baseUrl: String,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(PublicImageGenerationService::class.java)
@@ -46,15 +43,16 @@ class PublicImageGenerationService(
         logger.info("Processing public image generation request for prompt ID: ${request.promptId}")
 
         try {
-            // Create OpenAI request with fixed parameters for public use
             val openAIRequest =
                 CreateImageEditRequest(
                     promptId = request.promptId,
                     background = request.background,
                     quality = request.quality,
                     size = request.size,
-                    n = 1, // Always generate 1 image for public users
+                    n = request.n,
                 )
+
+            logger.debug("Generated OpenAI request: {}", openAIRequest)
 
             // Generate image using existing OpenAI service
             val imageEditResponse = openAIImageService.editImage(imageFile, openAIRequest)
@@ -62,7 +60,7 @@ class PublicImageGenerationService(
             // Convert filenames to full URLs
             val imageUrls =
                 imageEditResponse.imageFilenames.map { filename ->
-                    "$baseUrl/api/public/images/$filename"
+                    "/api/public/images/$filename"
                 }
 
             logger.info("Successfully generated ${imageUrls.size} images for public user")

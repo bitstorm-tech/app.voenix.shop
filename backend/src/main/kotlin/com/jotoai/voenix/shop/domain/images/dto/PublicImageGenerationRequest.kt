@@ -11,4 +11,5 @@ data class PublicImageGenerationRequest(
     val background: ImageBackground = ImageBackground.AUTO,
     val quality: ImageQuality = ImageQuality.LOW,
     val size: ImageSize = ImageSize.LANDSCAPE_1536X1024,
+    val n: Int = 1,
 )
