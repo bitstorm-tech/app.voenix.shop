@@ -5,7 +5,6 @@ import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.articles.service.ArticleService
 import com.jotoai.voenix.shop.domain.pdf.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.domain.pdf.dto.PublicPdfGenerationRequest
-import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,10 +19,7 @@ class PublicPdfService(
         private val logger = LoggerFactory.getLogger(PublicPdfService::class.java)
     }
 
-    fun generatePublicPdf(
-        request: PublicPdfGenerationRequest,
-        httpRequest: HttpServletRequest,
-    ): ByteArray {
+    fun generatePublicPdf(request: PublicPdfGenerationRequest): ByteArray {
         // Validate the mug exists and is available
         val article =
             try {

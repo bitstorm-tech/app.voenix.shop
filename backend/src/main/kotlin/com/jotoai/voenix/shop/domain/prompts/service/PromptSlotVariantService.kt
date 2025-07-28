@@ -100,7 +100,7 @@ class PromptSlotVariantService(
                 // Delete old image if filename changed
                 try {
                     imageService.delete(oldFilename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // Log but don't fail if old image doesn't exist
                 }
             }
@@ -126,7 +126,7 @@ class PromptSlotVariantService(
         promptSlotVariant.exampleImageFilename?.let { filename ->
             try {
                 imageService.delete(filename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // Log but don't fail if image doesn't exist
             }
         }

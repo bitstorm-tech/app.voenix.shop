@@ -5,7 +5,6 @@ import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.domain.images.service.ImageService
 import com.jotoai.voenix.shop.domain.images.service.PublicImageGenerationService
-import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -33,7 +32,6 @@ class PublicImageController(
     fun generateImage(
         @RequestPart("image") imageFile: MultipartFile,
         @RequestParam("promptId") promptId: Long,
-        request: HttpServletRequest,
     ): PublicImageGenerationResponse {
         logger.info("Received public image generation request for prompt ID: $promptId")
 
@@ -44,7 +42,7 @@ class PublicImageController(
                 n = 4,
             )
 
-        return publicImageGenerationService.generateImage(imageFile, generationRequest, request)
+        return publicImageGenerationService.generateImage(imageFile, generationRequest)
     }
 
     @GetMapping("/{filename}")

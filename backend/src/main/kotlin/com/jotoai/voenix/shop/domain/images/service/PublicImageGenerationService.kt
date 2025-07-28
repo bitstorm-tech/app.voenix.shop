@@ -7,7 +7,6 @@ import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
-import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,7 +28,6 @@ class PublicImageGenerationService(
     fun generateImage(
         imageFile: MultipartFile,
         request: PublicImageGenerationRequest,
-        httpRequest: HttpServletRequest,
     ): PublicImageGenerationResponse {
         // Validate file
         validateImageFile(imageFile)

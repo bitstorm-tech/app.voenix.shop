@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.api.public.pdf
 
 import com.jotoai.voenix.shop.domain.pdf.dto.PublicPdfGenerationRequest
 import com.jotoai.voenix.shop.domain.pdf.service.PublicPdfService
-import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
@@ -21,9 +20,8 @@ class PublicPdfController(
     @PostMapping("/generate")
     fun generatePdf(
         @Valid @RequestBody request: PublicPdfGenerationRequest,
-        httpRequest: HttpServletRequest,
     ): ResponseEntity<ByteArrayResource> {
-        val pdfData = publicPdfService.generatePublicPdf(request, httpRequest)
+        val pdfData = publicPdfService.generatePublicPdf(request)
         val resource = ByteArrayResource(pdfData)
         val filename = "mug-preview-${System.currentTimeMillis()}.pdf"
 
