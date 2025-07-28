@@ -10,6 +10,7 @@ import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleRequest
 import com.jotoai.voenix.shop.domain.articles.dto.CreateCostCalculationRequest
 import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtArticleVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.PublicMugDto
 import com.jotoai.voenix.shop.domain.articles.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.domain.articles.dto.UpdateCostCalculationRequest
 import com.jotoai.voenix.shop.domain.articles.entity.Article
@@ -474,6 +475,45 @@ class ArticleService(
                     salesActiveRow = request.salesActiveRow,
                 ),
             )
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun findPublicMugs(): List<PublicMugDto> {
+        // Find all active mug articles with their details
+        val mugs = articleRepository.findAllActiveMugsWithDetails(ArticleType.MUG)
+
+        return mugs.mapNotNull { article ->
+            // Get mug details
+            val mugDetails = mugDetailsService.findByArticleId(article.id!!)
+
+            // Get default variant for image
+            val defaultVariant = article.mugVariants.find { it.isDefault } ?: article.mugVariants.firstOrNull()
+
+            // Convert price from cents to euros (assuming salesTotalGross is in cents)
+            val price =
+                article.costCalculation
+                    ?.salesTotalGross
+                    ?.toDouble()
+                    ?.div(100) ?: 0.0
+
+            // Only include if we have mug details
+            mugDetails?.let {
+                PublicMugDto(
+                    id = article.id!!,
+                    name = article.name,
+                    price = price,
+                    image = defaultVariant?.exampleImageFilename?.let { "/api/admin/images/articles/mugs/variant-example-images/$it" },
+                    fillingQuantity = it.fillingQuantity,
+                    descriptionShort = article.descriptionShort,
+                    descriptionLong = article.descriptionLong,
+                    heightMm = it.heightMm,
+                    diameterMm = it.diameterMm,
+                    printTemplateWidthMm = it.printTemplateWidthMm,
+                    printTemplateHeightMm = it.printTemplateHeightMm,
+                    dishwasherSafe = it.dishwasherSafe,
+                )
+            }
         }
     }
 }

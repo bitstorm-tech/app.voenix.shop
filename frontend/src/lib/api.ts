@@ -254,7 +254,7 @@ export const articlesApi = {
 
 // Mug API endpoints
 export const mugsApi = {
-  getAll: () => api.get<Mug[]>('/admin/articles/mugs'),
+  getAll: () => api.get<Mug[]>('/mugs'),
   getById: (id: number) => api.get<Mug>(`/admin/articles/mugs/${id}`),
   create: (data: CreateMugRequest) => api.post<Mug>('/admin/articles/mugs', data),
   update: (id: number, data: UpdateMugRequest) => api.put<Mug>(`/admin/articles/mugs/${id}`, data),

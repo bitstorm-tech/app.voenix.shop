@@ -77,4 +77,18 @@ interface ArticleRepository : JpaRepository<Article, Long> {
     fun findByCategoryId(categoryId: Long): List<Article>
 
     fun findBySubcategoryId(subcategoryId: Long): List<Article>
+
+    @Query(
+        """
+        SELECT DISTINCT a FROM Article a 
+        LEFT JOIN FETCH a.mugVariants 
+        LEFT JOIN FETCH a.costCalculation 
+        WHERE a.articleType = :articleType 
+        AND a.active = true 
+        ORDER BY a.id DESC
+    """,
+    )
+    fun findAllActiveMugsWithDetails(
+        @Param("articleType") articleType: ArticleType,
+    ): List<Article>
 }
