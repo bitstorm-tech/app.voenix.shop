@@ -1,8 +1,9 @@
 import { ColorSwatch } from '@/components/ui/ColorSwatch';
-import type { ArticleShirtVariant } from '@/types/article';
+import type { Article, ArticleShirtVariant } from '@/types/article';
 
 interface ShirtVariantListProps {
   variants: ArticleShirtVariant[];
+  article: Article;
 }
 
 export function ShirtVariantList({ variants }: ShirtVariantListProps) {

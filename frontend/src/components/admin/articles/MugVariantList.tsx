@@ -1,12 +1,14 @@
 import { Badge } from '@/components/ui/Badge';
 import { ColorSwatch } from '@/components/ui/ColorSwatch';
-import type { ArticleMugVariant } from '@/types/article';
+import { formatArticleNumber } from '@/lib/utils';
+import type { Article, ArticleMugVariant } from '@/types/article';
 
 interface MugVariantListProps {
   variants: ArticleMugVariant[];
+  article: Article;
 }
 
-export function MugVariantList({ variants }: MugVariantListProps) {
+export function MugVariantList({ variants, article }: MugVariantListProps) {
   if (variants.length === 0) {
     return <div className="text-muted-foreground py-4 text-center text-sm">No variants available</div>;
   }
@@ -31,11 +33,9 @@ export function MugVariantList({ variants }: MugVariantListProps) {
             </div>
           </div>
 
-          {variant.supplierArticleNumber && (
-            <div className="text-muted-foreground text-sm">
-              <span className="font-medium">Variant #:</span> {variant.supplierArticleNumber}
-            </div>
-          )}
+          <div className="text-muted-foreground text-sm">
+            {formatArticleNumber(article.categoryId, article.subcategoryId, article.id, variant.articleVariantNumber)}
+          </div>
         </div>
       ))}
     </div>

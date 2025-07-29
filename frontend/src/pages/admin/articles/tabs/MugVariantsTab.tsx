@@ -37,7 +37,7 @@ export default function MugVariantsTab({
     insideColorCode: '#ffffff',
     outsideColorCode: '#ffffff',
     name: '',
-    supplierArticleNumber: '',
+    articleVariantNumber: '',
     isDefault: false,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -225,7 +225,7 @@ export default function MugVariantsTab({
       insideColorCode: variant.insideColorCode,
       outsideColorCode: variant.outsideColorCode,
       name: variant.name,
-      supplierArticleNumber: variant.supplierArticleNumber || '',
+      articleVariantNumber: variant.articleVariantNumber || '',
       isDefault: variant.isDefault || false,
     });
     setImageRemoved(false);
@@ -247,7 +247,7 @@ export default function MugVariantsTab({
       insideColorCode: variant.insideColorCode,
       outsideColorCode: variant.outsideColorCode,
       name: variant.name,
-      supplierArticleNumber: variant.supplierArticleNumber || '',
+      articleVariantNumber: variant.articleVariantNumber || '',
       isDefault: variant.isDefault || false,
     });
     setImageRemoved(false);
@@ -262,7 +262,7 @@ export default function MugVariantsTab({
       insideColorCode: '#ffffff',
       outsideColorCode: '#ffffff',
       name: '',
-      supplierArticleNumber: '',
+      articleVariantNumber: '',
       isDefault: false,
     });
     handleRemoveImage();
@@ -320,7 +320,7 @@ export default function MugVariantsTab({
           insideColorCode: newVariant.insideColorCode,
           outsideColorCode: newVariant.outsideColorCode,
           name: newVariant.name,
-          supplierArticleNumber: newVariant.supplierArticleNumber,
+          articleVariantNumber: newVariant.articleVariantNumber,
           isDefault: newVariant.isDefault,
         };
 
@@ -521,8 +521,8 @@ export default function MugVariantsTab({
             <div className="space-y-2">
               <Label>Article Variant Number</Label>
               <Input
-                value={newVariant.supplierArticleNumber || ''}
-                onChange={(e) => setNewVariant({ ...newVariant, supplierArticleNumber: e.target.value })}
+                value={newVariant.articleVariantNumber || ''}
+                onChange={(e) => setNewVariant({ ...newVariant, articleVariantNumber: e.target.value })}
                 placeholder="e.g., MUG-001"
                 maxLength={100}
               />
@@ -619,7 +619,7 @@ export default function MugVariantsTab({
                 {variants.map((variant) => (
                   <TableRow key={variant.id} className={editingVariantId === variant.id ? 'bg-blue-50' : ''}>
                     <TableCell className="font-medium">{variant.name}</TableCell>
-                    <TableCell>{variant.supplierArticleNumber || '-'}</TableCell>
+                    <TableCell>{variant.articleVariantNumber || '-'}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="h-6 w-6 rounded border border-gray-300" style={{ backgroundColor: variant.insideColorCode }} />
@@ -684,7 +684,7 @@ export default function MugVariantsTab({
                 {temporaryVariants.map((variant, index) => (
                   <TableRow key={index} className={editingTemporaryIndex === index ? 'bg-blue-50' : ''}>
                     <TableCell className="font-medium">{variant.name}</TableCell>
-                    <TableCell>{variant.supplierArticleNumber || '-'}</TableCell>
+                    <TableCell>{variant.articleVariantNumber || '-'}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <div className="h-6 w-6 rounded border border-gray-300" style={{ backgroundColor: variant.insideColorCode }} />
