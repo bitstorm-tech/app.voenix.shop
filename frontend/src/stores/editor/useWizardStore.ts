@@ -1,6 +1,5 @@
 import { WIZARD_STEPS, WizardStep } from '@/components/editor/constants';
 import { CropData, GeneratedImageCropData, MugOption, UserData } from '@/components/editor/types';
-import { publicApi } from '@/lib/api';
 import { Prompt } from '@/types/prompt';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
@@ -19,11 +18,6 @@ interface WizardStore {
   generatedImageCropData: GeneratedImageCropData | null;
   isProcessing: boolean;
   error: string | null;
-
-  // Prompts state
-  prompts: Prompt[];
-  promptsLoading: boolean;
-  promptsError: string | null;
 
   // Navigation state - computed
   canGoNext: boolean;
@@ -51,12 +45,6 @@ interface WizardStore {
   updateGeneratedImageCropData: (cropData: GeneratedImageCropData | null) => void;
   setProcessing: (isProcessing: boolean) => void;
   setError: (error: string | null) => void;
-
-  // ========== Prompts Actions ==========
-  setPrompts: (prompts: Prompt[]) => void;
-  setPromptsLoading: (loading: boolean) => void;
-  setPromptsError: (error: string | null) => void;
-  fetchPrompts: () => Promise<void>;
 
   // ========== Computed Values ==========
   getCompletedSteps: () => WizardStep[];
@@ -113,9 +101,6 @@ export const useWizardStore = create<WizardStore>()(
     generatedImageCropData: null,
     isProcessing: false,
     error: null,
-    prompts: [],
-    promptsLoading: true,
-    promptsError: null,
     canGoNext: false,
     canGoPrevious: false,
 
@@ -270,46 +255,6 @@ export const useWizardStore = create<WizardStore>()(
       set((state) => {
         state.error = error;
       });
-    },
-
-    // ========== Prompts Actions ==========
-    setPrompts: (prompts) => {
-      set((state) => {
-        state.prompts = prompts;
-      });
-    },
-
-    setPromptsLoading: (loading) => {
-      set((state) => {
-        state.promptsLoading = loading;
-      });
-    },
-
-    setPromptsError: (error) => {
-      set((state) => {
-        state.promptsError = error;
-      });
-    },
-
-    fetchPrompts: async () => {
-      set((state) => {
-        state.promptsLoading = true;
-        state.promptsError = null;
-      });
-
-      try {
-        const data = await publicApi.fetchPrompts();
-        set((state) => {
-          state.prompts = data;
-          state.promptsLoading = false;
-        });
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to fetch prompts';
-        set((state) => {
-          state.promptsError = errorMessage;
-          state.promptsLoading = false;
-        });
-      }
     },
 
     // ========== Computed Values ==========

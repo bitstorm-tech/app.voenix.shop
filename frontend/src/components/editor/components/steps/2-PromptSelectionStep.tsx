@@ -1,3 +1,4 @@
+import { usePublicPrompts } from '@/hooks/queries/usePublicPrompts';
 import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Check } from 'lucide-react';
@@ -5,7 +6,7 @@ import { usePromptSelection } from '../../hooks/usePromptSelection';
 import PromptCategoryFilter from '../shared/PromptCategoryFilter';
 
 export default function PromptSelectionStep() {
-  const prompts = useWizardStore((state) => state.prompts);
+  const { data: prompts = [] } = usePublicPrompts();
   const selectedPrompt = useWizardStore((state) => state.selectedPrompt);
   const selectPrompt = useWizardStore((state) => state.selectPrompt);
   const { selectedCategory, setSelectedCategory, filteredPrompts, categories } = usePromptSelection(prompts);

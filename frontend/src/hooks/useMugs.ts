@@ -1,7 +1,7 @@
 import { MugOption } from '@/components/editor/types';
-import { publicApi } from '@/lib/api';
+import { usePublicMugs } from '@/hooks/queries/usePublicMugs';
 import type { Mug } from '@/types/mug';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 const mockMugs: MugOption[] = [
   {
@@ -53,45 +53,37 @@ const mockMugs: MugOption[] = [
   },
 ];
 
+// Helper function to convert backend Mug to frontend MugOption
+const mapMugToOption = (mug: Mug): MugOption => ({
+  id: mug.id,
+  name: mug.name,
+  price: mug.price,
+  image: mug.image,
+  capacity: mug.fillingQuantity || '',
+  description_short: mug.descriptionShort,
+  description_long: mug.descriptionLong,
+  height_mm: mug.heightMm,
+  diameter_mm: mug.diameterMm,
+  print_template_width_mm: mug.printTemplateWidthMm,
+  print_template_height_mm: mug.printTemplateHeightMm,
+  filling_quantity: mug.fillingQuantity,
+  dishwasher_safe: mug.dishwasherSafe,
+});
+
 export function useMugs() {
-  const [mugs, setMugs] = useState<MugOption[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error] = useState<string | null>(null);
+  const { data, isLoading, error } = usePublicMugs();
 
-  // Helper function to convert backend Mug to frontend MugOption
-  const mapMugToOption = (mug: Mug): MugOption => ({
-    id: mug.id,
-    name: mug.name,
-    price: mug.price,
-    image: mug.image,
-    capacity: mug.fillingQuantity || '',
-    description_short: mug.descriptionShort,
-    description_long: mug.descriptionLong,
-    height_mm: mug.heightMm,
-    diameter_mm: mug.diameterMm,
-    print_template_width_mm: mug.printTemplateWidthMm,
-    print_template_height_mm: mug.printTemplateHeightMm,
-    filling_quantity: mug.fillingQuantity,
-    dishwasher_safe: mug.dishwasherSafe,
-  });
+  const mugs = useMemo(() => {
+    if (data) {
+      return data.map(mapMugToOption);
+    }
+    // Use mock data as fallback if there's an error
+    if (error) {
+      console.error('Error fetching mugs, using mock data:', error);
+      return mockMugs;
+    }
+    return [];
+  }, [data, error]);
 
-  useEffect(() => {
-    const fetchMugs = async () => {
-      try {
-        const data = await publicApi.fetchMugs();
-        const mappedMugs = data.map(mapMugToOption);
-        setMugs(mappedMugs);
-      } catch (err) {
-        console.error('Error fetching mugs:', err);
-        // Use mock data as fallback
-        setMugs(mockMugs);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMugs();
-  }, []);
-
-  return { mugs, loading, error };
+  return { mugs, loading: isLoading, error: error?.message || null };
 }

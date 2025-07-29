@@ -6,23 +6,17 @@ import MugSelectionStep from '@/components/editor/components/steps/3-MugSelectio
 import UserDataStep from '@/components/editor/components/steps/4-UserDataStep';
 import ImageGenerationStep from '@/components/editor/components/steps/5-ImageGenerationStep';
 import PreviewStep from '@/components/editor/components/steps/6-PreviewStep';
+import { usePublicPrompts } from '@/hooks/queries/usePublicPrompts';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { useEffect } from 'react';
 
 export default function Editor() {
   const currentStep = useWizardStore((state) => state.currentStep);
-  const promptsLoading = useWizardStore((state) => state.promptsLoading);
-  const promptsError = useWizardStore((state) => state.promptsError);
-  const fetchPrompts = useWizardStore((state) => state.fetchPrompts);
+  const { isLoading: promptsLoading, error: promptsError } = usePublicPrompts();
 
   useEffect(() => {
     document.title = 'Editor - Voenix Shop';
   }, []);
-
-  // Fetch prompts on mount
-  useEffect(() => {
-    fetchPrompts();
-  }, [fetchPrompts]);
 
   if (promptsLoading) {
     return (
@@ -39,7 +33,7 @@ export default function Editor() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600">Error loading editor: {promptsError}</p>
+          <p className="text-red-600">Error loading editor: {promptsError.message || 'Failed to load prompts'}</p>
         </div>
       </div>
     );
