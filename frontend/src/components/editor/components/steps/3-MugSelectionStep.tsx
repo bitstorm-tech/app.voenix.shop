@@ -1,11 +1,37 @@
+import { MugOption, MugVariant } from '@/components/editor/types';
 import { useMugs } from '@/hooks/useMugs';
 import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Check, Loader2, Star } from 'lucide-react';
 
+// Helper function to get a friendly color name from hex
+function getColorName(hex: string): string {
+  const colors: Record<string, string> = {
+    '#FFFFFF': 'White',
+    '#000000': 'Black',
+    '#FF0000': 'Red',
+    '#00FF00': 'Green',
+    '#0000FF': 'Blue',
+    '#FFFF00': 'Yellow',
+    '#FF6B6B': 'Coral Red',
+    '#87CEEB': 'Sky Blue',
+    '#4B0082': 'Indigo',
+    '#800080': 'Purple',
+    '#FFC0CB': 'Pink',
+    '#FFA500': 'Orange',
+    '#808080': 'Gray',
+    '#A52A2A': 'Brown',
+  };
+
+  const normalizedHex = hex.toUpperCase();
+  return colors[normalizedHex] || hex;
+}
+
 export default function MugSelectionStep() {
   const selectedMug = useWizardStore((state) => state.selectedMug);
+  const selectedVariant = useWizardStore((state) => state.selectedVariant);
   const selectMug = useWizardStore((state) => state.selectMug);
+  const selectVariant = useWizardStore((state) => state.selectVariant);
   const { mugs, loading, error } = useMugs();
   if (loading) {
     return (
@@ -39,8 +65,11 @@ export default function MugSelectionStep() {
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {mugs.map((mug) => {
+        {mugs.map((mug: MugOption) => {
           const isSelected = selectedMug?.id === mug.id;
+          // Show selected variant image if this is the selected mug
+          // For non-selected mugs, the image is already set to the default variant in useMugs hook
+          const displayImage = isSelected && selectedVariant?.exampleImageUrl ? selectedVariant.exampleImageUrl : mug.image;
 
           return (
             <div
@@ -70,8 +99,8 @@ export default function MugSelectionStep() {
 
               <div className="aspect-square bg-gray-100 p-4">
                 <div className="flex h-full items-center justify-center">
-                  {mug.image ? (
-                    <img src={mug.image} alt={mug.name} className="h-full w-full object-contain" />
+                  {displayImage ? (
+                    <img src={displayImage} alt={mug.name} className="h-full w-full object-contain" />
                   ) : (
                     <div className="h-32 w-32 rounded-lg bg-gray-300" />
                   )}
@@ -102,6 +131,50 @@ export default function MugSelectionStep() {
                     </span>
                   )}
                 </div>
+
+                {/* Variant color swatches - show for all mugs with multiple variants */}
+                {mug.variants && mug.variants.length > 1 && (
+                  <div className="mb-3">
+                    <p className="mb-1.5 text-xs font-medium text-gray-700">Color Options:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {mug.variants.map((variant: MugVariant) => {
+                        const isVariantSelected = isSelected && selectedVariant?.id === variant.id;
+                        const showAsDefault = !isSelected && variant.isDefault;
+                        return (
+                          <button
+                            key={variant.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              // If clicking on a variant of a non-selected mug, select the mug first
+                              if (!isSelected) {
+                                selectMug(mug);
+                              }
+                              selectVariant(variant);
+                            }}
+                            className={cn(
+                              'relative h-7 w-7 rounded-full border-2 transition-all',
+                              isVariantSelected || showAsDefault
+                                ? 'border-primary scale-110 shadow-md'
+                                : 'border-gray-300 hover:scale-105 hover:border-gray-400',
+                            )}
+                            style={{
+                              backgroundColor: variant.colorCode.startsWith('#') ? variant.colorCode : `#${variant.colorCode}`,
+                            }}
+                            aria-label={`Select ${getColorName(variant.colorCode)} color`}
+                            title={getColorName(variant.colorCode)}
+                          >
+                            {(isVariantSelected || showAsDefault) && (
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <Check className="h-3 w-3 text-white drop-shadow-md" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <p className="text-primary text-lg font-semibold">${mug.price}</p>
               </div>
             </div>

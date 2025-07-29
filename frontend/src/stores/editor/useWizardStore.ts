@@ -1,5 +1,5 @@
 import { WIZARD_STEPS, WizardStep } from '@/components/editor/constants';
-import { CropData, GeneratedImageCropData, MugOption, UserData } from '@/components/editor/types';
+import { CropData, GeneratedImageCropData, MugOption, MugVariant, UserData } from '@/components/editor/types';
 import { Prompt } from '@/types/prompt';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
@@ -12,6 +12,7 @@ interface WizardStore {
   cropData: CropData | null;
   selectedPrompt: Prompt | null;
   selectedMug: MugOption | null;
+  selectedVariant: MugVariant | null;
   userData: UserData | null;
   generatedImageUrls: string[] | null;
   selectedGeneratedImage: string | null;
@@ -37,6 +38,7 @@ interface WizardStore {
   // ========== Selection Actions ==========
   selectPrompt: (prompt: Prompt) => void;
   selectMug: (mug: MugOption) => void;
+  selectVariant: (variant: MugVariant) => void;
   setUserData: (data: UserData) => void;
 
   // ========== Generation Actions ==========
@@ -95,6 +97,7 @@ export const useWizardStore = create<WizardStore>()(
     cropData: null,
     selectedPrompt: null,
     selectedMug: null,
+    selectedVariant: null,
     userData: null,
     generatedImageUrls: null,
     selectedGeneratedImage: null,
@@ -157,6 +160,7 @@ export const useWizardStore = create<WizardStore>()(
         state.cropData = null;
         state.selectedPrompt = null;
         state.selectedMug = null;
+        state.selectedVariant = null;
         state.userData = null;
         state.generatedImageUrls = null;
         state.selectedGeneratedImage = null;
@@ -210,7 +214,16 @@ export const useWizardStore = create<WizardStore>()(
     selectMug: (mug) => {
       set((state) => {
         state.selectedMug = mug;
+        // Automatically select the default variant if available
+        const defaultVariant = mug.variants?.find((v) => v.isDefault) || mug.variants?.[0];
+        state.selectedVariant = defaultVariant || null;
         state.canGoNext = true;
+      });
+    },
+
+    selectVariant: (variant) => {
+      set((state) => {
+        state.selectedVariant = variant;
       });
     },
 

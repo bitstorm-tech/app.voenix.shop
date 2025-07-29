@@ -1,6 +1,16 @@
 import { Prompt } from '@/types/prompt';
 import { WizardStep } from './constants';
 
+export interface MugVariant {
+  id: number;
+  mugId: number;
+  colorCode: string;
+  exampleImageUrl: string | null;
+  supplierArticleNumber: string | null;
+  isDefault: boolean;
+  exampleImageFilename: string | null;
+}
+
 export interface MugOption {
   id: number;
   name: string;
@@ -16,6 +26,7 @@ export interface MugOption {
   print_template_height_mm?: number;
   filling_quantity?: string;
   dishwasher_safe?: boolean;
+  variants?: MugVariant[];
 }
 
 export interface CropData {

@@ -11,6 +11,7 @@ import com.jotoai.voenix.shop.domain.articles.dto.CreateCostCalculationRequest
 import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.PublicMugDto
+import com.jotoai.voenix.shop.domain.articles.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.domain.articles.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.domain.articles.dto.UpdateCostCalculationRequest
 import com.jotoai.voenix.shop.domain.articles.entity.Article
@@ -50,7 +51,6 @@ class ArticleService(
         categoryId: Long? = null,
         subcategoryId: Long? = null,
         active: Boolean? = null,
-        search: String? = null,
     ): PaginatedResponse<ArticleDto> {
         val pageable = PageRequest.of(page, size, Sort.by("id").descending())
         val articlesPage =
@@ -497,6 +497,22 @@ class ArticleService(
                     ?.toDouble()
                     ?.div(100) ?: 0.0
 
+            // Map mug variants to public DTOs
+            val publicVariants =
+                article.mugVariants.map { variant ->
+                    PublicMugVariantDto(
+                        id = variant.id!!,
+                        mugId = article.id!!,
+                        colorCode = variant.outsideColorCode, // Using outside color as primary
+                        exampleImageUrl = variant.exampleImageFilename?.let { "/images/articles/mugs/variant-example-images/$it" },
+                        supplierArticleNumber = variant.supplierArticleNumber,
+                        isDefault = variant.isDefault,
+                        exampleImageFilename = variant.exampleImageFilename,
+                        createdAt = variant.createdAt,
+                        updatedAt = variant.updatedAt,
+                    )
+                }
+
             // Only include if we have mug details
             mugDetails?.let {
                 PublicMugDto(
@@ -512,6 +528,7 @@ class ArticleService(
                     printTemplateWidthMm = it.printTemplateWidthMm,
                     printTemplateHeightMm = it.printTemplateHeightMm,
                     dishwasherSafe = it.dishwasherSafe,
+                    variants = publicVariants,
                 )
             }
         }

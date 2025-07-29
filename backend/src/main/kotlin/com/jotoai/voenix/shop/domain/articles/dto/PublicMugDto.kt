@@ -13,4 +13,5 @@ data class PublicMugDto(
     val printTemplateWidthMm: Int,
     val printTemplateHeightMm: Int,
     val dishwasherSafe: Boolean,
+    val variants: List<PublicMugVariantDto> = emptyList(),
 )

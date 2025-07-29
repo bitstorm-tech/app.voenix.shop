@@ -3,6 +3,7 @@ package com.jotoai.voenix.shop.api.public.mugs
 import com.jotoai.voenix.shop.auth.config.SecurityConfig
 import com.jotoai.voenix.shop.auth.service.CustomUserDetailsService
 import com.jotoai.voenix.shop.domain.articles.dto.PublicMugDto
+import com.jotoai.voenix.shop.domain.articles.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.domain.articles.service.ArticleService
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
@@ -43,6 +44,31 @@ class PublicMugControllerTest {
                     printTemplateWidthMm = 200,
                     printTemplateHeightMm = 85,
                     dishwasherSafe = true,
+                    variants =
+                        listOf(
+                            PublicMugVariantDto(
+                                id = 1,
+                                mugId = 1,
+                                colorCode = "#FFFFFF",
+                                exampleImageUrl = "/images/articles/mugs/variant-example-images/mug1.jpg",
+                                supplierArticleNumber = "MUG-001-WHT",
+                                isDefault = true,
+                                exampleImageFilename = "mug1.jpg",
+                                createdAt = null,
+                                updatedAt = null,
+                            ),
+                            PublicMugVariantDto(
+                                id = 2,
+                                mugId = 1,
+                                colorCode = "#000000",
+                                exampleImageUrl = "/images/articles/mugs/variant-example-images/mug1-black.jpg",
+                                supplierArticleNumber = "MUG-001-BLK",
+                                isDefault = false,
+                                exampleImageFilename = "mug1-black.jpg",
+                                createdAt = null,
+                                updatedAt = null,
+                            ),
+                        ),
                 ),
                 PublicMugDto(
                     id = 2,
@@ -57,6 +83,7 @@ class PublicMugControllerTest {
                     printTemplateWidthMm = 180,
                     printTemplateHeightMm = 120,
                     dishwasherSafe = false,
+                    variants = emptyList(),
                 ),
             )
 
@@ -71,10 +98,19 @@ class PublicMugControllerTest {
                 jsonPath("$[0].name") { value("Classic Mug") }
                 jsonPath("$[0].price") { value(12.99) }
                 jsonPath("$[0].dishwasherSafe") { value(true) }
+                jsonPath("$[0].variants") { isArray() }
+                jsonPath("$[0].variants[0].id") { value(1) }
+                jsonPath("$[0].variants[0].colorCode") { value("#FFFFFF") }
+                jsonPath("$[0].variants[0].isDefault") { value(true) }
+                jsonPath("$[0].variants[1].id") { value(2) }
+                jsonPath("$[0].variants[1].colorCode") { value("#000000") }
+                jsonPath("$[0].variants[1].isDefault") { value(false) }
                 jsonPath("$[1].id") { value(2) }
                 jsonPath("$[1].name") { value("Travel Mug") }
                 jsonPath("$[1].price") { value(18.99) }
                 jsonPath("$[1].dishwasherSafe") { value(false) }
+                jsonPath("$[1].variants") { isArray() }
+                jsonPath("$[1].variants") { isEmpty() }
             }
     }
 
