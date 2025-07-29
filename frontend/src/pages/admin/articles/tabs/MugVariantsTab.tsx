@@ -519,7 +519,7 @@ export default function MugVariantsTab({
             </div>
 
             <div className="space-y-2">
-              <Label>Supplier Article Number</Label>
+              <Label>Article Variant Number</Label>
               <Input
                 value={newVariant.supplierArticleNumber || ''}
                 onChange={(e) => setNewVariant({ ...newVariant, supplierArticleNumber: e.target.value })}
@@ -607,7 +607,7 @@ export default function MugVariantsTab({
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Supplier Article Number</TableHead>
+                  <TableHead>Article Variant Number</TableHead>
                   <TableHead>Inside Color</TableHead>
                   <TableHead>Outside Color</TableHead>
                   <TableHead>Default</TableHead>
@@ -672,7 +672,7 @@ export default function MugVariantsTab({
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Supplier Article Number</TableHead>
+                  <TableHead>Article Variant Number</TableHead>
                   <TableHead>Inside Color</TableHead>
                   <TableHead>Outside Color</TableHead>
                   <TableHead>Default</TableHead>

@@ -46,7 +46,7 @@ class MugVariantService(
                 insideColorCode = request.insideColorCode,
                 outsideColorCode = request.outsideColorCode,
                 name = request.name,
-                supplierArticleNumber = request.supplierArticleNumber,
+                articleVariantNumber = request.articleVariantNumber,
                 isDefault = shouldBeDefault,
             )
 
@@ -93,7 +93,7 @@ class MugVariantService(
             insideColorCode = request.insideColorCode
             outsideColorCode = request.outsideColorCode
             name = request.name
-            supplierArticleNumber = request.supplierArticleNumber
+            articleVariantNumber = request.articleVariantNumber
             isDefault = request.isDefault
         }
 
@@ -149,25 +149,6 @@ class MugVariantService(
 
         variant.exampleImageFilename = filename
         return mugVariantRepository.save(variant).toDto()
-    }
-
-    /**
-     * Ensures that at least one variant is marked as default for the given article.
-     * This method should be called after any operation that might leave an article without a default variant.
-     */
-    @Transactional
-    fun ensureDefaultVariantExists(articleId: Long) {
-        val defaultCount = mugVariantRepository.countDefaultVariantsForArticle(articleId)
-
-        if (defaultCount == 0L) {
-            val variants = mugVariantRepository.findByArticleId(articleId)
-            if (variants.isNotEmpty()) {
-                val firstVariant = variants.first()
-                firstVariant.isDefault = true
-                mugVariantRepository.save(firstVariant)
-                logger.info("Assigned default status to variant ${firstVariant.id} for article $articleId")
-            }
-        }
     }
 
     @Transactional

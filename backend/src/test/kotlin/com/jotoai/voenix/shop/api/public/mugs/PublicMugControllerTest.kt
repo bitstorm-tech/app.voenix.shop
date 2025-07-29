@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.api.public.mugs
 
 import com.jotoai.voenix.shop.auth.config.SecurityConfig
-import com.jotoai.voenix.shop.auth.service.CustomUserDetailsService
 import com.jotoai.voenix.shop.domain.articles.dto.PublicMugDto
 import com.jotoai.voenix.shop.domain.articles.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.domain.articles.service.ArticleService
@@ -22,9 +21,6 @@ class PublicMugControllerTest {
 
     @MockitoBean
     private lateinit var articleService: ArticleService
-
-    @MockitoBean
-    private lateinit var customUserDetailsService: CustomUserDetailsService
 
     @Test
     fun `should return list of public mugs without authentication`() {
@@ -51,7 +47,7 @@ class PublicMugControllerTest {
                                 mugId = 1,
                                 colorCode = "#FFFFFF",
                                 exampleImageUrl = "/images/articles/mugs/variant-example-images/mug1.jpg",
-                                supplierArticleNumber = "MUG-001-WHT",
+                                articleVariantNumber = "MUG-001-WHT",
                                 isDefault = true,
                                 exampleImageFilename = "mug1.jpg",
                                 createdAt = null,
@@ -62,7 +58,7 @@ class PublicMugControllerTest {
                                 mugId = 1,
                                 colorCode = "#000000",
                                 exampleImageUrl = "/images/articles/mugs/variant-example-images/mug1-black.jpg",
-                                supplierArticleNumber = "MUG-001-BLK",
+                                articleVariantNumber = "MUG-001-BLK",
                                 isDefault = false,
                                 exampleImageFilename = "mug1-black.jpg",
                                 createdAt = null,

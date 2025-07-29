@@ -33,7 +33,7 @@ export function MugVariantList({ variants }: MugVariantListProps) {
 
           {variant.supplierArticleNumber && (
             <div className="text-muted-foreground text-sm">
-              <span className="font-medium">Article #:</span> {variant.supplierArticleNumber}
+              <span className="font-medium">Variant #:</span> {variant.supplierArticleNumber}
             </div>
           )}
         </div>

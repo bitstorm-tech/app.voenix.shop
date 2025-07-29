@@ -31,8 +31,8 @@ data class MugArticleVariant(
     var name: String,
     @Column(name = "example_image_filename", length = 500)
     var exampleImageFilename: String? = null,
-    @Column(name = "supplier_article_number", length = 100)
-    var supplierArticleNumber: String? = null,
+    @Column(name = "article_variant_number", length = 100)
+    var articleVariantNumber: String? = null,
     @Column(name = "is_default", nullable = false)
     var isDefault: Boolean = false,
     @CreationTimestamp
@@ -50,7 +50,7 @@ data class MugArticleVariant(
             outsideColorCode = this.outsideColorCode,
             name = this.name,
             exampleImageUrl = this.exampleImageFilename?.let { "/images/articles/mugs/variant-example-images/$it" },
-            supplierArticleNumber = this.supplierArticleNumber,
+            articleVariantNumber = this.articleVariantNumber,
             isDefault = this.isDefault,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,

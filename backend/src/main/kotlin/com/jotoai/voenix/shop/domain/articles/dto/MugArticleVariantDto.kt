@@ -9,7 +9,7 @@ data class MugArticleVariantDto(
     val outsideColorCode: String,
     val name: String,
     val exampleImageUrl: String?,
-    val supplierArticleNumber: String?,
+    val articleVariantNumber: String?,
     val isDefault: Boolean,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,

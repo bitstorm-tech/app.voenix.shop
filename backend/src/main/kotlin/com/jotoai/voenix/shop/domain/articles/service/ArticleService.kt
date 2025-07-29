@@ -502,10 +502,10 @@ class ArticleService(
                 article.mugVariants.map { variant ->
                     PublicMugVariantDto(
                         id = variant.id!!,
-                        mugId = article.id!!,
+                        mugId = article.id,
                         colorCode = variant.outsideColorCode, // Using outside color as primary
                         exampleImageUrl = variant.exampleImageFilename?.let { "/images/articles/mugs/variant-example-images/$it" },
-                        supplierArticleNumber = variant.supplierArticleNumber,
+                        articleVariantNumber = variant.articleVariantNumber,
                         isDefault = variant.isDefault,
                         exampleImageFilename = variant.exampleImageFilename,
                         createdAt = variant.createdAt,
@@ -516,7 +516,7 @@ class ArticleService(
             // Only include if we have mug details
             mugDetails?.let {
                 PublicMugDto(
-                    id = article.id!!,
+                    id = article.id,
                     name = article.name,
                     price = price,
                     image = defaultVariant?.exampleImageFilename?.let { "/images/articles/mugs/variant-example-images/$it" },

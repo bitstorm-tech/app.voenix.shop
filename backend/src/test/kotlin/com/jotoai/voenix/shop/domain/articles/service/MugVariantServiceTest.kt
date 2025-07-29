@@ -68,7 +68,7 @@ class MugVariantServiceTest {
                 insideColorCode = "#ffffff",
                 outsideColorCode = "#000000",
                 name = "Black & White",
-                supplierArticleNumber = "BW-001",
+                articleVariantNumber = "BW-001",
                 isDefault = false, // Not requesting default
             )
 
@@ -82,7 +82,7 @@ class MugVariantServiceTest {
                 insideColorCode = request.insideColorCode,
                 outsideColorCode = request.outsideColorCode,
                 name = request.name,
-                supplierArticleNumber = request.supplierArticleNumber,
+                articleVariantNumber = request.articleVariantNumber,
                 isDefault = true, // Should be set to true
             )
 
@@ -106,7 +106,7 @@ class MugVariantServiceTest {
                 insideColorCode = "#ffffff",
                 outsideColorCode = "#ff0000",
                 name = "Red & White",
-                supplierArticleNumber = "RW-001",
+                articleVariantNumber = "RW-001",
                 isDefault = true,
             )
 
@@ -130,7 +130,7 @@ class MugVariantServiceTest {
                 insideColorCode = request.insideColorCode,
                 outsideColorCode = request.outsideColorCode,
                 name = request.name,
-                supplierArticleNumber = request.supplierArticleNumber,
+                articleVariantNumber = request.articleVariantNumber,
                 isDefault = true,
             )
 
@@ -162,7 +162,7 @@ class MugVariantServiceTest {
                 insideColorCode = "#ffffff",
                 outsideColorCode = "#ff0000",
                 name = "Red & White Updated",
-                supplierArticleNumber = "RW-002",
+                articleVariantNumber = "RW-002",
                 isDefault = true,
             )
 
@@ -207,7 +207,7 @@ class MugVariantServiceTest {
                 insideColorCode = "#ffffff",
                 outsideColorCode = "#000000",
                 name = "Black & White Updated",
-                supplierArticleNumber = "BW-002",
+                articleVariantNumber = "BW-002",
                 isDefault = false, // Unsetting default
             )
 
@@ -296,7 +296,7 @@ class MugVariantServiceTest {
                 insideColorCode = "#ffffff",
                 outsideColorCode = "#000000",
                 name = "Black & White",
-                supplierArticleNumber = "BW-001",
+                articleVariantNumber = "BW-001",
                 isDefault = false,
             )
 
@@ -316,7 +316,7 @@ class MugVariantServiceTest {
                 insideColorCode = "#ffffff",
                 outsideColorCode = "#000000",
                 name = "Black & White",
-                supplierArticleNumber = "BW-001",
+                articleVariantNumber = "BW-001",
                 isDefault = false,
             )
 

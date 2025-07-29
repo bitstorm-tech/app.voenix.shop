@@ -7,7 +7,7 @@ data class PublicMugVariantDto(
     val mugId: Long,
     val colorCode: String, // Using outsideColorCode as primary color
     val exampleImageUrl: String?,
-    val supplierArticleNumber: String?,
+    val articleVariantNumber: String?,
     val isDefault: Boolean,
     val exampleImageFilename: String?,
     val createdAt: OffsetDateTime?,

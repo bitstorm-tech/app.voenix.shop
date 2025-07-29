@@ -4,7 +4,6 @@ import com.jotoai.voenix.shop.api.admin.articles.ArticleController
 import com.jotoai.voenix.shop.api.admin.prompts.AdminPromptController
 import com.jotoai.voenix.shop.api.admin.users.AdminUserController
 import com.jotoai.voenix.shop.auth.config.SecurityConfig
-import com.jotoai.voenix.shop.auth.service.CustomUserDetailsService
 import com.jotoai.voenix.shop.domain.articles.service.ArticleService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import com.jotoai.voenix.shop.domain.users.service.UserService
@@ -41,22 +40,6 @@ class AdminEndpointSecurityWebMvcTest {
 
     @MockitoBean
     private lateinit var articleService: ArticleService
-
-    @MockitoBean
-    private lateinit var articleCategoryRepository: com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleCategoryRepository
-
-    @MockitoBean
-    private lateinit var articleSubCategoryRepository:
-        com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleSubCategoryRepository
-
-    @MockitoBean
-    private lateinit var mugDetailsService: com.jotoai.voenix.shop.domain.articles.service.MugDetailsService
-
-    @MockitoBean
-    private lateinit var shirtDetailsService: com.jotoai.voenix.shop.domain.articles.service.ShirtDetailsService
-
-    @MockitoBean
-    private lateinit var customUserDetailsService: CustomUserDetailsService
 
     @Test
     fun testAdminEndpointsRequireAuthentication() {
@@ -97,7 +80,7 @@ class AdminEndpointSecurityWebMvcTest {
         // Mock service responses
         `when`(userService.getAllUsers()).thenReturn(emptyList())
         `when`(promptService.getAllPrompts()).thenReturn(emptyList())
-        `when`(articleService.findAll(0, 20, null, null, null, null, null)).thenReturn(
+        `when`(articleService.findAll(0, 20, null, null, null, null)).thenReturn(
             com.jotoai.voenix.shop.common.dto.PaginatedResponse(
                 content = emptyList(),
                 currentPage = 0,
