@@ -286,16 +286,7 @@ export default function MugVariantsTab({
       return;
     }
 
-    // Check if setting as default when another default exists (excluding the one being edited)
-    if (newVariant.isDefault) {
-      const hasDefault = articleId
-        ? variants.some((v) => v.isDefault && v.id !== editingVariantId)
-        : temporaryVariants.some((v, index) => v.isDefault && index !== editingTemporaryIndex);
-      if (hasDefault) {
-        toast.error('Another variant is already set as default. Please unset it first.');
-        return;
-      }
-    }
+    // Backend will handle ensuring only one variant is default
 
     if (!articleId) {
       // Handle temporary variant for unsaved article
@@ -396,12 +387,28 @@ export default function MugVariantsTab({
         }
       }
 
+      // Update the variant in the list
       if (isEditing) {
-        // Update the variant in the list
-        setVariants(variants.map((v) => (v.id === editingVariantId ? response : v)));
+        // If we updated the default status, we need to refetch all variants
+        // because the backend might have updated other variants' default status
+        if (newVariant.isDefault && articleId) {
+          try {
+            // Refetch all variants for this article to get the updated default states
+            const article = await articlesApi.getById(articleId);
+            if (article.mugVariants) {
+              setVariants(article.mugVariants);
+            }
+          } catch (error) {
+            console.error('Error refetching variants:', error);
+            // Fallback to just updating the single variant
+            setVariants(variants.map((v) => (v.id === editingVariantId ? response : v)));
+          }
+        } else {
+          // For non-default updates, just update the single variant
+          setVariants(variants.map((v) => (v.id === editingVariantId ? response : v)));
+        }
         toast.success('Variant updated successfully');
       } else {
-        // Add new variant to the list
         setVariants([...variants, response]);
         toast.success('Variant added successfully');
       }

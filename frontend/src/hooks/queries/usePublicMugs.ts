@@ -1,5 +1,4 @@
 import { publicApi } from '@/lib/api';
-import type { Mug } from '@/types/mug';
 import { useQuery } from '@tanstack/react-query';
 
 // Query keys

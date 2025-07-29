@@ -28,7 +28,7 @@ class MugVariantService(
         request: CreateMugArticleVariantRequest,
     ): MugArticleVariantDto {
         val article =
-            articleRepository.findById(articleId).orElseGet(null)
+            articleRepository.findById(articleId).orElse(null)
                 ?: throw ResourceNotFoundException("Article not found with id: $articleId")
 
         // Check if this should be the default variant
@@ -36,7 +36,7 @@ class MugVariantService(
         val shouldBeDefault = request.isDefault || existingVariants.isEmpty()
 
         // If this should be the default, unset any existing default
-        if (shouldBeDefault && existingVariants.isNotEmpty()) {
+        if (shouldBeDefault) {
             mugVariantRepository.unsetDefaultForArticle(articleId)
         }
 
@@ -50,7 +50,10 @@ class MugVariantService(
                 isDefault = shouldBeDefault,
             )
 
-        return mugVariantRepository.save(variant).toDto()
+        val savedVariant = mugVariantRepository.save(variant)
+        logger.debug("Created mug variant ${savedVariant.id} for article $articleId with isDefault=$shouldBeDefault")
+
+        return savedVariant.toDto()
     }
 
     @Transactional
@@ -59,12 +62,31 @@ class MugVariantService(
         request: CreateMugArticleVariantRequest,
     ): MugArticleVariantDto {
         val variant =
-            mugVariantRepository.findByIdWithArticle(variantId).orElseGet(null)
+            mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
                 ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
 
-        // If this should be the default, unset any existing default
-        if (request.isDefault && !variant.isDefault) {
-            mugVariantRepository.unsetDefaultForArticle(variant.article.id!!)
+        val articleId = variant.article.id!!
+        val wasDefault = variant.isDefault
+
+        // If this should be the default, unset any existing default (including this one if it was default)
+        if (request.isDefault) {
+            mugVariantRepository.unsetDefaultForArticle(articleId)
+        }
+
+        // If we're unsetting this as default and it was the default, ensure at least one variant is default
+        if (!request.isDefault && wasDefault) {
+            val otherVariants =
+                mugVariantRepository
+                    .findByArticleId(articleId)
+                    .filter { it.id != variantId }
+
+            if (otherVariants.isNotEmpty()) {
+                // Make the first other variant the default
+                val newDefault = otherVariants.first()
+                newDefault.isDefault = true
+                mugVariantRepository.save(newDefault)
+                logger.debug("Assigned default to variant ${newDefault.id} as variant $variantId is no longer default")
+            }
         }
 
         variant.apply {
@@ -75,13 +97,16 @@ class MugVariantService(
             isDefault = request.isDefault
         }
 
-        return mugVariantRepository.save(variant).toDto()
+        val savedVariant = mugVariantRepository.save(variant)
+        logger.debug("Updated mug variant $variantId with isDefault=${request.isDefault}")
+
+        return savedVariant.toDto()
     }
 
     @Transactional
     fun delete(variantId: Long) {
         val variant =
-            mugVariantRepository.findByIdWithArticle(variantId).orElseGet(null)
+            mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
                 ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
 
         val articleId = variant.article.id!!
@@ -119,17 +144,36 @@ class MugVariantService(
         filename: String,
     ): MugArticleVariantDto {
         val variant =
-            mugVariantRepository.findByIdWithArticle(variantId).orElseGet(null)
+            mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
                 ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
 
         variant.exampleImageFilename = filename
         return mugVariantRepository.save(variant).toDto()
     }
 
+    /**
+     * Ensures that at least one variant is marked as default for the given article.
+     * This method should be called after any operation that might leave an article without a default variant.
+     */
+    @Transactional
+    fun ensureDefaultVariantExists(articleId: Long) {
+        val defaultCount = mugVariantRepository.countDefaultVariantsForArticle(articleId)
+
+        if (defaultCount == 0L) {
+            val variants = mugVariantRepository.findByArticleId(articleId)
+            if (variants.isNotEmpty()) {
+                val firstVariant = variants.first()
+                firstVariant.isDefault = true
+                mugVariantRepository.save(firstVariant)
+                logger.info("Assigned default status to variant ${firstVariant.id} for article $articleId")
+            }
+        }
+    }
+
     @Transactional
     fun removeExampleImage(variantId: Long): MugArticleVariantDto {
         val variant =
-            mugVariantRepository.findByIdWithArticle(variantId).orElseGet(null)
+            mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
                 ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
 
         // Delete the image file if it exists

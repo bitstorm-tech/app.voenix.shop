@@ -1,5 +1,4 @@
 import { publicApi } from '@/lib/api';
-import type { Prompt } from '@/types/prompt';
 import { useQuery } from '@tanstack/react-query';
 
 // Query keys

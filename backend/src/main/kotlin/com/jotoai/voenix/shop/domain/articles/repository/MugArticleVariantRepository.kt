@@ -32,4 +32,9 @@ interface MugArticleVariantRepository : JpaRepository<MugArticleVariant, Long> {
     fun unsetDefaultForArticle(
         @Param("articleId") articleId: Long,
     )
+
+    @Query("SELECT COUNT(v) FROM MugArticleVariant v WHERE v.article.id = :articleId AND v.isDefault = true")
+    fun countDefaultVariantsForArticle(
+        @Param("articleId") articleId: Long,
+    ): Long
 }
