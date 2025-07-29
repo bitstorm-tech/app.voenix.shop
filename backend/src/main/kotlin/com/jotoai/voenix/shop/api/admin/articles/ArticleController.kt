@@ -35,7 +35,6 @@ class ArticleController(
         @RequestParam(required = false) categoryId: Long?,
         @RequestParam(required = false) subcategoryId: Long?,
         @RequestParam(required = false) active: Boolean?,
-        @RequestParam(required = false) search: String?,
     ): ResponseEntity<PaginatedResponse<ArticleDto>> {
         val response =
             articleService.findAll(
@@ -45,7 +44,6 @@ class ArticleController(
                 categoryId = categoryId,
                 subcategoryId = subcategoryId,
                 active = active,
-                search = search,
             )
         return ResponseEntity.ok(response)
     }
