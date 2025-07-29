@@ -144,7 +144,7 @@ backend/src/main/kotlin/com/jotoai/voenix/shop/
 │   ├── config/         # Security configuration
 │   ├── dto/            # Auth DTOs (login, register, tokens)
 │   ├── entity/         # User and Role entities
-│   └── service/        # Auth services (JWT, user details)
+│   └── service/        # Auth services
 ├── common/             # Shared utilities
 │   ├── config/         # App-wide configuration
 │   ├── dto/            # Common DTOs
@@ -162,7 +162,6 @@ backend/src/main/kotlin/com/jotoai/voenix/shop/
 
 **Key patterns:**
 - RESTful APIs with role-based access control
-- JWT-based authentication with Spring Security
 - Layered architecture: Controller → Service → Repository
 - DTOs for API contracts, entities for persistence
 - Builder pattern for complex entities
@@ -234,7 +233,6 @@ Backend:
 - **ZXing** for QR code generation
 - **Scrimage** for image processing
 - **Jackson** for JSON handling
-- **JWT** for authentication tokens
 - **BCrypt** for password hashing
 - **Ktlint** for code formatting
 
@@ -386,12 +384,11 @@ frontend/src/pages/admin/
 ### Admin PDF Services (`/api/admin/pdf`)
 - `POST /api/admin/pdf/generate` - Generate PDF document
 
-**Note**: All `/api/admin/*` endpoints require ADMIN role authentication via JWT.
+**Note**: All `/api/admin/*` endpoints require ADMIN role authentication.
 
 ## Security
 
 ### Authentication & Authorization
-- **JWT-based authentication** with access and refresh tokens
 - **Spring Security** configuration for endpoint protection
 - **Role-based access control** (USER, ADMIN roles)
 - **Stateless sessions** with token validation on each request
