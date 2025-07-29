@@ -175,7 +175,7 @@ export default function MugSelectionStep() {
                   </div>
                 )}
 
-                <p className="text-primary text-lg font-semibold">${mug.price}</p>
+                <p className="text-primary text-lg font-semibold">${mug.price.toFixed(2)}</p>
               </div>
             </div>
           );
