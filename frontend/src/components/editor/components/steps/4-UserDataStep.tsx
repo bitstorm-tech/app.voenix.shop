@@ -112,9 +112,12 @@ export default function UserDataStep() {
       checkEmailExists();
     }
 
-    // Always save form data if valid
+    // Always save form data if valid and changed
     if (validateForm()) {
-      setUserData(formData);
+      // Deep compare to avoid unnecessary re-renders
+      if (JSON.stringify(userData) !== JSON.stringify(formData)) {
+        setUserData(formData);
+      }
     }
   };
 
