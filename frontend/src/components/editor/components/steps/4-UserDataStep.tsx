@@ -20,12 +20,11 @@ export default function UserDataStep() {
   const setUserData = useWizardStore((state) => state.setUserData);
   const setAuthenticated = useWizardStore((state) => state.setAuthenticated);
   const preserveState = useWizardStore((state) => state.preserveState);
-  const { formData, errors, handleChange, validateForm } = useUserDataForm(userData);
+  const { formData, errors, handleChange } = useUserDataForm(userData);
 
   const [authMode, setAuthMode] = useState<'register' | 'login' | null>(null);
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
-  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
 
   const registerMutation = useRegister();
 
@@ -61,29 +60,12 @@ export default function UserDataStep() {
     setAuthMode(null);
   };
 
-  const checkEmailExists = async () => {
-    if (!formData.email || errors.email) return;
-
-    setIsCheckingEmail(true);
-    setAuthError(null);
-
-    try {
-      // Try to login with a dummy password to check if email exists
-      await authApi.login({ email: formData.email, password: 'dummy-check' });
-    } catch (error: any) {
-      if (error.status === 401) {
-        // Email exists, switch to login mode
-        setAuthMode('login');
-      } else if (error.status === 404 || error.message.includes('not found')) {
-        // Email doesn't exist, switch to register mode
-        setAuthMode('register');
-      } else {
-        setAuthError('An error occurred. Please try again.');
-      }
-    } finally {
-      setIsCheckingEmail(false);
-    }
-  };
+  // Update wizard store when form data changes
+  useEffect(() => {
+    // Always update the wizard store to reflect current form state
+    // This ensures the Next button is disabled when email becomes invalid
+    setUserData(formData);
+  }, [formData, setUserData]);
 
   const handleAuth = async () => {
     if (!formData.email || !password || !authMode) return;
@@ -104,20 +86,6 @@ export default function UserDataStep() {
       setUserData(formData);
     } catch (error: any) {
       setAuthError(error.message || 'Authentication failed. Please try again.');
-    }
-  };
-
-  const handleBlur = (field: string) => {
-    if (field === 'email' && formData.email && !errors.email && !authMode) {
-      checkEmailExists();
-    }
-
-    // Always save form data if valid and changed
-    if (validateForm()) {
-      // Deep compare to avoid unnecessary re-renders
-      if (JSON.stringify(userData) !== JSON.stringify(formData)) {
-        setUserData(formData);
-      }
     }
   };
 
@@ -166,9 +134,8 @@ export default function UserDataStep() {
             placeholder="your.email@example.com"
             value={formData.email}
             onChange={(e) => handleEmailChange(e.target.value)}
-            onBlur={() => handleBlur('email')}
             className={errors.email ? 'border-red-500' : ''}
-            disabled={isCheckingEmail || registerMutation.isPending || loginMutation.isPending}
+            disabled={registerMutation.isPending || loginMutation.isPending}
           />
           {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
         </div>
@@ -202,7 +169,6 @@ export default function UserDataStep() {
               placeholder="John"
               value={formData.firstName || ''}
               onChange={(e) => handleChange('firstName', e.target.value)}
-              onBlur={() => handleBlur('firstName')}
               disabled={registerMutation.isPending || loginMutation.isPending}
             />
           </div>
@@ -215,7 +181,6 @@ export default function UserDataStep() {
               placeholder="Doe"
               value={formData.lastName || ''}
               onChange={(e) => handleChange('lastName', e.target.value)}
-              onBlur={() => handleBlur('lastName')}
               disabled={registerMutation.isPending || loginMutation.isPending}
             />
           </div>
@@ -229,7 +194,6 @@ export default function UserDataStep() {
             placeholder="+1 (555) 123-4567"
             value={formData.phoneNumber || ''}
             onChange={(e) => handleChange('phoneNumber', e.target.value)}
-            onBlur={() => handleBlur('phoneNumber')}
             className={errors.phoneNumber ? 'border-red-500' : ''}
             disabled={registerMutation.isPending || loginMutation.isPending}
           />

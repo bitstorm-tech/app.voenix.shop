@@ -83,7 +83,7 @@ function canProceedFromStep(
       return state.selectedMug !== null;
     case 'user-data':
       // Authenticated users can always proceed from this step (they skip it)
-      return state.isAuthenticated || (state.userData !== null && state.userData.email.length > 0);
+      return state.isAuthenticated || (state.userData !== null && state.userData.email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.userData.email));
     case 'image-generation':
       return state.selectedGeneratedImage !== null;
     case 'preview':
@@ -268,7 +268,7 @@ export const useWizardStore = create<WizardStore>()(
     setUserData: (data) => {
       set((state) => {
         state.userData = data;
-        state.canGoNext = data.email.length > 0;
+        state.canGoNext = data.email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email);
       });
     },
 
