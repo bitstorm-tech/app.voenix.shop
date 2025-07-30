@@ -466,7 +466,14 @@ export const authApi = {
   login: (data: LoginRequest) => api.post<LoginResponse>('/auth/login', data),
   logout: () => api.post<void>('/auth/logout', {}),
   checkSession: () => api.get<SessionInfo>('/auth/session'),
+  register: (data: RegisterRequest) => api.post<LoginResponse>('/auth/register', data),
 };
+
+// Type definition for RegisterRequest
+export interface RegisterRequest {
+  email: string;
+  password: string;
+}
 
 // User API endpoints
 export const userApi = {
@@ -475,6 +482,19 @@ export const userApi = {
   getSession: () => api.get<SessionInfo>('/user/session'),
   logout: () => api.post<void>('/user/logout', {}),
   deleteAccount: () => api.delete<void>('/user/account'),
+  // Generate images using authenticated endpoint
+  generateImage: async (image: File, promptId: number): Promise<PublicImageGenerationResponse> => {
+    const formData = new FormData();
+    formData.append('image', image);
+    formData.append('promptId', promptId.toString());
+
+    const response = await fetch('/api/user/images/generate', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+    return handleResponse<PublicImageGenerationResponse>(response);
+  },
 };
 
 // Admin User API endpoints

@@ -13,9 +13,16 @@ import { useEffect } from 'react';
 export default function Editor() {
   const currentStep = useWizardStore((state) => state.currentStep);
   const { isLoading: promptsLoading, error: promptsError } = usePublicPrompts();
+  const restoreState = useWizardStore((state) => state.restoreState);
+  const hasPreservedState = useWizardStore((state) => state.hasPreservedState);
 
   useEffect(() => {
     document.title = 'Editor - Voenix Shop';
+
+    // Check for preserved state on mount
+    if (hasPreservedState()) {
+      restoreState();
+    }
   }, []);
 
   if (promptsLoading) {

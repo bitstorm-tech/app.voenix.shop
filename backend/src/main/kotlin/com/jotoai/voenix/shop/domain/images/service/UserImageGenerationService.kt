@@ -9,7 +9,7 @@ import com.jotoai.voenix.shop.domain.images.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
-import jakarta.servlet.http.HttpServletRequest
+import com.jotoai.voenix.shop.domain.users.repository.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -18,33 +18,31 @@ import java.time.LocalDateTime
 
 @Service
 @Transactional(readOnly = true)
-class PublicImageGenerationService(
+class UserImageGenerationService(
     private val openAIImageService: OpenAIImageService,
     private val promptService: PromptService,
     private val generatedImageRepository: GeneratedImageRepository,
-    private val request: HttpServletRequest,
+    private val userRepository: UserRepository,
 ) {
     companion object {
-        private val logger = LoggerFactory.getLogger(PublicImageGenerationService::class.java)
+        private val logger = LoggerFactory.getLogger(UserImageGenerationService::class.java)
         private const val MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
         private val ALLOWED_CONTENT_TYPES = setOf("image/jpeg", "image/jpg", "image/png", "image/webp")
-        private const val RATE_LIMIT_HOURS = 1
-        private const val MAX_GENERATIONS_PER_IP_PER_HOUR = 10
+        private const val RATE_LIMIT_HOURS = 24
+        private const val MAX_GENERATIONS_PER_DAY = 50
     }
 
     @Transactional
     fun generateImage(
         imageFile: MultipartFile,
         request: PublicImageGenerationRequest,
+        userId: Long,
     ): PublicImageGenerationResponse {
         // Validate file
         validateImageFile(imageFile)
 
-        // Get client IP address
-        val ipAddress = getClientIpAddress()
-
-        // Check rate limit for IP
-        checkIpRateLimit(ipAddress)
+        // Check rate limit for user
+        checkUserRateLimit(userId)
 
         // Validate prompt exists and is active
         val prompt = promptService.getPromptById(request.promptId)
@@ -52,7 +50,7 @@ class PublicImageGenerationService(
             throw BadRequestException("The selected prompt is not available")
         }
 
-        logger.info("Processing public image generation request for prompt ID: ${request.promptId}")
+        logger.info("Processing authenticated image generation request for user $userId with prompt ID: ${request.promptId}")
 
         try {
             val openAIRequest =
@@ -69,14 +67,19 @@ class PublicImageGenerationService(
             // Generate image using existing OpenAI service
             val imageEditResponse = openAIImageService.editImage(imageFile, openAIRequest)
 
-            // Store image generation records for tracking (anonymous user)
+            // Get user entity
+            val user =
+                userRepository.findById(userId).orElseThrow {
+                    ResourceNotFoundException("User not found")
+                }
+
+            // Store image generation records with user association
             imageEditResponse.imageFilenames.forEach { filename ->
                 val generatedImage =
                     GeneratedImage(
                         filename = filename,
                         promptId = request.promptId,
-                        user = null, // Anonymous user
-                        ipAddress = ipAddress,
+                        user = user,
                         generatedAt = LocalDateTime.now(),
                     )
                 generatedImageRepository.save(generatedImage)
@@ -85,16 +88,16 @@ class PublicImageGenerationService(
             // Convert filenames to full URLs
             val imageUrls =
                 imageEditResponse.imageFilenames.map { filename ->
-                    "/api/public/images/$filename"
+                    "/api/user/images/$filename"
                 }
 
-            logger.info("Successfully generated ${imageUrls.size} images for public user")
+            logger.info("Successfully generated ${imageUrls.size} images for user $userId")
 
             return PublicImageGenerationResponse(
                 imageUrls = imageUrls,
             )
         } catch (e: Exception) {
-            logger.error("Error generating image for public user", e)
+            logger.error("Error generating image for user $userId", e)
             when (e) {
                 is BadRequestException -> throw e
                 is ResourceNotFoundException -> throw e
@@ -118,32 +121,16 @@ class PublicImageGenerationService(
         }
     }
 
-    private fun checkIpRateLimit(ipAddress: String) {
+    private fun checkUserRateLimit(userId: Long) {
         val startTime = LocalDateTime.now().minusHours(RATE_LIMIT_HOURS.toLong())
-        val generationCount = generatedImageRepository.countByIpAddressAndGeneratedAtAfter(ipAddress, startTime)
+        val generationCount = generatedImageRepository.countByUserIdAndGeneratedAtAfter(userId, startTime)
 
-        if (generationCount >= MAX_GENERATIONS_PER_IP_PER_HOUR) {
+        if (generationCount >= MAX_GENERATIONS_PER_DAY) {
             throw BadRequestException(
-                "Rate limit exceeded. You can generate up to $MAX_GENERATIONS_PER_IP_PER_HOUR images per hour. Please try again later.",
+                "Rate limit exceeded. You can generate up to $MAX_GENERATIONS_PER_DAY images per day. Please try again later.",
             )
         }
 
-        logger.debug("IP $ipAddress has generated $generationCount images in the last $RATE_LIMIT_HOURS hour(s)")
-    }
-
-    private fun getClientIpAddress(): String {
-        // Check for forwarded IP addresses (when behind a proxy/load balancer)
-        val xForwardedFor = request.getHeader("X-Forwarded-For")
-        if (!xForwardedFor.isNullOrBlank()) {
-            return xForwardedFor.split(",")[0].trim()
-        }
-
-        val xRealIp = request.getHeader("X-Real-IP")
-        if (!xRealIp.isNullOrBlank()) {
-            return xRealIp
-        }
-
-        // Fall back to remote address
-        return request.remoteAddr
+        logger.debug("User $userId has generated $generationCount images in the last $RATE_LIMIT_HOURS hours")
     }
 }
