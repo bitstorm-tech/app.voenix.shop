@@ -10,11 +10,11 @@ import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import com.jotoai.voenix.shop.domain.users.repository.UserRepository
+import java.time.LocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.time.LocalDateTime
 
 @Service
 @Transactional(readOnly = true)
@@ -38,13 +38,10 @@ class UserImageGenerationService(
         request: PublicImageGenerationRequest,
         userId: Long,
     ): PublicImageGenerationResponse {
-        // Validate file
         validateImageFile(imageFile)
 
-        // Check rate limit for user
         checkUserRateLimit(userId)
 
-        // Validate prompt exists and is active
         val prompt = promptService.getPromptById(request.promptId)
         if (!prompt.active) {
             throw BadRequestException("The selected prompt is not available")

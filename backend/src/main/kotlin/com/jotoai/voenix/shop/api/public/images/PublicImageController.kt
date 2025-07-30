@@ -35,7 +35,6 @@ class PublicImageController(
     ): PublicImageGenerationResponse {
         logger.info("Received public image generation request for prompt ID: $promptId")
 
-        // Build request from form data
         val generationRequest =
             PublicImageGenerationRequest(
                 promptId = promptId,

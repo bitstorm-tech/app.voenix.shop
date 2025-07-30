@@ -20,7 +20,6 @@ export default function WizardNavigationButtons() {
       setIsGeneratingPdf(true);
 
       try {
-        // Validate we have the required data
         if (!selectedGeneratedImage) {
           throw new Error('Please select a generated image before downloading PDF');
         }
@@ -43,14 +42,10 @@ export default function WizardNavigationButtons() {
           imageUrl = `/api/images/${selectedGeneratedImage}`;
         }
 
-        // Use the public API endpoint for PDF generation
         const blob = await publicApi.generatePdf(selectedMug.id, imageUrl);
         const url = URL.createObjectURL(blob);
 
-        // Generate a default filename since we can't access headers from the blob
         const filename = `mug_design_${Date.now()}.pdf`;
-
-        // Create download link and trigger download
         const link = document.createElement('a');
         link.href = url;
         link.download = filename;

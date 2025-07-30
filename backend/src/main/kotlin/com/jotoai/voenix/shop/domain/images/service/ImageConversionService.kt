@@ -5,8 +5,8 @@ import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.nio.ImageWriter
 import com.sksamuel.scrimage.nio.PngWriter
 import com.sksamuel.scrimage.webp.WebpWriter
-import org.springframework.stereotype.Service
 import java.awt.Rectangle
+import org.springframework.stereotype.Service
 
 @Service
 class ImageConversionService {
@@ -26,7 +26,6 @@ class ImageConversionService {
     ): ByteArray {
         val image = ImmutableImage.loader().fromBytes(imageBytes)
 
-        // Validate crop area bounds
         require(cropArea.x >= 0 && cropArea.y >= 0) {
             "Crop coordinates must be non-negative"
         }
@@ -37,7 +36,6 @@ class ImageConversionService {
             "Crop area exceeds image height"
         }
 
-        // Create rectangle for cropping (convert Double to Int for AWT Rectangle)
         val rectangle =
             Rectangle(
                 cropArea.x.toInt(),

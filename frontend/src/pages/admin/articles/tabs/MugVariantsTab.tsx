@@ -89,14 +89,10 @@ export default function MugVariantsTab({
           height: crop.height * scaleY,
         };
 
-        // Set canvas size to the crop dimensions
         canvas.width = scaledCrop.width;
         canvas.height = scaledCrop.height;
 
-        // Draw the cropped portion of the image
         ctx.drawImage(image, scaledCrop.x, scaledCrop.y, scaledCrop.width, scaledCrop.height, 0, 0, scaledCrop.width, scaledCrop.height);
-
-        // Convert to blob and create URL
         canvas.toBlob(
           (blob) => {
             if (blob) {
@@ -123,13 +119,10 @@ export default function MugVariantsTab({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file type
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload an image file');
       return;
     }
-
-    // Check file size (10MB limit)
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
       toast.error('File size exceeds maximum allowed size of 10MB');
@@ -144,14 +137,12 @@ export default function MugVariantsTab({
       URL.revokeObjectURL(originalImageUrl);
     }
 
-    // Create blob URL for preview
     const blobUrl = URL.createObjectURL(file);
     setImageFile(file);
     setOriginalImageUrl(blobUrl);
     setImagePreviewUrl(blobUrl);
     setShowCropper(true);
 
-    // Reset the input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }

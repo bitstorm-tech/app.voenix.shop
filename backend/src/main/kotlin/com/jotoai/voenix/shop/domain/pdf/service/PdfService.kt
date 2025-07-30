@@ -7,6 +7,8 @@ import com.jotoai.voenix.shop.domain.articles.service.ArticleService
 import com.jotoai.voenix.shop.domain.images.service.ImageService
 import com.jotoai.voenix.shop.domain.pdf.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.domain.pdf.dto.PdfSize
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -15,8 +17,6 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.io.ByteArrayOutputStream
-import javax.imageio.ImageIO
 
 @Service
 class PdfService(
@@ -40,10 +40,8 @@ class PdfService(
         )
 
     fun generatePdf(request: GeneratePdfRequest): ByteArray {
-        // Fetch article details to get print template dimensions
         val article = articleService.findById(request.articleId)
 
-        // Ensure this is a mug article with mug details
         val mugDetails =
             article.mugDetails
                 ?: throw IllegalArgumentException("Article ${request.articleId} is not a mug or has no mug details")
@@ -60,7 +58,6 @@ class PdfService(
                 // TODO: Update with actual QR content when requirements are clarified
                 addQrCode(document, contentStream, "https://google.de")
 
-                // Use mug's print template dimensions for the centered image
                 addCenteredImage(
                     document,
                     contentStream,

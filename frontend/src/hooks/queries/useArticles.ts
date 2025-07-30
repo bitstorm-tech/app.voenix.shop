@@ -21,7 +21,6 @@ interface UseArticlesParams {
   search?: string;
 }
 
-// Get paginated articles
 export function useArticles(params?: UseArticlesParams) {
   return useQuery({
     queryKey: articleKeys.list(params),
@@ -29,7 +28,6 @@ export function useArticles(params?: UseArticlesParams) {
   });
 }
 
-// Get article by ID
 export function useArticle(id: number | undefined) {
   return useQuery({
     queryKey: articleKeys.detail(id!),
@@ -38,7 +36,6 @@ export function useArticle(id: number | undefined) {
   });
 }
 
-// Create article mutation
 export function useCreateArticle() {
   const queryClient = useQueryClient();
 
@@ -52,14 +49,12 @@ export function useCreateArticle() {
   });
 }
 
-// Update article mutation
 export function useUpdateArticle() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdateArticleRequest }) => articlesApi.update(id, data),
     onSuccess: (updatedArticle, { id }) => {
-      // Update the specific article in cache
       queryClient.setQueryData(articleKeys.detail(id), updatedArticle);
 
       // Invalidate lists
@@ -70,14 +65,12 @@ export function useUpdateArticle() {
   });
 }
 
-// Delete article mutation
 export function useDeleteArticle() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: number) => articlesApi.delete(id),
     onSuccess: (_, id) => {
-      // Remove from cache
       queryClient.removeQueries({ queryKey: articleKeys.detail(id) });
 
       // Invalidate lists

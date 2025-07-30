@@ -28,17 +28,14 @@ export default function UserDataStep() {
   const registerGuestMutation = useMutation({
     mutationFn: () => authApi.registerGuest(formData),
     onSuccess: async (data) => {
-      // Update session in cache
       queryClient.setQueryData<SessionInfo>(authKeys.session(), {
         authenticated: true,
         user: { ...data.user, roles: data.roles },
         roles: data.roles,
       });
 
-      // Invalidate queries to refetch with new auth state
       await queryClient.invalidateQueries();
 
-      // Set authenticated state in wizard store
       setAuthenticated(true, data.user);
 
       // Mark that we've registered
@@ -55,7 +52,6 @@ export default function UserDataStep() {
     },
   });
 
-  // Update wizard store when form data changes
   useEffect(() => {
     setUserData(formData);
   }, [formData, setUserData]);
@@ -66,7 +62,6 @@ export default function UserDataStep() {
       const target = e.target as HTMLElement;
       const button = target.closest('button');
 
-      // Check if this is the Next button and we're on the user-data step
       const currentStep = useWizardStore.getState().currentStep;
       const canGoNext = useWizardStore.getState().canGoNext;
 

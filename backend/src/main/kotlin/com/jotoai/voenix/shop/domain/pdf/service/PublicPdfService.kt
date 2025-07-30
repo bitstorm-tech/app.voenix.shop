@@ -20,7 +20,6 @@ class PublicPdfService(
     }
 
     fun generatePublicPdf(request: PublicPdfGenerationRequest): ByteArray {
-        // Validate the mug exists and is available
         val article =
             try {
                 articleService.findById(request.mugId)
@@ -28,24 +27,19 @@ class PublicPdfService(
                 throw BadRequestException("Mug not found or unavailable")
             }
 
-        // Ensure this is a mug article
         if (article.mugDetails == null) {
             throw BadRequestException("The specified article is not a mug")
         }
 
-        // Verify the mug is active/available for public
         if (!article.active) {
             throw BadRequestException("This mug is currently unavailable")
         }
 
-        // Extract filename from URL
-//        val filename = extractFilenameFromUrl(request.imageUrl)
         val filename = request.imageUrl.substringAfterLast("/")
 
         logger.info("Processing public PDF generation for mug ID: ${request.mugId}")
 
         try {
-            // Generate PDF using existing service
             val pdfRequest =
                 GeneratePdfRequest(
                     articleId = request.mugId,

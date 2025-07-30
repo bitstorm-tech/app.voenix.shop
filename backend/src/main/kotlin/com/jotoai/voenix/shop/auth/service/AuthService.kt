@@ -102,18 +102,13 @@ class AuthService(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ): LoginResponse {
-        // Check if email already exists
         if (userRepository.existsByEmail(registerRequest.email)) {
             throw ResourceAlreadyExistsException("User", "email", registerRequest.email)
         }
-
-        // Create new user
         userRegistrationService.createUser(
             email = registerRequest.email,
             password = registerRequest.password,
         )
-
-        // Authenticate the newly registered user
         return userRegistrationService.authenticateUser(
             email = registerRequest.email,
             password = registerRequest.password,
@@ -128,7 +123,6 @@ class AuthService(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ): LoginResponse {
-        // Check if email already exists
         val existingUser = userRepository.findByEmail(registerGuestRequest.email).orElse(null)
 
         if (existingUser != null) {
@@ -152,8 +146,6 @@ class AuthService(
                 throw ResourceAlreadyExistsException("User", "email", registerGuestRequest.email)
             }
         }
-
-        // Create new guest user without password
         val savedUser =
             userRegistrationService.createUser(
                 email = registerGuestRequest.email,

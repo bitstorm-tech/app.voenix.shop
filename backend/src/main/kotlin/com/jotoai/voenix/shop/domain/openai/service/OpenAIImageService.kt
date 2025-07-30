@@ -128,13 +128,11 @@ class OpenAIImageService(
                 val response = httpResponse.body<OpenAIResponse>()
                 logger.info("Successfully received response from OpenAI API")
 
-                // Check for error response
                 if (response.error != null) {
                     logger.error("OpenAI API returned error: ${response.error.message}")
                     throw RuntimeException("OpenAI API error: ${response.error.message}")
                 }
 
-                // Check if data is null or empty
                 if (response.data.isNullOrEmpty()) {
                     logger.error("OpenAI API returned empty or null data")
                     throw RuntimeException("OpenAI API returned no images")
@@ -160,7 +158,6 @@ class OpenAIImageService(
                                 }
                             }
 
-                        // Create a MultipartFile from the bytes
                         // ImageService will handle UUID generation
                         val multipartFile =
                             SimpleMultipartFile(
@@ -168,8 +165,6 @@ class OpenAIImageService(
                                 "image/png",
                                 imageBytes,
                             )
-
-                        // Save the image using ImageService
                         val savedImage =
                             imageService.store(
                                 multipartFile,
@@ -222,10 +217,7 @@ class OpenAIImageService(
     private fun buildFinalPrompt(prompt: PromptDto): String {
         val parts = mutableListOf<String>()
 
-        // Add base prompt content if exists
         prompt.promptText?.let { parts.add(it) }
-
-        // Add slot prompts sorted by position
         prompt.slots
             .sortedBy { it.promptSlotType?.position ?: 0 }
             .forEach { slot ->
@@ -278,13 +270,11 @@ class OpenAIImageService(
                 val response = httpResponse.body<OpenAIResponse>()
                 logger.info("Successfully received response from OpenAI API")
 
-                // Check for error response
                 if (response.error != null) {
                     logger.error("OpenAI API returned error: ${response.error.message}")
                     throw RuntimeException("OpenAI API error: ${response.error.message}")
                 }
 
-                // Check if data is null or empty
                 if (response.data.isNullOrEmpty()) {
                     logger.error("OpenAI API returned empty or null data")
                     throw RuntimeException("OpenAI API returned no images")

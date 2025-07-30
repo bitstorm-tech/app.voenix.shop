@@ -43,7 +43,6 @@ class UserImageController(
         val user = userService.getUserByEmail(userDetails.username)
         logger.info("Received authenticated image generation request from user ${user.id} for prompt ID: $promptId")
 
-        // Build request from form data
         val generationRequest =
             PublicImageGenerationRequest(
                 promptId = promptId,

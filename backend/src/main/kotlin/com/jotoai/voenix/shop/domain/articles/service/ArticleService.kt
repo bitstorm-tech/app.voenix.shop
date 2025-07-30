@@ -90,13 +90,10 @@ class ArticleService(
 
     @Transactional
     fun create(request: CreateArticleRequest): ArticleWithDetailsDto {
-        // Validate category exists
         val category =
             articleCategoryRepository
                 .findById(request.categoryId)
                 .orElseThrow { ResourceNotFoundException("Category not found with id: ${request.categoryId}") }
-
-        // Validate subcategory if provided
         val subcategory =
             request.subcategoryId?.let {
                 articleSubCategoryRepository

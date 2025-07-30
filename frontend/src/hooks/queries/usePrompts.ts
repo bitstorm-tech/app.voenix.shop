@@ -13,7 +13,6 @@ export const promptKeys = {
   search: (title: string) => [...promptKeys.all, 'search', title] as const,
 };
 
-// Get all prompts
 export function usePrompts() {
   return useQuery({
     queryKey: promptKeys.lists(),
@@ -21,7 +20,6 @@ export function usePrompts() {
   });
 }
 
-// Get prompt by ID
 export function usePrompt(id: number | undefined) {
   return useQuery({
     queryKey: promptKeys.detail(id!),
@@ -30,7 +28,6 @@ export function usePrompt(id: number | undefined) {
   });
 }
 
-// Search prompts
 export function useSearchPrompts(title: string) {
   return useQuery({
     queryKey: promptKeys.search(title),
@@ -39,7 +36,6 @@ export function useSearchPrompts(title: string) {
   });
 }
 
-// Create prompt mutation
 export function useCreatePrompt() {
   const queryClient = useQueryClient();
 
@@ -59,14 +55,12 @@ export function useCreatePrompt() {
   });
 }
 
-// Update prompt mutation
 export function useUpdatePrompt() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, data }: { id: number; data: UpdatePromptRequest }) => promptsApi.update(id, data),
     onSuccess: (updatedPrompt, { id }) => {
-      // Update the specific prompt in cache
       queryClient.setQueryData(promptKeys.detail(id), updatedPrompt);
 
       // Invalidate list to ensure consistency
@@ -77,14 +71,12 @@ export function useUpdatePrompt() {
   });
 }
 
-// Delete prompt mutation
 export function useDeletePrompt() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: (id: number) => promptsApi.delete(id),
     onSuccess: (_, id) => {
-      // Remove from cache
       queryClient.removeQueries({ queryKey: promptKeys.detail(id) });
 
       // Invalidate list
@@ -95,14 +87,12 @@ export function useDeletePrompt() {
   });
 }
 
-// Add slots to prompt
 export function useAddPromptSlots() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, slotIds }: { id: number; slotIds: number[] }) => promptsApi.addSlots(id, slotIds),
     onSuccess: (updatedPrompt, { id }) => {
-      // Update the specific prompt in cache
       queryClient.setQueryData(promptKeys.detail(id), updatedPrompt);
 
       // Invalidate list
@@ -113,14 +103,12 @@ export function useAddPromptSlots() {
   });
 }
 
-// Update prompt slots
 export function useUpdatePromptSlots() {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ id, slots }: { id: number; slots: any[] }) => promptsApi.updateSlots(id, slots),
     onSuccess: (updatedPrompt, { id }) => {
-      // Update the specific prompt in cache
       queryClient.setQueryData(promptKeys.detail(id), updatedPrompt);
 
       // Invalidate list

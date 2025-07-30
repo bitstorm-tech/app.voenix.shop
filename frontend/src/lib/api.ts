@@ -29,12 +29,9 @@ export class ApiError extends Error {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    // Handle authentication errors globally
     if (response.status === 401 || response.status === 403) {
       // Clear auth state - just redirect, React Query will handle the rest
       // The session query will fail and update the auth state automatically
-
-      // Redirect to login page
       window.location.href = '/login';
 
       // Still throw the error for proper error handling
@@ -230,7 +227,6 @@ export const articlesApi = {
     const formData = new FormData();
     formData.append('image', file); // Changed from 'file' to 'image' to match backend
     if (cropArea) {
-      // Send as individual parameters to match backend expectations
       formData.append('cropX', cropArea.x.toString());
       formData.append('cropY', cropArea.y.toString());
       formData.append('cropWidth', cropArea.width.toString());
@@ -372,7 +368,6 @@ export const promptSlotTypesApi = {
   update: (id: number, data: UpdatePromptSlotTypeRequest) => api.put<PromptSlotType>(`/admin/prompts/prompt-slot-types/${id}`, data),
   delete: (id: number) => api.delete<void>(`/admin/prompts/prompt-slot-types/${id}`),
   updatePositions: async (positions: { id: number; position: number }[]) => {
-    // Get all current prompt slot types to find max position
     const allPromptSlotTypes = await api.get<PromptSlotType[]>('/admin/prompts/prompt-slot-types');
     const maxPosition = Math.max(...allPromptSlotTypes.map((st) => st.position), ...positions.map((p) => p.position));
 
@@ -585,7 +580,6 @@ export const countryApi = {
 
 // Public API endpoints (no authentication required)
 export const publicApi = {
-  // Fetch prompts for public use (filtered data without sensitive fields)
   fetchPrompts: async (): Promise<Prompt[]> => {
     const response = await fetch('/api/prompts', {
       method: 'GET',
@@ -596,7 +590,6 @@ export const publicApi = {
     });
     return handleResponse<Prompt[]>(response);
   },
-  // Generate images using public endpoint
   generateImage: async (image: File, promptId: number): Promise<PublicImageGenerationResponse> => {
     const formData = new FormData();
     formData.append('image', image);
@@ -640,7 +633,6 @@ export const publicApi = {
 
     return response.blob();
   },
-  // Fetch mugs for public use (filtered data without sensitive fields)
   fetchMugs: async (): Promise<Mug[]> => {
     const response = await fetch('/api/mugs', {
       method: 'GET',
