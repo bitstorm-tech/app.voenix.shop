@@ -1,4 +1,5 @@
 import { Alert, AlertDescription } from '@/components/ui/Alert';
+import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { authKeys } from '@/hooks/queries/useAuth';
@@ -7,7 +8,7 @@ import { queryClient } from '@/lib/queryClient';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { SessionInfo } from '@/types/auth';
 import { useMutation } from '@tanstack/react-query';
-import { Info, Lock } from 'lucide-react';
+import { CheckCircle, Info, Lock } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useUserDataForm } from '../../hooks/useUserDataForm';
 
@@ -16,9 +17,12 @@ export default function UserDataStep() {
   const setUserData = useWizardStore((state) => state.setUserData);
   const setAuthenticated = useWizardStore((state) => state.setAuthenticated);
   const goNext = useWizardStore((state) => state.goNext);
+  const isAuthenticated = useWizardStore((state) => state.isAuthenticated);
+  const user = useWizardStore((state) => state.user);
   const { formData, errors, handleChange } = useUserDataForm(userData);
   const [authError, setAuthError] = useState<string | null>(null);
   const hasRegisteredRef = useRef(false);
+  const [showForm, setShowForm] = useState(false);
 
   // Custom register guest mutation
   const registerGuestMutation = useMutation({
@@ -43,9 +47,10 @@ export default function UserDataStep() {
       // Navigate to next step after successful registration
       goNext();
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       console.error('Registration error:', error);
-      setAuthError(error.message || 'Registration failed. You can still continue as a guest.');
+      const message = error instanceof Error ? error.message : 'Registration failed. You can still continue as a guest.';
+      setAuthError(message);
       // User can still proceed without registration
     },
   });
@@ -99,17 +104,74 @@ export default function UserDataStep() {
     hasRegisteredRef.current = false;
   };
 
+  // If authenticated, show a different view
+  if (isAuthenticated && !showForm) {
+    return (
+      <div className="mx-auto max-w-md space-y-6">
+        <div>
+          <h3 className="mb-2 text-lg font-semibold">Personal Information</h3>
+          <p className="text-sm text-gray-600">You&apos;re already logged in!</p>
+        </div>
+
+        <Alert className="border-green-200 bg-green-50">
+          <CheckCircle className="h-4 w-4 text-green-600" />
+          <AlertDescription className="text-green-800">
+            We&apos;ll use your account information for this order.
+            {user?.email && <span className="mt-1 block font-medium">Email: {user.email}</span>}
+          </AlertDescription>
+        </Alert>
+
+        <div className="space-y-3">
+          <Button onClick={goNext} className="w-full" size="lg">
+            Continue to Image Generation
+          </Button>
+
+          <Button onClick={() => setShowForm(true)} variant="outline" className="w-full">
+            Use Different Information for This Order
+          </Button>
+        </div>
+
+        <div className="rounded-lg bg-blue-50 p-4">
+          <div className="flex gap-3">
+            <Info className="h-5 w-5 flex-shrink-0 text-blue-600" />
+            <div className="text-sm text-blue-800">
+              <p>Your account information will be used to:</p>
+              <ul className="mt-1 list-inside list-disc space-y-1">
+                <li>Save your personalized design</li>
+                <li>Send you order updates</li>
+                <li>Track your order history</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-md space-y-6">
       <div>
         <h3 className="mb-2 text-lg font-semibold">Personal Information</h3>
-        <p className="text-sm text-gray-600">We need some basic information to personalize your product</p>
+        <p className="text-sm text-gray-600">
+          {isAuthenticated && showForm ? 'Enter different information for this order' : 'We need some basic information to personalize your product'}
+        </p>
       </div>
 
-      <Alert>
-        <Lock className="h-4 w-4" />
-        <AlertDescription>Your information is secure and will only be used to process your personalized mug order.</AlertDescription>
-      </Alert>
+      {isAuthenticated && showForm && (
+        <Alert className="border-blue-200 bg-blue-50">
+          <Info className="h-4 w-4 text-blue-600" />
+          <AlertDescription className="text-blue-800">
+            This information will only be used for this order. Your account information remains unchanged.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {!isAuthenticated && (
+        <Alert>
+          <Lock className="h-4 w-4" />
+          <AlertDescription>Your information is secure and will only be used to process your personalized mug order.</AlertDescription>
+        </Alert>
+      )}
 
       {authError && (
         <Alert variant="destructive">
@@ -188,6 +250,12 @@ export default function UserDataStep() {
           </div>
         </div>
       </div>
+
+      {isAuthenticated && showForm && (
+        <Button onClick={() => setShowForm(false)} variant="outline" className="w-full">
+          Use My Account Information Instead
+        </Button>
+      )}
     </div>
   );
 }

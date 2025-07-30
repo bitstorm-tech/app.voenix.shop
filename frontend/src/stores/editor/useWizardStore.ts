@@ -329,14 +329,8 @@ export const useWizardStore = create<WizardStore>()(
         state.isAuthenticated = isAuthenticated;
         state.user = user;
 
-        // If user is authenticated and we're on the user-data step, automatically proceed
-        if (isAuthenticated && state.currentStep === 'user-data') {
-          const nextStep = getNextStep(state.currentStep, isAuthenticated);
-          if (nextStep) {
-            state.currentStep = nextStep;
-            state.canGoNext = canProceedFromStep(state, nextStep);
-          }
-        }
+        // Update navigation state based on authentication
+        state.canGoNext = canProceedFromStep(state, state.currentStep);
       });
     },
 

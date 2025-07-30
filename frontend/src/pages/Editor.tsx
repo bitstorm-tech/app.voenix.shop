@@ -7,6 +7,7 @@ import UserDataStep from '@/components/editor/components/steps/4-UserDataStep';
 import ImageGenerationStep from '@/components/editor/components/steps/5-ImageGenerationStep';
 import PreviewStep from '@/components/editor/components/steps/6-PreviewStep';
 import { usePublicPrompts } from '@/hooks/queries/usePublicPrompts';
+import { useAuthWizardSync } from '@/hooks/useAuthWizardSync';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { useEffect } from 'react';
 
@@ -15,6 +16,7 @@ export default function Editor() {
   const { isLoading: promptsLoading, error: promptsError } = usePublicPrompts();
   const restoreState = useWizardStore((state) => state.restoreState);
   const hasPreservedState = useWizardStore((state) => state.hasPreservedState);
+  const { isLoading: sessionLoading } = useAuthWizardSync();
 
   useEffect(() => {
     document.title = 'Editor - Voenix Shop';
@@ -25,12 +27,12 @@ export default function Editor() {
     }
   }, []);
 
-  if (promptsLoading) {
+  if (promptsLoading || sessionLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
-          <p className="mt-2 text-sm text-gray-600">Loading editor...</p>
+          <p className="mt-2 text-sm text-gray-600">Loading editor{sessionLoading && !promptsLoading ? ' (checking session)' : ''}...</p>
         </div>
       </div>
     );
