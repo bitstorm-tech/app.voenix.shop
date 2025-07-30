@@ -1,36 +1,28 @@
 import { Alert, AlertDescription } from '@/components/ui/Alert';
-import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { authKeys } from '@/hooks/queries/useAuth';
-import { useRegister } from '@/hooks/queries/useRegister';
 import { authApi } from '@/lib/api';
 import { queryClient } from '@/lib/queryClient';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
-import { LoginRequest, SessionInfo } from '@/types/auth';
+import { SessionInfo } from '@/types/auth';
 import { useMutation } from '@tanstack/react-query';
-import { Info, Loader2, Lock } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { Info, Lock } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { useUserDataForm } from '../../hooks/useUserDataForm';
 
 export default function UserDataStep() {
   const userData = useWizardStore((state) => state.userData);
-  const isAuthenticated = useWizardStore((state) => state.isAuthenticated);
-  const goNext = useWizardStore((state) => state.goNext);
   const setUserData = useWizardStore((state) => state.setUserData);
   const setAuthenticated = useWizardStore((state) => state.setAuthenticated);
-  const preserveState = useWizardStore((state) => state.preserveState);
+  const goNext = useWizardStore((state) => state.goNext);
   const { formData, errors, handleChange } = useUserDataForm(userData);
-
-  const [authMode, setAuthMode] = useState<'register' | 'login' | null>(null);
-  const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState<string | null>(null);
+  const hasRegisteredRef = useRef(false);
 
-  const registerMutation = useRegister();
-
-  // Custom login mutation that doesn't navigate away
-  const loginMutation = useMutation({
-    mutationFn: (data: LoginRequest) => authApi.login(data),
+  // Custom register guest mutation
+  const registerGuestMutation = useMutation({
+    mutationFn: () => authApi.registerGuest(formData),
     onSuccess: async (data) => {
       // Update session in cache
       queryClient.setQueryData<SessionInfo>(authKeys.session(), {
@@ -44,77 +36,79 @@ export default function UserDataStep() {
 
       // Set authenticated state in wizard store
       setAuthenticated(true, data.user);
+
+      // Mark that we've registered
+      hasRegisteredRef.current = true;
+
+      // Navigate to next step after successful registration
+      goNext();
+    },
+    onError: (error: any) => {
+      console.error('Registration error:', error);
+      setAuthError(error.message || 'Registration failed. You can still continue as a guest.');
+      // User can still proceed without registration
     },
   });
 
-  // If already authenticated, skip to next step
+  // Update wizard store when form data changes
   useEffect(() => {
-    if (isAuthenticated) {
-      goNext();
-    }
-  }, [isAuthenticated, goNext]);
+    setUserData(formData);
+  }, [formData, setUserData]);
+
+  // Intercept navigation to handle registration
+  useEffect(() => {
+    const handleNextClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const button = target.closest('button');
+
+      // Check if this is the Next button and we're on the user-data step
+      const currentStep = useWizardStore.getState().currentStep;
+      const canGoNext = useWizardStore.getState().canGoNext;
+
+      if (
+        button &&
+        button.textContent?.includes('Next') &&
+        currentStep === 'user-data' &&
+        canGoNext &&
+        !hasRegisteredRef.current &&
+        !registerGuestMutation.isPending
+      ) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // Clear any previous errors
+        setAuthError(null);
+
+        // Attempt to register the user as a guest
+        registerGuestMutation.mutate();
+      }
+    };
+
+    // Add event listener to capture clicks on the Next button
+    document.addEventListener('click', handleNextClick, true);
+
+    return () => {
+      document.removeEventListener('click', handleNextClick, true);
+    };
+  }, [registerGuestMutation]);
 
   const handleEmailChange = (value: string) => {
     handleChange('email', value);
     setAuthError(null);
-    setAuthMode(null);
+    // Reset registration status when email changes
+    hasRegisteredRef.current = false;
   };
-
-  // Update wizard store when form data changes
-  useEffect(() => {
-    // Always update the wizard store to reflect current form state
-    // This ensures the Next button is disabled when email becomes invalid
-    setUserData(formData);
-  }, [formData, setUserData]);
-
-  const handleAuth = async () => {
-    if (!formData.email || !password || !authMode) return;
-
-    setAuthError(null);
-
-    // Preserve wizard state before authentication
-    preserveState();
-
-    try {
-      if (authMode === 'register') {
-        await registerMutation.mutateAsync({ email: formData.email, password });
-      } else {
-        await loginMutation.mutateAsync({ email: formData.email, password });
-      }
-
-      // Save user data to wizard store
-      setUserData(formData);
-    } catch (error: any) {
-      setAuthError(error.message || 'Authentication failed. Please try again.');
-    }
-  };
-
-  // Show loading state while checking authentication
-  if (isAuthenticated) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12">
-        <Loader2 className="text-primary h-8 w-8 animate-spin" />
-        <p className="mt-2 text-sm text-gray-600">Loading your profile...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="mx-auto max-w-md space-y-6">
       <div>
         <h3 className="mb-2 text-lg font-semibold">Personal Information</h3>
-        <p className="text-sm text-gray-600">
-          {authMode ? 'Create an account or sign in to save your design' : 'We need some basic information to personalize your product'}
-        </p>
+        <p className="text-sm text-gray-600">We need some basic information to personalize your product</p>
       </div>
 
       <Alert>
         <Lock className="h-4 w-4" />
-        <AlertDescription>
-          {authMode
-            ? 'Your account keeps your designs safe and makes reordering easy. Your information is always secure.'
-            : 'Your information is secure and will only be used to process your personalized mug order.'}
-        </AlertDescription>
+        <AlertDescription>Your information is secure and will only be used to process your personalized mug order.</AlertDescription>
       </Alert>
 
       {authError && (
@@ -135,30 +129,10 @@ export default function UserDataStep() {
             value={formData.email}
             onChange={(e) => handleEmailChange(e.target.value)}
             className={errors.email ? 'border-red-500' : ''}
-            disabled={registerMutation.isPending || loginMutation.isPending}
+            disabled={registerGuestMutation.isPending}
           />
           {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
         </div>
-
-        {authMode && (
-          <div className="space-y-2">
-            <Label htmlFor="password">
-              Password <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder={authMode === 'register' ? 'Create a password' : 'Enter your password'}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className={authError ? 'border-red-500' : ''}
-              disabled={registerMutation.isPending || loginMutation.isPending}
-            />
-            {authMode === 'register' && (
-              <p className="text-xs text-gray-500">Password must be at least 8 characters with uppercase, lowercase, number, and special character</p>
-            )}
-          </div>
-        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -169,7 +143,7 @@ export default function UserDataStep() {
               placeholder="John"
               value={formData.firstName || ''}
               onChange={(e) => handleChange('firstName', e.target.value)}
-              disabled={registerMutation.isPending || loginMutation.isPending}
+              disabled={registerGuestMutation.isPending}
             />
           </div>
 
@@ -181,7 +155,7 @@ export default function UserDataStep() {
               placeholder="Doe"
               value={formData.lastName || ''}
               onChange={(e) => handleChange('lastName', e.target.value)}
-              disabled={registerMutation.isPending || loginMutation.isPending}
+              disabled={registerGuestMutation.isPending}
             />
           </div>
         </div>
@@ -195,64 +169,11 @@ export default function UserDataStep() {
             value={formData.phoneNumber || ''}
             onChange={(e) => handleChange('phoneNumber', e.target.value)}
             className={errors.phoneNumber ? 'border-red-500' : ''}
-            disabled={registerMutation.isPending || loginMutation.isPending}
+            disabled={registerGuestMutation.isPending}
           />
           {errors.phoneNumber && <p className="text-sm text-red-500">{errors.phoneNumber}</p>}
         </div>
       </div>
-
-      {authMode && (
-        <div className="space-y-3">
-          <Button
-            onClick={handleAuth}
-            disabled={!formData.email || !password || registerMutation.isPending || loginMutation.isPending}
-            className="w-full"
-          >
-            {registerMutation.isPending || loginMutation.isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {authMode === 'register' ? 'Creating Account...' : 'Signing In...'}
-              </>
-            ) : authMode === 'register' ? (
-              'Create Account & Continue'
-            ) : (
-              'Sign In & Continue'
-            )}
-          </Button>
-
-          <p className="text-center text-sm text-gray-600">
-            {authMode === 'register' ? (
-              <>
-                Already have an account?{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMode('login');
-                    setAuthError(null);
-                  }}
-                  className="text-primary font-medium hover:underline"
-                >
-                  Sign in
-                </button>
-              </>
-            ) : (
-              <>
-                New to our shop?{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAuthMode('register');
-                    setAuthError(null);
-                  }}
-                  className="text-primary font-medium hover:underline"
-                >
-                  Create account
-                </button>
-              </>
-            )}
-          </p>
-        </div>
-      )}
 
       <div className="rounded-lg bg-blue-50 p-4">
         <div className="flex gap-3">

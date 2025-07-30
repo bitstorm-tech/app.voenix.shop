@@ -2,6 +2,7 @@ package com.jotoai.voenix.shop.api.auth
 
 import com.jotoai.voenix.shop.auth.dto.LoginRequest
 import com.jotoai.voenix.shop.auth.dto.LoginResponse
+import com.jotoai.voenix.shop.auth.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.dto.SessionInfo
 import com.jotoai.voenix.shop.auth.service.AuthService
@@ -40,4 +41,11 @@ class AuthController(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ): LoginResponse = authService.register(registerRequest, request, response)
+
+    @PostMapping("/register-guest")
+    fun registerGuest(
+        @Valid @RequestBody registerGuestRequest: RegisterGuestRequest,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ): LoginResponse = authService.registerGuest(registerGuestRequest, request, response)
 }

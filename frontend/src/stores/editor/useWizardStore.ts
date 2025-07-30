@@ -83,7 +83,10 @@ function canProceedFromStep(
       return state.selectedMug !== null;
     case 'user-data':
       // Authenticated users can always proceed from this step (they skip it)
-      return state.isAuthenticated || (state.userData !== null && state.userData.email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.userData.email));
+      return (
+        state.isAuthenticated ||
+        (state.userData !== null && state.userData.email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.userData.email))
+      );
     case 'image-generation':
       return state.selectedGeneratedImage !== null;
     case 'preview':
@@ -98,7 +101,7 @@ function getNextStep(currentStep: WizardStep, isAuthenticated: boolean): WizardS
   const currentIndex = WIZARD_STEPS.indexOf(currentStep);
   if (currentIndex === -1 || currentIndex === WIZARD_STEPS.length - 1) return null;
 
-  let nextStep = WIZARD_STEPS[currentIndex + 1];
+  const nextStep = WIZARD_STEPS[currentIndex + 1];
 
   // Skip user-data step for authenticated users
   if (nextStep === 'user-data' && isAuthenticated) {
@@ -112,7 +115,7 @@ function getPreviousStep(currentStep: WizardStep, isAuthenticated: boolean): Wiz
   const currentIndex = WIZARD_STEPS.indexOf(currentStep);
   if (currentIndex <= 0) return null;
 
-  let previousStep = WIZARD_STEPS[currentIndex - 1];
+  const previousStep = WIZARD_STEPS[currentIndex - 1];
 
   // Skip user-data step for authenticated users when going backwards
   if (previousStep === 'user-data' && isAuthenticated) {

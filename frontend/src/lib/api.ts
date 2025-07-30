@@ -467,12 +467,21 @@ export const authApi = {
   logout: () => api.post<void>('/auth/logout', {}),
   checkSession: () => api.get<SessionInfo>('/auth/session'),
   register: (data: RegisterRequest) => api.post<LoginResponse>('/auth/register', data),
+  registerGuest: (data: RegisterGuestRequest) => api.post<LoginResponse>('/auth/register-guest', data),
 };
 
 // Type definition for RegisterRequest
 export interface RegisterRequest {
   email: string;
   password: string;
+}
+
+// Type definition for RegisterGuestRequest
+export interface RegisterGuestRequest {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
 }
 
 // User API endpoints

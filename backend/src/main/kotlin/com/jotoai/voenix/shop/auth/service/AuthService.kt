@@ -3,12 +3,10 @@ package com.jotoai.voenix.shop.auth.service
 import com.jotoai.voenix.shop.auth.dto.CustomUserDetails
 import com.jotoai.voenix.shop.auth.dto.LoginRequest
 import com.jotoai.voenix.shop.auth.dto.LoginResponse
+import com.jotoai.voenix.shop.auth.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.dto.SessionInfo
-import com.jotoai.voenix.shop.auth.repository.RoleRepository
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.users.entity.User
 import com.jotoai.voenix.shop.domain.users.repository.UserRepository
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -17,7 +15,6 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.context.SecurityContextRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -26,9 +23,8 @@ import org.springframework.transaction.annotation.Transactional
 class AuthService(
     private val authenticationManager: AuthenticationManager,
     private val userRepository: UserRepository,
-    private val roleRepository: RoleRepository,
-    private val passwordEncoder: PasswordEncoder,
     private val securityContextRepository: SecurityContextRepository,
+    private val userRegistrationService: UserRegistrationService,
 ) {
     @Transactional
     fun login(
@@ -111,43 +107,66 @@ class AuthService(
             throw ResourceAlreadyExistsException("User", "email", registerRequest.email)
         }
 
-        // Find USER role
-        val userRole =
-            roleRepository.findByName("USER").orElseThrow {
-                ResourceNotFoundException("Role", "name", "USER")
-            }
-
         // Create new user
-        val user =
-            User(
-                email = registerRequest.email,
-                password = passwordEncoder.encode(registerRequest.password),
-                roles = setOf(userRole),
-            )
-
-        val savedUser = userRepository.save(user)
+        userRegistrationService.createUser(
+            email = registerRequest.email,
+            password = registerRequest.password,
+        )
 
         // Authenticate the newly registered user
-        val authentication =
-            authenticationManager.authenticate(
-                UsernamePasswordAuthenticationToken(
-                    registerRequest.email,
-                    registerRequest.password,
-                ),
+        return userRegistrationService.authenticateUser(
+            email = registerRequest.email,
+            password = registerRequest.password,
+            request = request,
+            response = response,
+        )
+    }
+
+    @Transactional
+    fun registerGuest(
+        registerGuestRequest: RegisterGuestRequest,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ): LoginResponse {
+        // Check if email already exists
+        val existingUser = userRepository.findByEmail(registerGuestRequest.email).orElse(null)
+
+        if (existingUser != null) {
+            // If user exists and has no password, update their details
+            if (existingUser.password == null) {
+                val updatedUser =
+                    userRegistrationService.updateUser(
+                        user = existingUser,
+                        firstName = registerGuestRequest.firstName,
+                        lastName = registerGuestRequest.lastName,
+                        phoneNumber = registerGuestRequest.phoneNumber,
+                    )
+
+                return userRegistrationService.authenticateGuestUser(
+                    user = updatedUser,
+                    request = request,
+                    response = response,
+                )
+            } else {
+                // User exists with password, cannot register as guest
+                throw ResourceAlreadyExistsException("User", "email", registerGuestRequest.email)
+            }
+        }
+
+        // Create new guest user without password
+        val savedUser =
+            userRegistrationService.createUser(
+                email = registerGuestRequest.email,
+                password = null,
+                firstName = registerGuestRequest.firstName,
+                lastName = registerGuestRequest.lastName,
+                phoneNumber = registerGuestRequest.phoneNumber,
             )
 
-        // Create session
-        val context = SecurityContextHolder.createEmptyContext()
-        context.authentication = authentication
-        SecurityContextHolder.setContext(context)
-        securityContextRepository.saveContext(context, request, response)
-
-        val session = request.getSession(true)
-
-        return LoginResponse(
-            user = savedUser.toDto(),
-            sessionId = session.id,
-            roles = savedUser.roles.map { it.name },
+        return userRegistrationService.authenticateGuestUser(
+            user = savedUser,
+            request = request,
+            response = response,
         )
     }
 }

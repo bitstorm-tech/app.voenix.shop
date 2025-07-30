@@ -3,10 +3,13 @@ package com.jotoai.voenix.shop.api.auth
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.auth.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.dto.RegisterRequest
+import com.jotoai.voenix.shop.auth.repository.RoleRepository
 import com.jotoai.voenix.shop.auth.service.AuthService
+import com.jotoai.voenix.shop.auth.service.UserRegistrationService
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.config.TestSecurityConfig
 import com.jotoai.voenix.shop.domain.users.dto.UserDto
+import com.jotoai.voenix.shop.domain.users.repository.UserRepository
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -16,6 +19,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.web.context.SecurityContextRepository
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -35,6 +41,24 @@ class AuthControllerTest {
 
     @MockBean
     private lateinit var authService: AuthService
+
+    @MockBean
+    private lateinit var userRegistrationService: UserRegistrationService
+
+    @MockBean
+    private lateinit var userRepository: UserRepository
+
+    @MockBean
+    private lateinit var roleRepository: RoleRepository
+
+    @MockBean
+    private lateinit var passwordEncoder: PasswordEncoder
+
+    @MockBean
+    private lateinit var authenticationManager: AuthenticationManager
+
+    @MockBean
+    private lateinit var securityContextRepository: SecurityContextRepository
 
     @Test
     fun `register should create new user and return login response`() {
