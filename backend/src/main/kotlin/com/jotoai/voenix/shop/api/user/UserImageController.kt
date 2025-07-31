@@ -24,7 +24,7 @@ import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/user/images")
-@PreAuthorize("hasRole('USER')")
+@PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
 class UserImageController(
     private val userImageGenerationService: UserImageGenerationService,
     private val imageService: ImageService,
