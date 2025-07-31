@@ -1,11 +1,13 @@
 import { ArticleVariants } from '@/components/admin/articles/ArticleVariants';
 import { Accordion, AccordionContent, AccordionItem } from '@/components/ui/Accordion';
+import { ArticleImage } from '@/components/ui/ArticleImage';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent } from '@/components/ui/Card';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useArticles, useDeleteArticle } from '@/hooks/queries/useArticles';
+import { getArticleImage } from '@/lib/articleUtils';
 import { cn } from '@/lib/utils';
 import type { ArticleType } from '@/types/article';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
@@ -143,11 +145,16 @@ export default function Articles() {
                             'focus-visible:border-ring focus-visible:ring-ring/50 flex w-full items-start gap-4 rounded-md px-6 py-0 text-left text-sm font-medium transition-all outline-none hover:no-underline focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50',
                           )}
                         >
-                          <ChevronDownIcon className="text-muted-foreground pointer-events-none mt-3 size-4 shrink-0 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
+                          <ChevronDownIcon className="text-muted-foreground pointer-events-none size-4 shrink-0 transition-transform duration-200 [[data-state=open]>&]:rotate-180 self-center" />
                           <div className="flex w-full items-center justify-between py-3 pr-24">
-                            <div className="grid flex-1 grid-cols-1 gap-4 text-left md:grid-cols-5">
+                            <div className="grid flex-1 grid-cols-1 gap-4 text-left md:grid-cols-6 items-center">
+                              {/* Image Column */}
+                              <div className="flex items-center">
+                                <ArticleImage src={getArticleImage(article)} alt={`${article.name} preview`} size="xs" />
+                              </div>
+
                               {/* Name Column */}
-                              <div className="md:col-span-2">
+                              <div className="md:col-span-2 flex items-center">
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium">{article.name}</span>
                                   {variantCount > 0 && (
@@ -156,9 +163,7 @@ export default function Articles() {
                                     </Badge>
                                   )}
                                   {article.supplierArticleName && (
-                                    <span className="text-muted-foreground text-sm">
-                                      {article.supplierArticleName}
-                                    </span>
+                                    <span className="text-muted-foreground text-sm">{article.supplierArticleName}</span>
                                   )}
                                 </div>
                               </div>
@@ -171,7 +176,7 @@ export default function Articles() {
                               </div>
 
                               {/* Category Column */}
-                              <div>
+                              <div className="flex items-center">
                                 <div className="flex flex-wrap items-center">
                                   <span className="font-medium">{article.categoryName || '-'}</span>
                                   {article.subcategoryName && (
@@ -184,7 +189,7 @@ export default function Articles() {
                               </div>
 
                               {/* Supplier Column */}
-                              <div className="text-muted-foreground">{article.supplierName || '-'}</div>
+                              <div className="flex items-center text-muted-foreground">{article.supplierName || '-'}</div>
                             </div>
 
                             {/* Status Badge */}
