@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.domain.articles.service
 
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.domain.articles.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
@@ -17,6 +18,7 @@ class MugVariantService(
     private val articleRepository: ArticleRepository,
     private val mugVariantRepository: MugArticleVariantRepository,
     private val imageService: ImageService,
+    private val mugArticleVariantAssembler: MugArticleVariantAssembler,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(MugVariantService::class.java)
@@ -53,7 +55,7 @@ class MugVariantService(
         val savedVariant = mugVariantRepository.save(variant)
         logger.debug("Created mug variant ${savedVariant.id} for article $articleId with isDefault=$shouldBeDefault")
 
-        return savedVariant.toDto()
+        return mugArticleVariantAssembler.toDto(savedVariant)
     }
 
     @Transactional
@@ -100,7 +102,7 @@ class MugVariantService(
         val savedVariant = mugVariantRepository.save(variant)
         logger.debug("Updated mug variant $variantId with isDefault=${request.isDefault}")
 
-        return savedVariant.toDto()
+        return mugArticleVariantAssembler.toDto(savedVariant)
     }
 
     @Transactional
@@ -136,7 +138,7 @@ class MugVariantService(
 
     @Transactional(readOnly = true)
     fun findByArticleId(articleId: Long): List<MugArticleVariantDto> =
-        mugVariantRepository.findByArticleIdWithArticle(articleId).map(MugArticleVariant::toDto)
+        mugVariantRepository.findByArticleIdWithArticle(articleId).map { mugArticleVariantAssembler.toDto(it) }
 
     @Transactional
     fun updateExampleImage(
@@ -148,7 +150,7 @@ class MugVariantService(
                 ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
 
         variant.exampleImageFilename = filename
-        return mugVariantRepository.save(variant).toDto()
+        return mugArticleVariantAssembler.toDto(mugVariantRepository.save(variant))
     }
 
     @Transactional
@@ -168,6 +170,6 @@ class MugVariantService(
 
         // Clear the filename in the database
         variant.exampleImageFilename = null
-        return mugVariantRepository.save(variant).toDto()
+        return mugArticleVariantAssembler.toDto(mugVariantRepository.save(variant))
     }
 }

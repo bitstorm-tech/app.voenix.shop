@@ -11,6 +11,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
 import com.jotoai.voenix.shop.domain.articles.service.ArticleService
 import com.jotoai.voenix.shop.domain.images.service.ImageService
+import com.jotoai.voenix.shop.domain.pdf.config.PdfQrProperties
 import com.jotoai.voenix.shop.domain.pdf.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.domain.pdf.dto.PdfSize
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -29,8 +30,10 @@ class PdfService(
     @param:Value("\${pdf.size.width}") private val pdfWidthMm: Float,
     @param:Value("\${pdf.size.height}") private val pdfHeightMm: Float,
     @param:Value("\${pdf.margin}") private val marginMm: Float,
+    @param:Value("\${app.base-url}") private val appBaseUrl: String,
     private val articleService: ArticleService,
     private val imageService: ImageService,
+    private val pdfQrProperties: PdfQrProperties,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(PdfService::class.java)
@@ -55,14 +58,20 @@ class PdfService(
         // Load image data using the filename
         val (imageData, _) = imageService.getImageData(request.imageFilename)
 
+        // Initialize PDF QR properties with app base URL if not configured
+        if (pdfQrProperties.baseUrl.isEmpty()) {
+            pdfQrProperties.baseUrl = appBaseUrl
+        }
+
         val document = PDDocument()
         return try {
             val page = PDPage(PDRectangle(pdfSize.width, pdfSize.height))
             document.addPage(page)
 
             PDPageContentStream(document, page).use { contentStream ->
-                // TODO: Update with actual QR content when requirements are clarified
-                addQrCode(document, contentStream, "https://google.de")
+                // Generate QR code URL pointing to the article
+                val qrUrl = pdfQrProperties.generateQrUrl("/articles/${request.articleId}")
+                addQrCode(document, contentStream, qrUrl)
 
                 addCenteredImage(
                     document,

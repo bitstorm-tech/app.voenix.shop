@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.domain.articles.entity
 
-import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -41,18 +40,4 @@ data class MugArticleVariant(
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
-) {
-    fun toDto() =
-        MugArticleVariantDto(
-            id = requireNotNull(this.id) { "MugArticleVariant ID cannot be null when converting to DTO" },
-            articleId = this.article.id!!,
-            insideColorCode = this.insideColorCode,
-            outsideColorCode = this.outsideColorCode,
-            name = this.name,
-            exampleImageUrl = this.exampleImageFilename?.let { "/images/articles/mugs/variant-example-images/$it" },
-            articleVariantNumber = this.articleVariantNumber,
-            isDefault = this.isDefault,
-            createdAt = this.createdAt,
-            updatedAt = this.updatedAt,
-        )
-}
+)

@@ -1,7 +1,5 @@
 package com.jotoai.voenix.shop.domain.prompts.entity
 
-import com.jotoai.voenix.shop.domain.prompts.dto.PromptDto
-import com.jotoai.voenix.shop.domain.prompts.dto.PublicPromptDto
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -50,29 +48,6 @@ data class Prompt(
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
 ) {
-    fun toDto() =
-        PromptDto(
-            id = requireNotNull(this.id) { "Prompt ID cannot be null when converting to DTO" },
-            title = this.title,
-            promptText = this.promptText,
-            categoryId = this.categoryId,
-            category = this.category?.toDto(),
-            subcategoryId = this.subcategoryId,
-            subcategory = this.subcategory?.toDto(),
-            active = this.active,
-            slots =
-                this.promptSlotVariantMappings
-                    .sortedBy {
-                        it.promptSlotVariant.promptSlotType?.position ?: 0
-                    }.map {
-                        it.promptSlotVariant
-                            .toDto()
-                    },
-            exampleImageUrl = this.exampleImageFilename?.let { "/images/prompt-example-images/$it" },
-            createdAt = this.createdAt,
-            updatedAt = this.updatedAt,
-        )
-
     fun addPromptSlotVariant(promptSlotVariant: PromptSlotVariant) {
         val mapping =
             PromptSlotVariantMapping(
@@ -90,21 +65,4 @@ data class Prompt(
     fun clearPromptSlotVariants() {
         this.promptSlotVariantMappings.clear()
     }
-
-    fun toPublicDto() =
-        PublicPromptDto(
-            id = requireNotNull(this.id) { "Prompt ID cannot be null when converting to DTO" },
-            title = this.title,
-            exampleImageUrl = this.exampleImageFilename?.let { "/images/prompt-example-images/$it" },
-            category = this.category?.toPublicDto(),
-            subcategory = this.subcategory?.toPublicDto(),
-            slots =
-                this.promptSlotVariantMappings
-                    .sortedBy {
-                        it.promptSlotVariant.promptSlotType?.position ?: 0
-                    }.map {
-                        it.promptSlotVariant
-                            .toPublicDto()
-                    },
-        )
 }

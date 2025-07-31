@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.domain.articles.entity
 
-import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleVariantDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -35,15 +34,4 @@ data class ShirtArticleVariant(
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
-) {
-    fun toDto() =
-        ShirtArticleVariantDto(
-            id = requireNotNull(this.id) { "ShirtArticleVariant ID cannot be null when converting to DTO" },
-            articleId = this.article.id!!,
-            color = this.color,
-            size = this.size,
-            exampleImageUrl = this.exampleImageFilename?.let { "/images/articles/shirts/variant-example-images/$it" },
-            createdAt = this.createdAt,
-            updatedAt = this.updatedAt,
-        )
-}
+)

@@ -1,7 +1,5 @@
 package com.jotoai.voenix.shop.domain.prompts.entity
 
-import com.jotoai.voenix.shop.domain.prompts.dto.PromptSlotVariantDto
-import com.jotoai.voenix.shop.domain.prompts.dto.PublicPromptSlotDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -43,26 +41,4 @@ data class PromptSlotVariant(
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
-) {
-    fun toDto() =
-        PromptSlotVariantDto(
-            id = requireNotNull(this.id) { "PromptSlotVariant ID cannot be null when converting to DTO" },
-            promptSlotTypeId = this.promptSlotTypeId,
-            promptSlotType = this.promptSlotType?.toDto(),
-            name = this.name,
-            prompt = this.prompt,
-            description = this.description,
-            exampleImageUrl = this.exampleImageFilename?.let { "/images/prompt-slot-variant-example-images/$it" },
-            createdAt = this.createdAt,
-            updatedAt = this.updatedAt,
-        )
-
-    fun toPublicDto() =
-        PublicPromptSlotDto(
-            id = requireNotNull(this.id) { "PromptSlotVariant ID cannot be null when converting to DTO" },
-            name = this.name,
-            description = this.description,
-            exampleImageUrl = this.exampleImageFilename?.let { "/images/prompt-slot-variant-example-images/$it" },
-            slotType = this.promptSlotType?.toPublicDto(),
-        )
-}
+)

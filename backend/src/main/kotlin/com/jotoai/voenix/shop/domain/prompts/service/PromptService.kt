@@ -3,6 +3,7 @@ package com.jotoai.voenix.shop.domain.prompts.service
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.service.ImageService
+import com.jotoai.voenix.shop.domain.prompts.assembler.PromptAssembler
 import com.jotoai.voenix.shop.domain.prompts.dto.AddSlotVariantsRequest
 import com.jotoai.voenix.shop.domain.prompts.dto.CreatePromptRequest
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptDto
@@ -25,6 +26,7 @@ class PromptService(
     private val promptSubCategoryRepository: PromptSubCategoryRepository,
     private val promptSlotVariantRepository: PromptSlotVariantRepository,
     private val imageService: ImageService,
+    private val promptAssembler: PromptAssembler,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(PromptService::class.java)
@@ -32,17 +34,20 @@ class PromptService(
 
     fun getAllPrompts(): List<PromptDto> =
         promptRepository.findAllWithRelations().map { prompt ->
-            prompt.toDto()
+            promptAssembler.toDto(prompt)
         }
 
     fun getPromptById(id: Long): PromptDto =
         promptRepository
             .findByIdWithRelations(id)
             .map { prompt ->
-                prompt.toDto()
+                promptAssembler.toDto(prompt)
             }.orElseThrow { ResourceNotFoundException("Prompt", "id", id) }
 
-    fun searchPromptsByTitle(title: String): List<PromptDto> = promptRepository.findByTitleContainingIgnoreCase(title).map { it.toDto() }
+    fun searchPromptsByTitle(title: String): List<PromptDto> =
+        promptRepository.findByTitleContainingIgnoreCase(title).map {
+            promptAssembler.toDto(it)
+        }
 
     @Transactional
     fun createPrompt(request: CreatePromptRequest): PromptDto {

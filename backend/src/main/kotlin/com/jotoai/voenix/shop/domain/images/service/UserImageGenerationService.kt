@@ -2,6 +2,7 @@ package com.jotoai.voenix.shop.domain.images.service
 
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.domain.images.entity.GeneratedImage
@@ -23,6 +24,7 @@ class UserImageGenerationService(
     private val promptService: PromptService,
     private val generatedImageRepository: GeneratedImageRepository,
     private val userRepository: UserRepository,
+    private val storagePathService: StoragePathService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(UserImageGenerationService::class.java)
@@ -82,10 +84,10 @@ class UserImageGenerationService(
                 generatedImageRepository.save(generatedImage)
             }
 
-            // Convert filenames to full URLs
+            // Convert filenames to full URLs using StoragePathService
             val imageUrls =
                 imageEditResponse.imageFilenames.map { filename ->
-                    "/api/user/images/$filename"
+                    storagePathService.getImageUrl(ImageType.PRIVATE, filename)
                 }
 
             logger.info("Successfully generated ${imageUrls.size} images for user $userId")

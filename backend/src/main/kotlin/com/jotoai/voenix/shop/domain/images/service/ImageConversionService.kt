@@ -5,8 +5,8 @@ import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.nio.ImageWriter
 import com.sksamuel.scrimage.nio.PngWriter
 import com.sksamuel.scrimage.webp.WebpWriter
-import java.awt.Rectangle
 import org.springframework.stereotype.Service
+import java.awt.Rectangle
 
 @Service
 class ImageConversionService {

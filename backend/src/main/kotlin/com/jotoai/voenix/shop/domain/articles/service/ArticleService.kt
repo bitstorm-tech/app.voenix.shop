@@ -2,6 +2,9 @@ package com.jotoai.voenix.shop.domain.articles.service
 
 import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.domain.articles.assembler.ArticleAssembler
+import com.jotoai.voenix.shop.domain.articles.assembler.MugArticleVariantAssembler
+import com.jotoai.voenix.shop.domain.articles.assembler.ShirtArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleCategoryRepository
 import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleSubCategoryRepository
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleDto
@@ -23,6 +26,8 @@ import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
 import com.jotoai.voenix.shop.domain.articles.repository.CostCalculationRepository
 import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepository
+import com.jotoai.voenix.shop.domain.images.dto.ImageType
+import com.jotoai.voenix.shop.domain.images.service.StoragePathService
 import com.jotoai.voenix.shop.domain.suppliers.repository.SupplierRepository
 import com.jotoai.voenix.shop.domain.vat.repository.ValueAddedTaxRepository
 import org.springframework.data.domain.PageRequest
@@ -42,6 +47,10 @@ class ArticleService(
     private val valueAddedTaxRepository: ValueAddedTaxRepository,
     private val mugDetailsService: MugDetailsService,
     private val shirtDetailsService: ShirtDetailsService,
+    private val articleAssembler: ArticleAssembler,
+    private val mugArticleVariantAssembler: MugArticleVariantAssembler,
+    private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
+    private val storagePathService: StoragePathService,
 ) {
     @Transactional(readOnly = true)
     fun findAll(
@@ -63,7 +72,7 @@ class ArticleService(
             )
 
         return PaginatedResponse(
-            content = articlesPage.content.map { it.toDto() },
+            content = articlesPage.content.map { articleAssembler.toDto(it) },
             currentPage = articlesPage.number,
             totalPages = articlesPage.totalPages,
             totalElements = articlesPage.totalElements,
@@ -312,8 +321,22 @@ class ArticleService(
             supplierName = article.supplier?.name,
             supplierArticleName = article.supplierArticleName,
             supplierArticleNumber = article.supplierArticleNumber,
-            mugVariants = if (article.articleType == ArticleType.MUG) article.mugVariants.map { it.toDto() } else null,
-            shirtVariants = if (article.articleType == ArticleType.SHIRT) article.shirtVariants.map { it.toDto() } else null,
+            mugVariants =
+                if (article.articleType ==
+                    ArticleType.MUG
+                ) {
+                    article.mugVariants.map { mugArticleVariantAssembler.toDto(it) }
+                } else {
+                    null
+                },
+            shirtVariants =
+                if (article.articleType ==
+                    ArticleType.SHIRT
+                ) {
+                    article.shirtVariants.map { shirtArticleVariantAssembler.toDto(it) }
+                } else {
+                    null
+                },
             mugDetails = mugDetails,
             shirtDetails = shirtDetails,
             costCalculation = article.costCalculation?.toDto(),
@@ -501,7 +524,10 @@ class ArticleService(
                         id = variant.id!!,
                         mugId = article.id,
                         colorCode = variant.outsideColorCode, // Using outside color as primary
-                        exampleImageUrl = variant.exampleImageFilename?.let { "/images/articles/mugs/variant-example-images/$it" },
+                        exampleImageUrl =
+                            variant.exampleImageFilename?.let { filename ->
+                                storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
+                            },
                         articleVariantNumber = variant.articleVariantNumber,
                         isDefault = variant.isDefault,
                         exampleImageFilename = variant.exampleImageFilename,
@@ -516,7 +542,10 @@ class ArticleService(
                     id = article.id,
                     name = article.name,
                     price = price,
-                    image = defaultVariant?.exampleImageFilename?.let { "/images/articles/mugs/variant-example-images/$it" },
+                    image =
+                        defaultVariant?.exampleImageFilename?.let { filename ->
+                            storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
+                        },
                     fillingQuantity = it.fillingQuantity,
                     descriptionShort = article.descriptionShort,
                     descriptionLong = article.descriptionLong,

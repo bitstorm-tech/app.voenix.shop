@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.common.config
 
+import com.jotoai.voenix.shop.domain.images.service.StoragePathService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ClassPathResource
@@ -12,7 +13,7 @@ import org.springframework.web.servlet.resource.PathResourceResolver
 @Configuration
 class WebConfig(
     @param:Value("\${spring.profiles.active:default}") private val activeProfile: String,
-    @param:Value("\${storage.root:storage}") private val storageRoot: String,
+    private val storagePathService: StoragePathService,
 ) : WebMvcConfigurer {
     override fun addCorsMappings(registry: CorsRegistry) {
         // Only enable CORS in development
@@ -28,11 +29,19 @@ class WebConfig(
     }
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
-        // Serve public images (includes prompt-example-images subfolder)
-        registry
-            .addResourceHandler("/images/**")
-            .addResourceLocations("file:$storageRoot/public/images/")
-            .setCachePeriod(3600)
+        // Configure resource handlers for publicly accessible image types
+        storagePathService
+            .getAllConfiguredImageTypes()
+            .filter { storagePathService.isPubliclyAccessible(it) }
+            .forEach { imageType ->
+                val urlPath = storagePathService.getUrlPath(imageType)
+                val physicalPath = storagePathService.getPhysicalPath(imageType)
+
+                registry
+                    .addResourceHandler("$urlPath/**")
+                    .addResourceLocations("file:${physicalPath.toAbsolutePath()}/")
+                    .setCachePeriod(3600)
+            }
 
         // Serve static resources
         registry

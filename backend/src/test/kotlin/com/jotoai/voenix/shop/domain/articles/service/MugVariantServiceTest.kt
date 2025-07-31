@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.domain.articles.service
 
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.domain.articles.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.entity.Article
@@ -26,6 +27,7 @@ class MugVariantServiceTest {
     private lateinit var articleRepository: ArticleRepository
     private lateinit var mugVariantRepository: MugArticleVariantRepository
     private lateinit var imageService: ImageService
+    private lateinit var mugArticleVariantAssembler: MugArticleVariantAssembler
     private lateinit var mugVariantService: MugVariantService
 
     private lateinit var testArticle: Article
@@ -36,7 +38,8 @@ class MugVariantServiceTest {
         articleRepository = mock(ArticleRepository::class.java)
         mugVariantRepository = mock(MugArticleVariantRepository::class.java)
         imageService = mock(ImageService::class.java)
-        mugVariantService = MugVariantService(articleRepository, mugVariantRepository, imageService)
+        mugArticleVariantAssembler = mock(MugArticleVariantAssembler::class.java)
+        mugVariantService = MugVariantService(articleRepository, mugVariantRepository, imageService, mugArticleVariantAssembler)
 
         // Setup test data
         testCategory =
