@@ -155,6 +155,11 @@ export default function Articles() {
                                       {variantCount} variant{variantCount !== 1 ? 's' : ''}
                                     </Badge>
                                   )}
+                                  {article.supplierArticleName && (
+                                    <span className="text-muted-foreground text-sm">
+                                      {article.supplierArticleName}
+                                    </span>
+                                  )}
                                 </div>
                               </div>
 
