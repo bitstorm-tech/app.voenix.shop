@@ -1,10 +1,12 @@
 import { Button } from '@/components/ui/Button';
-import { ApiError, publicApi } from '@/lib/api';
+import { useCartStore } from '@/stores/cartStore';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
-import { ArrowLeft, ArrowRight, Download, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function WizardNavigationButtons() {
+  const navigate = useNavigate();
   const currentStep = useWizardStore((state) => state.currentStep);
   const canGoNext = useWizardStore((state) => state.canGoNext);
   const canGoPrevious = useWizardStore((state) => state.canGoPrevious);
@@ -12,76 +14,54 @@ export default function WizardNavigationButtons() {
   const goPrevious = useWizardStore((state) => state.goPrevious);
   const isProcessing = useWizardStore((state) => state.isProcessing);
   const selectedMug = useWizardStore((state) => state.selectedMug);
+  const selectedVariant = useWizardStore((state) => state.selectedVariant);
   const selectedGeneratedImage = useWizardStore((state) => state.selectedGeneratedImage);
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const selectedPrompt = useWizardStore((state) => state.selectedPrompt);
+  const generatedImageCropData = useWizardStore((state) => state.generatedImageCropData);
+  const cropData = useWizardStore((state) => state.cropData);
+  const addItem = useCartStore((state) => state.addItem);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const handleNextStep = async () => {
     if (currentStep === 'preview' && canGoNext) {
-      setIsGeneratingPdf(true);
+      setIsAddingToCart(true);
 
       try {
         if (!selectedGeneratedImage) {
-          throw new Error('Please select a generated image before downloading PDF');
+          throw new Error('Please select a generated image before adding to cart');
         }
 
-        if (!selectedMug?.id) {
-          throw new Error('Please select a mug before downloading PDF');
+        if (!selectedMug) {
+          throw new Error('Please select a mug before adding to cart');
         }
 
-        // Handle different image URL formats:
-        // - http:// or https:// URLs are used as-is
-        // - data: URLs are used as-is
-        // - URLs starting with /api/ are already complete (e.g., /api/public/images/...)
-        // - Otherwise, assume it's just a filename and construct the full URL
-        let imageUrl = selectedGeneratedImage;
-        if (
-          !selectedGeneratedImage.startsWith('http') &&
-          !selectedGeneratedImage.startsWith('data:') &&
-          !selectedGeneratedImage.startsWith('/api/')
-        ) {
-          imageUrl = `/api/images/${selectedGeneratedImage}`;
-        }
+        // Determine which image and crop data to use
+        const imageToUse = selectedGeneratedImage;
+        const cropDataToUse = generatedImageCropData || cropData;
 
-        const blob = await publicApi.generatePdf(selectedMug.id, imageUrl);
-        const url = URL.createObjectURL(blob);
+        // Add item to cart
+        addItem({
+          mug: selectedMug,
+          variant: selectedVariant,
+          image: imageToUse,
+          cropData: cropDataToUse,
+          prompt: selectedPrompt,
+          price: selectedMug.price,
+        });
 
-        const filename = `mug_design_${Date.now()}.pdf`;
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // Clean up the blob URL after a short delay
-        setTimeout(() => URL.revokeObjectURL(url), 100);
-
-        // Show success feedback
-        console.log('PDF downloaded successfully');
+        // Navigate to cart page
+        navigate('/cart');
       } catch (error) {
-        console.error('Error generating PDF:', error);
+        console.error('Error adding to cart:', error);
 
-        let errorMessage = 'Failed to generate PDF. Please try again.';
-
-        if (error instanceof ApiError) {
-          if (error.status === 400) {
-            errorMessage = error.message; // Validation error from backend
-          } else if (error.status === 404) {
-            errorMessage = 'The selected mug was not found. Please try selecting a different mug.';
-          } else if (error.status === 429) {
-            errorMessage = 'Too many PDF generation requests. Please try again later.';
-          } else if (error.status === 500) {
-            errorMessage = 'Server error while generating PDF. Please try again later.';
-          } else {
-            errorMessage = error.message;
-          }
-        } else if (error instanceof Error) {
+        let errorMessage = 'Failed to add item to cart. Please try again.';
+        if (error instanceof Error) {
           errorMessage = error.message;
         }
 
         alert(errorMessage);
       } finally {
-        setIsGeneratingPdf(false);
+        setIsAddingToCart(false);
       }
     } else {
       goNext();
@@ -95,16 +75,16 @@ export default function WizardNavigationButtons() {
         <span className="hidden sm:inline">Back</span>
       </Button>
 
-      <Button onClick={handleNextStep} disabled={!canGoNext || isProcessing || isGeneratingPdf} className="gap-2 sm:h-12 sm:px-6" size="default">
-        {isProcessing || isGeneratingPdf ? (
+      <Button onClick={handleNextStep} disabled={!canGoNext || isProcessing || isAddingToCart} className="gap-2 sm:h-12 sm:px-6" size="default">
+        {isProcessing || isAddingToCart ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">{isGeneratingPdf ? 'Generating PDF...' : 'Processing...'}</span>
+            <span className="hidden sm:inline">{isAddingToCart ? 'Adding to Cart...' : 'Processing...'}</span>
           </>
         ) : currentStep === 'preview' ? (
           <>
-            <Download className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">Download PDF</span>
+            <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">Add to Cart</span>
           </>
         ) : (
           <>

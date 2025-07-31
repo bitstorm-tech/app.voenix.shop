@@ -1,3 +1,9 @@
+/*
+ * PDF generation functionality is temporarily disabled due to memory and performance issues.
+ * This service is preserved for future reactivation when improved implementation is ready.
+ * Controllers now return HTTP 503 Service Unavailable instead of calling these services.
+ */
+
 package com.jotoai.voenix.shop.domain.pdf.service
 
 import com.google.zxing.BarcodeFormat
@@ -7,8 +13,6 @@ import com.jotoai.voenix.shop.domain.articles.service.ArticleService
 import com.jotoai.voenix.shop.domain.images.service.ImageService
 import com.jotoai.voenix.shop.domain.pdf.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.domain.pdf.dto.PdfSize
-import java.io.ByteArrayOutputStream
-import javax.imageio.ImageIO
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -17,6 +21,8 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.io.ByteArrayOutputStream
+import javax.imageio.ImageIO
 
 @Service
 class PdfService(

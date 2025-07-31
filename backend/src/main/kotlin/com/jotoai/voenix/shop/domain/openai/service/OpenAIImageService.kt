@@ -31,14 +31,14 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.jackson
+import java.io.ByteArrayInputStream
+import java.io.InputStream
+import kotlin.io.encoding.Base64
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.io.ByteArrayInputStream
-import java.io.InputStream
-import kotlin.io.encoding.Base64
 
 @Service
 class OpenAIImageService(
@@ -61,7 +61,7 @@ class OpenAIImageService(
                 level = LogLevel.INFO
             }
             engine {
-                requestTimeout = 120000
+                requestTimeout = 300000 // 5 minutes
             }
         }
 

@@ -51,8 +51,6 @@ class ImageConversionService {
         return croppedImage.bytes(writer)
     }
 
-    fun isWebPSupported(): Boolean = true
-
     fun getImageDimensions(imageBytes: ByteArray): ImageDimensions {
         val image = ImmutableImage.loader().fromBytes(imageBytes)
         return ImageDimensions(width = image.width, height = image.height)
