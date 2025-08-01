@@ -15,10 +15,10 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "article_mug_variants")
-data class MugArticleVariant(
+class MugArticleVariant(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    var id: Long? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "article_id", nullable = false)
     var article: Article,
@@ -36,8 +36,16 @@ data class MugArticleVariant(
     var isDefault: Boolean = false,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
-    val createdAt: OffsetDateTime? = null,
+    var createdAt: OffsetDateTime? = null,
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is MugArticleVariant) return false
+        return id != null && id == other.id
+    }
+
+    override fun hashCode(): Int = id?.hashCode() ?: 0
+}

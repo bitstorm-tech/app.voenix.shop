@@ -87,6 +87,5 @@ class Supplier(
         return id != null && id == other.id
     }
 
-    override fun hashCode(): Int =
-        name?.hashCode() ?: (id?.hashCode() ?: javaClass.hashCode())
+    override fun hashCode(): Int = name?.hashCode() ?: (id?.hashCode() ?: javaClass.hashCode())
 }

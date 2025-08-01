@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.articles.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
@@ -91,6 +92,21 @@ class MugVariantServiceTest {
 
         `when`(mugVariantRepository.save(any(MugArticleVariant::class.java))).thenReturn(savedVariant)
 
+        val expectedDto =
+            MugArticleVariantDto(
+                id = 1L,
+                articleId = 1L,
+                insideColorCode = request.insideColorCode,
+                outsideColorCode = request.outsideColorCode,
+                name = request.name,
+                exampleImageUrl = null,
+                articleVariantNumber = request.articleVariantNumber,
+                isDefault = true,
+                createdAt = null,
+                updatedAt = null,
+            )
+        `when`(mugArticleVariantAssembler.toDto(savedVariant)).thenReturn(expectedDto)
+
         // When
         val result = mugVariantService.create(1L, request)
 
@@ -139,6 +155,21 @@ class MugVariantServiceTest {
 
         `when`(mugVariantRepository.save(any(MugArticleVariant::class.java))).thenReturn(savedVariant)
 
+        val expectedDto =
+            MugArticleVariantDto(
+                id = 2L,
+                articleId = 1L,
+                insideColorCode = request.insideColorCode,
+                outsideColorCode = request.outsideColorCode,
+                name = request.name,
+                exampleImageUrl = null,
+                articleVariantNumber = request.articleVariantNumber,
+                isDefault = true,
+                createdAt = null,
+                updatedAt = null,
+            )
+        `when`(mugArticleVariantAssembler.toDto(savedVariant)).thenReturn(expectedDto)
+
         // When
         val result = mugVariantService.create(1L, request)
 
@@ -173,6 +204,21 @@ class MugVariantServiceTest {
         `when`(mugVariantRepository.save(any(MugArticleVariant::class.java))).thenAnswer { invocation ->
             invocation.arguments[0] as MugArticleVariant
         }
+
+        val expectedDto =
+            MugArticleVariantDto(
+                id = 1L,
+                articleId = 1L,
+                insideColorCode = request.insideColorCode,
+                outsideColorCode = request.outsideColorCode,
+                name = request.name,
+                exampleImageUrl = null,
+                articleVariantNumber = request.articleVariantNumber,
+                isDefault = true,
+                createdAt = null,
+                updatedAt = null,
+            )
+        `when`(mugArticleVariantAssembler.toDto(existingVariant)).thenReturn(expectedDto)
 
         // When
         val result = mugVariantService.update(1L, request)

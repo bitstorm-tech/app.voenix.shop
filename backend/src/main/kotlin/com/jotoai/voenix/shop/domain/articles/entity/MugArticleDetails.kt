@@ -11,10 +11,10 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "article_mug_details")
-data class MugArticleDetails(
+class MugArticleDetails(
     @Id
     @Column(name = "article_id")
-    val articleId: Long,
+    var articleId: Long,
     @Column(name = "height_mm", nullable = false)
     var heightMm: Int,
     @Column(name = "diameter_mm", nullable = false)
@@ -29,7 +29,7 @@ data class MugArticleDetails(
     var dishwasherSafe: Boolean = true,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
-    val createdAt: OffsetDateTime? = null,
+    var createdAt: OffsetDateTime? = null,
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
@@ -46,4 +46,12 @@ data class MugArticleDetails(
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is MugArticleDetails) return false
+        return articleId == other.articleId
+    }
+
+    override fun hashCode(): Int = articleId.hashCode()
 }

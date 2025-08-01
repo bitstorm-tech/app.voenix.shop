@@ -20,85 +20,85 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "article_price_calculation")
-data class CostCalculation(
+class CostCalculation(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    val id: Long? = null,
+    var id: Long? = null,
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "article_id", nullable = false, unique = true)
-    val article: Article,
+    var article: Article,
     // Purchase section fields
     @Column(name = "purchase_price_net", nullable = false)
-    val purchasePriceNet: Int = 0,
+    var purchasePriceNet: Int = 0,
     @Column(name = "purchase_price_tax", nullable = false)
-    val purchasePriceTax: Int = 0,
+    var purchasePriceTax: Int = 0,
     @Column(name = "purchase_price_gross", nullable = false)
-    val purchasePriceGross: Int = 0,
+    var purchasePriceGross: Int = 0,
     @Column(name = "purchase_cost_net", nullable = false)
-    val purchaseCostNet: Int = 0,
+    var purchaseCostNet: Int = 0,
     @Column(name = "purchase_cost_tax", nullable = false)
-    val purchaseCostTax: Int = 0,
+    var purchaseCostTax: Int = 0,
     @Column(name = "purchase_cost_gross", nullable = false)
-    val purchaseCostGross: Int = 0,
+    var purchaseCostGross: Int = 0,
     @Column(name = "purchase_cost_percent", precision = 5, scale = 2, nullable = false)
-    val purchaseCostPercent: BigDecimal = BigDecimal.ZERO,
+    var purchaseCostPercent: BigDecimal = BigDecimal.ZERO,
     @Column(name = "purchase_total_net", nullable = false)
-    val purchaseTotalNet: Int = 0,
+    var purchaseTotalNet: Int = 0,
     @Column(name = "purchase_total_tax", nullable = false)
-    val purchaseTotalTax: Int = 0,
+    var purchaseTotalTax: Int = 0,
     @Column(name = "purchase_total_gross", nullable = false)
-    val purchaseTotalGross: Int = 0,
+    var purchaseTotalGross: Int = 0,
     @Column(name = "purchase_price_unit", length = 50, nullable = false)
-    val purchasePriceUnit: String = "PER_PIECE",
+    var purchasePriceUnit: String = "PER_PIECE",
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "purchase_vat_rate_id")
-    val purchaseVatRate: ValueAddedTax? = null,
+    var purchaseVatRate: ValueAddedTax? = null,
     @Column(name = "purchase_vat_rate_percent", precision = 5, scale = 2, nullable = false)
-    val purchaseVatRatePercent: BigDecimal = BigDecimal("19"),
+    var purchaseVatRatePercent: BigDecimal = BigDecimal("19"),
     @Column(name = "purchase_calculation_mode", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    val purchaseCalculationMode: CalculationMode = CalculationMode.NET,
+    var purchaseCalculationMode: CalculationMode = CalculationMode.NET,
     // Sales section fields
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sales_vat_rate_id")
-    val salesVatRate: ValueAddedTax? = null,
+    var salesVatRate: ValueAddedTax? = null,
     @Column(name = "sales_vat_rate_percent", precision = 5, scale = 2, nullable = false)
-    val salesVatRatePercent: BigDecimal = BigDecimal("19"),
+    var salesVatRatePercent: BigDecimal = BigDecimal("19"),
     @Column(name = "sales_margin_net", nullable = false)
-    val salesMarginNet: Int = 0,
+    var salesMarginNet: Int = 0,
     @Column(name = "sales_margin_tax", nullable = false)
-    val salesMarginTax: Int = 0,
+    var salesMarginTax: Int = 0,
     @Column(name = "sales_margin_gross", nullable = false)
-    val salesMarginGross: Int = 0,
+    var salesMarginGross: Int = 0,
     @Column(name = "sales_margin_percent", precision = 5, scale = 2, nullable = false)
-    val salesMarginPercent: BigDecimal = BigDecimal.ZERO,
+    var salesMarginPercent: BigDecimal = BigDecimal.ZERO,
     @Column(name = "sales_total_net", nullable = false)
-    val salesTotalNet: Int = 0,
+    var salesTotalNet: Int = 0,
     @Column(name = "sales_total_tax", nullable = false)
-    val salesTotalTax: Int = 0,
+    var salesTotalTax: Int = 0,
     @Column(name = "sales_total_gross", nullable = false)
-    val salesTotalGross: Int = 0,
+    var salesTotalGross: Int = 0,
     @Column(name = "sales_price_unit", length = 50, nullable = false)
-    val salesPriceUnit: String = "PER_PIECE",
+    var salesPriceUnit: String = "PER_PIECE",
     @Column(name = "sales_calculation_mode", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    val salesCalculationMode: CalculationMode = CalculationMode.NET,
+    var salesCalculationMode: CalculationMode = CalculationMode.NET,
     // UI state fields
     @Column(name = "purchase_price_corresponds", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    val purchasePriceCorresponds: CalculationMode = CalculationMode.NET,
+    var purchasePriceCorresponds: CalculationMode = CalculationMode.NET,
     @Column(name = "sales_price_corresponds", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    val salesPriceCorresponds: CalculationMode = CalculationMode.NET,
+    var salesPriceCorresponds: CalculationMode = CalculationMode.NET,
     @Column(name = "purchase_active_row", length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
-    val purchaseActiveRow: PurchaseActiveRow = PurchaseActiveRow.COST,
+    var purchaseActiveRow: PurchaseActiveRow = PurchaseActiveRow.COST,
     @Column(name = "sales_active_row", length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
-    val salesActiveRow: SalesActiveRow = SalesActiveRow.MARGIN,
+    var salesActiveRow: SalesActiveRow = SalesActiveRow.MARGIN,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
-    val createdAt: OffsetDateTime? = null,
+    var createdAt: OffsetDateTime? = null,
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
@@ -139,6 +139,14 @@ data class CostCalculation(
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is CostCalculation) return false
+        return id != null && id == other.id
+    }
+
+    override fun hashCode(): Int = id?.hashCode() ?: 0
 }
 
 enum class CalculationMode {

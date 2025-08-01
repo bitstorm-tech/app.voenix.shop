@@ -425,40 +425,38 @@ class ArticleService(
                         .orElseThrow { ResourceNotFoundException("Sales VAT rate not found with id: $it") }
                 }
 
-            val updatedCostCalculation =
-                costCalculation.copy(
-                    purchasePriceNet = request.purchasePriceNet,
-                    purchasePriceTax = request.purchasePriceTax,
-                    purchasePriceGross = request.purchasePriceGross,
-                    purchaseCostNet = request.purchaseCostNet,
-                    purchaseCostTax = request.purchaseCostTax,
-                    purchaseCostGross = request.purchaseCostGross,
-                    purchaseCostPercent = request.purchaseCostPercent,
-                    purchaseTotalNet = request.purchaseTotalNet,
-                    purchaseTotalTax = request.purchaseTotalTax,
-                    purchaseTotalGross = request.purchaseTotalGross,
-                    purchasePriceUnit = request.purchasePriceUnit,
-                    purchaseVatRate = purchaseVatRate,
-                    purchaseVatRatePercent = request.purchaseVatRatePercent,
-                    purchaseCalculationMode = request.purchaseCalculationMode,
-                    salesVatRate = salesVatRate,
-                    salesVatRatePercent = request.salesVatRatePercent,
-                    salesMarginNet = request.salesMarginNet,
-                    salesMarginTax = request.salesMarginTax,
-                    salesMarginGross = request.salesMarginGross,
-                    salesMarginPercent = request.salesMarginPercent,
-                    salesTotalNet = request.salesTotalNet,
-                    salesTotalTax = request.salesTotalTax,
-                    salesTotalGross = request.salesTotalGross,
-                    salesPriceUnit = request.salesPriceUnit,
-                    salesCalculationMode = request.salesCalculationMode,
-                    purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum(),
-                    salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum(),
-                    purchaseActiveRow = request.purchaseActiveRow,
-                    salesActiveRow = request.salesActiveRow,
-                )
+            // Update the existing cost calculation properties
+            costCalculation.purchasePriceNet = request.purchasePriceNet
+            costCalculation.purchasePriceTax = request.purchasePriceTax
+            costCalculation.purchasePriceGross = request.purchasePriceGross
+            costCalculation.purchaseCostNet = request.purchaseCostNet
+            costCalculation.purchaseCostTax = request.purchaseCostTax
+            costCalculation.purchaseCostGross = request.purchaseCostGross
+            costCalculation.purchaseCostPercent = request.purchaseCostPercent
+            costCalculation.purchaseTotalNet = request.purchaseTotalNet
+            costCalculation.purchaseTotalTax = request.purchaseTotalTax
+            costCalculation.purchaseTotalGross = request.purchaseTotalGross
+            costCalculation.purchasePriceUnit = request.purchasePriceUnit
+            costCalculation.purchaseVatRate = purchaseVatRate
+            costCalculation.purchaseVatRatePercent = request.purchaseVatRatePercent
+            costCalculation.purchaseCalculationMode = request.purchaseCalculationMode
+            costCalculation.salesVatRate = salesVatRate
+            costCalculation.salesVatRatePercent = request.salesVatRatePercent
+            costCalculation.salesMarginNet = request.salesMarginNet
+            costCalculation.salesMarginTax = request.salesMarginTax
+            costCalculation.salesMarginGross = request.salesMarginGross
+            costCalculation.salesMarginPercent = request.salesMarginPercent
+            costCalculation.salesTotalNet = request.salesTotalNet
+            costCalculation.salesTotalTax = request.salesTotalTax
+            costCalculation.salesTotalGross = request.salesTotalGross
+            costCalculation.salesPriceUnit = request.salesPriceUnit
+            costCalculation.salesCalculationMode = request.salesCalculationMode
+            costCalculation.purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum()
+            costCalculation.salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum()
+            costCalculation.purchaseActiveRow = request.purchaseActiveRow
+            costCalculation.salesActiveRow = request.salesActiveRow
 
-            costCalculationRepository.save(updatedCostCalculation)
+            costCalculationRepository.save(costCalculation)
         } else {
             // Create new cost calculation if it doesn't exist
             createCostCalculation(
