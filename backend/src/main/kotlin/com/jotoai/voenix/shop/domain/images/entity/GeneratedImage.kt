@@ -36,8 +36,8 @@ class GeneratedImage(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is GeneratedImage) return false
-        return id != null && id == other.id
+        return filename == other.filename
     }
 
-    override fun hashCode(): Int = javaClass.hashCode()
+    override fun hashCode(): Int = filename.hashCode()
 }

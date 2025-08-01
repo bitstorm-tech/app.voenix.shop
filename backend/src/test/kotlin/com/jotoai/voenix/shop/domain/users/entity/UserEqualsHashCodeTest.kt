@@ -1,11 +1,10 @@
 package com.jotoai.voenix.shop.domain.users.entity
 
 import com.jotoai.voenix.shop.auth.entity.Role
-import org.junit.jupiter.api.Test
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 
 class UserEqualsHashCodeTest {
-
     @Test
     fun `equals should return true for users with same email`() {
         // Given

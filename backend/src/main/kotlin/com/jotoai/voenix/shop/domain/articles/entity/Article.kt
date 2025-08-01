@@ -25,7 +25,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "articles")
-data class Article(
+class Article(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -67,4 +67,12 @@ data class Article(
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Article) return false
+        return id != null && id == other.id
+    }
+
+    override fun hashCode(): Int = id?.hashCode() ?: javaClass.hashCode()
+}

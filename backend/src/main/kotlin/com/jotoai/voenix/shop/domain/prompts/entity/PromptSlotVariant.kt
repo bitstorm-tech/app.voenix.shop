@@ -45,8 +45,8 @@ class PromptSlotVariant(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is PromptSlotVariant) return false
-        return id != null && id == other.id
+        return name == other.name
     }
 
-    override fun hashCode(): Int = id?.hashCode() ?: 0
+    override fun hashCode(): Int = name.hashCode()
 }

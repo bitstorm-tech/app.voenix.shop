@@ -23,7 +23,7 @@ data class PromptSlotVariantMappingId(
 
 @Entity
 @Table(name = "prompt_slot_variant_mappings")
-data class PromptSlotVariantMapping(
+class PromptSlotVariantMapping(
     @EmbeddedId
     val id: PromptSlotVariantMappingId = PromptSlotVariantMappingId(),
     @ManyToOne(fetch = FetchType.LAZY)
@@ -37,4 +37,12 @@ data class PromptSlotVariantMapping(
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is PromptSlotVariantMapping) return false
+        return id == other.id
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+}

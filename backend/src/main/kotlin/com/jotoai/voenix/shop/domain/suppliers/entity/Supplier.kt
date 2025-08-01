@@ -77,8 +77,16 @@ class Supplier(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Supplier) return false
-        return name != null && name == other.name
+
+        // If both have names, compare them
+        if (name != null && other.name != null) {
+            return name == other.name
+        }
+
+        // If names are null, use id-based comparison
+        return id != null && id == other.id
     }
 
-    override fun hashCode(): Int = name?.hashCode() ?: 0
+    override fun hashCode(): Int =
+        name?.hashCode() ?: (id?.hashCode() ?: javaClass.hashCode())
 }

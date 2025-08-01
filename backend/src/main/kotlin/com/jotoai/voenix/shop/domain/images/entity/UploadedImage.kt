@@ -41,10 +41,10 @@ class UploadedImage(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is UploadedImage) return false
-        return id != null && id == other.id
+        return uuid == other.uuid
     }
 
-    override fun hashCode(): Int = javaClass.hashCode()
+    override fun hashCode(): Int = uuid.hashCode()
 
     override fun toString(): String =
         "UploadedImage(id=$id, uuid=$uuid, originalFilename='$originalFilename', storedFilename='$storedFilename')"

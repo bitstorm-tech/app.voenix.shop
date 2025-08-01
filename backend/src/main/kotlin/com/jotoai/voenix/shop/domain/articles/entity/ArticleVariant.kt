@@ -57,8 +57,25 @@ class ArticleVariant(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is ArticleVariant) return false
-        return sku != null && sku == other.sku
+
+        // If both have SKUs, compare them
+        if (sku != null && other.sku != null) {
+            return sku == other.sku
+        }
+
+        // If SKUs are null, compare composite key
+        return article.id == other.article.id &&
+            variantType == other.variantType &&
+            variantValue == other.variantValue
     }
 
-    override fun hashCode(): Int = sku?.hashCode() ?: 0
+    override fun hashCode(): Int =
+        if (sku != null) {
+            sku.hashCode()
+        } else {
+            var result = article.id?.hashCode() ?: 0
+            result = 31 * result + variantType.hashCode()
+            result = 31 * result + variantValue.hashCode()
+            result
+        }
 }
