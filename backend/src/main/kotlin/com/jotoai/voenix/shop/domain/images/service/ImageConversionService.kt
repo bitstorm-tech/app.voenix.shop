@@ -20,6 +20,12 @@ class ImageConversionService {
         return image.bytes(writer)
     }
 
+    fun convertToPng(imageBytes: ByteArray): ByteArray {
+        val image = ImmutableImage.loader().fromBytes(imageBytes)
+        val writer: ImageWriter = PngWriter.MaxCompression
+        return image.bytes(writer)
+    }
+
     fun cropImage(
         imageBytes: ByteArray,
         cropArea: CropArea,

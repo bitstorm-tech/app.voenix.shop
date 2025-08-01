@@ -16,7 +16,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "prompt_categories")
-data class PromptCategory(
+class PromptCategory(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -48,4 +48,12 @@ data class PromptCategory(
             id = requireNotNull(this.id) { "PromptCategory ID cannot be null when converting to DTO" },
             name = this.name,
         )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is PromptCategory) return false
+        return name == other.name
+    }
+
+    override fun hashCode(): Int = name.hashCode()
 }

@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.api.user
 
-import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationResponse
+import com.jotoai.voenix.shop.domain.images.service.ImageAccessService
 import com.jotoai.voenix.shop.domain.images.service.ImageService
 import com.jotoai.voenix.shop.domain.images.service.UserImageGenerationService
 import com.jotoai.voenix.shop.domain.users.service.UserService
@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile
 class UserImageController(
     private val userImageGenerationService: UserImageGenerationService,
     private val imageService: ImageService,
+    private val imageAccessService: ImageAccessService,
     private val userService: UserService,
 ) {
     companion object {
@@ -60,9 +61,8 @@ class UserImageController(
         val user = userService.getUserByEmail(userDetails.username)
         logger.info("User ${user.id} retrieving image: $filename")
 
-        // For now, we'll retrieve the image similar to the public endpoint
-        // In a future iteration, we might want to verify the user owns this image
-        val (imageBytes, contentType) = imageService.getImageData(filename, ImageType.PRIVATE)
+        // Validate access and get image data with proper security checks
+        val (imageBytes, contentType) = imageAccessService.validateAccessAndGetImageData(filename, user.id)
 
         return ResponseEntity
             .ok()

@@ -2,10 +2,8 @@ package com.jotoai.voenix.shop.domain.images.service
 
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationResponse
-import com.jotoai.voenix.shop.domain.images.entity.GeneratedImage
 import com.jotoai.voenix.shop.domain.images.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
@@ -25,6 +23,7 @@ class UserImageGenerationService(
     private val generatedImageRepository: GeneratedImageRepository,
     private val userRepository: UserRepository,
     private val storagePathService: StoragePathService,
+    private val userImageStorageService: UserImageStorageService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(UserImageGenerationService::class.java)
@@ -41,7 +40,6 @@ class UserImageGenerationService(
         userId: Long,
     ): PublicImageGenerationResponse {
         validateImageFile(imageFile)
-
         checkUserRateLimit(userId)
 
         val prompt = promptService.getPromptById(request.promptId)
@@ -52,6 +50,16 @@ class UserImageGenerationService(
         logger.info("Processing authenticated image generation request for user $userId with prompt ID: ${request.promptId}")
 
         try {
+            // Get user entity
+            val user =
+                userRepository.findById(userId).orElseThrow {
+                    ResourceNotFoundException("User not found")
+                }
+
+            // Store the uploaded image first using the new storage pattern
+            val uploadedImage = userImageStorageService.storeUploadedImage(imageFile, user)
+            logger.info("Stored uploaded image with UUID: ${uploadedImage.uuid}")
+
             val openAIRequest =
                 CreateImageEditRequest(
                     promptId = request.promptId,
@@ -63,31 +71,25 @@ class UserImageGenerationService(
 
             logger.debug("Generated OpenAI request: {}", openAIRequest)
 
-            // Generate image using existing OpenAI service
-            val imageEditResponse = openAIImageService.editImage(imageFile, openAIRequest)
+            // Generate images using OpenAI service (get raw bytes)
+            val imageEditResponse = openAIImageService.editImageBytes(imageFile, openAIRequest)
 
-            // Get user entity
-            val user =
-                userRepository.findById(userId).orElseThrow {
-                    ResourceNotFoundException("User not found")
+            // Store each generated image using the new storage pattern
+            val generatedImages =
+                imageEditResponse.imageBytes.mapIndexed { index, imageBytes ->
+                    val generationNumber = index + 1
+                    userImageStorageService.storeGeneratedImage(
+                        imageBytes = imageBytes,
+                        uploadedImage = uploadedImage,
+                        promptId = request.promptId,
+                        generationNumber = generationNumber,
+                    )
                 }
 
-            // Store image generation records with user association
-            imageEditResponse.imageFilenames.forEach { filename ->
-                val generatedImage =
-                    GeneratedImage(
-                        filename = filename,
-                        promptId = request.promptId,
-                        user = user,
-                        generatedAt = LocalDateTime.now(),
-                    )
-                generatedImageRepository.save(generatedImage)
-            }
-
-            // Convert filenames to full URLs using StoragePathService
+            // Build URLs for the generated images
             val imageUrls =
-                imageEditResponse.imageFilenames.map { filename ->
-                    storagePathService.getImageUrl(ImageType.PRIVATE, filename)
+                generatedImages.map { generatedImage ->
+                    "/api/user/images/${generatedImage.filename}"
                 }
 
             logger.info("Successfully generated ${imageUrls.size} images for user $userId")

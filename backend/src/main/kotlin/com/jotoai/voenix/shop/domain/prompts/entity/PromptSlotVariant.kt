@@ -16,7 +16,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "prompt_slot_variants")
-data class PromptSlotVariant(
+class PromptSlotVariant(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -41,4 +41,12 @@ data class PromptSlotVariant(
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
-)
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is PromptSlotVariant) return false
+        return id != null && id == other.id
+    }
+
+    override fun hashCode(): Int = id?.hashCode() ?: 0
+}

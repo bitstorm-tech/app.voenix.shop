@@ -20,4 +20,6 @@ interface GeneratedImageRepository : JpaRepository<GeneratedImage, Long> {
         @Param("ipAddress") ipAddress: String,
         @Param("startTime") startTime: LocalDateTime,
     ): Long
+
+    fun findByFilename(filename: String): GeneratedImage?
 }

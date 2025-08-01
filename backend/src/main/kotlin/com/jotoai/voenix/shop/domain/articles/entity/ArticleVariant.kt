@@ -19,7 +19,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "article_variants")
-data class ArticleVariant(
+class ArticleVariant(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -53,4 +53,12 @@ data class ArticleVariant(
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ArticleVariant) return false
+        return sku != null && sku == other.sku
+    }
+
+    override fun hashCode(): Int = sku?.hashCode() ?: 0
 }

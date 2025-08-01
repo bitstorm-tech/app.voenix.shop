@@ -13,7 +13,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "value_added_taxes")
-data class ValueAddedTax(
+class ValueAddedTax(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -42,4 +42,12 @@ data class ValueAddedTax(
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ValueAddedTax) return false
+        return name == other.name
+    }
+
+    override fun hashCode(): Int = name.hashCode()
 }

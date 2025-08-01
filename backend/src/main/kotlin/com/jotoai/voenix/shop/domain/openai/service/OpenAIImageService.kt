@@ -6,6 +6,7 @@ import com.jotoai.voenix.shop.domain.images.dto.CreateImageRequest
 import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.service.ImageService
 import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
+import com.jotoai.voenix.shop.domain.openai.dto.ImageEditBytesResponse
 import com.jotoai.voenix.shop.domain.openai.dto.ImageEditResponse
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequestParams
@@ -84,6 +85,119 @@ class OpenAIImageService(
         @param:JsonProperty("revised_prompt") val revisedPrompt: String? = null,
     )
 
+    /**
+     * Calls the OpenAI image edit API and returns the raw response data.
+     * This is the shared implementation used by both public edit methods and test prompt.
+     */
+    private suspend fun callOpenAIEditAPI(
+        imageFile: MultipartFile,
+        promptText: String,
+        size: String,
+        background: String? = null,
+        n: Int = 1,
+        responseFormat: String? = null,
+    ): OpenAIResponse {
+        val formData =
+            formData {
+                append("model", "gpt-image-1")
+                append(
+                    "image",
+                    imageFile.bytes,
+                    Headers.build {
+                        append(HttpHeaders.ContentType, getContentType(imageFile.originalFilename ?: "image.png"))
+                        append(HttpHeaders.ContentDisposition, "filename=\"${imageFile.originalFilename ?: "image.png"}\"")
+                    },
+                )
+
+                append("prompt", promptText)
+                append("n", n.toString())
+                append("size", size)
+                background?.let { append("background", it) }
+                responseFormat?.let { append("response_format", it) }
+            }
+
+        val httpResponse =
+            httpClient
+                .post(OPENAI_API_URL) {
+                    header(HttpHeaders.Authorization, "Bearer $apiKey")
+                    setBody(MultiPartFormDataContent(formData))
+                }
+
+        if (!httpResponse.status.isSuccess()) {
+            val errorBody = httpResponse.bodyAsText()
+            logger.error("OpenAI API returned error status ${httpResponse.status}: $errorBody")
+            throw RuntimeException("OpenAI API error: ${httpResponse.status} - $errorBody")
+        }
+
+        val response = httpResponse.body<OpenAIResponse>()
+        logger.info("Successfully received response from OpenAI API")
+
+        if (response.error != null) {
+            logger.error("OpenAI API returned error: ${response.error.message}")
+            throw RuntimeException("OpenAI API error: ${response.error.message}")
+        }
+
+        if (response.data.isNullOrEmpty()) {
+            logger.error("OpenAI API returned empty or null data")
+            throw RuntimeException("OpenAI API returned no images")
+        }
+
+        return response
+    }
+
+    /**
+     * Extracts image bytes from OpenAI response data.
+     */
+    private suspend fun extractImageBytes(responseData: List<OpenAIImage>): List<ByteArray> =
+        responseData.map { openAIImage: OpenAIImage ->
+            when {
+                openAIImage.url != null -> {
+                    // Download image from URL
+                    logger.debug("Downloading image from URL: ${openAIImage.url}")
+                    httpClient.get(openAIImage.url).readBytes()
+                }
+                openAIImage.b64Json != null -> {
+                    // Decode base64 image
+                    logger.debug("Decoding base64 image")
+                    Base64.decode(openAIImage.b64Json)
+                }
+                else -> {
+                    throw IllegalStateException("OpenAI response contains neither URL nor base64 data")
+                }
+            }
+        }
+
+    /**
+     * Edits an image using OpenAI API and returns raw image bytes without storing them.
+     * This allows the caller to handle storage using their preferred strategy.
+     */
+    fun editImageBytes(
+        imageFile: MultipartFile,
+        request: CreateImageEditRequest,
+    ): ImageEditBytesResponse =
+        runBlocking {
+            logger.info("Starting image edit request (bytes mode) with prompt ID: ${request.promptId}")
+
+            val prompt = promptService.getPromptById(request.promptId)
+
+            try {
+                val response =
+                    callOpenAIEditAPI(
+                        imageFile = imageFile,
+                        promptText = buildFinalPrompt(prompt),
+                        size = request.size.apiValue,
+                        background = request.background.apiValue,
+                        n = request.n,
+                    )
+
+                val imageBytesList = extractImageBytes(response.data!!)
+                ImageEditBytesResponse(imageBytes = imageBytesList)
+            } catch (e: Exception) {
+                logger.error("Error during OpenAI API call", e)
+                throw RuntimeException("Failed to edit image: ${e.message}", e)
+            }
+        }
+
     fun editImage(
         imageFile: MultipartFile,
         request: CreateImageEditRequest,
@@ -94,70 +208,20 @@ class OpenAIImageService(
             val prompt = promptService.getPromptById(request.promptId)
 
             try {
-                val formData =
-                    formData {
-                        append("model", "gpt-image-1")
-                        append(
-                            "image",
-                            imageFile.bytes,
-                            Headers.build {
-                                append(HttpHeaders.ContentType, getContentType(imageFile.originalFilename ?: "image.png"))
-                                append(HttpHeaders.ContentDisposition, "filename=\"${imageFile.originalFilename ?: "image.png"}\"")
-                            },
-                        )
+                val response =
+                    callOpenAIEditAPI(
+                        imageFile = imageFile,
+                        promptText = buildFinalPrompt(prompt),
+                        size = request.size.apiValue,
+                        background = request.background.apiValue,
+                        n = request.n,
+                    )
 
-                        append("prompt", buildFinalPrompt(prompt))
-                        append("n", request.n.toString())
-                        append("size", request.size.apiValue)
-                        append("background", request.background.apiValue)
-                    }
-
-                val httpResponse =
-                    httpClient
-                        .post(OPENAI_API_URL) {
-                            header(HttpHeaders.Authorization, "Bearer $apiKey")
-                            setBody(MultiPartFormDataContent(formData))
-                        }
-
-                if (!httpResponse.status.isSuccess()) {
-                    val errorBody = httpResponse.bodyAsText()
-                    logger.error("OpenAI API returned error status ${httpResponse.status}: $errorBody")
-                    throw RuntimeException("OpenAI API error: ${httpResponse.status} - $errorBody")
-                }
-
-                val response = httpResponse.body<OpenAIResponse>()
-                logger.info("Successfully received response from OpenAI API")
-
-                if (response.error != null) {
-                    logger.error("OpenAI API returned error: ${response.error.message}")
-                    throw RuntimeException("OpenAI API error: ${response.error.message}")
-                }
-
-                if (response.data.isNullOrEmpty()) {
-                    logger.error("OpenAI API returned empty or null data")
-                    throw RuntimeException("OpenAI API returned no images")
-                }
+                val imageBytesList = extractImageBytes(response.data!!)
 
                 // Download and save images, then return URLs
                 val savedImageFilenames =
-                    response.data.map { openAIImage: OpenAIImage ->
-                        val imageBytes =
-                            when {
-                                openAIImage.url != null -> {
-                                    // Download image from URL
-                                    logger.debug("Downloading image from URL: ${openAIImage.url}")
-                                    httpClient.get(openAIImage.url).readBytes()
-                                }
-                                openAIImage.b64Json != null -> {
-                                    // Decode base64 image
-                                    logger.debug("Decoding base64 image")
-                                    Base64.decode(openAIImage.b64Json)
-                                }
-                                else -> {
-                                    throw IllegalStateException("OpenAI response contains neither URL nor base64 data")
-                                }
-                            }
-
+                    imageBytesList.map { imageBytes ->
                         // ImageService will handle UUID generation
                         val multipartFile =
                             SimpleMultipartFile(
@@ -237,50 +301,17 @@ class OpenAIImageService(
             try {
                 val combinedPrompt = "${request.masterPrompt} ${request.specificPrompt}".trim()
 
-                val formData =
-                    formData {
-                        append("model", "dall-e-2")
-                        append(
-                            "image",
-                            imageFile.bytes,
-                            Headers.build {
-                                append(HttpHeaders.ContentType, getContentType(imageFile.originalFilename ?: "image.png"))
-                                append(HttpHeaders.ContentDisposition, "filename=\"${imageFile.originalFilename ?: "image.png"}\"")
-                            },
-                        )
-                        append("prompt", combinedPrompt)
-                        append("n", "1")
-                        append("size", request.size.apiValue)
-                        append("response_format", "url")
-                    }
+                val response =
+                    callOpenAIEditAPI(
+                        imageFile = imageFile,
+                        promptText = combinedPrompt,
+                        size = request.size.apiValue,
+                        background = null, // testPrompt doesn't use background in API call
+                        n = 1,
+                        responseFormat = "url",
+                    )
 
-                val httpResponse =
-                    httpClient
-                        .post(OPENAI_API_URL) {
-                            header(HttpHeaders.Authorization, "Bearer $apiKey")
-                            setBody(MultiPartFormDataContent(formData))
-                        }
-
-                if (!httpResponse.status.isSuccess()) {
-                    val errorBody = httpResponse.bodyAsText()
-                    logger.error("OpenAI API returned error status ${httpResponse.status}: $errorBody")
-                    throw RuntimeException("OpenAI API error: ${httpResponse.status} - $errorBody")
-                }
-
-                val response = httpResponse.body<OpenAIResponse>()
-                logger.info("Successfully received response from OpenAI API")
-
-                if (response.error != null) {
-                    logger.error("OpenAI API returned error: ${response.error.message}")
-                    throw RuntimeException("OpenAI API error: ${response.error.message}")
-                }
-
-                if (response.data.isNullOrEmpty()) {
-                    logger.error("OpenAI API returned empty or null data")
-                    throw RuntimeException("OpenAI API returned no images")
-                }
-
-                val openAIImage = response.data.first()
+                val openAIImage = response.data!!.first()
                 val imageUrl = openAIImage.url ?: throw RuntimeException("No image URL returned")
 
                 TestPromptResponse(

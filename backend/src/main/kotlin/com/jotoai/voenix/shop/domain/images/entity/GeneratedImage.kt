@@ -25,6 +25,9 @@ class GeneratedImage(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
     var user: User? = null,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "uploaded_image_id", nullable = true)
+    var uploadedImage: UploadedImage? = null,
     @Column(name = "generated_at", nullable = false)
     var generatedAt: LocalDateTime = LocalDateTime.now(),
     @Column(name = "ip_address")
