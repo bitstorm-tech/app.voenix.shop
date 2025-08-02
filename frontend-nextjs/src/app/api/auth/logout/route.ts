@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { requireCSRFToken } from "@/lib/auth/csrf";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+  process.env.BACKEND_URL || "http://localhost:8080";
 
 export async function POST(request: Request) {
   // Validate CSRF token

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { generateCSRFToken } from "@/lib/auth/csrf";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+  process.env.BACKEND_URL || "http://localhost:8080";
 
 // Validation schema for login form
 const loginSchema = z.object({

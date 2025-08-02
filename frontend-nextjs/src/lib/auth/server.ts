@@ -4,7 +4,7 @@ import { SessionInfo } from "@/types/auth";
 import { cache } from "react";
 
 const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+  process.env.BACKEND_URL || "http://localhost:8080";
 
 /**
  * Custom error classes for better error handling
