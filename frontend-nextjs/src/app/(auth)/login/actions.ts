@@ -90,7 +90,15 @@ export async function loginAction(
         
         if (name === 'JSESSIONID') {
           // Parse cookie attributes from backend
-          const cookieOptions: any = {
+          const cookieOptions: {
+            value: string;
+            httpOnly: boolean;
+            path: string;
+            maxAge?: number;
+            domain?: string;
+            secure?: boolean;
+            sameSite?: 'lax' | 'strict' | 'none';
+          } = {
             value,
             httpOnly: true,
             path: '/',
@@ -156,6 +164,11 @@ export async function loginAction(
   }
 }
 
-export async function redirectAfterLogin() {
-  redirect("/admin");
+export async function redirectAfterLogin(callbackUrl?: string) {
+  // Validate callback URL for security - only allow relative URLs
+  if (callbackUrl && (callbackUrl.startsWith("/") && !callbackUrl.startsWith("//"))) {
+    redirect(callbackUrl);
+  } else {
+    redirect("/admin");
+  }
 }

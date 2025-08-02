@@ -1,7 +1,10 @@
 import { Badge } from '@/components/ui/Badge';
 import { ColorSwatch } from '@/components/ui/ColorSwatch';
-import { formatArticleNumber } from '@/lib/utils';
 import type { Article, ArticleMugVariant } from '@/types/article';
+
+function formatArticleNumber(articleNumber: string): string {
+  return articleNumber;
+}
 
 interface MugVariantListProps {
   variants: ArticleMugVariant[];

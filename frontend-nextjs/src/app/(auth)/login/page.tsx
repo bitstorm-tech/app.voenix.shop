@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import {
   Card,
@@ -22,6 +23,9 @@ const initialState: LoginFormState = {
 };
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
+  
   const [state, formAction, isPending] = useActionState(
     loginAction,
     initialState,
@@ -30,9 +34,9 @@ export default function LoginPage() {
   // Handle successful login
   useEffect(() => {
     if (state.success) {
-      redirectAfterLogin();
+      redirectAfterLogin(callbackUrl || undefined);
     }
-  }, [state.success]);
+  }, [state.success, callbackUrl]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">

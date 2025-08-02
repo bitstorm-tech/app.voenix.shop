@@ -1,9 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-// Define protected routes that require authentication
-const protectedRoutes = ["/admin"];
-
 // Define auth routes that should redirect to admin if already authenticated
 const authRoutes = ["/login"];
 
@@ -60,44 +57,21 @@ export async function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get("JSESSIONID");
   const hasSessionCookie = !!sessionCookie?.value;
 
-  // Check if the current path is a protected route
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route),
-  );
-
   // Check if the current path is an auth route
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
-  // For protected routes, validate the session
-  if (isProtectedRoute && hasSessionCookie) {
-    const isValidSession = await validateSession(sessionCookie.value);
-    
-    if (!isValidSession) {
-      // Invalid session, redirect to login
-      const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("callbackUrl", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  // If accessing a protected route without any session cookie
-  if (isProtectedRoute && !hasSessionCookie) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // If accessing auth routes while having a session cookie
+  // Handle auth routes (/login) - redirect authenticated users to their callback URL or /admin
   if (isAuthRoute && hasSessionCookie) {
-    // Validate the session before redirecting
     const isValidSession = await validateSession(sessionCookie.value);
     
     if (isValidSession) {
-      return NextResponse.redirect(new URL("/admin", request.url));
+      // Get callback URL from query params or default to /admin
+      const callbackUrl = request.nextUrl.searchParams.get("callbackUrl") || "/admin";
+      return NextResponse.redirect(new URL(callbackUrl, request.url));
     }
   }
 
-  // For authenticated users accessing the root, redirect to admin
+  // Handle root route (/) - redirect authenticated users to /admin
   if (pathname === "/" && hasSessionCookie) {
     const isValidSession = await validateSession(sessionCookie.value);
     
