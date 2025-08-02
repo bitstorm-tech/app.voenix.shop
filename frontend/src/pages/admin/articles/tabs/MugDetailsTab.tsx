@@ -9,9 +9,9 @@ export default function MugDetailsTab() {
   const { article, updateMugDetails } = useArticleFormStore();
   const mugDetails = article.mugDetails;
 
-  const handleChange = (field: keyof CreateMugDetailsRequest, value: any) => {
+  const handleChange = (field: keyof CreateMugDetailsRequest, value: string | number | boolean) => {
     // Ensure numeric fields are integers
-    if (['heightMm', 'diameterMm', 'printTemplateWidthMm', 'printTemplateHeightMm'].includes(field)) {
+    if (['heightMm', 'diameterMm', 'printTemplateWidthMm', 'printTemplateHeightMm'].includes(field) && typeof value === 'number') {
       value = Math.round(value) || 0;
     }
     updateMugDetails({ [field]: value });

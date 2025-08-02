@@ -35,7 +35,10 @@
       "Bash(sed:*)",
       "mcp__puppeteer__puppeteer_fill",
       "Bash(gradle:*)",
-      "mcp__puppeteer__puppeteer_hover"
+      "mcp__puppeteer__puppeteer_hover",
+      "Bash(npm run lint:*)",
+      "Bash(node:*)",
+      "Bash(npx eslint:*)"
     ],
     "deny": []
   }

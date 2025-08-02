@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { useDeleteSupplier, useSuppliers } from '@/hooks/queries/useSuppliers';
+import type { Supplier } from '@/types/supplier';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -15,12 +16,12 @@ export default function Suppliers() {
     }
   };
 
-  const getContactName = (supplier: any) => {
+  const getContactName = (supplier: Pick<Supplier, 'title' | 'firstName' | 'lastName'>) => {
     const parts = [supplier.title, supplier.firstName, supplier.lastName].filter(Boolean);
     return parts.length > 0 ? parts.join(' ') : '-';
   };
 
-  const getPrimaryPhone = (supplier: any) => {
+  const getPrimaryPhone = (supplier: Pick<Supplier, 'phoneNumber1' | 'phoneNumber2' | 'phoneNumber3'>) => {
     return supplier.phoneNumber1 || supplier.phoneNumber2 || supplier.phoneNumber3 || '-';
   };
 
@@ -80,7 +81,7 @@ export default function Suppliers() {
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
-                  <p className="text-gray-500">No suppliers found. Click "New Supplier" to add one.</p>
+                  <p className="text-gray-500">No suppliers found. Click &quot;New Supplier&quot; to add one.</p>
                 </TableCell>
               </TableRow>
             )}

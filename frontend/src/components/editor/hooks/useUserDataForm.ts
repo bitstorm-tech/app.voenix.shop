@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { UserData } from '../types';
 
 interface UseUserDataFormReturn {
@@ -19,6 +19,13 @@ const initialFormData: UserData = {
 export function useUserDataForm(initialData?: UserData | null): UseUserDataFormReturn {
   const [formData, setFormData] = useState<UserData>(initialData || initialFormData);
   const [errors, setErrors] = useState<Partial<Record<keyof UserData, string>>>({});
+
+  // Sync formData with initialData changes
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
 
   const handleChange = (field: keyof UserData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

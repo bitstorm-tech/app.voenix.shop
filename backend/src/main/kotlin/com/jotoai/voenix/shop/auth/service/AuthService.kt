@@ -3,7 +3,10 @@ package com.jotoai.voenix.shop.auth.service
 import com.jotoai.voenix.shop.auth.dto.CustomUserDetails
 import com.jotoai.voenix.shop.auth.dto.LoginRequest
 import com.jotoai.voenix.shop.auth.dto.LoginResponse
+import com.jotoai.voenix.shop.auth.dto.RegisterGuestRequest
+import com.jotoai.voenix.shop.auth.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.dto.SessionInfo
+import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.domain.users.repository.UserRepository
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -21,6 +24,7 @@ class AuthService(
     private val authenticationManager: AuthenticationManager,
     private val userRepository: UserRepository,
     private val securityContextRepository: SecurityContextRepository,
+    private val userRegistrationService: UserRegistrationService,
 ) {
     @Transactional
     fun login(
@@ -90,5 +94,71 @@ class AuthService(
             }
             else -> SessionInfo(authenticated = false)
         }
+    }
+
+    @Transactional
+    fun register(
+        registerRequest: RegisterRequest,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ): LoginResponse {
+        if (userRepository.existsByEmail(registerRequest.email)) {
+            throw ResourceAlreadyExistsException("User", "email", registerRequest.email)
+        }
+        userRegistrationService.createUser(
+            email = registerRequest.email,
+            password = registerRequest.password,
+        )
+        return userRegistrationService.authenticateUser(
+            email = registerRequest.email,
+            password = registerRequest.password,
+            request = request,
+            response = response,
+        )
+    }
+
+    @Transactional
+    fun registerGuest(
+        registerGuestRequest: RegisterGuestRequest,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ): LoginResponse {
+        val existingUser = userRepository.findByEmail(registerGuestRequest.email).orElse(null)
+
+        if (existingUser != null) {
+            // If user exists and has no password, update their details
+            if (existingUser.password == null) {
+                val updatedUser =
+                    userRegistrationService.updateUser(
+                        user = existingUser,
+                        firstName = registerGuestRequest.firstName,
+                        lastName = registerGuestRequest.lastName,
+                        phoneNumber = registerGuestRequest.phoneNumber,
+                    )
+
+                return userRegistrationService.authenticateGuestUser(
+                    user = updatedUser,
+                    request = request,
+                    response = response,
+                )
+            } else {
+                // User exists with password, cannot register as guest
+                throw ResourceAlreadyExistsException("User", "email", registerGuestRequest.email)
+            }
+        }
+        val savedUser =
+            userRegistrationService.createUser(
+                email = registerGuestRequest.email,
+                password = null,
+                firstName = registerGuestRequest.firstName,
+                lastName = registerGuestRequest.lastName,
+                phoneNumber = registerGuestRequest.phoneNumber,
+            )
+
+        return userRegistrationService.authenticateGuestUser(
+            user = savedUser,
+            request = request,
+            response = response,
+        )
     }
 }

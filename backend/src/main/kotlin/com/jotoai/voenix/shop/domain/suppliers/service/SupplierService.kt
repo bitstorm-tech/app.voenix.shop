@@ -91,7 +91,8 @@ class SupplierService(
             }
 
         val updatedSupplier =
-            existingSupplier.copy(
+            Supplier(
+                id = existingSupplier.id,
                 name = request.name?.trim(),
                 title = request.title?.trim(),
                 firstName = request.firstName?.trim(),
@@ -106,6 +107,7 @@ class SupplierService(
                 phoneNumber3 = request.phoneNumber3?.trim(),
                 email = request.email?.trim(),
                 website = request.website?.trim(),
+                createdAt = existingSupplier.createdAt,
                 updatedAt = LocalDateTime.now(),
             )
 

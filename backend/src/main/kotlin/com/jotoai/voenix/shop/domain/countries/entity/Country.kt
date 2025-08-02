@@ -13,7 +13,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "countries")
-data class Country(
+class Country(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -33,4 +33,12 @@ data class Country(
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Country) return false
+        return name == other.name
+    }
+
+    override fun hashCode(): Int = name.hashCode()
 }

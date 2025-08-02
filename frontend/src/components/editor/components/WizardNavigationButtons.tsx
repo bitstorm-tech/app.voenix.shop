@@ -1,10 +1,14 @@
 import { Button } from '@/components/ui/Button';
-import { ApiError, publicApi } from '@/lib/api';
+import { useSession } from '@/hooks/queries/useAuth';
+import { useAddToCart } from '@/hooks/queries/useCart';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
-import { ArrowLeft, ArrowRight, Download, Loader2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, LogIn, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function WizardNavigationButtons() {
+  const navigate = useNavigate();
+  const { data: session } = useSession();
   const currentStep = useWizardStore((state) => state.currentStep);
   const canGoNext = useWizardStore((state) => state.canGoNext);
   const canGoPrevious = useWizardStore((state) => state.canGoPrevious);
@@ -12,81 +16,75 @@ export default function WizardNavigationButtons() {
   const goPrevious = useWizardStore((state) => state.goPrevious);
   const isProcessing = useWizardStore((state) => state.isProcessing);
   const selectedMug = useWizardStore((state) => state.selectedMug);
+  const selectedVariant = useWizardStore((state) => state.selectedVariant);
   const selectedGeneratedImage = useWizardStore((state) => state.selectedGeneratedImage);
-  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const selectedPrompt = useWizardStore((state) => state.selectedPrompt);
+  const generatedImageCropData = useWizardStore((state) => state.generatedImageCropData);
+  const cropData = useWizardStore((state) => state.cropData);
+
+  // For authenticated users, use API-backed cart
+  const addToCartMutation = useAddToCart();
+
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const handleNextStep = async () => {
     if (currentStep === 'preview' && canGoNext) {
-      setIsGeneratingPdf(true);
+      // For non-authenticated users, redirect to login
+      if (!session?.authenticated) {
+        const returnUrl = encodeURIComponent(window.location.pathname);
+        navigate(`/login?returnUrl=${returnUrl}`);
+        return;
+      }
+
+      setIsAddingToCart(true);
 
       try {
-        // Validate we have the required data
         if (!selectedGeneratedImage) {
-          throw new Error('Please select a generated image before downloading PDF');
+          throw new Error('Please select a generated image before adding to cart');
         }
 
-        if (!selectedMug?.id) {
-          throw new Error('Please select a mug before downloading PDF');
+        if (!selectedMug) {
+          throw new Error('Please select a mug before adding to cart');
         }
 
-        // Handle different image URL formats:
-        // - http:// or https:// URLs are used as-is
-        // - data: URLs are used as-is
-        // - URLs starting with /api/ are already complete (e.g., /api/public/images/...)
-        // - Otherwise, assume it's just a filename and construct the full URL
-        let imageUrl = selectedGeneratedImage;
-        if (
-          !selectedGeneratedImage.startsWith('http') &&
-          !selectedGeneratedImage.startsWith('data:') &&
-          !selectedGeneratedImage.startsWith('/api/')
-        ) {
-          imageUrl = `/api/images/${selectedGeneratedImage}`;
+        if (!selectedVariant) {
+          throw new Error('Please select a mug variant before adding to cart');
         }
 
-        // Use the public API endpoint for PDF generation
-        const blob = await publicApi.generatePdf(selectedMug.id, imageUrl);
-        const url = URL.createObjectURL(blob);
+        // Determine which image and crop data to use
+        const imageToUse = selectedGeneratedImage;
+        const cropDataToUse = generatedImageCropData || cropData || undefined;
 
-        // Generate a default filename since we can't access headers from the blob
-        const filename = `mug_design_${Date.now()}.pdf`;
+        // For authenticated users, use the API-backed cart
+        await addToCartMutation.mutateAsync({
+          articleId: selectedMug.id,
+          variantId: selectedVariant.id,
+          quantity: 1,
+          customData: {
+            imageUrl: imageToUse,
+            cropData: cropDataToUse,
+            promptInfo: selectedPrompt
+              ? {
+                  promptId: selectedPrompt.id,
+                  promptText: selectedPrompt.promptText || selectedPrompt.title,
+                }
+              : undefined,
+          },
+        });
 
-        // Create download link and trigger download
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        // Clean up the blob URL after a short delay
-        setTimeout(() => URL.revokeObjectURL(url), 100);
-
-        // Show success feedback
-        console.log('PDF downloaded successfully');
+        // Navigate to cart page
+        navigate('/cart');
       } catch (error) {
-        console.error('Error generating PDF:', error);
+        console.error('Error adding to cart:', error);
 
-        let errorMessage = 'Failed to generate PDF. Please try again.';
-
-        if (error instanceof ApiError) {
-          if (error.status === 400) {
-            errorMessage = error.message; // Validation error from backend
-          } else if (error.status === 404) {
-            errorMessage = 'The selected mug was not found. Please try selecting a different mug.';
-          } else if (error.status === 429) {
-            errorMessage = 'Too many PDF generation requests. Please try again later.';
-          } else if (error.status === 500) {
-            errorMessage = 'Server error while generating PDF. Please try again later.';
-          } else {
-            errorMessage = error.message;
-          }
-        } else if (error instanceof Error) {
+        let errorMessage = 'Failed to add item to cart. Please try again.';
+        if (error instanceof Error) {
           errorMessage = error.message;
         }
 
         alert(errorMessage);
       } finally {
-        setIsGeneratingPdf(false);
+        setIsAddingToCart(false);
       }
     } else {
       goNext();
@@ -100,16 +98,25 @@ export default function WizardNavigationButtons() {
         <span className="hidden sm:inline">Back</span>
       </Button>
 
-      <Button onClick={handleNextStep} disabled={!canGoNext || isProcessing || isGeneratingPdf} className="gap-2 sm:h-12 sm:px-6" size="default">
-        {isProcessing || isGeneratingPdf ? (
+      <Button onClick={handleNextStep} disabled={!canGoNext || isProcessing || isAddingToCart} className="gap-2 sm:h-12 sm:px-6" size="default">
+        {isProcessing || isAddingToCart ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">{isGeneratingPdf ? 'Generating PDF...' : 'Processing...'}</span>
+            <span className="hidden sm:inline">{isAddingToCart ? 'Adding to Cart...' : 'Processing...'}</span>
           </>
         ) : currentStep === 'preview' ? (
           <>
-            <Download className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">Download PDF</span>
+            {session?.authenticated ? (
+              <>
+                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="hidden sm:inline">Add to Cart</span>
+              </>
+            ) : (
+              <>
+                <LogIn className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="hidden sm:inline">Sign in to Add to Cart</span>
+              </>
+            )}
           </>
         ) : (
           <>

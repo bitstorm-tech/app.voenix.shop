@@ -2,6 +2,11 @@ import { imagesApi } from '@/lib/api';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+// Type for error objects
+interface ApiError {
+  message?: string;
+}
+
 // Upload image mutation
 export function useUploadImage() {
   return useMutation({
@@ -17,7 +22,7 @@ export function useUploadImage() {
     onSuccess: () => {
       toast.success('Image uploaded successfully');
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(error?.message || 'Failed to upload image');
     },
   });
@@ -30,7 +35,7 @@ export function useDeleteImage() {
     onSuccess: () => {
       toast.success('Image deleted successfully');
     },
-    onError: (error: any) => {
+    onError: (error: ApiError) => {
       toast.error(error?.message || 'Failed to delete image');
     },
   });

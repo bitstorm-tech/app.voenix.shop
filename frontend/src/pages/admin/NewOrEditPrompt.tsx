@@ -147,9 +147,10 @@ export default function NewOrEditPrompt() {
         try {
           const uploadResult = await imagesApi.upload(exampleImageFile, 'PROMPT_EXAMPLE');
           imageFilename = uploadResult.filename;
-        } catch (uploadError: any) {
+        } catch (uploadError: unknown) {
           console.error('Error uploading image:', uploadError);
-          setError(`Failed to upload image: ${uploadError.message || 'Please try again.'}`);
+          const errorMessage = uploadError instanceof Error ? uploadError.message : 'Please try again.';
+          setError(`Failed to upload image: ${errorMessage}`);
           setLoading(false);
           return;
         }

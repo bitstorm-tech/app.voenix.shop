@@ -15,7 +15,7 @@ import java.time.LocalDateTime
 
 @Entity
 @Table(name = "suppliers")
-data class Supplier(
+class Supplier(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -73,4 +73,19 @@ data class Supplier(
             createdAt = createdAt,
             updatedAt = updatedAt,
         )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Supplier) return false
+
+        // If both have names, compare them
+        if (name != null && other.name != null) {
+            return name == other.name
+        }
+
+        // If names are null, use id-based comparison
+        return id != null && id == other.id
+    }
+
+    override fun hashCode(): Int = name?.hashCode() ?: (id?.hashCode() ?: javaClass.hashCode())
 }

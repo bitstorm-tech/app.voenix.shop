@@ -135,7 +135,7 @@ export default function ImageCropper({
           {description && <p className="text-sm text-gray-600">{description}</p>}
           {mug && (
             <p className="mt-1 text-xs text-gray-500">
-              The crop area matches your {mug.name}'s printable area ({mug.print_template_width_mm}mm × {mug.print_template_height_mm}mm)
+              The crop area matches your {mug.name}&apos;s printable area ({mug.print_template_width_mm}mm × {mug.print_template_height_mm}mm)
             </p>
           )}
         </div>

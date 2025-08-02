@@ -14,7 +14,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "prompt_slot_types")
-data class PromptSlotType(
+class PromptSlotType(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -44,4 +44,12 @@ data class PromptSlotType(
             name = this.name,
             position = this.position,
         )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is PromptSlotType) return false
+        return name == other.name
+    }
+
+    override fun hashCode(): Int = name.hashCode()
 }

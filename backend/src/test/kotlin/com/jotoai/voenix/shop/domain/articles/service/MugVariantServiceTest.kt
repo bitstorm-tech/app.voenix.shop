@@ -1,8 +1,10 @@
 package com.jotoai.voenix.shop.domain.articles.service
 
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.domain.articles.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
+import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
@@ -26,6 +28,7 @@ class MugVariantServiceTest {
     private lateinit var articleRepository: ArticleRepository
     private lateinit var mugVariantRepository: MugArticleVariantRepository
     private lateinit var imageService: ImageService
+    private lateinit var mugArticleVariantAssembler: MugArticleVariantAssembler
     private lateinit var mugVariantService: MugVariantService
 
     private lateinit var testArticle: Article
@@ -36,7 +39,8 @@ class MugVariantServiceTest {
         articleRepository = mock(ArticleRepository::class.java)
         mugVariantRepository = mock(MugArticleVariantRepository::class.java)
         imageService = mock(ImageService::class.java)
-        mugVariantService = MugVariantService(articleRepository, mugVariantRepository, imageService)
+        mugArticleVariantAssembler = mock(MugArticleVariantAssembler::class.java)
+        mugVariantService = MugVariantService(articleRepository, mugVariantRepository, imageService, mugArticleVariantAssembler)
 
         // Setup test data
         testCategory =
@@ -88,6 +92,21 @@ class MugVariantServiceTest {
 
         `when`(mugVariantRepository.save(any(MugArticleVariant::class.java))).thenReturn(savedVariant)
 
+        val expectedDto =
+            MugArticleVariantDto(
+                id = 1L,
+                articleId = 1L,
+                insideColorCode = request.insideColorCode,
+                outsideColorCode = request.outsideColorCode,
+                name = request.name,
+                exampleImageUrl = null,
+                articleVariantNumber = request.articleVariantNumber,
+                isDefault = true,
+                createdAt = null,
+                updatedAt = null,
+            )
+        `when`(mugArticleVariantAssembler.toDto(savedVariant)).thenReturn(expectedDto)
+
         // When
         val result = mugVariantService.create(1L, request)
 
@@ -136,6 +155,21 @@ class MugVariantServiceTest {
 
         `when`(mugVariantRepository.save(any(MugArticleVariant::class.java))).thenReturn(savedVariant)
 
+        val expectedDto =
+            MugArticleVariantDto(
+                id = 2L,
+                articleId = 1L,
+                insideColorCode = request.insideColorCode,
+                outsideColorCode = request.outsideColorCode,
+                name = request.name,
+                exampleImageUrl = null,
+                articleVariantNumber = request.articleVariantNumber,
+                isDefault = true,
+                createdAt = null,
+                updatedAt = null,
+            )
+        `when`(mugArticleVariantAssembler.toDto(savedVariant)).thenReturn(expectedDto)
+
         // When
         val result = mugVariantService.create(1L, request)
 
@@ -170,6 +204,21 @@ class MugVariantServiceTest {
         `when`(mugVariantRepository.save(any(MugArticleVariant::class.java))).thenAnswer { invocation ->
             invocation.arguments[0] as MugArticleVariant
         }
+
+        val expectedDto =
+            MugArticleVariantDto(
+                id = 1L,
+                articleId = 1L,
+                insideColorCode = request.insideColorCode,
+                outsideColorCode = request.outsideColorCode,
+                name = request.name,
+                exampleImageUrl = null,
+                articleVariantNumber = request.articleVariantNumber,
+                isDefault = true,
+                createdAt = null,
+                updatedAt = null,
+            )
+        `when`(mugArticleVariantAssembler.toDto(existingVariant)).thenReturn(expectedDto)
 
         // When
         val result = mugVariantService.update(1L, request)

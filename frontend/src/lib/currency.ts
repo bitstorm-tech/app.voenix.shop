@@ -1,3 +1,5 @@
+import type { CostCalculation } from '@/types/article';
+
 /**
  * Converts euros to cents for backend storage
  * @param euros The amount in euros (e.g., 10.50)
@@ -19,7 +21,7 @@ export function centsToEuros(cents: number): number {
 /**
  * Converts all currency fields in a cost calculation from euros to cents
  */
-export function convertCostCalculationToCents(costCalc: any): any {
+export function convertCostCalculationToCents(costCalc: CostCalculation | null | undefined): CostCalculation | null | undefined {
   if (!costCalc) return costCalc;
 
   return {
@@ -62,7 +64,7 @@ export function convertCostCalculationToCents(costCalc: any): any {
 /**
  * Converts all currency fields in a cost calculation from cents to euros
  */
-export function convertCostCalculationToEuros(costCalc: any): any {
+export function convertCostCalculationToEuros(costCalc: CostCalculation | null | undefined): CostCalculation | null | undefined {
   if (!costCalc) return costCalc;
 
   return {

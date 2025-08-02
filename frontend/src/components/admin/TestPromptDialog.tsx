@@ -7,7 +7,7 @@ interface TestPromptDialogProps {
   onClose: () => void;
 }
 
-export default function TestPromptDialog({ isOpen, testingPromptId: _testingPromptId, onClose }: TestPromptDialogProps) {
+export default function TestPromptDialog({ isOpen, onClose }: TestPromptDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>

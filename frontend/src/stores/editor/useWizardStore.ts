@@ -1,5 +1,6 @@
 import { WIZARD_STEPS, WizardStep } from '@/components/editor/constants';
 import { CropData, GeneratedImageCropData, MugOption, MugVariant, UserData } from '@/components/editor/types';
+import { User } from '@/types/auth';
 import { Prompt } from '@/types/prompt';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
@@ -19,6 +20,10 @@ interface WizardStore {
   generatedImageCropData: GeneratedImageCropData | null;
   isProcessing: boolean;
   error: string | null;
+
+  // Authentication state
+  isAuthenticated: boolean;
+  user: User | null;
 
   // Navigation state - computed
   canGoNext: boolean;
@@ -50,11 +55,23 @@ interface WizardStore {
 
   // ========== Computed Values ==========
   getCompletedSteps: () => WizardStep[];
+
+  // ========== Authentication Actions ==========
+  setAuthenticated: (isAuthenticated: boolean, user: User | null) => void;
+
+  // ========== State Preservation Actions ==========
+  preserveState: () => void;
+  restoreState: () => void;
+  clearPreservedState: () => void;
+  hasPreservedState: () => boolean;
 }
 
 // Helper function to determine if can proceed from current step
 function canProceedFromStep(
-  state: Pick<WizardStore, 'currentStep' | 'uploadedImage' | 'selectedPrompt' | 'selectedMug' | 'userData' | 'selectedGeneratedImage'>,
+  state: Pick<
+    WizardStore,
+    'currentStep' | 'uploadedImage' | 'selectedPrompt' | 'selectedMug' | 'userData' | 'selectedGeneratedImage' | 'isAuthenticated'
+  >,
   step: WizardStep,
 ): boolean {
   switch (step) {
@@ -65,7 +82,11 @@ function canProceedFromStep(
     case 'mug-selection':
       return state.selectedMug !== null;
     case 'user-data':
-      return state.userData !== null && state.userData.email.length > 0;
+      // Authenticated users can always proceed from this step (they skip it)
+      return (
+        state.isAuthenticated ||
+        (state.userData !== null && state.userData.email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(state.userData.email))
+      );
     case 'image-generation':
       return state.selectedGeneratedImage !== null;
     case 'preview':
@@ -76,16 +97,32 @@ function canProceedFromStep(
 }
 
 // Helper to get next/previous step
-function getNextStep(currentStep: WizardStep): WizardStep | null {
+function getNextStep(currentStep: WizardStep, isAuthenticated: boolean): WizardStep | null {
   const currentIndex = WIZARD_STEPS.indexOf(currentStep);
   if (currentIndex === -1 || currentIndex === WIZARD_STEPS.length - 1) return null;
-  return WIZARD_STEPS[currentIndex + 1];
+
+  const nextStep = WIZARD_STEPS[currentIndex + 1];
+
+  // Skip user-data step for authenticated users
+  if (nextStep === 'user-data' && isAuthenticated) {
+    return WIZARD_STEPS[currentIndex + 2]; // Skip to image-generation
+  }
+
+  return nextStep;
 }
 
-function getPreviousStep(currentStep: WizardStep): WizardStep | null {
+function getPreviousStep(currentStep: WizardStep, isAuthenticated: boolean): WizardStep | null {
   const currentIndex = WIZARD_STEPS.indexOf(currentStep);
   if (currentIndex <= 0) return null;
-  return WIZARD_STEPS[currentIndex - 1];
+
+  const previousStep = WIZARD_STEPS[currentIndex - 1];
+
+  // Skip user-data step for authenticated users when going backwards
+  if (previousStep === 'user-data' && isAuthenticated) {
+    return WIZARD_STEPS[currentIndex - 2]; // Skip to mug-selection
+  }
+
+  return previousStep;
 }
 
 export const useWizardStore = create<WizardStore>()(
@@ -107,6 +144,10 @@ export const useWizardStore = create<WizardStore>()(
     canGoNext: false,
     canGoPrevious: false,
 
+    // Authentication state
+    isAuthenticated: false,
+    user: null,
+
     // ========== Navigation Actions ==========
     goToStep: (step) => {
       set((state) => {
@@ -122,7 +163,7 @@ export const useWizardStore = create<WizardStore>()(
       const state = get();
       if (!canProceedFromStep(state, state.currentStep)) return;
 
-      const nextStep = getNextStep(state.currentStep);
+      const nextStep = getNextStep(state.currentStep, state.isAuthenticated);
       if (!nextStep) return;
 
       set((state) => {
@@ -135,7 +176,7 @@ export const useWizardStore = create<WizardStore>()(
 
     goPrevious: () => {
       const state = get();
-      const previousStep = getPreviousStep(state.currentStep);
+      const previousStep = getPreviousStep(state.currentStep, state.isAuthenticated);
       if (!previousStep) return;
 
       set((state) => {
@@ -230,7 +271,7 @@ export const useWizardStore = create<WizardStore>()(
     setUserData: (data) => {
       set((state) => {
         state.userData = data;
-        state.canGoNext = data.email.length > 0;
+        state.canGoNext = data.email.length > 0 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email);
       });
     },
 
@@ -277,9 +318,117 @@ export const useWizardStore = create<WizardStore>()(
       if (state.uploadedImage && state.cropData) completed.push('image-upload');
       if (state.selectedPrompt) completed.push('prompt-selection');
       if (state.selectedMug) completed.push('mug-selection');
-      if (state.userData) completed.push('user-data');
+      if (state.userData || state.isAuthenticated) completed.push('user-data');
       if (state.selectedGeneratedImage) completed.push('image-generation');
       return completed;
+    },
+
+    // ========== Authentication Actions ==========
+    setAuthenticated: (isAuthenticated, user) => {
+      set((state) => {
+        state.isAuthenticated = isAuthenticated;
+        state.user = user;
+
+        // Update navigation state based on authentication
+        state.canGoNext = canProceedFromStep(state, state.currentStep);
+      });
+    },
+
+    // ========== State Preservation Actions ==========
+    preserveState: () => {
+      const state = get();
+      const stateToPreserve = {
+        currentStep: state.currentStep,
+        uploadedImage: state.uploadedImage
+          ? {
+              name: state.uploadedImage.name,
+              size: state.uploadedImage.size,
+              type: state.uploadedImage.type,
+              lastModified: state.uploadedImage.lastModified,
+            }
+          : null,
+        uploadedImageUrl: state.uploadedImageUrl,
+        cropData: state.cropData,
+        selectedPrompt: state.selectedPrompt,
+        selectedMug: state.selectedMug,
+        selectedVariant: state.selectedVariant,
+        // Deliberately not preserving userData for privacy
+        generatedImageUrls: state.generatedImageUrls,
+        selectedGeneratedImage: state.selectedGeneratedImage,
+        generatedImageCropData: state.generatedImageCropData,
+      };
+
+      // Store as JSON in sessionStorage
+      sessionStorage.setItem('wizardState', JSON.stringify(stateToPreserve));
+
+      // Store the actual image file data as base64 if it exists
+      if (state.uploadedImage) {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          sessionStorage.setItem('wizardImageData', reader.result as string);
+        };
+        reader.readAsDataURL(state.uploadedImage);
+      }
+    },
+
+    restoreState: () => {
+      const preservedStateStr = sessionStorage.getItem('wizardState');
+      const preservedImageData = sessionStorage.getItem('wizardImageData');
+
+      if (!preservedStateStr) return;
+
+      try {
+        const preservedState = JSON.parse(preservedStateStr);
+
+        set((state) => {
+          // Restore non-file data
+          state.currentStep = preservedState.currentStep || 'image-upload';
+          state.cropData = preservedState.cropData;
+          state.selectedPrompt = preservedState.selectedPrompt;
+          state.selectedMug = preservedState.selectedMug;
+          state.selectedVariant = preservedState.selectedVariant;
+          state.generatedImageUrls = preservedState.generatedImageUrls;
+          state.selectedGeneratedImage = preservedState.selectedGeneratedImage;
+          state.generatedImageCropData = preservedState.generatedImageCropData;
+
+          // Update navigation state
+          state.canGoNext = canProceedFromStep(state, state.currentStep);
+          state.canGoPrevious = state.currentStep !== 'image-upload';
+        });
+
+        // Restore the uploaded image if we have the data
+        if (preservedState.uploadedImage && preservedImageData) {
+          // Convert base64 back to File
+          fetch(preservedImageData)
+            .then((res) => res.blob())
+            .then((blob) => {
+              const file = new File([blob], preservedState.uploadedImage.name, {
+                type: preservedState.uploadedImage.type,
+                lastModified: preservedState.uploadedImage.lastModified,
+              });
+              const url = URL.createObjectURL(file);
+
+              set((state) => {
+                state.uploadedImage = file;
+                state.uploadedImageUrl = url;
+              });
+            });
+        }
+
+        // Clear the preserved state after restoration
+        get().clearPreservedState();
+      } catch (error) {
+        console.error('Failed to restore wizard state:', error);
+      }
+    },
+
+    clearPreservedState: () => {
+      sessionStorage.removeItem('wizardState');
+      sessionStorage.removeItem('wizardImageData');
+    },
+
+    hasPreservedState: () => {
+      return sessionStorage.getItem('wizardState') !== null;
     },
   })),
 );

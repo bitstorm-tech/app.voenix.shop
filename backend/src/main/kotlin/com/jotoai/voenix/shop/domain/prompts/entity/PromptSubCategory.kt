@@ -18,7 +18,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "prompt_subcategories")
-data class PromptSubCategory(
+class PromptSubCategory(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -55,4 +55,16 @@ data class PromptSubCategory(
             name = this.name,
             description = this.description,
         )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is PromptSubCategory) return false
+        return promptCategory.id == other.promptCategory.id && name == other.name
+    }
+
+    override fun hashCode(): Int {
+        var result = promptCategory.id?.hashCode() ?: 0
+        result = 31 * result + name.hashCode()
+        return result
+    }
 }

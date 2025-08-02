@@ -1,7 +1,5 @@
 package com.jotoai.voenix.shop.domain.prompts.entity
 
-import com.jotoai.voenix.shop.domain.prompts.dto.PromptSlotVariantDto
-import com.jotoai.voenix.shop.domain.prompts.dto.PublicPromptSlotDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -18,7 +16,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "prompt_slot_variants")
-data class PromptSlotVariant(
+class PromptSlotVariant(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -44,25 +42,11 @@ data class PromptSlotVariant(
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
 ) {
-    fun toDto() =
-        PromptSlotVariantDto(
-            id = requireNotNull(this.id) { "PromptSlotVariant ID cannot be null when converting to DTO" },
-            promptSlotTypeId = this.promptSlotTypeId,
-            promptSlotType = this.promptSlotType?.toDto(),
-            name = this.name,
-            prompt = this.prompt,
-            description = this.description,
-            exampleImageUrl = this.exampleImageFilename?.let { "/images/prompt-slot-variant-example-images/$it" },
-            createdAt = this.createdAt,
-            updatedAt = this.updatedAt,
-        )
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is PromptSlotVariant) return false
+        return name == other.name
+    }
 
-    fun toPublicDto() =
-        PublicPromptSlotDto(
-            id = requireNotNull(this.id) { "PromptSlotVariant ID cannot be null when converting to DTO" },
-            name = this.name,
-            description = this.description,
-            exampleImageUrl = this.exampleImageFilename?.let { "/images/prompt-slot-variant-example-images/$it" },
-            slotType = this.promptSlotType?.toPublicDto(),
-        )
+    override fun hashCode(): Int = name.hashCode()
 }

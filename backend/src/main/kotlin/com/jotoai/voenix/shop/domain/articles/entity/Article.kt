@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.domain.articles.entity
 
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleSubCategory
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleDto
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
 import com.jotoai.voenix.shop.domain.suppliers.entity.Supplier
 import jakarta.persistence.CascadeType
@@ -26,7 +25,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "articles")
-data class Article(
+class Article(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -69,25 +68,11 @@ data class Article(
     @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
 ) {
-    fun toDto() =
-        ArticleDto(
-            id = requireNotNull(this.id) { "Article ID cannot be null when converting to DTO" },
-            name = this.name,
-            descriptionShort = this.descriptionShort,
-            descriptionLong = this.descriptionLong,
-            active = this.active,
-            articleType = this.articleType,
-            categoryId = this.category.id!!,
-            categoryName = this.category.name,
-            subcategoryId = this.subcategory?.id,
-            subcategoryName = this.subcategory?.name,
-            supplierId = this.supplier?.id,
-            supplierName = this.supplier?.name,
-            supplierArticleName = this.supplierArticleName,
-            supplierArticleNumber = this.supplierArticleNumber,
-            mugVariants = if (this.articleType == ArticleType.MUG) this.mugVariants.map { it.toDto() } else null,
-            shirtVariants = if (this.articleType == ArticleType.SHIRT) this.shirtVariants.map { it.toDto() } else null,
-            createdAt = this.createdAt,
-            updatedAt = this.updatedAt,
-        )
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is Article) return false
+        return id != null && id == other.id
+    }
+
+    override fun hashCode(): Int = id?.hashCode() ?: javaClass.hashCode()
 }

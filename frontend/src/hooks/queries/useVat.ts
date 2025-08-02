@@ -3,11 +3,16 @@ import type { ValueAddedTax } from '@/types/vat';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+// Type for VAT list filters
+interface VatListFilters {
+  [key: string]: unknown;
+}
+
 // Query keys
 export const vatKeys = {
   all: ['vat'] as const,
   lists: () => [...vatKeys.all, 'list'] as const,
-  list: (filters?: any) => [...vatKeys.lists(), filters] as const,
+  list: (filters?: VatListFilters) => [...vatKeys.lists(), filters] as const,
   details: () => [...vatKeys.all, 'detail'] as const,
   detail: (id: number) => [...vatKeys.details(), id] as const,
 };

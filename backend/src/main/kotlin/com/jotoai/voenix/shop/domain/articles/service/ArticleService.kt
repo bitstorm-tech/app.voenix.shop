@@ -2,6 +2,9 @@ package com.jotoai.voenix.shop.domain.articles.service
 
 import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.domain.articles.assembler.ArticleAssembler
+import com.jotoai.voenix.shop.domain.articles.assembler.MugArticleVariantAssembler
+import com.jotoai.voenix.shop.domain.articles.assembler.ShirtArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleCategoryRepository
 import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleSubCategoryRepository
 import com.jotoai.voenix.shop.domain.articles.dto.ArticleDto
@@ -23,6 +26,8 @@ import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
 import com.jotoai.voenix.shop.domain.articles.repository.CostCalculationRepository
 import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepository
+import com.jotoai.voenix.shop.domain.images.dto.ImageType
+import com.jotoai.voenix.shop.domain.images.service.StoragePathService
 import com.jotoai.voenix.shop.domain.suppliers.repository.SupplierRepository
 import com.jotoai.voenix.shop.domain.vat.repository.ValueAddedTaxRepository
 import org.springframework.data.domain.PageRequest
@@ -42,6 +47,10 @@ class ArticleService(
     private val valueAddedTaxRepository: ValueAddedTaxRepository,
     private val mugDetailsService: MugDetailsService,
     private val shirtDetailsService: ShirtDetailsService,
+    private val articleAssembler: ArticleAssembler,
+    private val mugArticleVariantAssembler: MugArticleVariantAssembler,
+    private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
+    private val storagePathService: StoragePathService,
 ) {
     @Transactional(readOnly = true)
     fun findAll(
@@ -63,7 +72,7 @@ class ArticleService(
             )
 
         return PaginatedResponse(
-            content = articlesPage.content.map { it.toDto() },
+            content = articlesPage.content.map { articleAssembler.toDto(it) },
             currentPage = articlesPage.number,
             totalPages = articlesPage.totalPages,
             totalElements = articlesPage.totalElements,
@@ -90,13 +99,10 @@ class ArticleService(
 
     @Transactional
     fun create(request: CreateArticleRequest): ArticleWithDetailsDto {
-        // Validate category exists
         val category =
             articleCategoryRepository
                 .findById(request.categoryId)
                 .orElseThrow { ResourceNotFoundException("Category not found with id: ${request.categoryId}") }
-
-        // Validate subcategory if provided
         val subcategory =
             request.subcategoryId?.let {
                 articleSubCategoryRepository
@@ -315,8 +321,22 @@ class ArticleService(
             supplierName = article.supplier?.name,
             supplierArticleName = article.supplierArticleName,
             supplierArticleNumber = article.supplierArticleNumber,
-            mugVariants = if (article.articleType == ArticleType.MUG) article.mugVariants.map { it.toDto() } else null,
-            shirtVariants = if (article.articleType == ArticleType.SHIRT) article.shirtVariants.map { it.toDto() } else null,
+            mugVariants =
+                if (article.articleType ==
+                    ArticleType.MUG
+                ) {
+                    article.mugVariants.map { mugArticleVariantAssembler.toDto(it) }
+                } else {
+                    null
+                },
+            shirtVariants =
+                if (article.articleType ==
+                    ArticleType.SHIRT
+                ) {
+                    article.shirtVariants.map { shirtArticleVariantAssembler.toDto(it) }
+                } else {
+                    null
+                },
             mugDetails = mugDetails,
             shirtDetails = shirtDetails,
             costCalculation = article.costCalculation?.toDto(),
@@ -405,40 +425,38 @@ class ArticleService(
                         .orElseThrow { ResourceNotFoundException("Sales VAT rate not found with id: $it") }
                 }
 
-            val updatedCostCalculation =
-                costCalculation.copy(
-                    purchasePriceNet = request.purchasePriceNet,
-                    purchasePriceTax = request.purchasePriceTax,
-                    purchasePriceGross = request.purchasePriceGross,
-                    purchaseCostNet = request.purchaseCostNet,
-                    purchaseCostTax = request.purchaseCostTax,
-                    purchaseCostGross = request.purchaseCostGross,
-                    purchaseCostPercent = request.purchaseCostPercent,
-                    purchaseTotalNet = request.purchaseTotalNet,
-                    purchaseTotalTax = request.purchaseTotalTax,
-                    purchaseTotalGross = request.purchaseTotalGross,
-                    purchasePriceUnit = request.purchasePriceUnit,
-                    purchaseVatRate = purchaseVatRate,
-                    purchaseVatRatePercent = request.purchaseVatRatePercent,
-                    purchaseCalculationMode = request.purchaseCalculationMode,
-                    salesVatRate = salesVatRate,
-                    salesVatRatePercent = request.salesVatRatePercent,
-                    salesMarginNet = request.salesMarginNet,
-                    salesMarginTax = request.salesMarginTax,
-                    salesMarginGross = request.salesMarginGross,
-                    salesMarginPercent = request.salesMarginPercent,
-                    salesTotalNet = request.salesTotalNet,
-                    salesTotalTax = request.salesTotalTax,
-                    salesTotalGross = request.salesTotalGross,
-                    salesPriceUnit = request.salesPriceUnit,
-                    salesCalculationMode = request.salesCalculationMode,
-                    purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum(),
-                    salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum(),
-                    purchaseActiveRow = request.purchaseActiveRow,
-                    salesActiveRow = request.salesActiveRow,
-                )
+            // Update the existing cost calculation properties
+            costCalculation.purchasePriceNet = request.purchasePriceNet
+            costCalculation.purchasePriceTax = request.purchasePriceTax
+            costCalculation.purchasePriceGross = request.purchasePriceGross
+            costCalculation.purchaseCostNet = request.purchaseCostNet
+            costCalculation.purchaseCostTax = request.purchaseCostTax
+            costCalculation.purchaseCostGross = request.purchaseCostGross
+            costCalculation.purchaseCostPercent = request.purchaseCostPercent
+            costCalculation.purchaseTotalNet = request.purchaseTotalNet
+            costCalculation.purchaseTotalTax = request.purchaseTotalTax
+            costCalculation.purchaseTotalGross = request.purchaseTotalGross
+            costCalculation.purchasePriceUnit = request.purchasePriceUnit
+            costCalculation.purchaseVatRate = purchaseVatRate
+            costCalculation.purchaseVatRatePercent = request.purchaseVatRatePercent
+            costCalculation.purchaseCalculationMode = request.purchaseCalculationMode
+            costCalculation.salesVatRate = salesVatRate
+            costCalculation.salesVatRatePercent = request.salesVatRatePercent
+            costCalculation.salesMarginNet = request.salesMarginNet
+            costCalculation.salesMarginTax = request.salesMarginTax
+            costCalculation.salesMarginGross = request.salesMarginGross
+            costCalculation.salesMarginPercent = request.salesMarginPercent
+            costCalculation.salesTotalNet = request.salesTotalNet
+            costCalculation.salesTotalTax = request.salesTotalTax
+            costCalculation.salesTotalGross = request.salesTotalGross
+            costCalculation.salesPriceUnit = request.salesPriceUnit
+            costCalculation.salesCalculationMode = request.salesCalculationMode
+            costCalculation.purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum()
+            costCalculation.salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum()
+            costCalculation.purchaseActiveRow = request.purchaseActiveRow
+            costCalculation.salesActiveRow = request.salesActiveRow
 
-            costCalculationRepository.save(updatedCostCalculation)
+            costCalculationRepository.save(costCalculation)
         } else {
             // Create new cost calculation if it doesn't exist
             createCostCalculation(
@@ -504,7 +522,10 @@ class ArticleService(
                         id = variant.id!!,
                         mugId = article.id,
                         colorCode = variant.outsideColorCode, // Using outside color as primary
-                        exampleImageUrl = variant.exampleImageFilename?.let { "/images/articles/mugs/variant-example-images/$it" },
+                        exampleImageUrl =
+                            variant.exampleImageFilename?.let { filename ->
+                                storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
+                            },
                         articleVariantNumber = variant.articleVariantNumber,
                         isDefault = variant.isDefault,
                         exampleImageFilename = variant.exampleImageFilename,
@@ -519,7 +540,10 @@ class ArticleService(
                     id = article.id,
                     name = article.name,
                     price = price,
-                    image = defaultVariant?.exampleImageFilename?.let { "/images/articles/mugs/variant-example-images/$it" },
+                    image =
+                        defaultVariant?.exampleImageFilename?.let { filename ->
+                            storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
+                        },
                     fillingQuantity = it.fillingQuantity,
                     descriptionShort = article.descriptionShort,
                     descriptionLong = article.descriptionLong,

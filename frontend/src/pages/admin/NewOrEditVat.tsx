@@ -83,8 +83,9 @@ export default function NewOrEditVat() {
         await createVatMutation.mutateAsync(data as CreateValueAddedTaxRequest);
       }
       navigate('/admin/vat');
-    } catch (error: any) {
-      toast.error(error.message || 'An error occurred');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      toast.error(errorMessage);
     }
   };
 

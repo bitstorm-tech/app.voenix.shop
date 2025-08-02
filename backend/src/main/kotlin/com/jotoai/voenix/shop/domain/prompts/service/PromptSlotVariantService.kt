@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.service.ImageService
+import com.jotoai.voenix.shop.domain.prompts.assembler.PromptSlotVariantAssembler
 import com.jotoai.voenix.shop.domain.prompts.dto.CreatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptSlotVariantDto
 import com.jotoai.voenix.shop.domain.prompts.dto.UpdatePromptSlotVariantRequest
@@ -19,20 +20,22 @@ class PromptSlotVariantService(
     private val promptSlotVariantRepository: PromptSlotVariantRepository,
     private val promptSlotTypeRepository: PromptSlotTypeRepository,
     private val imageService: ImageService,
+    private val promptSlotVariantAssembler: PromptSlotVariantAssembler,
 ) {
-    fun getAllSlotVariants(): List<PromptSlotVariantDto> = promptSlotVariantRepository.findAll().map { it.toDto() }
+    fun getAllSlotVariants(): List<PromptSlotVariantDto> =
+        promptSlotVariantRepository.findAll().map { promptSlotVariantAssembler.toDto(it) }
 
     fun getSlotVariantById(id: Long): PromptSlotVariantDto =
         promptSlotVariantRepository
             .findById(id)
-            .map { it.toDto() }
+            .map { promptSlotVariantAssembler.toDto(it) }
             .orElseThrow { ResourceNotFoundException("Prompt slot variant", "id", id) }
 
     fun getSlotVariantsBySlotType(promptSlotTypeId: Long): List<PromptSlotVariantDto> {
         if (!promptSlotTypeRepository.existsById(promptSlotTypeId)) {
             throw ResourceNotFoundException("PromptSlotType", "id", promptSlotTypeId)
         }
-        return promptSlotVariantRepository.findByPromptSlotTypeId(promptSlotTypeId).map { it.toDto() }
+        return promptSlotVariantRepository.findByPromptSlotTypeId(promptSlotTypeId).map { promptSlotVariantAssembler.toDto(it) }
     }
 
     @Transactional
@@ -58,7 +61,7 @@ class PromptSlotVariantService(
         // Load the slot type for the response
         savedPromptSlotVariant.promptSlotType = promptSlotTypeRepository.findById(request.promptSlotTypeId).orElse(null)
 
-        return savedPromptSlotVariant.toDto()
+        return promptSlotVariantAssembler.toDto(savedPromptSlotVariant)
     }
 
     @Transactional
@@ -112,7 +115,7 @@ class PromptSlotVariantService(
         // Load the slot type for the response
         updatedPromptSlotVariant.promptSlotType = promptSlotTypeRepository.findById(updatedPromptSlotVariant.promptSlotTypeId).orElse(null)
 
-        return updatedPromptSlotVariant.toDto()
+        return promptSlotVariantAssembler.toDto(updatedPromptSlotVariant)
     }
 
     @Transactional

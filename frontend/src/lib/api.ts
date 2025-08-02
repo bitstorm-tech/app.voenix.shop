@@ -9,6 +9,7 @@ import type {
   UpdateArticleRequest,
 } from '@/types/article';
 import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
+import type { AddToCartRequest, CartDto, CartSummaryDto, UpdateCartItemRequest } from '@/types/cart';
 import type { Country } from '@/types/country';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
@@ -29,12 +30,9 @@ export class ApiError extends Error {
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    // Handle authentication errors globally
     if (response.status === 401 || response.status === 403) {
       // Clear auth state - just redirect, React Query will handle the rest
       // The session query will fail and update the auth state automatically
-
-      // Redirect to login page
       window.location.href = '/login';
 
       // Still throw the error for proper error handling
@@ -75,7 +73,7 @@ export const api = {
     return handleResponse<T>(response);
   },
 
-  post: async <T>(endpoint: string, data: any): Promise<T> => {
+  post: async <T>(endpoint: string, data: unknown): Promise<T> => {
     const response = await fetch(`/api${endpoint}`, {
       method: 'POST',
       headers: {
@@ -87,7 +85,7 @@ export const api = {
     return handleResponse<T>(response);
   },
 
-  put: async <T>(endpoint: string, data: any): Promise<T> => {
+  put: async <T>(endpoint: string, data: unknown): Promise<T> => {
     const response = await fetch(`/api${endpoint}`, {
       method: 'PUT',
       headers: {
@@ -230,7 +228,6 @@ export const articlesApi = {
     const formData = new FormData();
     formData.append('image', file); // Changed from 'file' to 'image' to match backend
     if (cropArea) {
-      // Send as individual parameters to match backend expectations
       formData.append('cropX', cropArea.x.toString());
       formData.append('cropY', cropArea.y.toString());
       formData.append('cropWidth', cropArea.width.toString());
@@ -372,7 +369,6 @@ export const promptSlotTypesApi = {
   update: (id: number, data: UpdatePromptSlotTypeRequest) => api.put<PromptSlotType>(`/admin/prompts/prompt-slot-types/${id}`, data),
   delete: (id: number) => api.delete<void>(`/admin/prompts/prompt-slot-types/${id}`),
   updatePositions: async (positions: { id: number; position: number }[]) => {
-    // Get all current prompt slot types to find max position
     const allPromptSlotTypes = await api.get<PromptSlotType[]>('/admin/prompts/prompt-slot-types');
     const maxPosition = Math.max(...allPromptSlotTypes.map((st) => st.position), ...positions.map((p) => p.position));
 
@@ -466,7 +462,23 @@ export const authApi = {
   login: (data: LoginRequest) => api.post<LoginResponse>('/auth/login', data),
   logout: () => api.post<void>('/auth/logout', {}),
   checkSession: () => api.get<SessionInfo>('/auth/session'),
+  register: (data: RegisterRequest) => api.post<LoginResponse>('/auth/register', data),
+  registerGuest: (data: RegisterGuestRequest) => api.post<LoginResponse>('/auth/register-guest', data),
 };
+
+// Type definition for RegisterRequest
+export interface RegisterRequest {
+  email: string;
+  password: string;
+}
+
+// Type definition for RegisterGuestRequest
+export interface RegisterGuestRequest {
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+}
 
 // User API endpoints
 export const userApi = {
@@ -475,6 +487,19 @@ export const userApi = {
   getSession: () => api.get<SessionInfo>('/user/session'),
   logout: () => api.post<void>('/user/logout', {}),
   deleteAccount: () => api.delete<void>('/user/account'),
+  // Generate images using authenticated endpoint
+  generateImage: async (image: File, promptId: number): Promise<PublicImageGenerationResponse> => {
+    const formData = new FormData();
+    formData.append('image', image);
+    formData.append('promptId', promptId.toString());
+
+    const response = await fetch('/api/user/images/generate', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    });
+    return handleResponse<PublicImageGenerationResponse>(response);
+  },
 };
 
 // Admin User API endpoints
@@ -556,7 +581,6 @@ export const countryApi = {
 
 // Public API endpoints (no authentication required)
 export const publicApi = {
-  // Fetch prompts for public use (filtered data without sensitive fields)
   fetchPrompts: async (): Promise<Prompt[]> => {
     const response = await fetch('/api/prompts', {
       method: 'GET',
@@ -567,7 +591,6 @@ export const publicApi = {
     });
     return handleResponse<Prompt[]>(response);
   },
-  // Generate images using public endpoint
   generateImage: async (image: File, promptId: number): Promise<PublicImageGenerationResponse> => {
     const formData = new FormData();
     formData.append('image', image);
@@ -611,7 +634,6 @@ export const publicApi = {
 
     return response.blob();
   },
-  // Fetch mugs for public use (filtered data without sensitive fields)
   fetchMugs: async (): Promise<Mug[]> => {
     const response = await fetch('/api/mugs', {
       method: 'GET',
@@ -672,3 +694,27 @@ export interface PdfResponse {
 export interface PublicImageGenerationResponse {
   imageUrls: string[];
 }
+
+// Cart API endpoints
+export const cartApi = {
+  // Get user's active cart
+  getCart: () => api.get<CartDto>('/user/cart'),
+
+  // Get cart summary (for badges)
+  getSummary: () => api.get<CartSummaryDto>('/user/cart/summary'),
+
+  // Add item to cart
+  addItem: (data: AddToCartRequest) => api.post<CartDto>('/user/cart/items', data),
+
+  // Update cart item quantity
+  updateItem: (itemId: number, data: UpdateCartItemRequest) => api.put<CartDto>(`/user/cart/items/${itemId}`, data),
+
+  // Remove cart item
+  removeItem: (itemId: number) => api.delete<CartDto>(`/user/cart/items/${itemId}`),
+
+  // Clear entire cart
+  clearCart: () => api.delete<CartDto>('/user/cart'),
+
+  // Refresh cart prices to current values
+  refreshPrices: () => api.post<CartDto>('/user/cart/refresh-prices', {}),
+};

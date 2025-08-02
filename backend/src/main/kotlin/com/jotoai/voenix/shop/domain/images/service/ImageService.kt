@@ -5,41 +5,25 @@ import com.jotoai.voenix.shop.domain.images.dto.CreateImageRequest
 import com.jotoai.voenix.shop.domain.images.dto.ImageDto
 import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
 import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.UUID
 
 @Service
 class ImageService(
-    @param:Value("\${storage.root:storage}") private val storageRoot: String,
     private val imageConversionService: ImageConversionService,
+    private val storagePathService: StoragePathService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(ImageService::class.java)
     }
 
-    private val rootPath: Path = Paths.get(storageRoot).toAbsolutePath()
-    private val privateImagesPath: Path = rootPath.resolve("private/images")
-    private val publicImagesPath: Path = rootPath.resolve("public/images")
-    private val promptExampleImagesPath: Path = rootPath.resolve("public/images/prompt-example-images")
-    private val promptSlotVariantExampleImagesPath: Path = rootPath.resolve("public/images/prompt-slot-variant-example-images")
-    private val mugVariantExampleImagesPath: Path = rootPath.resolve("public/images/articles/mugs/variant-example-images")
-    private val shirtVariantExampleImagesPath: Path = rootPath.resolve("public/images/articles/shirts/variant-example-images")
-
     init {
-        logger.info("Initializing ImageService with storage root: $rootPath")
-        logger.info("Private images path: $privateImagesPath")
-        logger.info("Public images path: $publicImagesPath")
-        logger.info("Prompt example images path: $promptExampleImagesPath")
-        logger.info("Prompt slot variant example images path: $promptSlotVariantExampleImagesPath")
-        logger.info("Mug variant example images path: $mugVariantExampleImagesPath")
-        logger.info("Shirt variant example images path: $shirtVariantExampleImagesPath")
-        createDirectories()
+        logger.info("Initializing ImageService with StoragePathService")
+        logger.info("Storage root: ${storagePathService.getStorageRoot()}")
+        // Directory creation is now handled by StoragePathService
     }
 
     fun store(
@@ -64,7 +48,7 @@ class ImageService(
             }
         val storedFilename = "${UUID.randomUUID()}$fileExtension"
 
-        val targetPath = getTargetPath(request.imageType)
+        val targetPath = storagePathService.getPhysicalPath(request.imageType)
         val filePath = targetPath.resolve(storedFilename)
 
         logger.info("Storing file - Target path: ${filePath.toAbsolutePath()}")
@@ -119,8 +103,7 @@ class ImageService(
         filename: String,
         imageType: ImageType,
     ): Pair<ByteArray, String> {
-        val targetPath = getTargetPath(imageType)
-        val filePath = targetPath.resolve(filename)
+        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
 
         if (!Files.exists(filePath)) {
             throw ResourceNotFoundException("Image with filename $filename not found")
@@ -139,8 +122,7 @@ class ImageService(
         filename: String,
         imageType: ImageType,
     ) {
-        val targetPath = getTargetPath(imageType)
-        val filePath = targetPath.resolve(filename)
+        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
 
         try {
             if (!Files.deleteIfExists(filePath)) {
@@ -153,35 +135,16 @@ class ImageService(
 
     fun getImageData(filename: String): Pair<ByteArray, String> {
         val imageType =
-            findImageType(filename)
+            storagePathService.findImageTypeByFilename(filename)
                 ?: throw ResourceNotFoundException("Image with filename $filename not found")
         return getImageData(filename, imageType)
     }
 
     fun delete(filename: String) {
         val imageType =
-            findImageType(filename)
+            storagePathService.findImageTypeByFilename(filename)
                 ?: throw ResourceNotFoundException("Image with filename $filename not found")
         delete(filename, imageType)
-    }
-
-    private fun findImageType(filename: String): ImageType? {
-        val imageTypePaths =
-            mapOf(
-                ImageType.PRIVATE to privateImagesPath,
-                ImageType.PUBLIC to publicImagesPath,
-                ImageType.PROMPT_EXAMPLE to promptExampleImagesPath,
-                ImageType.PROMPT_SLOT_VARIANT_EXAMPLE to promptSlotVariantExampleImagesPath,
-                ImageType.MUG_VARIANT_EXAMPLE to mugVariantExampleImagesPath,
-                ImageType.SHIRT_VARIANT_EXAMPLE to shirtVariantExampleImagesPath,
-            )
-
-        for ((imageType, path) in imageTypePaths) {
-            if (Files.exists(path.resolve(filename))) {
-                return imageType
-            }
-        }
-        return null
     }
 
     private fun validateFile(file: MultipartFile) {
@@ -203,40 +166,5 @@ class ImageService(
     private fun getFileExtension(filename: String): String {
         val lastDotIndex = filename.lastIndexOf('.')
         return if (lastDotIndex > 0) filename.substring(lastDotIndex) else ""
-    }
-
-    private fun getTargetPath(imageType: ImageType): Path =
-        when (imageType) {
-            ImageType.PUBLIC -> publicImagesPath
-            ImageType.PRIVATE -> privateImagesPath
-            ImageType.PROMPT_EXAMPLE -> promptExampleImagesPath
-            ImageType.PROMPT_SLOT_VARIANT_EXAMPLE -> promptSlotVariantExampleImagesPath
-            ImageType.MUG_VARIANT_EXAMPLE -> mugVariantExampleImagesPath
-            ImageType.SHIRT_VARIANT_EXAMPLE -> shirtVariantExampleImagesPath
-        }
-
-    private fun createDirectories() {
-        try {
-            Files.createDirectories(privateImagesPath)
-            logger.info("Created/verified directory: ${privateImagesPath.toAbsolutePath()}")
-
-            Files.createDirectories(publicImagesPath)
-            logger.info("Created/verified directory: ${publicImagesPath.toAbsolutePath()}")
-
-            Files.createDirectories(promptExampleImagesPath)
-            logger.info("Created/verified directory: ${promptExampleImagesPath.toAbsolutePath()}")
-
-            Files.createDirectories(promptSlotVariantExampleImagesPath)
-            logger.info("Created/verified directory: ${promptSlotVariantExampleImagesPath.toAbsolutePath()}")
-
-            Files.createDirectories(mugVariantExampleImagesPath)
-            logger.info("Created/verified directory: ${mugVariantExampleImagesPath.toAbsolutePath()}")
-
-            Files.createDirectories(shirtVariantExampleImagesPath)
-            logger.info("Created/verified directory: ${shirtVariantExampleImagesPath.toAbsolutePath()}")
-        } catch (e: IOException) {
-            logger.error("Failed to create storage directories: ${e.message}", e)
-            throw RuntimeException("Failed to create storage directories: ${e.message}", e)
-        }
     }
 }

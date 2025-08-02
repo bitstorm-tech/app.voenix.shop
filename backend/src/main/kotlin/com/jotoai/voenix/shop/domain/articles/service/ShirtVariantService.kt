@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.domain.articles.service
 
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.domain.articles.assembler.ShirtArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
@@ -17,6 +18,7 @@ class ShirtVariantService(
     private val articleRepository: ArticleRepository,
     private val shirtVariantRepository: ShirtArticleVariantRepository,
     private val imageService: ImageService,
+    private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(ShirtVariantService::class.java)
@@ -40,7 +42,7 @@ class ShirtVariantService(
                 exampleImageFilename = request.exampleImageFilename,
             )
 
-        return shirtVariantRepository.save(variant).toDto()
+        return shirtArticleVariantAssembler.toDto(shirtVariantRepository.save(variant))
     }
 
     @Transactional
@@ -59,7 +61,7 @@ class ShirtVariantService(
             exampleImageFilename = request.exampleImageFilename
         }
 
-        return shirtVariantRepository.save(variant).toDto()
+        return shirtArticleVariantAssembler.toDto(shirtVariantRepository.save(variant))
     }
 
     @Transactional
@@ -83,7 +85,7 @@ class ShirtVariantService(
 
     @Transactional(readOnly = true)
     fun findByArticleId(articleId: Long): List<ShirtArticleVariantDto> =
-        shirtVariantRepository.findByArticleId(articleId).map { it.toDto() }
+        shirtVariantRepository.findByArticleId(articleId).map { shirtArticleVariantAssembler.toDto(it) }
 
     @Transactional
     fun updateExampleImage(
@@ -96,6 +98,6 @@ class ShirtVariantService(
                 .orElseThrow { ResourceNotFoundException("Shirt variant not found with id: $variantId") }
 
         variant.exampleImageFilename = filename
-        return shirtVariantRepository.save(variant).toDto()
+        return shirtArticleVariantAssembler.toDto(shirtVariantRepository.save(variant))
     }
 }

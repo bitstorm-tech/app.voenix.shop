@@ -20,13 +20,18 @@ class ImageConversionService {
         return image.bytes(writer)
     }
 
+    fun convertToPng(imageBytes: ByteArray): ByteArray {
+        val image = ImmutableImage.loader().fromBytes(imageBytes)
+        val writer: ImageWriter = PngWriter.MaxCompression
+        return image.bytes(writer)
+    }
+
     fun cropImage(
         imageBytes: ByteArray,
         cropArea: CropArea,
     ): ByteArray {
         val image = ImmutableImage.loader().fromBytes(imageBytes)
 
-        // Validate crop area bounds
         require(cropArea.x >= 0 && cropArea.y >= 0) {
             "Crop coordinates must be non-negative"
         }
@@ -37,7 +42,6 @@ class ImageConversionService {
             "Crop area exceeds image height"
         }
 
-        // Create rectangle for cropping (convert Double to Int for AWT Rectangle)
         val rectangle =
             Rectangle(
                 cropArea.x.toInt(),
@@ -52,8 +56,6 @@ class ImageConversionService {
         val writer: ImageWriter = PngWriter.MaxCompression
         return croppedImage.bytes(writer)
     }
-
-    fun isWebPSupported(): Boolean = true
 
     fun getImageDimensions(imageBytes: ByteArray): ImageDimensions {
         val image = ImmutableImage.loader().fromBytes(imageBytes)

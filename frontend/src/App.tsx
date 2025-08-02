@@ -32,7 +32,7 @@ export default function App() {
             </Route>
           </Routes>
         </Suspense>
-        <ReactQueryDevtools initialIsOpen={false} />
+        <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-left" />
       </Router>
     </QueryClientProvider>
   );

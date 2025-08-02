@@ -16,7 +16,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "article_sub_categories")
-data class ArticleSubCategory(
+class ArticleSubCategory(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -43,4 +43,16 @@ data class ArticleSubCategory(
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
         )
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is ArticleSubCategory) return false
+        return articleCategory.id == other.articleCategory.id && name == other.name
+    }
+
+    override fun hashCode(): Int {
+        var result = articleCategory.id?.hashCode() ?: 0
+        result = 31 * result + name.hashCode()
+        return result
+    }
 }
