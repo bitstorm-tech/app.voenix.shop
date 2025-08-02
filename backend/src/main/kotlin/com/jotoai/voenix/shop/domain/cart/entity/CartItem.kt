@@ -1,12 +1,8 @@
 package com.jotoai.voenix.shop.domain.cart.entity
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
 import jakarta.persistence.Column
-import jakarta.persistence.Convert
-import jakarta.persistence.Converter
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
@@ -16,7 +12,9 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.UpdateTimestamp
+import org.hibernate.type.SqlTypes
 import java.time.OffsetDateTime
 
 @Entity
@@ -40,7 +38,7 @@ class CartItem(
     var priceAtTime: Long, // Price in cents when item was added
     @Column(name = "original_price", nullable = false)
     var originalPrice: Long, // Original price for comparison
-    @Convert(converter = JsonMapConverter::class)
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "custom_data", nullable = false, columnDefinition = "jsonb")
     var customData: Map<String, Any> = emptyMap(),
     @Column(name = "position", nullable = false)
@@ -77,27 +75,4 @@ class CartItem(
     }
 
     override fun hashCode(): Int = id?.hashCode() ?: javaClass.hashCode()
-}
-
-@Converter
-class JsonMapConverter : jakarta.persistence.AttributeConverter<Map<String, Any>, String> {
-    private val objectMapper = ObjectMapper()
-
-    override fun convertToDatabaseColumn(attribute: Map<String, Any>?): String =
-        if (attribute == null || attribute.isEmpty()) {
-            "{}"
-        } else {
-            objectMapper.writeValueAsString(attribute)
-        }
-
-    override fun convertToEntityAttribute(dbData: String?): Map<String, Any> =
-        if (dbData.isNullOrBlank() || dbData == "{}") {
-            emptyMap()
-        } else {
-            try {
-                objectMapper.readValue(dbData, object : TypeReference<Map<String, Any>>() {})
-            } catch (e: Exception) {
-                emptyMap()
-            }
-        }
 }
