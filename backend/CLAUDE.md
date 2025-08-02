@@ -246,3 +246,54 @@ cd backend
    - Create `.env` file in backend directory
    - Configure OpenAI API key for image generation
    - Set database connection parameters if different from defaults
+
+## Test Mode Feature
+
+The backend includes a Test Mode feature for AI image generation that allows development and testing without making costly API calls to OpenAI.
+
+### Configuration
+
+Add the following configuration to enable test mode:
+
+```properties
+# Enable test mode (default: false)
+app.test-mode=true
+```
+
+### How Test Mode Works
+
+When `app.test-mode=true`:
+
+1. **TestModeImageGenerationStrategy** is activated instead of **OpenAIImageGenerationStrategy**
+2. Image generation requests return the **original uploaded image** N times (based on request.n parameter)
+3. **No external API calls** are made to OpenAI
+4. **Prompt validation** still occurs to ensure business logic works correctly
+5. **Mock URLs** are generated for prompt testing (e.g., `https://test-mode.voenix.shop/images/mock-{uuid}.png`)
+
+### Use Cases
+
+- **Development**: Avoid API costs during feature development
+- **Testing**: Reliable, fast tests without external dependencies  
+- **CI/CD**: Integration tests that don't require API keys
+- **Demo/Staging**: Show functionality without real AI generation
+
+### Production Configuration
+
+For production, either:
+- Set `app.test-mode=false` 
+- Omit the property entirely (defaults to false)
+- Ensure `OPENAI_API_KEY` environment variable is properly configured
+
+### Testing
+
+The test mode feature includes comprehensive unit and integration tests:
+
+- **TestModeImageGenerationStrategyTest**: Tests mock image generation logic
+- **OpenAIImageGenerationStrategyTest**: Tests real strategy business logic (without HTTP calls)
+- **ImageGenerationStrategySelectionTest**: Tests proper strategy selection based on configuration
+- **OpenAIImageServiceTest**: Tests service layer delegation to strategies
+
+Run tests with:
+```bash
+./gradlew test
+```
