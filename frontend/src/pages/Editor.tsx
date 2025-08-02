@@ -6,6 +6,7 @@ import MugSelectionStep from '@/components/editor/components/steps/3-MugSelectio
 import UserDataStep from '@/components/editor/components/steps/4-UserDataStep';
 import ImageGenerationStep from '@/components/editor/components/steps/5-ImageGenerationStep';
 import PreviewStep from '@/components/editor/components/steps/6-PreviewStep';
+import { FloatingCartBadge } from '@/components/ui/CartBadge';
 import { usePublicPrompts } from '@/hooks/queries/usePublicPrompts';
 import { useAuthWizardSync } from '@/hooks/useAuthWizardSync';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
@@ -50,6 +51,8 @@ export default function Editor() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <FloatingCartBadge />
+
       <div className="mx-auto max-w-5xl px-4 py-8 pb-24 sm:pb-8">
         <div className="mb-8">
           <h1 className="mb-2 text-center text-3xl font-bold">Create Your Custom Mug</h1>

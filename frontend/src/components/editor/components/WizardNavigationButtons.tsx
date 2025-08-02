@@ -1,4 +1,6 @@
 import { Button } from '@/components/ui/Button';
+import { useSession } from '@/hooks/queries/useAuth';
+import { useAddToCart } from '@/hooks/queries/useCart';
 import { useCartStore } from '@/stores/cartStore';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { ArrowLeft, ArrowRight, Loader2, ShoppingCart } from 'lucide-react';
@@ -7,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 export default function WizardNavigationButtons() {
   const navigate = useNavigate();
+  const { data: session } = useSession();
   const currentStep = useWizardStore((state) => state.currentStep);
   const canGoNext = useWizardStore((state) => state.canGoNext);
   const canGoPrevious = useWizardStore((state) => state.canGoPrevious);
@@ -19,7 +22,13 @@ export default function WizardNavigationButtons() {
   const selectedPrompt = useWizardStore((state) => state.selectedPrompt);
   const generatedImageCropData = useWizardStore((state) => state.generatedImageCropData);
   const cropData = useWizardStore((state) => state.cropData);
-  const addItem = useCartStore((state) => state.addItem);
+
+  // For authenticated users, use API-backed cart
+  const addToCartMutation = useAddToCart();
+
+  // For non-authenticated users, use local cart store
+  const addItemLocal = useCartStore((state) => state.addItem);
+
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const handleNextStep = async () => {
@@ -35,19 +44,42 @@ export default function WizardNavigationButtons() {
           throw new Error('Please select a mug before adding to cart');
         }
 
+        if (!selectedVariant) {
+          throw new Error('Please select a mug variant before adding to cart');
+        }
+
         // Determine which image and crop data to use
         const imageToUse = selectedGeneratedImage;
         const cropDataToUse = generatedImageCropData || cropData;
 
-        // Add item to cart
-        addItem({
-          mug: selectedMug,
-          variant: selectedVariant,
-          image: imageToUse,
-          cropData: cropDataToUse,
-          prompt: selectedPrompt,
-          price: selectedMug.price,
-        });
+        if (session?.authenticated) {
+          // For authenticated users, use the API-backed cart
+          await addToCartMutation.mutateAsync({
+            articleId: selectedMug.id,
+            variantId: selectedVariant.id,
+            quantity: 1,
+            customData: {
+              imageUrl: imageToUse,
+              cropData: cropDataToUse,
+              promptInfo: selectedPrompt
+                ? {
+                    promptId: selectedPrompt.id,
+                    promptText: selectedPrompt.promptText || selectedPrompt.title,
+                  }
+                : undefined,
+            },
+          });
+        } else {
+          // For non-authenticated users, use local cart store
+          addItemLocal({
+            mug: selectedMug,
+            variant: selectedVariant,
+            image: imageToUse,
+            cropData: cropDataToUse,
+            prompt: selectedPrompt,
+            price: selectedMug.price,
+          });
+        }
 
         // Navigate to cart page
         navigate('/cart');

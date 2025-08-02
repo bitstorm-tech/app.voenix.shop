@@ -9,6 +9,7 @@ import type {
   UpdateArticleRequest,
 } from '@/types/article';
 import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
+import type { AddToCartRequest, CartDto, CartSummaryDto, UpdateCartItemRequest } from '@/types/cart';
 import type { Country } from '@/types/country';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
@@ -693,3 +694,27 @@ export interface PdfResponse {
 export interface PublicImageGenerationResponse {
   imageUrls: string[];
 }
+
+// Cart API endpoints
+export const cartApi = {
+  // Get user's active cart
+  getCart: () => api.get<CartDto>('/user/cart'),
+
+  // Get cart summary (for badges)
+  getSummary: () => api.get<CartSummaryDto>('/user/cart/summary'),
+
+  // Add item to cart
+  addItem: (data: AddToCartRequest) => api.post<CartDto>('/user/cart/items', data),
+
+  // Update cart item quantity
+  updateItem: (itemId: number, data: UpdateCartItemRequest) => api.put<CartDto>(`/user/cart/items/${itemId}`, data),
+
+  // Remove cart item
+  removeItem: (itemId: number) => api.delete<CartDto>(`/user/cart/items/${itemId}`),
+
+  // Clear entire cart
+  clearCart: () => api.delete<CartDto>('/user/cart'),
+
+  // Refresh cart prices to current values
+  refreshPrices: () => api.post<CartDto>('/user/cart/refresh-prices', {}),
+};
