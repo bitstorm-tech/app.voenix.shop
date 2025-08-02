@@ -1,9 +1,8 @@
 import { Button } from '@/components/ui/Button';
 import { useSession } from '@/hooks/queries/useAuth';
 import { useAddToCart } from '@/hooks/queries/useCart';
-import { useCartStore } from '@/stores/cartStore';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
-import { ArrowLeft, ArrowRight, Loader2, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Loader2, LogIn, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,13 +25,17 @@ export default function WizardNavigationButtons() {
   // For authenticated users, use API-backed cart
   const addToCartMutation = useAddToCart();
 
-  // For non-authenticated users, use local cart store
-  const addItemLocal = useCartStore((state) => state.addItem);
-
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   const handleNextStep = async () => {
     if (currentStep === 'preview' && canGoNext) {
+      // For non-authenticated users, redirect to login
+      if (!session?.authenticated) {
+        const returnUrl = encodeURIComponent(window.location.pathname);
+        navigate(`/login?returnUrl=${returnUrl}`);
+        return;
+      }
+
       setIsAddingToCart(true);
 
       try {
@@ -50,36 +53,24 @@ export default function WizardNavigationButtons() {
 
         // Determine which image and crop data to use
         const imageToUse = selectedGeneratedImage;
-        const cropDataToUse = generatedImageCropData || cropData;
+        const cropDataToUse = generatedImageCropData || cropData || undefined;
 
-        if (session?.authenticated) {
-          // For authenticated users, use the API-backed cart
-          await addToCartMutation.mutateAsync({
-            articleId: selectedMug.id,
-            variantId: selectedVariant.id,
-            quantity: 1,
-            customData: {
-              imageUrl: imageToUse,
-              cropData: cropDataToUse,
-              promptInfo: selectedPrompt
-                ? {
-                    promptId: selectedPrompt.id,
-                    promptText: selectedPrompt.promptText || selectedPrompt.title,
-                  }
-                : undefined,
-            },
-          });
-        } else {
-          // For non-authenticated users, use local cart store
-          addItemLocal({
-            mug: selectedMug,
-            variant: selectedVariant,
-            image: imageToUse,
+        // For authenticated users, use the API-backed cart
+        await addToCartMutation.mutateAsync({
+          articleId: selectedMug.id,
+          variantId: selectedVariant.id,
+          quantity: 1,
+          customData: {
+            imageUrl: imageToUse,
             cropData: cropDataToUse,
-            prompt: selectedPrompt,
-            price: selectedMug.price,
-          });
-        }
+            promptInfo: selectedPrompt
+              ? {
+                  promptId: selectedPrompt.id,
+                  promptText: selectedPrompt.promptText || selectedPrompt.title,
+                }
+              : undefined,
+          },
+        });
 
         // Navigate to cart page
         navigate('/cart');
@@ -115,8 +106,17 @@ export default function WizardNavigationButtons() {
           </>
         ) : currentStep === 'preview' ? (
           <>
-            <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">Add to Cart</span>
+            {session?.authenticated ? (
+              <>
+                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="hidden sm:inline">Add to Cart</span>
+              </>
+            ) : (
+              <>
+                <LogIn className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="hidden sm:inline">Sign in to Add to Cart</span>
+              </>
+            )}
           </>
         ) : (
           <>

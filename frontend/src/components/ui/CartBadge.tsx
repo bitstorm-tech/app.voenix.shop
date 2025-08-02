@@ -1,21 +1,17 @@
 import { useSession } from '@/hooks/queries/useAuth';
 import { useCartSummary } from '@/hooks/queries/useCart';
-import { useCartStore } from '@/stores/cartStore';
 import { ShoppingCart } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function CartBadge() {
   const { data: session } = useSession();
 
-  // API-backed cart summary for authenticated users
+  // API-backed cart summary for authenticated users only
   const { data: cartSummary } = useCartSummary();
 
-  // Local cart store for non-authenticated users
-  const getTotalLocalItems = useCartStore((state) => state.getTotalItems);
-
-  // Determine which data to use based on authentication status
+  // Show 0 items for non-authenticated users
   const isAuthenticated = session?.authenticated === true;
-  const itemCount = isAuthenticated ? cartSummary?.itemCount || 0 : getTotalLocalItems();
+  const itemCount = isAuthenticated ? cartSummary?.itemCount || 0 : 0;
 
   return (
     <Link
@@ -39,15 +35,12 @@ export function CartBadge() {
 export function FloatingCartBadge() {
   const { data: session } = useSession();
 
-  // API-backed cart summary for authenticated users
+  // API-backed cart summary for authenticated users only
   const { data: cartSummary } = useCartSummary();
 
-  // Local cart store for non-authenticated users
-  const getTotalLocalItems = useCartStore((state) => state.getTotalItems);
-
-  // Determine which data to use based on authentication status
+  // Show 0 items for non-authenticated users
   const isAuthenticated = session?.authenticated === true;
-  const itemCount = isAuthenticated ? cartSummary?.itemCount || 0 : getTotalLocalItems();
+  const itemCount = isAuthenticated ? cartSummary?.itemCount || 0 : 0;
 
   // Don't show if cart is empty
   if (itemCount === 0) {

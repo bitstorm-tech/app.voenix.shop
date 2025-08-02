@@ -108,7 +108,7 @@ export function useAddToCart() {
       // Return a context object with the snapshotted value
       return { previousCart, previousSummary };
     },
-    onError: (err, newItem, context) => {
+    onError: (_err, _newItem, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousCart) {
         queryClient.setQueryData(cartKeys.cart(), context.previousCart);
@@ -182,7 +182,7 @@ export function useUpdateCartItem() {
 
       return { previousCart, previousSummary };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousCart) {
         queryClient.setQueryData(cartKeys.cart(), context.previousCart);
@@ -229,7 +229,6 @@ export function useRemoveCartItem() {
 
       // Optimistically update cart if we have the data
       if (previousCart) {
-        const itemToRemove = previousCart.items.find((item) => item.id === itemId);
         const updatedCart = {
           ...previousCart,
           items: previousCart.items.filter((item) => item.id !== itemId),
@@ -255,7 +254,7 @@ export function useRemoveCartItem() {
 
       return { previousCart, previousSummary };
     },
-    onError: (err, itemId, context) => {
+    onError: (_err, _itemId, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousCart) {
         queryClient.setQueryData(cartKeys.cart(), context.previousCart);
@@ -309,7 +308,7 @@ export function useClearCart() {
 
       return { previousCart, previousSummary };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
       if (context?.previousCart) {
         queryClient.setQueryData(cartKeys.cart(), context.previousCart);
