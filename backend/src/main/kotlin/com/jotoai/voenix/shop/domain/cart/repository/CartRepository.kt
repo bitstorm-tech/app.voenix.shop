@@ -2,13 +2,13 @@ package com.jotoai.voenix.shop.domain.cart.repository
 
 import com.jotoai.voenix.shop.domain.cart.entity.Cart
 import com.jotoai.voenix.shop.domain.cart.enums.CartStatus
-import java.time.OffsetDateTime
-import java.util.*
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.time.OffsetDateTime
+import java.util.Optional
 
 @Repository
 interface CartRepository : JpaRepository<Cart, Long> {

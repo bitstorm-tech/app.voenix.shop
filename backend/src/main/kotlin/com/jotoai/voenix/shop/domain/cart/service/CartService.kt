@@ -16,17 +16,15 @@ import com.jotoai.voenix.shop.domain.cart.enums.CartStatus
 import com.jotoai.voenix.shop.domain.cart.exception.CartItemNotFoundException
 import com.jotoai.voenix.shop.domain.cart.exception.CartNotFoundException
 import com.jotoai.voenix.shop.domain.cart.exception.CartOperationException
-import com.jotoai.voenix.shop.domain.cart.exception.InsufficientStockException
 import com.jotoai.voenix.shop.domain.cart.repository.CartRepository
-import com.jotoai.voenix.shop.domain.inventory.service.InventoryService
 import com.jotoai.voenix.shop.domain.users.entity.User
 import com.jotoai.voenix.shop.domain.users.repository.UserRepository
-import java.time.OffsetDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.OffsetDateTime
 
 @Service
 class CartService(
@@ -34,7 +32,6 @@ class CartService(
     private val userRepository: UserRepository,
     private val articleRepository: ArticleRepository,
     private val mugVariantRepository: MugArticleVariantRepository,
-    private val inventoryService: InventoryService,
     private val cartAssembler: CartAssembler,
 ) {
     private val logger = LoggerFactory.getLogger(CartService::class.java)
@@ -89,12 +86,6 @@ class CartService(
         // Validate that the variant belongs to the article
         if (variant.article.id != article.id) {
             throw CartOperationException("Variant ${request.variantId} does not belong to article ${request.articleId}")
-        }
-
-        // Check stock availability
-        if (!inventoryService.isInStock(request.variantId, request.quantity)) {
-            val availableStock = inventoryService.getStockLevel(request.variantId)
-            throw InsufficientStockException(request.variantId, request.quantity, availableStock)
         }
 
         val cart =
@@ -157,12 +148,6 @@ class CartService(
         val cartItem =
             cart.items.find { it.id == itemId }
                 ?: throw CartItemNotFoundException(cart.id!!, itemId)
-
-        // Check stock availability for new quantity
-        if (!inventoryService.isInStock(cartItem.variant.id!!, request.quantity)) {
-            val availableStock = inventoryService.getStockLevel(cartItem.variant.id!!)
-            throw InsufficientStockException(cartItem.variant.id!!, request.quantity, availableStock)
-        }
 
         // Update the cart item
         cartItem.updateQuantity(request.quantity)

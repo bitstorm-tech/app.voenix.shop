@@ -82,17 +82,16 @@ class CartItem(
 @Converter
 class JsonMapConverter : jakarta.persistence.AttributeConverter<Map<String, Any>, String> {
     private val objectMapper = ObjectMapper()
-    
-    override fun convertToDatabaseColumn(attribute: Map<String, Any>?): String {
-        return if (attribute == null || attribute.isEmpty()) {
+
+    override fun convertToDatabaseColumn(attribute: Map<String, Any>?): String =
+        if (attribute == null || attribute.isEmpty()) {
             "{}"
         } else {
             objectMapper.writeValueAsString(attribute)
         }
-    }
-    
-    override fun convertToEntityAttribute(dbData: String?): Map<String, Any> {
-        return if (dbData.isNullOrBlank() || dbData == "{}") {
+
+    override fun convertToEntityAttribute(dbData: String?): Map<String, Any> =
+        if (dbData.isNullOrBlank() || dbData == "{}") {
             emptyMap()
         } else {
             try {
@@ -101,5 +100,4 @@ class JsonMapConverter : jakarta.persistence.AttributeConverter<Map<String, Any>
                 emptyMap()
             }
         }
-    }
 }

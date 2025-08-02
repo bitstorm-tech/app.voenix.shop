@@ -4,7 +4,6 @@ import com.jotoai.voenix.shop.common.dto.ErrorResponse
 import com.jotoai.voenix.shop.domain.cart.exception.CartItemNotFoundException
 import com.jotoai.voenix.shop.domain.cart.exception.CartNotFoundException
 import com.jotoai.voenix.shop.domain.cart.exception.CartOperationException
-import com.jotoai.voenix.shop.domain.cart.exception.InsufficientStockException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -108,20 +107,6 @@ class GlobalExceptionHandler {
             )
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse)
-    }
-
-    @ExceptionHandler(InsufficientStockException::class)
-    fun handleInsufficientStockException(ex: InsufficientStockException): ResponseEntity<ErrorResponse> {
-        val errorResponse =
-            ErrorResponse(
-                timestamp = LocalDateTime.now(),
-                status = HttpStatus.BAD_REQUEST.value(),
-                error = "Insufficient Stock",
-                message = ex.message ?: "Not enough stock available",
-                path = "",
-            )
-
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
     }
 
     @ExceptionHandler(CartOperationException::class)
