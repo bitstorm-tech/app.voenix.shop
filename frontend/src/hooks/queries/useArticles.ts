@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 export const articleKeys = {
   all: ['articles'] as const,
   lists: () => [...articleKeys.all, 'list'] as const,
-  list: (params?: any) => [...articleKeys.lists(), params] as const,
+  list: (params?: UseArticlesParams) => [...articleKeys.lists(), params] as const,
   details: () => [...articleKeys.all, 'detail'] as const,
   detail: (id: number) => [...articleKeys.details(), id] as const,
 };

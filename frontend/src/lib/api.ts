@@ -73,7 +73,7 @@ export const api = {
     return handleResponse<T>(response);
   },
 
-  post: async <T>(endpoint: string, data: any): Promise<T> => {
+  post: async <T>(endpoint: string, data: unknown): Promise<T> => {
     const response = await fetch(`/api${endpoint}`, {
       method: 'POST',
       headers: {
@@ -85,7 +85,7 @@ export const api = {
     return handleResponse<T>(response);
   },
 
-  put: async <T>(endpoint: string, data: any): Promise<T> => {
+  put: async <T>(endpoint: string, data: unknown): Promise<T> => {
     const response = await fetch(`/api${endpoint}`, {
       method: 'PUT',
       headers: {

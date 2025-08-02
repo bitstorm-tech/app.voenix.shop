@@ -1,13 +1,18 @@
-import { promptsApi, type CreatePromptRequest, type UpdatePromptRequest } from '@/lib/api';
+import { promptsApi, type CreatePromptRequest, type PromptSlotUpdate, type UpdatePromptRequest } from '@/lib/api';
 import type { Prompt } from '@/types/prompt';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+
+// Type for prompt list filters
+interface PromptListFilters {
+  [key: string]: unknown;
+}
 
 // Query keys
 export const promptKeys = {
   all: ['prompts'] as const,
   lists: () => [...promptKeys.all, 'list'] as const,
-  list: (filters?: any) => [...promptKeys.lists(), filters] as const,
+  list: (filters?: PromptListFilters) => [...promptKeys.lists(), filters] as const,
   details: () => [...promptKeys.all, 'detail'] as const,
   detail: (id: number) => [...promptKeys.details(), id] as const,
   search: (title: string) => [...promptKeys.all, 'search', title] as const,
@@ -107,7 +112,7 @@ export function useUpdatePromptSlots() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, slots }: { id: number; slots: any[] }) => promptsApi.updateSlots(id, slots),
+    mutationFn: ({ id, slots }: { id: number; slots: PromptSlotUpdate[] }) => promptsApi.updateSlots(id, slots),
     onSuccess: (updatedPrompt, { id }) => {
       queryClient.setQueryData(promptKeys.detail(id), updatedPrompt);
 

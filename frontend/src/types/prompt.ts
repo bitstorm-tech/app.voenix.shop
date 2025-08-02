@@ -18,7 +18,7 @@ export interface PromptSubCategory {
   updatedAt?: string;
 }
 
-export interface PromptSlot extends PromptSlotVariant {}
+export type PromptSlot = PromptSlotVariant;
 
 export interface Prompt {
   id: number;

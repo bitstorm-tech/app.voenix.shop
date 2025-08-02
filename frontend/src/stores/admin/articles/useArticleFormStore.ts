@@ -171,7 +171,10 @@ export const useArticleFormStore = create<ArticleFormState>()(
 
           // Set price calculation (convert from cents to euros)
           if (articleData.costCalculation) {
-            state.costCalculation = convertCostCalculationToEuros(articleData.costCalculation);
+            const convertedCostCalc = convertCostCalculationToEuros(articleData.costCalculation);
+            if (convertedCostCalc) {
+              state.costCalculation = convertedCostCalc;
+            }
           }
         } else {
           // Reset to initial state for new article

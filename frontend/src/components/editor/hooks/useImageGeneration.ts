@@ -23,15 +23,20 @@ export function useImageGeneration(): UseImageGenerationReturn {
 
       // Return the image URLs
       return response.imageUrls;
-    } catch (err: any) {
+    } catch (err: unknown) {
       let errorMessage = 'An unexpected error occurred';
 
+      // Type guard for error objects with status property
+      const isErrorWithStatus = (error: unknown): error is { status: number } => {
+        return typeof error === 'object' && error !== null && 'status' in error;
+      };
+
       // Handle rate limiting error specifically
-      if (err.status === 429) {
+      if (isErrorWithStatus(err) && err.status === 429) {
         errorMessage = isAuthenticated
           ? "You've reached your image generation limit. Please try again later."
           : "You've reached the limit for image generation. Please try again in an hour.";
-      } else if (err.status === 401) {
+      } else if (isErrorWithStatus(err) && err.status === 401) {
         errorMessage = 'Your session has expired. Please refresh the page and try again.';
       } else if (err instanceof Error) {
         errorMessage = err.message;

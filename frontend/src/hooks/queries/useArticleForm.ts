@@ -1,7 +1,14 @@
 import { articlesApi } from '@/lib/api';
 import { convertCostCalculationToCents } from '@/lib/currency';
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
-import type { CreateArticleRequest, UpdateArticleRequest } from '@/types/article';
+import type {
+  CreateArticleRequest,
+  CreateMugDetailsRequest,
+  CreateShirtDetailsRequest,
+  UpdateArticleRequest,
+  UpdateMugDetailsRequest,
+  UpdateShirtDetailsRequest,
+} from '@/types/article';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -105,9 +112,9 @@ export function useArticleFormQueries(articleId?: number) {
           supplierId: article.supplierId,
           supplierArticleName: article.supplierArticleName,
           supplierArticleNumber: article.supplierArticleNumber,
-          mugDetails: article.mugDetails as any,
-          shirtDetails: article.shirtDetails as any,
-          costCalculation: convertCostCalculationToCents(costCalculation),
+          mugDetails: article.mugDetails as UpdateMugDetailsRequest | undefined,
+          shirtDetails: article.shirtDetails as UpdateShirtDetailsRequest | undefined,
+          costCalculation: convertCostCalculationToCents(costCalculation) || undefined,
         };
 
         console.log('Sending update data:', {
@@ -132,9 +139,9 @@ export function useArticleFormQueries(articleId?: number) {
           supplierArticleNumber: article.supplierArticleNumber,
           mugVariants: article.articleType === 'MUG' ? temporaryMugVariants : undefined,
           shirtVariants: article.articleType === 'SHIRT' ? temporaryShirtVariants : undefined,
-          mugDetails: article.mugDetails as any,
-          shirtDetails: article.shirtDetails as any,
-          costCalculation: convertCostCalculationToCents(costCalculation),
+          mugDetails: article.mugDetails as CreateMugDetailsRequest | undefined,
+          shirtDetails: article.shirtDetails as CreateShirtDetailsRequest | undefined,
+          costCalculation: convertCostCalculationToCents(costCalculation) || undefined,
         };
 
         console.log('Sending create data:', {

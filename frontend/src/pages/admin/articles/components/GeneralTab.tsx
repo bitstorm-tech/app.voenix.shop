@@ -9,11 +9,12 @@ import { useSuppliers } from '@/hooks/queries/useSuppliers';
 import { generateArticleNumber, getArticleNumberPlaceholder } from '@/lib/articleNumberUtils';
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
 import type { ArticleType } from '@/types/article';
+import type { ArticleCategory, ArticleSubCategory } from '@/types/mug';
 import { Coffee, Shirt } from 'lucide-react';
 
 interface GeneralTabProps {
-  categories: any[];
-  subcategories: any[];
+  categories: ArticleCategory[];
+  subcategories: ArticleSubCategory[];
 }
 
 export default function GeneralTab({ categories, subcategories }: GeneralTabProps) {

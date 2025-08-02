@@ -68,7 +68,7 @@ export function SortableSlotTypeList({ slotTypes, onSlotTypesChange, onDelete }:
 
       {slotTypes.length === 0 ? (
         <Card className="border-dashed p-8 text-center">
-          <p className="text-sm text-gray-500">No slot types found. Click "New Slot Type" to get started.</p>
+          <p className="text-sm text-gray-500">No slot types found. Click &quot;New Slot Type&quot; to get started.</p>
         </Card>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>

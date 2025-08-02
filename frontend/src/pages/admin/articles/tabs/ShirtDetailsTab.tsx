@@ -22,7 +22,7 @@ export default function ShirtDetailsTab({ shirtDetails, onChange }: ShirtDetails
     availableSizes: shirtDetails?.availableSizes || [],
   };
 
-  const handleChange = (field: keyof CreateShirtDetailsRequest, value: any) => {
+  const handleChange = (field: keyof CreateShirtDetailsRequest, value: string | string[] | FitType) => {
     onChange({ ...details, [field]: value });
   };
 

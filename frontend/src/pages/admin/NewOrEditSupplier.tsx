@@ -124,8 +124,9 @@ export default function NewOrEditSupplier() {
         await createSupplierMutation.mutateAsync(data as CreateSupplierRequest);
       }
       navigate('/admin/suppliers');
-    } catch (error: any) {
-      toast.error(error.message || 'An error occurred');
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      toast.error(errorMessage);
     }
   };
 

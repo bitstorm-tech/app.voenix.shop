@@ -3,6 +3,12 @@ import type { AddToCartRequest, CartDto, CartSummaryDto, UpdateCartItemRequest }
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSession } from './useAuth';
 
+// Type for error objects that have status and other properties
+interface ApiError {
+  status?: number;
+  message?: string;
+}
+
 // Query keys
 export const cartKeys = {
   all: ['cart'] as const,
@@ -18,7 +24,7 @@ export function useCart() {
     queryKey: cartKeys.cart(),
     queryFn: cartApi.getCart,
     enabled: !sessionLoading && session?.authenticated === true,
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: ApiError) => {
       // Don't retry on auth errors
       if (error?.status === 401 || error?.status === 403) {
         return false;
@@ -54,7 +60,7 @@ export function useCartSummary() {
     queryKey: cartKeys.summary(),
     queryFn: cartApi.getSummary,
     enabled: !sessionLoading && session?.authenticated === true,
-    retry: (failureCount, error: any) => {
+    retry: (failureCount, error: ApiError) => {
       // Don't retry on auth errors
       if (error?.status === 401 || error?.status === 403) {
         return false;

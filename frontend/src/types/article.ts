@@ -126,9 +126,9 @@ export interface UpdateArticleRequest extends Omit<CreateArticleRequest, 'articl
   costCalculation?: UpdateCostCalculationRequest;
 }
 
-export interface UpdateMugDetailsRequest extends CreateMugDetailsRequest {}
+export type UpdateMugDetailsRequest = CreateMugDetailsRequest;
 
-export interface UpdateShirtDetailsRequest extends CreateShirtDetailsRequest {}
+export type UpdateShirtDetailsRequest = CreateShirtDetailsRequest;
 
 export interface CostCalculation {
   // Purchase section
@@ -169,9 +169,9 @@ export interface CostCalculation {
   salesActiveRow: 'margin' | 'marginPercent' | 'total';
 }
 
-export interface CreateCostCalculationRequest extends Partial<CostCalculation> {}
+export type CreateCostCalculationRequest = Partial<CostCalculation>;
 
-export interface UpdateCostCalculationRequest extends Partial<CostCalculation> {}
+export type UpdateCostCalculationRequest = Partial<CostCalculation>;
 
 export interface PaginatedResponse<T> {
   content: T[];
