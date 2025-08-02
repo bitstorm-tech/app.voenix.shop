@@ -51,7 +51,11 @@ async function serverApiRequest<T>(
     ...options,
   };
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'}/api${endpoint}`, defaultOptions);
+  // For server-side requests, we need to use absolute URLs
+  // In development, this will be the backend server directly
+  // In production, you might want to use an environment variable
+  const baseUrl = process.env.BACKEND_URL;
+  const response = await fetch(`${baseUrl}/api${endpoint}`, defaultOptions);
   return handleResponse<T>(response);
 }
 
