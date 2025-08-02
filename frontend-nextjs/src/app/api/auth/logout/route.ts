@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { requireCSRFToken } from "@/lib/auth/csrf";
 
 const BACKEND_URL =
   process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 
-export async function POST() {
+export async function POST(request: Request) {
+  // Validate CSRF token
+  const csrfError = await requireCSRFToken(request);
+  if (csrfError) {
+    return csrfError;
+  }
   try {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get("JSESSIONID");
@@ -26,8 +32,9 @@ export async function POST() {
       }
     }
 
-    // Clear the session cookie
+    // Clear the session cookie and CSRF token
     cookieStore.delete("JSESSIONID");
+    cookieStore.delete("csrf-token");
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

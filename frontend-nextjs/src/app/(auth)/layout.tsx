@@ -1,8 +1,8 @@
-import { redirect } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth/server";
+import { redirect } from "next/navigation";
 
-// Force dynamic rendering since we use cookies
-export const dynamic = "force-dynamic";
+// Use revalidate for better performance
+export const revalidate = 0;
 
 export default async function AuthLayout({
   children,

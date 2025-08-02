@@ -38,20 +38,45 @@ export async function isClientAuthenticated(): Promise<boolean> {
 }
 
 /**
+ * Get CSRF token from cookies (client-side)
+ */
+async function getCSRFTokenFromCookie(): Promise<string | null> {
+  const cookies = document.cookie.split(';');
+  for (const cookie of cookies) {
+    const [name, value] = cookie.trim().split('=');
+    if (name === 'csrf-token') {
+      return decodeURIComponent(value);
+    }
+  }
+  return null;
+}
+
+/**
  * Logout the current user by calling the logout endpoint
  */
 export async function logout(): Promise<void> {
   try {
+    // Get CSRF token for logout request
+    const csrfToken = await getCSRFTokenFromCookie();
+    
     await fetch("/api/auth/logout", {
       method: "POST",
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        ...(csrfToken && { "X-CSRF-Token": csrfToken }),
+      },
     });
+
+    // Clear session cache
+    SessionCache.clear();
 
     // Redirect to login page after logout
     window.location.href = "/login";
   } catch (error) {
     console.error("Error during logout:", error);
-    // Even if logout fails, redirect to login
+    // Even if logout fails, clear cache and redirect to login
+    SessionCache.clear();
     window.location.href = "/login";
   }
 }
@@ -60,22 +85,26 @@ export async function logout(): Promise<void> {
  * Session storage keys for client-side session management
  */
 export const SESSION_KEYS = {
-  USER_DATA: "user-session",
+  AUTH_STATE: "auth-state",
   LAST_CHECKED: "session-last-checked",
 } as const;
 
 /**
  * Session cache utilities for client-side performance
+ * Only stores non-sensitive authentication state, not user data
  */
 export class SessionCache {
   private static readonly CACHE_DURATION = 30 * 1000; // 30 seconds
 
-  static get(key: string): SessionInfo | null {
+  /**
+   * Get cached authentication state (not full session data)
+   */
+  static getAuthState(): boolean | null {
     try {
-      const cached = sessionStorage.getItem(key);
+      const authState = sessionStorage.getItem(SESSION_KEYS.AUTH_STATE);
       const lastChecked = sessionStorage.getItem(SESSION_KEYS.LAST_CHECKED);
 
-      if (!cached || !lastChecked) {
+      if (!authState || !lastChecked) {
         return null;
       }
 
@@ -86,15 +115,18 @@ export class SessionCache {
         return null;
       }
 
-      return JSON.parse(cached);
+      return authState === "true";
     } catch {
       return null;
     }
   }
 
-  static set(key: string, value: SessionInfo): void {
+  /**
+   * Set authentication state (only stores boolean, not sensitive data)
+   */
+  static setAuthState(isAuthenticated: boolean): void {
     try {
-      sessionStorage.setItem(key, JSON.stringify(value));
+      sessionStorage.setItem(SESSION_KEYS.AUTH_STATE, String(isAuthenticated));
       sessionStorage.setItem(SESSION_KEYS.LAST_CHECKED, Date.now().toString());
     } catch {
       // Ignore storage errors (private browsing, etc.)
@@ -103,7 +135,7 @@ export class SessionCache {
 
   static clear(): void {
     try {
-      sessionStorage.removeItem(SESSION_KEYS.USER_DATA);
+      sessionStorage.removeItem(SESSION_KEYS.AUTH_STATE);
       sessionStorage.removeItem(SESSION_KEYS.LAST_CHECKED);
     } catch {
       // Ignore storage errors
@@ -112,19 +144,20 @@ export class SessionCache {
 }
 
 /**
- * Get cached session or fetch from server
+ * Get session with caching of auth state only
  */
 export async function getCachedSession(): Promise<SessionInfo | null> {
-  // Try cache first
-  const cached = SessionCache.get(SESSION_KEYS.USER_DATA);
-  if (cached) {
-    return cached;
-  }
-
-  // If not cached or expired, fetch from server
+  // Check if we have a cached auth state
+  const cachedAuthState = SessionCache.getAuthState();
+  
+  // Always fetch fresh session data from server
   const session = await getClientSession();
+  
+  // Only cache the authentication state, not the full session
   if (session) {
-    SessionCache.set(SESSION_KEYS.USER_DATA, session);
+    SessionCache.setAuthState(session.authenticated);
+  } else {
+    SessionCache.clear();
   }
 
   return session;

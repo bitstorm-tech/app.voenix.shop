@@ -2,8 +2,9 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/server";
 import { SessionProvider } from "@/components/auth/SessionProvider";
 
-// Force dynamic rendering since we use cookies
-export const dynamic = "force-dynamic";
+// Use revalidate instead of force-dynamic for better performance
+// This allows caching while still checking auth on each request
+export const revalidate = 0;
 
 export default async function ProtectedLayout({
   children,
