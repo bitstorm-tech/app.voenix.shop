@@ -1,11 +1,14 @@
-import { Button } from '@/components/ui/Button';
-import { Card, CardContent } from '@/components/ui/Card';
-import { serverArticlesApi, type GetArticlesParams } from '@/lib/api/server';
-import type { ArticleType } from '@/types/article';
-import { Package, Plus } from 'lucide-react';
-import Link from 'next/link';
-import { ArticleAccordionList } from './_components/ArticleAccordionList';
-import { ArticleFilters } from './_components/ArticleFilters';
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent } from "@/components/ui/Card";
+import { serverArticlesApi, type GetArticlesParams } from "@/lib/api/server";
+import type { ArticleType } from "@/types/article";
+import { Package, Plus } from "lucide-react";
+import Link from "next/link";
+import { ArticleAccordionList } from "./_components/ArticleAccordionList";
+import { ArticleFilters } from "./_components/ArticleFilters";
+
+// Force dynamic rendering since we use cookies
+export const dynamic = "force-dynamic";
 
 interface ArticlesPageProps {
   searchParams: Promise<{
@@ -15,9 +18,11 @@ interface ArticlesPageProps {
   }>;
 }
 
-export default async function ArticlesPage({ searchParams }: ArticlesPageProps) {
+export default async function ArticlesPage({
+  searchParams,
+}: ArticlesPageProps) {
   const params = await searchParams;
-  
+
   const queryParams: GetArticlesParams = {
     page: params.page ? parseInt(params.page) : 0,
     size: params.size ? parseInt(params.size) : 50,
@@ -30,8 +35,8 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
   try {
     data = await serverArticlesApi.getAll(queryParams);
   } catch (err) {
-    error = err instanceof Error ? err.message : 'Failed to load articles';
-    console.error('Failed to fetch articles:', err);
+    error = err instanceof Error ? err.message : "Failed to load articles";
+    console.error("Failed to fetch articles:", err);
   }
 
   const articles = data?.content || [];
@@ -43,7 +48,9 @@ export default async function ArticlesPage({ searchParams }: ArticlesPageProps) 
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Articles</h1>
-            <p className="text-muted-foreground mt-2">Manage your product catalog</p>
+            <p className="text-muted-foreground mt-2">
+              Manage your product catalog
+            </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

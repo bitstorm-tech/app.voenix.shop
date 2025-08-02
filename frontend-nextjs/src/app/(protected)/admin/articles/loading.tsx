@@ -1,5 +1,5 @@
-import { Card, CardContent } from '@/components/ui/Card';
-import { Package } from 'lucide-react';
+import { Card, CardContent } from "@/components/ui/Card";
+import { Package } from "lucide-react";
 
 export default function Loading() {
   return (
@@ -9,7 +9,9 @@ export default function Loading() {
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Articles</h1>
-            <p className="text-muted-foreground mt-2">Manage your product catalog</p>
+            <p className="text-muted-foreground mt-2">
+              Manage your product catalog
+            </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
