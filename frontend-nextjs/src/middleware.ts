@@ -22,7 +22,10 @@ async function validateSession(
 ): Promise<{ valid: boolean; user?: { roles?: string[] } }> {
   // Check cache first
   const cached = sessionCache.get(sessionId);
-  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+  if (
+    cached &&
+    Date.now() - cached.timestamp < CACHE_DURATION
+  ) {
     return { valid: cached.valid, user: cached.user };
   }
 
@@ -69,7 +72,7 @@ async function validateSession(
     }
   } catch (error) {
     console.error("Session validation error:", error);
-    // On error, assume session is invalid for security
+    // On error, don't cache and assume session is invalid for security
     return { valid: false };
   }
 }
