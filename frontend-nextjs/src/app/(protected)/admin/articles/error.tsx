@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import { AlertTriangle, RefreshCw } from "lucide-react";
-import { useEffect } from "react";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import Link from "next/link";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -11,11 +11,6 @@ interface ErrorProps {
 }
 
 export default function Error({ error, reset }: ErrorProps) {
-  useEffect(() => {
-    // Log the error to an error reporting service
-    console.error("Articles page error:", error);
-  }, [error]);
-
   return (
     <div className="container mx-auto max-w-7xl p-4 md:p-6">
       {/* Page Header */}
@@ -41,15 +36,26 @@ export default function Error({ error, reset }: ErrorProps) {
               </p>
               <p className="text-muted-foreground text-sm">{error.message}</p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={reset}
-              className="mt-2"
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Try again
-            </Button>
+            <div className="flex gap-2 mt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={reset}
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Try again
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                asChild
+              >
+                <Link href="/admin/articles">
+                  <Home className="mr-2 h-4 w-4" />
+                  Back to Articles
+                </Link>
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

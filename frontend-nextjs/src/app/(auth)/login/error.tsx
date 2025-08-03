@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 import {
   Card,
   CardContent,
@@ -9,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 
 export default function Error({
   error,
@@ -18,10 +17,6 @@ export default function Error({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error("Login error:", error);
-  }, [error]);
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
