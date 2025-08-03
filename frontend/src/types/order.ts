@@ -1,4 +1,5 @@
-import type { ArticleDto, MugArticleVariantDto } from './article';
+import type { Article } from './article';
+import type { MugVariantDto } from './cart';
 
 export enum OrderStatus {
   PENDING = 'PENDING',
@@ -30,8 +31,8 @@ export interface CreateOrderRequest {
 
 export interface OrderItemDto {
   id: string;
-  article: ArticleDto;
-  variant: MugArticleVariantDto;
+  article: Article;
+  variant: MugVariantDto;
   quantity: number;
   pricePerItem: number; // In cents
   totalPrice: number; // In cents
@@ -59,6 +60,7 @@ export interface OrderDto {
   cartId: number;
   notes?: string;
   items: OrderItemDto[];
+  pdfUrl: string; // URL to download the PDF receipt
   createdAt: string;
   updatedAt: string;
 }

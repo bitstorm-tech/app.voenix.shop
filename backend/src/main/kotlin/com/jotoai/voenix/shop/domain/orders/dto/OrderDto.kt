@@ -21,6 +21,7 @@ data class OrderDto(
     val cartId: Long,
     val notes: String? = null,
     val items: List<OrderItemDto>,
+    val pdfUrl: String, // URL to download the PDF
     val createdAt: OffsetDateTime,
     val updatedAt: OffsetDateTime,
 )

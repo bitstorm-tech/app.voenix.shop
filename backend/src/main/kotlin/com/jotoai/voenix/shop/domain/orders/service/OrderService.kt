@@ -139,13 +139,21 @@ class OrderService(
         userId: Long,
         orderId: UUID,
     ): OrderDto {
-        val order =
-            orderRepository
-                .findByIdAndUserId(orderId, userId)
-                .orElseThrow { ResourceNotFoundException("Order not found: $orderId") }
-
+        val order = getOrderEntity(userId, orderId)
         return orderAssembler.toDto(order)
     }
+
+    /**
+     * Gets an order entity by ID, ensuring it belongs to the user
+     */
+    @Transactional(readOnly = true)
+    fun getOrderEntity(
+        userId: Long,
+        orderId: UUID,
+    ): Order =
+        orderRepository
+            .findByIdAndUserId(orderId, userId)
+            .orElseThrow { ResourceNotFoundException("Order not found: $orderId") }
 
     /**
      * Gets all orders for a user

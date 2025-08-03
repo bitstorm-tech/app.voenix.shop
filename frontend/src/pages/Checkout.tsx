@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/Label';
 import { useSession } from '@/hooks/queries/useAuth';
 import { useCart } from '@/hooks/queries/useCart';
 import { useCreateOrder } from '@/hooks/queries/useOrders';
+import { downloadOrderPDF } from '@/lib/pdfDownload';
 import type { CreateOrderRequest } from '@/types/order';
 import { AlertTriangle, CreditCard, Lock, ShoppingBag, Truck } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -88,106 +89,35 @@ export default function CheckoutPage() {
     }
   };
 
-  const generateOrderReceiptHtml = (order: { order_number: string; total: number }) => {
-    const date = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
 
-    const itemsHtml = items
-      .map(
-        (item) => `
-        <tr>
-          <td style="padding: 8px; border-bottom: 1px solid #eee;">
-            <strong>${item.article.name}</strong><br>
-            <small style="color: #666;">Custom Design - ${item.variant.colorCode}</small>
-          </td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">$${(item.priceAtTime / 100).toFixed(2)}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">$${(item.totalPrice / 100).toFixed(2)}</td>
-        </tr>
-      `,
-      )
-      .join('');
-
-    const shipping = 4.99; // TODO: Make configurable
-    const tax = subtotal * 0.08; // TODO: Make configurable - currently 8%
-    const total = subtotal + shipping + tax;
-
-    return `
-      <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
-        <div style="text-align: center; margin-bottom: 20px;">
-          <h2 style="margin: 0; font-size: 24px;">ORDER RECEIPT</h2>
-          <p style="margin: 5px 0; color: #666;">Order #${order.order_number}</p>
-          <p style="margin: 5px 0; color: #666;">${date}</p>
-        </div>
-        
-        <div style="margin-bottom: 20px;">
-          <p style="margin: 5px 0;"><strong>${formData.firstName} ${formData.lastName}</strong></p>
-          <p style="margin: 5px 0;">${formData.email}</p>
-        </div>
-        
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
-          <thead>
-            <tr style="background-color: #f5f5f5;">
-              <th style="padding: 8px; text-align: left;">Item</th>
-              <th style="padding: 8px; text-align: center; width: 60px;">Qty</th>
-              <th style="padding: 8px; text-align: right; width: 80px;">Price</th>
-              <th style="padding: 8px; text-align: right; width: 80px;">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${itemsHtml}
-          </tbody>
-        </table>
-        
-        <div style="text-align: right; margin-top: 20px;">
-          <div style="margin-bottom: 5px;">
-            <span>Subtotal:</span>
-            <span style="display: inline-block; width: 100px; text-align: right;">$${subtotal.toFixed(2)}</span>
-          </div>
-          <div style="margin-bottom: 5px;">
-            <span>Shipping:</span>
-            <span style="display: inline-block; width: 100px; text-align: right;">$${shipping.toFixed(2)}</span>
-          </div>
-          <div style="margin-bottom: 5px;">
-            <span>Tax:</span>
-            <span style="display: inline-block; width: 100px; text-align: right;">$${tax.toFixed(2)}</span>
-          </div>
-          <div style="border-top: 2px solid #333; padding-top: 5px; margin-top: 10px; font-weight: bold; font-size: 16px;">
-            <span>Total:</span>
-            <span style="display: inline-block; width: 100px; text-align: right;">$${total.toFixed(2)}</span>
-          </div>
-        </div>
-        
-        <div style="text-align: center; margin-top: 30px; font-size: 12px; color: #666;">
-          <p>Thank you for your order!</p>
-        </div>
-      </div>
-    `;
-  };
-
-  const downloadOrderPdf = async (order: { id: number; order_number: string; total: number }) => {
-    if (!cartData || cartData.isEmpty) return;
-
+  // Auto-download PDF after successful order creation
+  const triggerPDFDownload = async (orderId: string, orderNumber: string) => {
     try {
-      const receiptHtml = generateOrderReceiptHtml(order);
+      console.log('Attempting to auto-download PDF for order:', orderNumber);
 
-      // Simulate PDF download by creating an HTML file instead
-      const blob = new Blob([receiptHtml], { type: 'text/html' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `receipt-${order.order_number}.html`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      const result = await downloadOrderPDF({
+        orderId,
+        orderNumber,
+        onProgress: (progress) => {
+          // Could show progress in toast if needed
+          console.log(`PDF download progress: ${progress}%`);
+        },
+        onError: (error) => {
+          console.error('PDF download error:', error);
+          toast.error('PDF download failed', {
+            description: 'You can download your receipt from the order details page.',
+          });
+        },
+      });
 
-      console.log('Receipt downloaded (HTML format for demo)');
+      if (result.success) {
+        toast.success('Receipt downloaded!', {
+          description: 'Your order receipt has been downloaded to your device.',
+        });
+      }
     } catch (error) {
-      console.error('Error generating receipt:', error);
+      console.error('Error during PDF download:', error);
+      // Don't show error toast here as the onError callback handles it
     }
   };
 
@@ -232,6 +162,12 @@ export default function CheckoutPage() {
       toast.success('Order placed successfully!', {
         description: `Order #${order.orderNumber} has been created.`,
       });
+
+      // Trigger automatic PDF download
+      // Use setTimeout to ensure navigation doesn't interfere with download
+      setTimeout(() => {
+        triggerPDFDownload(order.id, order.orderNumber);
+      }, 500);
 
       // Navigate to order success page
       navigate(`/order-success/${order.id}`);

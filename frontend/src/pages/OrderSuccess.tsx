@@ -1,13 +1,70 @@
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Button } from '@/components/ui/Button';
 import { useOrder } from '@/hooks/queries/useOrders';
-import { AlertTriangle, CheckCircle, Package, ShoppingBag, Truck } from 'lucide-react';
+import { createManualDownloadUrl, downloadOrderPDF, isDownloadLikelyBlocked } from '@/lib/pdfDownload';
+import { AlertTriangle, CheckCircle, Download, Package, ShoppingBag, Truck } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export default function OrderSuccessPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const { data: order, isLoading, error } = useOrder(orderId!);
+
+  // PDF download states
+  const [pdfDownloadStatus, setPdfDownloadStatus] = useState<'idle' | 'downloading' | 'success' | 'error'>('idle');
+  const [pdfDownloadProgress, setPdfDownloadProgress] = useState(0);
+  const [pdfDownloadError, setPdfDownloadError] = useState<string | null>(null);
+  const [showManualDownload, setShowManualDownload] = useState(false);
+
+  // Handle manual PDF download
+  const handleDownloadPDF = async () => {
+    if (!order) return;
+
+    setPdfDownloadStatus('downloading');
+    setPdfDownloadProgress(0);
+    setPdfDownloadError(null);
+
+    try {
+      const result = await downloadOrderPDF({
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        onProgress: (progress) => {
+          setPdfDownloadProgress(progress);
+        },
+        onError: (error) => {
+          setPdfDownloadError(error.message);
+        },
+      });
+
+      if (result.success) {
+        setPdfDownloadStatus('success');
+        toast.success('Receipt downloaded!', {
+          description: 'Your order receipt has been downloaded to your device.',
+        });
+      } else {
+        setPdfDownloadStatus('error');
+        setPdfDownloadError(result.error || 'Download failed');
+        setShowManualDownload(true);
+        toast.error('Download failed', {
+          description: 'You can try the manual download link below.',
+        });
+      }
+    } catch (error) {
+      setPdfDownloadStatus('error');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      setPdfDownloadError(errorMessage);
+      setShowManualDownload(true);
+    }
+  };
+
+  // Check for potential download blocking on mount
+  useEffect(() => {
+    if (order && isDownloadLikelyBlocked()) {
+      setShowManualDownload(true);
+    }
+  }, [order]);
 
   if (isLoading) {
     return (
@@ -176,6 +233,68 @@ export default function OrderSuccessPage() {
               {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.postalCode}
             </p>
             <p>{order.shippingAddress.country}</p>
+          </div>
+        </div>
+
+        {/* PDF Download Section */}
+        <div className="mt-8 rounded-lg bg-white p-6 shadow-sm">
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
+            <Download className="h-5 w-5" />
+            Order Receipt
+          </h2>
+
+          <div className="space-y-4">
+            <p className="text-sm text-gray-600">Download your order receipt as a PDF for your records.</p>
+
+            {/* Download Progress */}
+            {pdfDownloadStatus === 'downloading' && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span>Preparing download...</span>
+                  <span>{pdfDownloadProgress}%</span>
+                </div>
+                <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                  <div className="h-full bg-blue-600 transition-all duration-300" style={{ width: `${pdfDownloadProgress}%` }} />
+                </div>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {pdfDownloadStatus === 'success' && (
+              <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+                <span className="text-sm font-medium text-green-800">Receipt downloaded successfully!</span>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {pdfDownloadStatus === 'error' && pdfDownloadError && (
+              <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <div className="text-sm text-red-800">
+                  <div className="font-medium">Download failed</div>
+                  <div>{pdfDownloadError}</div>
+                </div>
+              </div>
+            )}
+
+            {/* Download Buttons */}
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button onClick={handleDownloadPDF} disabled={pdfDownloadStatus === 'downloading'} className="gap-2">
+                <Download className="h-4 w-4" />
+                {pdfDownloadStatus === 'downloading' ? 'Downloading...' : 'Download Receipt'}
+              </Button>
+
+              {/* Manual Download Link */}
+              {showManualDownload && (
+                <Button asChild variant="outline" className="gap-2">
+                  <a href={createManualDownloadUrl(order.id)} download target="_blank" rel="noopener noreferrer">
+                    <Download className="h-4 w-4" />
+                    Manual Download
+                  </a>
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 

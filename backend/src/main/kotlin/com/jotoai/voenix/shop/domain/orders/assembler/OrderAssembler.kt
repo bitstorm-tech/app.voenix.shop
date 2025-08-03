@@ -7,10 +7,12 @@ import com.jotoai.voenix.shop.domain.orders.dto.OrderDto
 import com.jotoai.voenix.shop.domain.orders.dto.OrderItemDto
 import com.jotoai.voenix.shop.domain.orders.entity.Order
 import com.jotoai.voenix.shop.domain.orders.entity.OrderItem
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 @Component
 class OrderAssembler(
+    @param:Value("\${app.base-url:http://localhost:8080}") private val appBaseUrl: String,
     private val articleAssembler: ArticleAssembler,
     private val mugArticleVariantAssembler: MugArticleVariantAssembler,
 ) {
@@ -32,6 +34,7 @@ class OrderAssembler(
             cartId = entity.cart.id!!,
             notes = entity.notes,
             items = entity.items.map { toItemDto(it) },
+            pdfUrl = generatePdfUrl(entity.id),
             createdAt = requireNotNull(entity.createdAt) { "Order createdAt cannot be null when converting to DTO" },
             updatedAt = requireNotNull(entity.updatedAt) { "Order updatedAt cannot be null when converting to DTO" },
         )
@@ -50,4 +53,6 @@ class OrderAssembler(
             customData = entity.customData,
             createdAt = requireNotNull(entity.createdAt) { "OrderItem createdAt cannot be null when converting to DTO" },
         )
+
+    private fun generatePdfUrl(orderId: java.util.UUID): String = "$appBaseUrl/api/user/orders/$orderId/pdf"
 }

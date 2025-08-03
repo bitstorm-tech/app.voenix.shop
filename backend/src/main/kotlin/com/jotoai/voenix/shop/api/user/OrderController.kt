@@ -5,10 +5,14 @@ import com.jotoai.voenix.shop.domain.orders.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.domain.orders.dto.OrderDto
 import com.jotoai.voenix.shop.domain.orders.enums.OrderStatus
 import com.jotoai.voenix.shop.domain.orders.service.OrderService
+import com.jotoai.voenix.shop.domain.pdf.service.OrderPdfGenerationService
 import com.jotoai.voenix.shop.domain.users.service.UserService
+import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
@@ -28,6 +32,7 @@ import java.util.UUID
 class OrderController(
     private val orderService: OrderService,
     private val userService: UserService,
+    private val pdfGenerationService: OrderPdfGenerationService,
 ) {
     /**
      * Creates an order from the user's current cart
@@ -82,6 +87,39 @@ class OrderController(
     ): OrderDto {
         val userId = getCurrentUserId(userDetails)
         return orderService.cancelOrder(userId, orderId)
+    }
+
+    /**
+     * Downloads the PDF for a specific order
+     */
+    @GetMapping("/orders/{orderId}/pdf")
+    fun downloadOrderPdf(
+        @AuthenticationPrincipal userDetails: UserDetails,
+        @PathVariable orderId: UUID,
+        response: HttpServletResponse,
+    ) {
+        val userId = getCurrentUserId(userDetails)
+
+        // Get order and validate ownership
+        val order = orderService.getOrderEntity(userId, orderId)
+
+        // Generate PDF
+        val pdfBytes = pdfGenerationService.generateOrderPdf(order)
+        val filename = pdfGenerationService.getOrderPdfFilename(order.orderNumber ?: "unknown")
+
+        // Set response headers
+        response.contentType = MediaType.APPLICATION_PDF_VALUE
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$filename\"")
+        response.setHeader(HttpHeaders.CONTENT_LENGTH, pdfBytes.size.toString())
+        response.setHeader(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
+        response.setHeader(HttpHeaders.PRAGMA, "no-cache")
+        response.setHeader(HttpHeaders.EXPIRES, "0")
+
+        // Write PDF to response
+        response.outputStream.use { outputStream ->
+            outputStream.write(pdfBytes)
+            outputStream.flush()
+        }
     }
 
     private fun getCurrentUserId(userDetails: UserDetails): Long {
