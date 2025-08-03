@@ -89,7 +89,6 @@ export default function CheckoutPage() {
     }
   };
 
-
   // Auto-download PDF after successful order creation
   const triggerPDFDownload = async (orderId: string, orderNumber: string) => {
     try {

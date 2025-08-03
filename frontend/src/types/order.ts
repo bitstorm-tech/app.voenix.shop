@@ -1,4 +1,4 @@
-import type { Article } from './article';
+import type { Article, PaginatedResponse } from './article';
 import type { MugVariantDto } from './cart';
 
 export enum OrderStatus {
@@ -68,7 +68,4 @@ export interface OrderDto {
 // API response types
 export interface CreateOrderResponse extends OrderDto {}
 
-export interface GetOrdersResponse {
-  orders: OrderDto[];
-  totalCount: number;
-}
+export type GetOrdersResponse = PaginatedResponse<OrderDto>;

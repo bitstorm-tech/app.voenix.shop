@@ -156,7 +156,7 @@ export default function OrdersPage() {
     );
   }
 
-  const orders = ordersData?.orders || [];
+  const orders = ordersData?.content || [];
 
   return (
     <div className="min-h-screen bg-gray-50">
