@@ -1,30 +1,15 @@
+import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import { CreditCard, Lock, ShoppingBag, Truck } from 'lucide-react';
+import { useSession } from '@/hooks/queries/useAuth';
+import { useCart } from '@/hooks/queries/useCart';
+import { AlertTriangle, CreditCard, Lock, ShoppingBag, Truck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// Removed CheckoutPageProps as we're not using Inertia.js props
-
-interface CartItem {
-  id: number;
-  mug: {
-    id: number;
-    name: string;
-    image: string;
-  };
-  generated_image_path: string;
-  quantity: number;
-  price: number;
-  subtotal: number;
-}
-
-interface Cart {
-  items: CartItem[];
-  subtotal: number;
-  total_items: number;
-}
+// Using the real CartDto and CartItemDto types from the API
 
 interface FormData {
   email: string;
@@ -44,8 +29,8 @@ interface FormData {
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const [cart, setCart] = useState<Cart | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: session, isLoading: sessionLoading } = useSession();
+  const { data: cartData, isLoading: cartLoading, error: cartError } = useCart();
   const [isProcessing, setIsProcessing] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     email: '',
@@ -63,53 +48,24 @@ export default function CheckoutPage() {
     sameAsBilling: true,
   });
 
-  const fetchCart = async () => {
-    try {
-      // Simulate API call with dummy data
-      await new Promise((resolve) => setTimeout(resolve, 500));
-
-      const dummyCart: Cart = {
-        items: [
-          {
-            id: 1,
-            mug: {
-              id: 1,
-              name: 'Classic White Mug',
-              image: '/placeholder-mug.jpg',
-            },
-            generated_image_path: 'dummy-image-1.png',
-            quantity: 2,
-            price: 15.99,
-            subtotal: 31.98,
-          },
-          {
-            id: 2,
-            mug: {
-              id: 2,
-              name: 'Premium Black Mug',
-              image: '/placeholder-mug-black.jpg',
-            },
-            generated_image_path: 'dummy-image-2.png',
-            quantity: 1,
-            price: 19.99,
-            subtotal: 19.99,
-          },
-        ],
-        subtotal: 51.97,
-        total_items: 3,
-      };
-
-      setCart(dummyCart);
-    } catch (error) {
-      console.error('Error fetching cart:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Redirect to login if not authenticated
   useEffect(() => {
-    fetchCart();
-  }, []);
+    if (!sessionLoading && !session?.authenticated) {
+      navigate('/login?redirect=' + encodeURIComponent('/checkout'));
+    }
+  }, [session, sessionLoading, navigate]);
+
+  // Handle empty cart - redirect to cart page
+  useEffect(() => {
+    if (!cartLoading && cartData && cartData.isEmpty) {
+      navigate('/cart');
+    }
+  }, [cartData, cartLoading, navigate]);
+
+  // Convert cart data for display
+  const items = cartData?.items || [];
+  const totalItems = cartData?.totalItemCount || 0;
+  const subtotal = (cartData?.totalPrice || 0) / 100; // Convert cents to dollars
 
   const handleInputChange = (field: string, value: string) => {
     if (field.startsWith('shipping_address.')) {
@@ -129,32 +85,32 @@ export default function CheckoutPage() {
     }
   };
 
-  const generateOrderReceiptHtml = (order: { order_number: string; total: number }, cart: Cart) => {
+  const generateOrderReceiptHtml = (order: { order_number: string; total: number }) => {
     const date = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
     });
 
-    const itemsHtml = cart.items
+    const itemsHtml = items
       .map(
         (item) => `
         <tr>
           <td style="padding: 8px; border-bottom: 1px solid #eee;">
-            <strong>${item.mug.name}</strong><br>
-            <small style="color: #666;">Custom Design</small>
+            <strong>${item.article.name}</strong><br>
+            <small style="color: #666;">Custom Design - ${item.variant.colorCode}</small>
           </td>
           <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${item.quantity}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">$${item.price.toFixed(2)}</td>
-          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">$${item.subtotal.toFixed(2)}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">$${(item.priceAtTime / 100).toFixed(2)}</td>
+          <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">$${(item.totalPrice / 100).toFixed(2)}</td>
         </tr>
       `,
       )
       .join('');
 
-    const shipping = 4.99;
-    const tax = cart.subtotal * 0.08;
-    const total = cart.subtotal + shipping + tax;
+    const shipping = 4.99; // TODO: Make configurable
+    const tax = subtotal * 0.08; // TODO: Make configurable - currently 8%
+    const total = subtotal + shipping + tax;
 
     return `
       <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
@@ -186,7 +142,7 @@ export default function CheckoutPage() {
         <div style="text-align: right; margin-top: 20px;">
           <div style="margin-bottom: 5px;">
             <span>Subtotal:</span>
-            <span style="display: inline-block; width: 100px; text-align: right;">$${cart.subtotal.toFixed(2)}</span>
+            <span style="display: inline-block; width: 100px; text-align: right;">$${subtotal.toFixed(2)}</span>
           </div>
           <div style="margin-bottom: 5px;">
             <span>Shipping:</span>
@@ -210,10 +166,10 @@ export default function CheckoutPage() {
   };
 
   const downloadOrderPdf = async (order: { id: number; order_number: string; total: number }) => {
-    if (!cart) return;
+    if (!cartData || cartData.isEmpty) return;
 
     try {
-      const receiptHtml = generateOrderReceiptHtml(order, cart);
+      const receiptHtml = generateOrderReceiptHtml(order);
 
       // Simulate PDF download by creating an HTML file instead
       const blob = new Blob([receiptHtml], { type: 'text/html' });
@@ -235,7 +191,7 @@ export default function CheckoutPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!cart || cart.items.length === 0) {
+    if (!cartData || cartData.isEmpty) {
       alert('Your cart is empty');
       return;
     }
@@ -243,8 +199,8 @@ export default function CheckoutPage() {
     setIsProcessing(true);
 
     try {
-      const shipping = 4.99;
-      const tax = cart.subtotal * 0.08;
+      const shipping = 4.99; // TODO: Make configurable
+      const tax = subtotal * 0.08; // TODO: Make configurable - currently 8%
 
       // Simulate API call with dummy data
       await new Promise((resolve) => setTimeout(resolve, 1500));
@@ -253,7 +209,7 @@ export default function CheckoutPage() {
       const dummyOrder = {
         id: Math.floor(Math.random() * 1000) + 1,
         order_number: `ORD-${Date.now()}`,
-        total: cart.subtotal + shipping + tax,
+        total: subtotal + shipping + tax,
         email: formData.email,
         first_name: formData.first_name,
         last_name: formData.last_name,
@@ -282,18 +238,52 @@ export default function CheckoutPage() {
     }
   };
 
-  if (isLoading) {
+  // Don't render anything while checking authentication
+  if (sessionLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  // Don't render if not authenticated (redirect will happen)
+  if (!session?.authenticated) {
+    return null;
+  }
+
+  // Loading state for cart data
+  if (cartLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
+          <LoadingSpinner />
           <p className="mt-2 text-sm text-gray-600">Loading checkout...</p>
         </div>
       </div>
     );
   }
 
-  if (!cart || cart.items.length === 0) {
+  // Error state for cart
+  if (cartError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 text-red-500">
+            <AlertTriangle className="h-12 w-12" />
+          </div>
+          <h2 className="mt-4 text-lg font-medium text-gray-900">Error loading cart</h2>
+          <p className="mt-2 text-sm text-gray-600">{cartError instanceof Error ? cartError.message : 'Unable to load your cart'}</p>
+          <Button onClick={() => window.location.reload()} className="mt-6">
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // This case should be handled by the redirect effect, but keeping as fallback
+  if (!cartData || cartData.isEmpty) {
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="text-center">
@@ -308,9 +298,12 @@ export default function CheckoutPage() {
     );
   }
 
-  const shipping = 4.99;
-  const tax = cart.subtotal * 0.08;
-  const total = cart.subtotal + shipping + tax;
+  const shipping = 4.99; // TODO: Make configurable
+  const tax = subtotal * 0.08; // TODO: Make configurable - currently 8%
+  const total = subtotal + shipping + tax;
+
+  // Check if any items have price changes
+  const hasPriceChanges = items.some((item) => item.hasPriceChanged);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -473,29 +466,66 @@ export default function CheckoutPage() {
               <div className="rounded-lg bg-white p-6 shadow-sm">
                 <h2 className="mb-4 text-lg font-semibold">Order Summary</h2>
 
+                {hasPriceChanges && (
+                  <Alert variant="info" className="mb-4">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertDescription>
+                      Some items in your cart have had price changes since they were added. The updated prices are shown below.
+                    </AlertDescription>
+                  </Alert>
+                )}
+
                 <div className="space-y-3">
-                  {cart.items.map((item) => (
-                    <div key={item.id} className="flex gap-3">
-                      <div className="relative h-16 w-16 overflow-hidden rounded-lg bg-gray-100">
-                        <img
-                          src={`https://via.placeholder.com/150?text=Mug+${item.id}`}
-                          alt="Custom mug design"
-                          className="h-full w-full object-cover"
-                        />
+                  {items.map((item) => {
+                    const itemTotal = item.totalPrice / 100; // Convert cents to dollars
+                    const imageUrl = item.generatedImageFilename
+                      ? `/api/user/images/${item.generatedImageFilename}`
+                      : undefined;
+
+                    return (
+                      <div key={item.id} className="flex gap-3">
+                        <div className="relative h-16 w-16 overflow-hidden rounded-lg bg-gray-100">
+                          {imageUrl ? (
+                            <img
+                              src={imageUrl}
+                              alt="Custom mug design"
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                // Hide broken image and show placeholder
+                                e.currentTarget.style.display = 'none';
+                                const placeholder = e.currentTarget.nextElementSibling;
+                                if (placeholder) {
+                                  (placeholder as HTMLElement).style.display = 'flex';
+                                }
+                              }}
+                            />
+                          ) : null}
+                          <div
+                            className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-200"
+                            style={{ display: imageUrl ? 'none' : 'flex' }}
+                          >
+                            <ShoppingBag className="h-6 w-6 text-gray-400" />
+                          </div>
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-sm font-medium">{item.article.name}</h3>
+                          <p className="text-sm text-gray-600">
+                            {item.variant.colorCode} • Qty: {item.quantity}
+                          </p>
+                          {item.hasPriceChanged && (
+                            <p className="text-xs text-orange-600">Price updated: was ${(item.originalPrice / 100).toFixed(2)}</p>
+                          )}
+                        </div>
+                        <div className="text-sm font-medium">${itemTotal.toFixed(2)}</div>
                       </div>
-                      <div className="flex-1">
-                        <h3 className="text-sm font-medium">{item.mug.name}</h3>
-                        <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                      </div>
-                      <div className="text-sm font-medium">${item.subtotal.toFixed(2)}</div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="mt-4 space-y-2 border-t pt-4">
                   <div className="flex justify-between text-sm">
-                    <span>Subtotal ({cart.total_items} items)</span>
-                    <span>${cart.subtotal.toFixed(2)}</span>
+                    <span>Subtotal ({totalItems} items)</span>
+                    <span>${subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Shipping</span>

@@ -177,7 +177,7 @@ export default function CartPage() {
                           />
                         ) : null}
                         <div
-                          className="h-24 w-24 rounded-md bg-gray-200 sm:h-32 sm:w-32 flex items-center justify-center"
+                          className="flex h-24 w-24 items-center justify-center rounded-md bg-gray-200 sm:h-32 sm:w-32"
                           style={{ display: imageUrl ? 'none' : 'flex' }}
                         >
                           <ShoppingBag className="h-8 w-8 text-gray-400" />
