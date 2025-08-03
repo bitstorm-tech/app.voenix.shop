@@ -1,9 +1,9 @@
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Button } from '@/components/ui/Button';
 import { useOrder } from '@/hooks/queries/useOrders';
-import { createManualDownloadUrl, downloadOrderPDF, isDownloadLikelyBlocked } from '@/lib/pdfDownload';
+import { createManualDownloadUrl, downloadOrderPDF } from '@/lib/pdfDownload';
 import { AlertTriangle, CheckCircle, Download, Package, ShoppingBag, Truck } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -16,7 +16,6 @@ export default function OrderSuccessPage() {
   const [pdfDownloadStatus, setPdfDownloadStatus] = useState<'idle' | 'downloading' | 'success' | 'error'>('idle');
   const [pdfDownloadProgress, setPdfDownloadProgress] = useState(0);
   const [pdfDownloadError, setPdfDownloadError] = useState<string | null>(null);
-  const [showManualDownload, setShowManualDownload] = useState(false);
 
   // Handle manual PDF download
   const handleDownloadPDF = async () => {
@@ -46,7 +45,6 @@ export default function OrderSuccessPage() {
       } else {
         setPdfDownloadStatus('error');
         setPdfDownloadError(result.error || 'Download failed');
-        setShowManualDownload(true);
         toast.error('Download failed', {
           description: 'You can try the manual download link below.',
         });
@@ -55,16 +53,8 @@ export default function OrderSuccessPage() {
       setPdfDownloadStatus('error');
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       setPdfDownloadError(errorMessage);
-      setShowManualDownload(true);
     }
   };
-
-  // Check for potential download blocking on mount
-  useEffect(() => {
-    if (order && isDownloadLikelyBlocked()) {
-      setShowManualDownload(true);
-    }
-  }, [order]);
 
   if (isLoading) {
     return (
@@ -285,15 +275,13 @@ export default function OrderSuccessPage() {
                 {pdfDownloadStatus === 'downloading' ? 'Downloading...' : 'Download Receipt'}
               </Button>
 
-              {/* Manual Download Link */}
-              {showManualDownload && (
-                <Button asChild variant="outline" className="gap-2">
-                  <a href={createManualDownloadUrl(order.id)} download target="_blank" rel="noopener noreferrer">
-                    <Download className="h-4 w-4" />
-                    Manual Download
-                  </a>
-                </Button>
-              )}
+              {/* Manual Download Link - Always visible as fallback */}
+              <Button asChild variant="outline" className="gap-2">
+                <a href={createManualDownloadUrl(order.id)} download target="_blank" rel="noopener noreferrer">
+                  <Download className="h-4 w-4" />
+                  Download PDF
+                </a>
+              </Button>
             </div>
           </div>
         </div>
