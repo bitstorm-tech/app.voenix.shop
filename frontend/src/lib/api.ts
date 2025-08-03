@@ -719,3 +719,6 @@ export const cartApi = {
   // Refresh cart prices to current values
   refreshPrices: () => api.post<CartDto>('/user/cart/refresh-prices', {}),
 };
+
+// Re-export order API for consistency
+export { orderApi } from '@/api/orderApi';

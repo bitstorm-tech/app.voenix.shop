@@ -5,23 +5,26 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { useSession } from '@/hooks/queries/useAuth';
 import { useCart } from '@/hooks/queries/useCart';
+import { useCreateOrder } from '@/hooks/queries/useOrders';
+import type { CreateOrderRequest } from '@/types/order';
 import { AlertTriangle, CreditCard, Lock, ShoppingBag, Truck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 
 // Using the real CartDto and CartItemDto types from the API
 
 interface FormData {
   email: string;
-  first_name: string;
-  last_name: string;
+  firstName: string;
+  lastName: string;
   phone: string;
   shipping_address: {
-    line1: string;
-    line2: string;
+    streetAddress1: string;
+    streetAddress2: string;
     city: string;
     state: string;
-    postal_code: string;
+    postalCode: string;
     country: string;
   };
   sameAsBilling: boolean;
@@ -31,18 +34,18 @@ export default function CheckoutPage() {
   const navigate = useNavigate();
   const { data: session, isLoading: sessionLoading } = useSession();
   const { data: cartData, isLoading: cartLoading, error: cartError } = useCart();
-  const [isProcessing, setIsProcessing] = useState(false);
+  const createOrderMutation = useCreateOrder();
   const [formData, setFormData] = useState<FormData>({
     email: '',
-    first_name: '',
-    last_name: '',
+    firstName: '',
+    lastName: '',
     phone: '',
     shipping_address: {
-      line1: '',
-      line2: '',
+      streetAddress1: '',
+      streetAddress2: '',
       city: '',
       state: '',
-      postal_code: '',
+      postalCode: '',
       country: 'US',
     },
     sameAsBilling: true,
@@ -121,7 +124,7 @@ export default function CheckoutPage() {
         </div>
         
         <div style="margin-bottom: 20px;">
-          <p style="margin: 5px 0;"><strong>${formData.first_name} ${formData.last_name}</strong></p>
+          <p style="margin: 5px 0;"><strong>${formData.firstName} ${formData.lastName}</strong></p>
           <p style="margin: 5px 0;">${formData.email}</p>
         </div>
         
@@ -192,49 +195,51 @@ export default function CheckoutPage() {
     e.preventDefault();
 
     if (!cartData || cartData.isEmpty) {
-      alert('Your cart is empty');
+      console.error('Cart is empty');
       return;
     }
 
-    setIsProcessing(true);
-
     try {
-      const shipping = 4.99; // TODO: Make configurable
-      const tax = subtotal * 0.08; // TODO: Make configurable - currently 8%
-
-      // Simulate API call with dummy data
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Create dummy order
-      const dummyOrder = {
-        id: Math.floor(Math.random() * 1000) + 1,
-        order_number: `ORD-${Date.now()}`,
-        total: subtotal + shipping + tax,
-        email: formData.email,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        phone: formData.phone || null,
-        shipping_address: formData.shipping_address,
-        billing_address: formData.sameAsBilling ? null : formData.shipping_address,
-        shipping: shipping,
-        tax: tax,
+      const orderRequest: CreateOrderRequest = {
+        customerEmail: formData.email,
+        customerFirstName: formData.firstName,
+        customerLastName: formData.lastName,
+        customerPhone: formData.phone || undefined,
+        shippingAddress: {
+          streetAddress1: formData.shipping_address.streetAddress1,
+          streetAddress2: formData.shipping_address.streetAddress2 || undefined,
+          city: formData.shipping_address.city,
+          state: formData.shipping_address.state,
+          postalCode: formData.shipping_address.postalCode,
+          country: formData.shipping_address.country,
+        },
+        useShippingAsBilling: formData.sameAsBilling,
+        billingAddress: formData.sameAsBilling
+          ? undefined
+          : {
+              streetAddress1: formData.shipping_address.streetAddress1,
+              streetAddress2: formData.shipping_address.streetAddress2 || undefined,
+              city: formData.shipping_address.city,
+              state: formData.shipping_address.state,
+              postalCode: formData.shipping_address.postalCode,
+              country: formData.shipping_address.country,
+            },
       };
 
-      console.log('Order created:', dummyOrder);
+      const order = await createOrderMutation.mutateAsync(orderRequest);
+      console.log('Order created successfully:', order);
 
-      await downloadOrderPdf({
-        id: dummyOrder.id,
-        order_number: dummyOrder.order_number,
-        total: dummyOrder.total,
+      toast.success('Order placed successfully!', {
+        description: `Order #${order.orderNumber} has been created.`,
       });
 
-      // Navigate to home page after successful order
-      navigate('/');
+      // Navigate to order success page
+      navigate(`/order-success/${order.id}`);
     } catch (error) {
       console.error('Error creating order:', error);
-      alert('Failed to create order. Please try again.');
-    } finally {
-      setIsProcessing(false);
+      toast.error('Failed to place order', {
+        description: error instanceof Error ? error.message : 'Please try again or contact support.',
+      });
     }
   };
 
@@ -332,8 +337,8 @@ export default function CheckoutPage() {
                     <Label htmlFor="firstName">First Name</Label>
                     <Input
                       id="firstName"
-                      value={formData.first_name}
-                      onChange={(e) => handleInputChange('first_name', e.target.value)}
+                      value={formData.firstName}
+                      onChange={(e) => handleInputChange('firstName', e.target.value)}
                       placeholder="John"
                       className="mt-1"
                       required
@@ -343,8 +348,8 @@ export default function CheckoutPage() {
                     <Label htmlFor="lastName">Last Name</Label>
                     <Input
                       id="lastName"
-                      value={formData.last_name}
-                      onChange={(e) => handleInputChange('last_name', e.target.value)}
+                      value={formData.lastName}
+                      onChange={(e) => handleInputChange('lastName', e.target.value)}
                       placeholder="Doe"
                       className="mt-1"
                       required
@@ -374,8 +379,8 @@ export default function CheckoutPage() {
                     <Label htmlFor="address">Street Address</Label>
                     <Input
                       id="address"
-                      value={formData.shipping_address.line1}
-                      onChange={(e) => handleInputChange('shipping_address.line1', e.target.value)}
+                      value={formData.shipping_address.streetAddress1}
+                      onChange={(e) => handleInputChange('shipping_address.streetAddress1', e.target.value)}
                       placeholder="123 Main Street"
                       className="mt-1"
                       required
@@ -385,8 +390,8 @@ export default function CheckoutPage() {
                     <Label htmlFor="address2">Apartment, suite, etc. (optional)</Label>
                     <Input
                       id="address2"
-                      value={formData.shipping_address.line2}
-                      onChange={(e) => handleInputChange('shipping_address.line2', e.target.value)}
+                      value={formData.shipping_address.streetAddress2}
+                      onChange={(e) => handleInputChange('shipping_address.streetAddress2', e.target.value)}
                       placeholder="Apt 4B"
                       className="mt-1"
                     />
@@ -417,8 +422,8 @@ export default function CheckoutPage() {
                     <Label htmlFor="zip">ZIP Code</Label>
                     <Input
                       id="zip"
-                      value={formData.shipping_address.postal_code}
-                      onChange={(e) => handleInputChange('shipping_address.postal_code', e.target.value)}
+                      value={formData.shipping_address.postalCode}
+                      onChange={(e) => handleInputChange('shipping_address.postalCode', e.target.value)}
                       placeholder="10001"
                       className="mt-1"
                       required
@@ -478,9 +483,7 @@ export default function CheckoutPage() {
                 <div className="space-y-3">
                   {items.map((item) => {
                     const itemTotal = item.totalPrice / 100; // Convert cents to dollars
-                    const imageUrl = item.generatedImageFilename
-                      ? `/api/user/images/${item.generatedImageFilename}`
-                      : undefined;
+                    const imageUrl = item.generatedImageFilename ? `/api/user/images/${item.generatedImageFilename}` : undefined;
 
                     return (
                       <div key={item.id} className="flex gap-3">
@@ -542,9 +545,9 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full gap-2" size="lg" disabled={isProcessing}>
+              <Button type="submit" className="w-full gap-2" size="lg" disabled={createOrderMutation.isPending}>
                 <Lock className="h-4 w-4" />
-                {isProcessing ? 'Processing...' : `Buy Now • $${total.toFixed(2)}`}
+                {createOrderMutation.isPending ? 'Processing...' : `Buy Now • $${total.toFixed(2)}`}
               </Button>
 
               <div className="text-center text-xs text-gray-500">

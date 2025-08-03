@@ -4,5 +4,6 @@ export * from './useAuth';
 export * from './useCart';
 export * from './useCategories';
 export * from './useImages';
+export * from './useOrders';
 export * from './usePrompts';
 export * from './useSlots';

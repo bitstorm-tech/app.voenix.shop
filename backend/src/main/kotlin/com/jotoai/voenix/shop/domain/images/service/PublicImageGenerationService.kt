@@ -68,24 +68,25 @@ class PublicImageGenerationService(
             val imageEditResponse = openAIImageService.editImage(imageFile, openAIRequest)
 
             // Store image generation records for tracking (anonymous user)
-            val generatedImages = imageEditResponse.imageFilenames.map { filename ->
-                val generatedImage =
-                    GeneratedImage(
-                        filename = filename,
-                        promptId = request.promptId,
-                        user = null, // Anonymous user
-                        ipAddress = ipAddress,
-                        generatedAt = LocalDateTime.now(),
-                    )
-                generatedImageRepository.save(generatedImage)
-            }
+            val generatedImages =
+                imageEditResponse.imageFilenames.map { filename ->
+                    val generatedImage =
+                        GeneratedImage(
+                            filename = filename,
+                            promptId = request.promptId,
+                            user = null, // Anonymous user
+                            ipAddress = ipAddress,
+                            generatedAt = LocalDateTime.now(),
+                        )
+                    generatedImageRepository.save(generatedImage)
+                }
 
             // Convert filenames to full URLs using StoragePathService
             val imageUrls =
                 imageEditResponse.imageFilenames.map { filename ->
                     storagePathService.getImageUrl(ImageType.PUBLIC, filename)
                 }
-            
+
             val imageIds = generatedImages.mapNotNull { it.id }
 
             logger.info("Successfully generated ${imageUrls.size} images for public user")

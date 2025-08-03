@@ -5,11 +5,14 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { lazy, Suspense } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import { Toaster } from 'sonner';
 
 // Lazy load main pages
 const Editor = lazy(() => import('@/pages/Editor'));
 const CartPage = lazy(() => import('@/pages/Cart'));
 const CheckoutPage = lazy(() => import('@/pages/Checkout'));
+const OrderSuccessPage = lazy(() => import('@/pages/OrderSuccess'));
+const OrdersPage = lazy(() => import('@/pages/Orders'));
 const Login = lazy(() => import('@/pages/Login'));
 
 // Lazy load admin routes
@@ -25,6 +28,8 @@ export default function App() {
             <Route path="/editor" element={<Editor />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/checkout" element={<CheckoutPage />} />
+            <Route path="/order-success/:orderId" element={<OrderSuccessPage />} />
+            <Route path="/orders" element={<OrdersPage />} />
             <Route path="/login" element={<Login />} />
 
             <Route element={<ProtectedRoute />}>
@@ -32,6 +37,7 @@ export default function App() {
             </Route>
           </Routes>
         </Suspense>
+        <Toaster position="top-right" richColors />
         <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-left" />
       </Router>
     </QueryClientProvider>

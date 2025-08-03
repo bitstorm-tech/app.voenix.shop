@@ -91,7 +91,7 @@ class UserImageGenerationService(
                 generatedImages.map { generatedImage ->
                     "/api/user/images/${generatedImage.filename}"
                 }
-            
+
             val imageIds =
                 generatedImages.mapNotNull { generatedImage ->
                     generatedImage.id
