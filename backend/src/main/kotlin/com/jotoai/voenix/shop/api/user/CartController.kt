@@ -80,13 +80,12 @@ class CartController(
      * Removes an item from the cart
      */
     @DeleteMapping("/items/{itemId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun removeFromCart(
         @AuthenticationPrincipal userDetails: UserDetails,
         @PathVariable itemId: Long,
-    ) {
+    ): CartDto {
         val userId = getCurrentUserId(userDetails)
-        cartService.removeFromCart(userId, itemId)
+        return cartService.removeFromCart(userId, itemId)
     }
 
     /**
