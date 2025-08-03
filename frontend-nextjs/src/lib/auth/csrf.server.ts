@@ -90,3 +90,5 @@ export async function requireCSRFToken(request: Request): Promise<Response | nul
   
   return null;
 }
+
+export { CSRF_TOKEN_NAME, CSRF_HEADER_NAME };

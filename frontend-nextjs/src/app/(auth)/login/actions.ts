@@ -1,6 +1,6 @@
 "use server";
 
-import { generateCSRFToken } from "@/lib/auth/csrf";
+import { generateCSRFToken } from "@/lib/auth/csrf.server";
 import { isRedirectError } from "next/dist/client/components/redirect-error";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";

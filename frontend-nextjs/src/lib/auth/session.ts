@@ -1,158 +1,66 @@
 import { SessionInfo } from "@/types/auth";
 
-/**
- * Client-side session management utilities
- * These functions handle session state on the client side
- */
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 
 /**
- * Get session information from the server
- * This is used by client components to check authentication status
+ * Client-side session cache
  */
-export async function getClientSession(): Promise<SessionInfo | null> {
+export class SessionCache {
+  private static cache: SessionInfo | null = null;
+  private static timestamp: number = 0;
+  private static readonly CACHE_DURATION = 60 * 1000; // 1 minute
+
+  static set(session: SessionInfo | null) {
+    this.cache = session;
+    this.timestamp = Date.now();
+  }
+
+  static get(): SessionInfo | null {
+    if (this.cache && Date.now() - this.timestamp < this.CACHE_DURATION) {
+      return this.cache;
+    }
+    return null;
+  }
+
+  static clear() {
+    this.cache = null;
+    this.timestamp = 0;
+  }
+}
+
+/**
+ * Get the current user session from the client side
+ * This function fetches the session from the backend API
+ * and caches it for performance
+ */
+export async function getCachedSession(): Promise<SessionInfo | null> {
+  // Check cache first
+  const cached = SessionCache.get();
+  if (cached) {
+    return cached;
+  }
+
   try {
     const response = await fetch("/api/auth/session", {
       method: "GET",
       credentials: "include",
-      cache: "no-store", // Don't cache auth checks
     });
 
     if (!response.ok) {
-      return null;
+      if (response.status === 401) {
+        // Session expired or invalid
+        SessionCache.clear();
+        return null;
+      }
+      throw new Error(`Session fetch failed: ${response.status}`);
     }
 
     const sessionInfo: SessionInfo = await response.json();
+    SessionCache.set(sessionInfo);
     return sessionInfo;
   } catch (error) {
     console.error("Error fetching session:", error);
+    SessionCache.clear();
     return null;
   }
-}
-
-/**
- * Check if user is authenticated (client-side)
- */
-export async function isClientAuthenticated(): Promise<boolean> {
-  const session = await getClientSession();
-  return session?.authenticated === true;
-}
-
-/**
- * Get CSRF token from cookies (client-side)
- */
-async function getCSRFTokenFromCookie(): Promise<string | null> {
-  const cookies = document.cookie.split(";");
-  for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split("=");
-    if (name === "csrf-token") {
-      return decodeURIComponent(value);
-    }
-  }
-  return null;
-}
-
-/**
- * Logout the current user by calling the logout endpoint
- * Note: Redirects are now handled by server-side logoutAction
- */
-export async function logout(): Promise<void> {
-  try {
-    // Get CSRF token for logout request
-    const csrfToken = await getCSRFTokenFromCookie();
-
-    await fetch("/api/auth/logout", {
-      method: "POST",
-      credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(csrfToken && { "X-CSRF-Token": csrfToken }),
-      },
-    });
-
-    // Clear session cache
-    SessionCache.clear();
-  } catch (error) {
-    console.error("Error during logout:", error);
-    // Clear cache even if logout fails
-    SessionCache.clear();
-  }
-}
-
-/**
- * Session storage keys for client-side session management
- */
-export const SESSION_KEYS = {
-  AUTH_STATE: "auth-state",
-  LAST_CHECKED: "session-last-checked",
-} as const;
-
-/**
- * Session cache utilities for client-side performance
- * Only stores non-sensitive authentication state, not user data
- */
-export class SessionCache {
-  private static readonly CACHE_DURATION = 30 * 1000; // 30 seconds
-
-  /**
-   * Get cached authentication state (not full session data)
-   */
-  static getAuthState(): boolean | null {
-    try {
-      const authState = sessionStorage.getItem(SESSION_KEYS.AUTH_STATE);
-      const lastChecked = sessionStorage.getItem(SESSION_KEYS.LAST_CHECKED);
-
-      if (!authState || !lastChecked) {
-        return null;
-      }
-
-      const isExpired =
-        Date.now() - parseInt(lastChecked) > this.CACHE_DURATION;
-      if (isExpired) {
-        this.clear();
-        return null;
-      }
-
-      return authState === "true";
-    } catch {
-      return null;
-    }
-  }
-
-  /**
-   * Set authentication state (only stores boolean, not sensitive data)
-   */
-  static setAuthState(isAuthenticated: boolean): void {
-    try {
-      sessionStorage.setItem(SESSION_KEYS.AUTH_STATE, String(isAuthenticated));
-      sessionStorage.setItem(SESSION_KEYS.LAST_CHECKED, Date.now().toString());
-    } catch {
-      // Ignore storage errors (private browsing, etc.)
-    }
-  }
-
-  static clear(): void {
-    try {
-      sessionStorage.removeItem(SESSION_KEYS.AUTH_STATE);
-      sessionStorage.removeItem(SESSION_KEYS.LAST_CHECKED);
-    } catch {
-      // Ignore storage errors
-    }
-  }
-}
-
-/**
- * Get session with caching of auth state only
- */
-export async function getCachedSession(): Promise<SessionInfo | null> {
-  // Always fetch fresh session data from server
-  const session = await getClientSession();
-
-  // Only cache the authentication state, not the full session
-  if (session) {
-    SessionCache.setAuthState(session.authenticated);
-  } else {
-    SessionCache.clear();
-  }
-
-  return session;
 }

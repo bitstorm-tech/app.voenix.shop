@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/server";
 import { SessionProvider } from "@/components/auth/SessionProvider";
 
@@ -11,13 +10,10 @@ export default async function ProtectedLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Check authentication on the server
+  // The middleware already protects these routes, so a redirect here is redundant.
+  // We still call getSession() to pass the session data to the client-side
+  // SessionProvider.
   const session = await getSession();
-
-  if (!session?.authenticated) {
-    // If not authenticated, redirect to login
-    redirect("/login");
-  }
 
   return <SessionProvider initialSession={session}>{children}</SessionProvider>;
 }

@@ -16,7 +16,7 @@ import type { Article, ArticleType } from "@/types/article";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { ChevronDownIcon, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { deleteArticleAction } from "../_actions/deleteArticle";
 
 const articleTypeLabels: Record<ArticleType, string> = {
@@ -33,10 +33,23 @@ interface ArticleAccordionListProps {
   articles: Article[];
 }
 
+import { getClientCSRFToken } from "@/lib/auth/csrf.client";
+
+// ... (rest of the imports)
+
 export function ArticleAccordionList({ articles }: ArticleAccordionListProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [csrfToken, setCsrfToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchToken() {
+      const token = await getClientCSRFToken();
+      setCsrfToken(token);
+    }
+    fetchToken();
+  }, []);
 
   const handleDelete = async (id: number) => {
     setDeleteId(id);
@@ -44,9 +57,9 @@ export function ArticleAccordionList({ articles }: ArticleAccordionListProps) {
   };
 
   const confirmDelete = async () => {
-    if (deleteId) {
+    if (deleteId && csrfToken) {
       startTransition(async () => {
-        const result = await deleteArticleAction(deleteId);
+        const result = await deleteArticleAction(deleteId, csrfToken);
         if (result.success) {
           setIsDeleting(false);
           setDeleteId(null);
