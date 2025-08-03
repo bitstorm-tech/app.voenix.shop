@@ -70,7 +70,7 @@ export default function CartPage() {
   };
 
   const handleContinueShopping = () => {
-    navigate('/editor');
+    window.location.href = '/editor';
   };
 
   // Don't render anything while checking authentication
