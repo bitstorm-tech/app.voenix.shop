@@ -3,6 +3,7 @@ package com.jotoai.voenix.shop.domain.pdf.service
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
+import com.jotoai.voenix.shop.domain.articles.service.MugDetailsService
 import com.jotoai.voenix.shop.domain.images.service.ImageAccessService
 import com.jotoai.voenix.shop.domain.orders.entity.Order
 import com.jotoai.voenix.shop.domain.orders.entity.OrderItem
@@ -13,6 +14,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.font.PDType1Font
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
+import org.apache.pdfbox.util.Matrix
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -29,28 +31,31 @@ import javax.imageio.ImageIO
 @Service
 class OrderPdfGenerationService(
     @param:Value("\${app.base-url:http://localhost:8080}") private val appBaseUrl: String,
+    @param:Value("\${pdf.size.width:239}") private val pdfWidthMm: Float,
+    @param:Value("\${pdf.size.height:99}") private val pdfHeightMm: Float,
+    @param:Value("\${pdf.margin:1}") private val pdfMarginMm: Float,
     private val imageAccessService: ImageAccessService,
+    private val mugDetailsService: MugDetailsService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(OrderPdfGenerationService::class.java)
 
-        // PDF page dimensions (A4 in points)
-        private const val PAGE_WIDTH = 595f
-        private const val PAGE_HEIGHT = 842f
+        // Conversion factor from millimeters to PDF points
+        private const val MM_TO_POINTS = 2.834645669f
 
-        // Margins and layout
-        private const val MARGIN = 50f
+        // Layout constants
         private const val HEADER_HEIGHT = 30f
-        private const val QR_CODE_SIZE = 80f
+        private const val QR_CODE_SIZE = 40f // Reduced by 50% from 80f
         private const val QR_CODE_MARGIN = 20f
 
-        // Image sizing
-        private const val MAX_IMAGE_WIDTH = PAGE_WIDTH - (2 * MARGIN)
-        private const val MAX_IMAGE_HEIGHT = PAGE_HEIGHT - (2 * MARGIN) - HEADER_HEIGHT - QR_CODE_SIZE - (2 * QR_CODE_MARGIN)
-
         // QR code settings
-        private const val QR_SIZE_PIXELS = 200
+        private const val QR_SIZE_PIXELS = 100 // Reduced by 50% from 200
     }
+
+    // Calculate PDF dimensions in points
+    private val pageWidth: Float get() = pdfWidthMm * MM_TO_POINTS
+    private val pageHeight: Float get() = pdfHeightMm * MM_TO_POINTS
+    private val margin: Float get() = pdfMarginMm * MM_TO_POINTS
 
     /**
      * Generates a PDF for the given order.
@@ -97,7 +102,7 @@ class OrderPdfGenerationService(
         pageNumber: Int,
         totalPages: Int,
     ) {
-        val page = PDPage(PDRectangle(PAGE_WIDTH, PAGE_HEIGHT))
+        val page = PDPage(PDRectangle(pageWidth, pageHeight))
         document.addPage(page)
 
         PDPageContentStream(document, page).use { contentStream ->
@@ -115,7 +120,8 @@ class OrderPdfGenerationService(
     }
 
     /**
-     * Adds header text with order number and page information
+     * Adds order number and page information
+     * Text is rotated 90 degrees clockwise and positioned on the left side
      */
     private fun addHeader(
         contentStream: PDPageContentStream,
@@ -123,18 +129,37 @@ class OrderPdfGenerationService(
         pageNumber: Int,
         totalPages: Int,
     ) {
-        contentStream.beginText()
         val boldFont = PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD)
-        contentStream.setFont(boldFont, 16f)
+        val fontSize = 14f
 
-        val headerText = "Order $orderNumber ($pageNumber/$totalPages)"
-        val textWidth = boldFont.getStringWidth(headerText) / 1000 * 16f
-        val xPosition = (PAGE_WIDTH - textWidth) / 2
-        val yPosition = PAGE_HEIGHT - MARGIN - 20f
+        // Create the combined text on one line
+        val headerText = "$orderNumber ($pageNumber/$totalPages)"
+        val textWidth = boldFont.getStringWidth(headerText) / 1000 * fontSize
 
-        contentStream.newLineAtOffset(xPosition, yPosition)
+        // Save the current graphics state
+        contentStream.saveGraphicsState()
+
+        // Position for the rotated text on the left side
+        // The text will be rotated 90 degrees clockwise
+        val xPosition = margin + 15f // Add more distance from left edge of page for better margin
+        val yPositionBase = pageHeight / 2 // Center vertically on the page
+
+        // Move to the position where we want the text
+        contentStream.transform(Matrix.getTranslateInstance(xPosition, yPositionBase))
+
+        // Rotate 90 degrees clockwise around the current position
+        contentStream.transform(Matrix.getRotateInstance(Math.toRadians(90.0), 0f, 0f))
+
+        // Draw the combined text in one line
+        contentStream.beginText()
+        contentStream.setFont(boldFont, fontSize)
+        // Center the text along its length (which becomes vertical after rotation)
+        contentStream.newLineAtOffset(-textWidth / 2, 0f)
         contentStream.showText(headerText)
         contentStream.endText()
+
+        // Restore the graphics state
+        contentStream.restoreGraphicsState()
     }
 
     /**
@@ -171,35 +196,35 @@ class OrderPdfGenerationService(
                     }
                 }
 
+            // Get MugArticleDetails for the correct print template dimensions
+            val mugDetails =
+                mugDetailsService.findByArticleId(
+                    requireNotNull(orderItem.article.id) { "Article ID cannot be null for order item ${orderItem.id}" },
+                )
+
             // Create PDF image object
             val pdfImage = PDImageXObject.createFromByteArray(document, imageData, "ProductImage")
 
-            // Calculate dimensions to fit within available space while maintaining aspect ratio
-            val imageWidth = pdfImage.width.toFloat()
-            val imageHeight = pdfImage.height.toFloat()
-            val aspectRatio = imageWidth / imageHeight
+            // Use exact print template dimensions from MugArticleDetails
+            // Never scale or correct the image size - use exact dimensions from database
+            val imageWidthMm = mugDetails?.printTemplateWidthMm?.toFloat() ?: (pdfWidthMm - (2 * pdfMarginMm))
+            val imageHeightMm = mugDetails?.printTemplateHeightMm?.toFloat() ?: (pdfHeightMm - (2 * pdfMarginMm) - 15f)
 
-            val (scaledWidth, scaledHeight) =
-                when {
-                    imageWidth > imageHeight -> {
-                        // Landscape: fit to width
-                        val width = minOf(MAX_IMAGE_WIDTH, imageWidth)
-                        Pair(width, width / aspectRatio)
-                    }
-                    else -> {
-                        // Portrait or square: fit to height
-                        val height = minOf(MAX_IMAGE_HEIGHT, imageHeight)
-                        Pair(height * aspectRatio, height)
-                    }
-                }
+            // Convert exact dimensions to points (no scaling or aspect ratio correction)
+            val imageWidthPt = imageWidthMm * MM_TO_POINTS
+            val imageHeightPt = imageHeightMm * MM_TO_POINTS
 
-            // Center the image
-            val xPosition = (PAGE_WIDTH - scaledWidth) / 2
-            val yPosition = (PAGE_HEIGHT - scaledHeight) / 2
+            // Center the image on the page using exact dimensions
+            val xPosition = (pageWidth - imageWidthPt) / 2
+            val yPosition = (pageHeight - imageHeightPt) / 2
 
-            contentStream.drawImage(pdfImage, xPosition, yPosition, scaledWidth, scaledHeight)
+            // Draw image with exact dimensions from database - no scaling
+            contentStream.drawImage(pdfImage, xPosition, yPosition, imageWidthPt, imageHeightPt)
 
-            logger.debug("Added product image with dimensions ${scaledWidth}x$scaledHeight at position ($xPosition, $yPosition)")
+            logger.debug(
+                "Added product image with exact dimensions ${imageWidthPt}x$imageHeightPt points at position ($xPosition, $yPosition)",
+            )
+            logger.debug("Using exact print template dimensions: ${imageWidthMm}mm x ${imageHeightMm}mm from MugArticleDetails")
         } catch (e: Exception) {
             logger.error("Failed to add product image for order item ${orderItem.id}", e)
             // Add placeholder text instead
@@ -227,8 +252,8 @@ class OrderPdfGenerationService(
             val qrImage = PDImageXObject.createFromByteArray(document, qrByteArray.toByteArray(), "QRCode")
 
             // Position QR code in bottom left corner
-            val xPosition = MARGIN
-            val yPosition = MARGIN
+            val xPosition = margin
+            val yPosition = margin
 
             contentStream.drawImage(qrImage, xPosition, yPosition, QR_CODE_SIZE, QR_CODE_SIZE)
 
@@ -236,7 +261,7 @@ class OrderPdfGenerationService(
         } catch (e: Exception) {
             logger.error("Failed to generate QR code for order ID $orderId", e)
             // Add fallback text
-            addPlaceholderText(contentStream, "Order ID: $orderId", MARGIN, MARGIN + 10f)
+            addPlaceholderText(contentStream, "Order ID: $orderId", margin, margin + 10f)
         }
     }
 
@@ -283,18 +308,18 @@ class OrderPdfGenerationService(
     private fun addPlaceholderText(
         contentStream: PDPageContentStream,
         text: String,
-        x: Float = PAGE_WIDTH / 2,
-        y: Float = PAGE_HEIGHT / 2,
+        x: Float = pageWidth / 2,
+        y: Float = pageHeight / 2,
     ) {
         try {
             contentStream.beginText()
             val regularFont = PDType1Font(Standard14Fonts.FontName.HELVETICA)
             contentStream.setFont(regularFont, 12f)
 
-            if (x == PAGE_WIDTH / 2) {
+            if (x == pageWidth / 2) {
                 // Center the text
                 val textWidth = regularFont.getStringWidth(text) / 1000 * 12f
-                contentStream.newLineAtOffset((PAGE_WIDTH - textWidth) / 2, y)
+                contentStream.newLineAtOffset((pageWidth - textWidth) / 2, y)
             } else {
                 contentStream.newLineAtOffset(x, y)
             }
