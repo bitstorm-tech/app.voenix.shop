@@ -55,7 +55,10 @@ export default async function ArticlesPage({
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             {/* Filter */}
-            <ArticleFilters />
+            <ArticleFilters 
+              currentType={params.type}
+              currentSearchParams={params}
+            />
 
             {/* Add Button */}
             <Button asChild className="w-full sm:w-auto">
@@ -88,7 +91,11 @@ export default async function ArticlesPage({
               </Button>
             </div>
           ) : (
-            <ArticleAccordionList articles={articles} />
+            <ArticleAccordionList 
+              articles={articles} 
+              searchParams={params}
+              currentPath="/admin/articles"
+            />
           )}
         </CardContent>
       </Card>

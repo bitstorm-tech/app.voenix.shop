@@ -37,6 +37,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 async function serverApiRequest<T>(
   endpoint: string,
   options: RequestInit = {},
+  csrfToken?: string,
 ): Promise<T> {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get('SESSION');
@@ -46,6 +47,9 @@ async function serverApiRequest<T>(
       'Content-Type': 'application/json',
       ...(sessionCookie && {
         Cookie: `SESSION=${sessionCookie.value}`,
+      }),
+      ...(csrfToken && {
+        'X-CSRF-Token': csrfToken,
       }),
     },
     ...options,
@@ -60,26 +64,26 @@ async function serverApiRequest<T>(
 }
 
 export const serverApi = {
-  get: async <T>(endpoint: string): Promise<T> => {
-    return serverApiRequest<T>(endpoint, { method: 'GET' });
+  get: async <T>(endpoint: string, csrfToken?: string): Promise<T> => {
+    return serverApiRequest<T>(endpoint, { method: 'GET' }, csrfToken);
   },
 
-  post: async <T>(endpoint: string, data: unknown): Promise<T> => {
+  post: async <T>(endpoint: string, data: unknown, csrfToken?: string): Promise<T> => {
     return serverApiRequest<T>(endpoint, {
       method: 'POST',
       body: JSON.stringify(data),
-    });
+    }, csrfToken);
   },
 
-  put: async <T>(endpoint: string, data: unknown): Promise<T> => {
+  put: async <T>(endpoint: string, data: unknown, csrfToken?: string): Promise<T> => {
     return serverApiRequest<T>(endpoint, {
       method: 'PUT',
       body: JSON.stringify(data),
-    });
+    }, csrfToken);
   },
 
-  delete: async <T>(endpoint: string): Promise<T> => {
-    return serverApiRequest<T>(endpoint, { method: 'DELETE' });
+  delete: async <T>(endpoint: string, csrfToken?: string): Promise<T> => {
+    return serverApiRequest<T>(endpoint, { method: 'DELETE' }, csrfToken);
   },
 };
 
@@ -112,7 +116,7 @@ export const serverArticlesApi = {
     return serverApi.get<Article>(`/admin/articles/${id}`);
   },
 
-  delete: async (id: number): Promise<void> => {
-    return serverApi.delete<void>(`/admin/articles/${id}`);
+  delete: async (id: number, csrfToken?: string): Promise<void> => {
+    return serverApi.delete<void>(`/admin/articles/${id}`, csrfToken);
   },
 };
