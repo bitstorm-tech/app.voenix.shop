@@ -39,13 +39,13 @@ async function serverApiRequest<T>(
   options: RequestInit = {},
 ): Promise<T> {
   const cookieStore = await cookies();
-  const sessionCookie = cookieStore.get('JSESSIONID');
+  const sessionCookie = cookieStore.get('SESSION');
 
   const defaultOptions: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
       ...(sessionCookie && {
-        Cookie: `JSESSIONID=${sessionCookie.value}`,
+        Cookie: `SESSION=${sessionCookie.value}`,
       }),
     },
     ...options,

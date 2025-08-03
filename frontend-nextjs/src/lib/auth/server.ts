@@ -1,7 +1,7 @@
-import "server-only";
-import { cookies } from "next/headers";
 import { SessionInfo } from "@/types/auth";
+import { cookies } from "next/headers";
 import { cache } from "react";
+import "server-only";
 
 const BACKEND_URL =
   process.env.BACKEND_URL || "http://localhost:8080";
@@ -30,13 +30,13 @@ export class NetworkError extends Error {
 
 /**
  * Get the current user session from the server
- * This function validates the JSESSIONID cookie with the backend
+ * This function validates the SESSION cookie with the backend
  * Cached per request to avoid multiple backend calls
  */
 export const getSession = cache(async (): Promise<SessionInfo | null> => {
   try {
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("JSESSIONID");
+    const sessionCookie = cookieStore.get("SESSION");
 
     if (!sessionCookie?.value) {
       // No session cookie present
@@ -48,7 +48,7 @@ export const getSession = cache(async (): Promise<SessionInfo | null> => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Cookie: `JSESSIONID=${sessionCookie.value}`,
+        Cookie: `SESSION=${sessionCookie.value}`,
       },
       // Note: credentials: "include" doesn't work in server-side fetch
       cache: "no-store", // Don't cache auth responses

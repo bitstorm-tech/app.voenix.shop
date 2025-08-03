@@ -51,12 +51,12 @@ export function SessionProvider({
     setSession(null);
     SessionCache.clear();
 
-    // Make logout request and redirect
+    // Make logout request (redirect will be handled by server-side logoutAction)
     fetch("/api/auth/logout", {
       method: "POST",
       credentials: "include",
-    }).finally(() => {
-      window.location.href = "/login";
+    }).catch((error) => {
+      console.error("Logout request failed:", error);
     });
   };
 
@@ -90,36 +90,30 @@ export function useSession() {
 }
 
 /**
- * Hook to require authentication in client components
- * Redirects to login if not authenticated
+ * Hook to check authentication status in client components
+ * Note: Redirects are now handled server-side by middleware
  */
 export function useRequireAuth() {
   const { session, isLoading } = useSession();
 
-  useEffect(() => {
-    if (!isLoading && !session?.authenticated) {
-      window.location.href = "/login";
-    }
-  }, [session, isLoading]);
-
-  return { session, isLoading };
+  return {
+    session,
+    isLoading,
+    isAuthenticated: session?.authenticated === true,
+  };
 }
 
 /**
- * Hook to require admin access in client components
- * Redirects to login if not admin
+ * Hook to check admin access in client components
+ * Note: Redirects are now handled server-side by middleware
  */
 export function useRequireAdmin() {
   const { session, isLoading } = useSession();
 
-  useEffect(() => {
-    if (
-      !isLoading &&
-      (!session?.authenticated || !session?.roles.includes("ADMIN"))
-    ) {
-      window.location.href = "/login";
-    }
-  }, [session, isLoading]);
-
-  return { session, isLoading };
+  return {
+    session,
+    isLoading,
+    isAuthenticated: session?.authenticated === true,
+    isAdmin: session?.roles.includes("ADMIN") === true,
+  };
 }

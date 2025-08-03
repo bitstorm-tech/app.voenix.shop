@@ -1,12 +1,12 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import { z } from "zod";
 import { generateCSRFToken } from "@/lib/auth/csrf";
+import { isRedirectError } from "next/dist/client/components/redirect-error";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { z } from "zod";
 
-const BACKEND_URL =
-  process.env.BACKEND_URL || "http://localhost:8080";
+const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8080";
 
 // Validation schema for login form
 const loginSchema = z.object({
@@ -27,6 +27,8 @@ export async function loginAction(
   prevState: LoginFormState,
   formData: FormData,
 ): Promise<LoginFormState> {
+  // Get callbackUrl from form data
+  const callbackUrl = formData.get("callbackUrl")?.toString();
   // Validate form data
   const validatedFields = loginSchema.safeParse({
     email: formData.get("email"),
@@ -79,16 +81,16 @@ export async function loginAction(
     if (setCookieHeader) {
       // Parse all cookies from the header
       const cookieStore = await cookies();
-      
+
       // Split multiple cookies if present
       const cookieHeaders = setCookieHeader.split(/, (?=[^;]+=[^;]+)/);
-      
+
       for (const cookieHeader of cookieHeaders) {
         // Parse cookie name and value
-        const [nameValue, ...attributes] = cookieHeader.split(';');
-        const [name, value] = nameValue.trim().split('=');
-        
-        if (name === 'JSESSIONID') {
+        const [nameValue, ...attributes] = cookieHeader.split(";");
+        const [name, value] = nameValue.trim().split("=");
+
+        if (name === "SESSION") {
           // Parse cookie attributes from backend
           const cookieOptions: {
             value: string;
@@ -97,39 +99,42 @@ export async function loginAction(
             maxAge?: number;
             domain?: string;
             secure?: boolean;
-            sameSite?: 'lax' | 'strict' | 'none';
+            sameSite?: "lax" | "strict" | "none";
           } = {
             value,
             httpOnly: true,
-            path: '/',
+            path: "/",
           };
-          
+
           // Parse additional attributes
           for (const attr of attributes) {
-            const [key, val] = attr.trim().split('=');
+            const [key, val] = attr.trim().split("=");
             const lowerKey = key.toLowerCase();
-            
-            if (lowerKey === 'max-age') {
+
+            if (lowerKey === "max-age") {
               cookieOptions.maxAge = parseInt(val);
-            } else if (lowerKey === 'domain') {
+            } else if (lowerKey === "domain") {
               cookieOptions.domain = val;
-            } else if (lowerKey === 'secure') {
+            } else if (lowerKey === "secure") {
               cookieOptions.secure = true;
-            } else if (lowerKey === 'samesite') {
-              cookieOptions.sameSite = val.toLowerCase() as 'lax' | 'strict' | 'none';
+            } else if (lowerKey === "samesite") {
+              cookieOptions.sameSite = val.toLowerCase() as
+                | "lax"
+                | "strict"
+                | "none";
             }
           }
-          
+
           // Override security settings based on environment
-          if (process.env.NODE_ENV === 'production') {
+          if (process.env.NODE_ENV === "production") {
             cookieOptions.secure = true;
           }
-          
+
           // Set the cookie with parsed options
-          cookieStore.set('JSESSIONID', cookieOptions.value, {
+          cookieStore.set("SESSION", cookieOptions.value, {
             httpOnly: cookieOptions.httpOnly,
             secure: cookieOptions.secure || false,
-            sameSite: cookieOptions.sameSite || 'lax',
+            sameSite: cookieOptions.sameSite || "lax",
             path: cookieOptions.path,
             ...(cookieOptions.maxAge && { maxAge: cookieOptions.maxAge }),
             ...(cookieOptions.domain && { domain: cookieOptions.domain }),
@@ -141,19 +146,34 @@ export async function loginAction(
     // Generate CSRF token for the session
     await generateCSRFToken();
 
-    return { success: true };
+    // Redirect directly after successful login
+    const redirectUrl =
+      callbackUrl &&
+      callbackUrl.startsWith("/") &&
+      !callbackUrl.startsWith("//")
+        ? callbackUrl
+        : "/admin";
+
+    redirect(redirectUrl);
   } catch (error) {
+    // Re-throw redirect errors so Next.js can handle them properly
+    if (isRedirectError(error)) {
+      throw error;
+    }
+
     // Improved error handling with specific error types
-    if (error instanceof TypeError && error.message.includes('fetch')) {
+    if (error instanceof TypeError && error.message.includes("fetch")) {
       console.error("Network error connecting to backend:", error);
       return {
         success: false,
         errors: {
-          form: ["Unable to connect to server. Please check your connection and try again."],
+          form: [
+            "Unable to connect to server. Please check your connection and try again.",
+          ],
         },
       };
     }
-    
+
     console.error("Unexpected login error:", error);
     return {
       success: false,
@@ -164,11 +184,52 @@ export async function loginAction(
   }
 }
 
-export async function redirectAfterLogin(callbackUrl?: string) {
-  // Validate callback URL for security - only allow relative URLs
-  if (callbackUrl && (callbackUrl.startsWith("/") && !callbackUrl.startsWith("//"))) {
-    redirect(callbackUrl);
-  } else {
-    redirect("/admin");
+// Create logout action for server-side logout
+export async function logoutAction() {
+  try {
+    const cookieStore = await cookies();
+    const sessionCookie = cookieStore.get("SESSION");
+
+    // Call backend logout endpoint if we have a session
+    if (sessionCookie?.value) {
+      try {
+        await fetch(`${BACKEND_URL}/api/auth/logout`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Cookie: `SESSION=${sessionCookie.value}`,
+          },
+          credentials: "include",
+        });
+      } catch (error) {
+        // Continue with logout even if backend call fails
+        console.error("Backend logout error:", error);
+      }
+    }
+
+    // Clear the session cookie and CSRF token
+    cookieStore.delete("SESSION");
+    cookieStore.delete("csrf-token");
+
+    // Redirect to login page
+    redirect("/login");
+  } catch (error) {
+    // Re-throw redirect errors so Next.js can handle them properly
+    if (isRedirectError(error)) {
+      throw error;
+    }
+
+    console.error("Logout error:", error);
+
+    // Even on error, try to clear the cookie and redirect
+    try {
+      const cookieStore = await cookies();
+      cookieStore.delete("SESSION");
+      cookieStore.delete("csrf-token");
+    } catch (cookieError) {
+      console.error("Cookie deletion error:", cookieError);
+    }
+
+    redirect("/login");
   }
 }

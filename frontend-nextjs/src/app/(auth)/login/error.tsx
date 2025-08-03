@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -40,11 +41,8 @@ export default function Error({
             <Button onClick={reset} variant="outline" className="flex-1">
               Try Again
             </Button>
-            <Button
-              onClick={() => (window.location.href = "/")}
-              className="flex-1"
-            >
-              Go Home
+            <Button asChild className="flex-1">
+              <Link href="/">Go Home</Link>
             </Button>
           </div>
         </CardContent>

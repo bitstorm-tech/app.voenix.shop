@@ -38,7 +38,8 @@
       "mcp__puppeteer__puppeteer_hover",
       "Bash(npm run lint:*)",
       "Bash(node:*)",
-      "Bash(npx eslint:*)"
+      "Bash(npx eslint:*)",
+      "Bash(npm run:*)"
     ],
     "deny": []
   }

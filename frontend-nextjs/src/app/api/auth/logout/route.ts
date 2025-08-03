@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { requireCSRFToken } from "@/lib/auth/csrf";
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 const BACKEND_URL =
   process.env.BACKEND_URL || "http://localhost:8080";
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   }
   try {
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("JSESSIONID");
+    const sessionCookie = cookieStore.get("SESSION");
 
     // Call backend logout endpoint if we have a session
     if (sessionCookie?.value) {
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Cookie: `JSESSIONID=${sessionCookie.value}`,
+            Cookie: `SESSION=${sessionCookie.value}`,
           },
           credentials: "include",
         });
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     }
 
     // Clear the session cookie and CSRF token
-    cookieStore.delete("JSESSIONID");
+    cookieStore.delete("SESSION");
     cookieStore.delete("csrf-token");
 
     return NextResponse.json({ success: true }, { status: 200 });
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
 
     // Even on error, try to clear the cookie and return success
     const cookieStore = await cookies();
-    cookieStore.delete("JSESSIONID");
+    cookieStore.delete("SESSION");
 
     return NextResponse.json({ success: true }, { status: 200 });
   }

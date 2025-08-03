@@ -1,41 +1,41 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
-import { useSession } from '@/components/auth/SessionProvider';
-import { cn } from '@/lib/utils';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useSession } from "@/components/auth/SessionProvider";
+import { LogoutButton } from "./LogoutButton";
+import { cn } from "@/lib/utils";
 
 const navigation = [
   {
-    name: 'Dashboard',
-    href: '/admin',
+    name: "Dashboard",
+    href: "/admin",
   },
   {
-    name: 'Articles',
-    href: '/admin/articles',
+    name: "Articles",
+    href: "/admin/articles",
   },
   {
-    name: 'Prompts',
-    href: '/admin/prompts',
+    name: "Prompts",
+    href: "/admin/prompts",
   },
   {
-    name: 'Categories',
-    href: '/admin/categories',
+    name: "Categories",
+    href: "/admin/categories",
   },
   {
-    name: 'Users',
-    href: '/admin/users',
+    name: "Users",
+    href: "/admin/users",
   },
   {
-    name: 'Settings',
-    href: '/admin/settings',
+    name: "Settings",
+    href: "/admin/settings",
   },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
-  const { session, logout } = useSession();
+  const { session } = useSession();
 
   return (
     <div className="flex h-full w-64 flex-col bg-white shadow-lg">
@@ -55,7 +55,7 @@ export function AdminSidebar() {
               {session?.user?.email}
             </p>
             <p className="text-xs text-gray-500">
-              {session?.roles.includes('ADMIN') ? 'Administrator' : 'User'}
+              {session?.roles.includes("ADMIN") ? "Administrator" : "User"}
             </p>
           </div>
         </div>
@@ -64,18 +64,19 @@ export function AdminSidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-2 py-4">
         {navigation.map((item) => {
-          const isActive = pathname === item.href || 
-            (item.href !== '/admin' && pathname.startsWith(item.href));
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/admin" && pathname.startsWith(item.href));
 
           return (
             <Link
               key={item.name}
               href={item.href}
               className={cn(
-                'group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors',
+                "group flex items-center rounded-md px-2 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? 'bg-blue-100 text-blue-700'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? "bg-blue-100 text-blue-700"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900",
               )}
             >
               {item.name}
@@ -86,13 +87,7 @@ export function AdminSidebar() {
 
       {/* Logout Button */}
       <div className="border-t border-gray-200 p-4">
-        <Button
-          onClick={logout}
-          variant="outline"
-          className="w-full"
-        >
-          Log Out
-        </Button>
+        <LogoutButton className="w-full" />
       </div>
     </div>
   );

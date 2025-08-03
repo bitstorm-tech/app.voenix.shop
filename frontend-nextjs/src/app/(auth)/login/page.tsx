@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import {
@@ -12,11 +12,7 @@ import {
 } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Label } from "@/components/ui/Label";
-import {
-  loginAction,
-  redirectAfterLogin,
-  type LoginFormState,
-} from "./actions";
+import { loginAction, type LoginFormState } from "./actions";
 
 const initialState: LoginFormState = {
   success: false,
@@ -25,18 +21,11 @@ const initialState: LoginFormState = {
 export default function LoginPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
-  
+
   const [state, formAction, isPending] = useActionState(
     loginAction,
     initialState,
   );
-
-  // Handle successful login
-  useEffect(() => {
-    if (state.success) {
-      redirectAfterLogin(callbackUrl || undefined);
-    }
-  }, [state.success, callbackUrl]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
@@ -49,6 +38,9 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent>
           <form action={formAction} className="space-y-4">
+            {callbackUrl && (
+              <input type="hidden" name="callbackUrl" value={callbackUrl} />
+            )}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input

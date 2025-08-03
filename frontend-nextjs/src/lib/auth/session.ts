@@ -41,10 +41,10 @@ export async function isClientAuthenticated(): Promise<boolean> {
  * Get CSRF token from cookies (client-side)
  */
 async function getCSRFTokenFromCookie(): Promise<string | null> {
-  const cookies = document.cookie.split(';');
+  const cookies = document.cookie.split(";");
   for (const cookie of cookies) {
-    const [name, value] = cookie.trim().split('=');
-    if (name === 'csrf-token') {
+    const [name, value] = cookie.trim().split("=");
+    if (name === "csrf-token") {
       return decodeURIComponent(value);
     }
   }
@@ -53,12 +53,13 @@ async function getCSRFTokenFromCookie(): Promise<string | null> {
 
 /**
  * Logout the current user by calling the logout endpoint
+ * Note: Redirects are now handled by server-side logoutAction
  */
 export async function logout(): Promise<void> {
   try {
     // Get CSRF token for logout request
     const csrfToken = await getCSRFTokenFromCookie();
-    
+
     await fetch("/api/auth/logout", {
       method: "POST",
       credentials: "include",
@@ -70,14 +71,10 @@ export async function logout(): Promise<void> {
 
     // Clear session cache
     SessionCache.clear();
-
-    // Redirect to login page after logout
-    window.location.href = "/login";
   } catch (error) {
     console.error("Error during logout:", error);
-    // Even if logout fails, clear cache and redirect to login
+    // Clear cache even if logout fails
     SessionCache.clear();
-    window.location.href = "/login";
   }
 }
 
@@ -147,12 +144,9 @@ export class SessionCache {
  * Get session with caching of auth state only
  */
 export async function getCachedSession(): Promise<SessionInfo | null> {
-  // Check if we have a cached auth state
-  const cachedAuthState = SessionCache.getAuthState();
-  
   // Always fetch fresh session data from server
   const session = await getClientSession();
-  
+
   // Only cache the authentication state, not the full session
   if (session) {
     SessionCache.setAuthState(session.authenticated);

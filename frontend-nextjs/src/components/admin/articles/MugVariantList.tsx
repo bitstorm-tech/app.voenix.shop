@@ -2,8 +2,8 @@ import { Badge } from '@/components/ui/Badge';
 import { ColorSwatch } from '@/components/ui/ColorSwatch';
 import type { Article, ArticleMugVariant } from '@/types/article';
 
-function formatArticleNumber(articleNumber: string): string {
-  return articleNumber;
+function formatArticleNumber(categoryId?: number, subcategoryId?: number, articleId?: number, variantNumber?: string | number): string {
+  return `${categoryId || 0}.${subcategoryId || 0}.${articleId || 0}.${variantNumber || 0}`;
 }
 
 interface MugVariantListProps {
