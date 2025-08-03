@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  frontend:
+    build: .
+    ports:
+      - "3211:3000"
+    environment:
+      # This allows the frontend container to communicate with the backend
+      # running on the host machine.
+      BACKEND_URL: http://host.docker.internal:8080
