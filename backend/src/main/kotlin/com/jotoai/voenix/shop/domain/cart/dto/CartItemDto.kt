@@ -13,7 +13,10 @@ data class CartItemDto(
     val originalPrice: Long, // Current price for comparison
     val hasPriceChanged: Boolean,
     val totalPrice: Long, // priceAtTime * quantity
-    val customData: Map<String, Any>,
+    val customData: Map<String, Any>, // Only for crop data and similar non-FK fields
+    val generatedImageId: Long? = null,
+    val generatedImageFilename: String? = null, // Filename for the generated image
+    val promptId: Long? = null,
     val position: Int,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,

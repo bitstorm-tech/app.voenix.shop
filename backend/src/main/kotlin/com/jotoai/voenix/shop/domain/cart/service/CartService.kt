@@ -17,6 +17,8 @@ import com.jotoai.voenix.shop.domain.cart.exception.CartItemNotFoundException
 import com.jotoai.voenix.shop.domain.cart.exception.CartNotFoundException
 import com.jotoai.voenix.shop.domain.cart.exception.CartOperationException
 import com.jotoai.voenix.shop.domain.cart.repository.CartRepository
+import com.jotoai.voenix.shop.domain.images.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.domain.prompts.repository.PromptRepository
 import com.jotoai.voenix.shop.domain.users.entity.User
 import com.jotoai.voenix.shop.domain.users.repository.UserRepository
 import org.slf4j.LoggerFactory
@@ -32,6 +34,8 @@ class CartService(
     private val userRepository: UserRepository,
     private val articleRepository: ArticleRepository,
     private val mugVariantRepository: MugArticleVariantRepository,
+    private val generatedImageRepository: GeneratedImageRepository,
+    private val promptRepository: PromptRepository,
     private val cartAssembler: CartAssembler,
 ) {
     private val logger = LoggerFactory.getLogger(CartService::class.java)
@@ -96,6 +100,23 @@ class CartService(
         // Get current price from cost calculation
         val currentPrice = getCurrentPrice(article)
 
+        // Validate and fetch related entities if provided
+        val generatedImage =
+            request.generatedImageId?.let { imageId ->
+                generatedImageRepository
+                    .findById(imageId)
+                    .orElseThrow { ResourceNotFoundException("Generated image not found with id: $imageId") }
+            }
+
+        val prompt =
+            request.promptId?.let { promptId ->
+                promptRepository
+                    .findById(promptId)
+                    .orElseThrow { ResourceNotFoundException("Prompt not found with id: $promptId") }
+            }
+
+        // Use custom data only for crop data and similar non-FK fields
+
         // Create new cart item
         val cartItem =
             CartItem(
@@ -106,6 +127,8 @@ class CartService(
                 priceAtTime = currentPrice,
                 originalPrice = currentPrice,
                 customData = request.customData,
+                generatedImage = generatedImage,
+                prompt = prompt,
             )
 
         // Add or update item in cart
@@ -151,7 +174,28 @@ class CartService(
 
         // Update the cart item
         cartItem.updateQuantity(request.quantity)
-        request.customData?.let { cartItem.customData = it }
+
+        // Update custom data (only for crop data and similar non-FK fields)
+        request.customData?.let { newCustomData ->
+            cartItem.customData = newCustomData
+        }
+
+        // Update FK fields directly
+        request.generatedImageId?.let { imageId ->
+            val generatedImage =
+                generatedImageRepository
+                    .findById(imageId)
+                    .orElseThrow { ResourceNotFoundException("Generated image not found with id: $imageId") }
+            cartItem.generatedImage = generatedImage
+        }
+
+        request.promptId?.let { promptId ->
+            val prompt =
+                promptRepository
+                    .findById(promptId)
+                    .orElseThrow { ResourceNotFoundException("Prompt not found with id: $promptId") }
+            cartItem.prompt = prompt
+        }
 
         val savedCart =
             try {

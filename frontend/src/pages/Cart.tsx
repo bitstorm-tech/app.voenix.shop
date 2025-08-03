@@ -151,27 +151,37 @@ export default function CartPage() {
                   originalPrice: item.originalPrice / 100,
                 };
 
-                let imageUrl = item.customData?.imageUrl;
+                // Construct image URL from generatedImageFilename
+                const imageUrl = item.generatedImageFilename ? `/api/user/images/${item.generatedImageFilename}` : undefined;
+
                 const itemPrice = displayItem.price;
                 const subtotal = displayItem.price * displayItem.quantity;
-
-                // Handle different image URL formats
-                if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('data:') && !imageUrl.startsWith('/api/')) {
-                  imageUrl = `/api/images/${imageUrl}`;
-                }
 
                 return (
                   <div key={itemId} className="rounded-lg bg-white p-6 shadow-sm">
                     <div className="sm:flex sm:items-start">
                       <div className="flex-shrink-0">
-                        <img
-                          src={imageUrl || '/placeholder-mug.png'}
-                          alt="Custom mug design"
-                          className="h-24 w-24 rounded-md object-cover sm:h-32 sm:w-32"
-                          onError={(e) => {
-                            e.currentTarget.src = '/placeholder-mug.png';
-                          }}
-                        />
+                        {imageUrl ? (
+                          <img
+                            src={imageUrl}
+                            alt="Custom mug design"
+                            className="h-24 w-24 rounded-md object-cover sm:h-32 sm:w-32"
+                            onError={(e) => {
+                              // Hide broken image and show placeholder div instead
+                              e.currentTarget.style.display = 'none';
+                              const placeholder = e.currentTarget.nextElementSibling;
+                              if (placeholder) {
+                                (placeholder as HTMLElement).style.display = 'flex';
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <div
+                          className="h-24 w-24 rounded-md bg-gray-200 sm:h-32 sm:w-32 flex items-center justify-center"
+                          style={{ display: imageUrl ? 'none' : 'flex' }}
+                        >
+                          <ShoppingBag className="h-8 w-8 text-gray-400" />
+                        </div>
                       </div>
                       <div className="mt-4 sm:mt-0 sm:ml-6 sm:flex-1">
                         <div className="sm:flex sm:items-start sm:justify-between">

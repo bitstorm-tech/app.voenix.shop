@@ -68,7 +68,7 @@ class PublicImageGenerationService(
             val imageEditResponse = openAIImageService.editImage(imageFile, openAIRequest)
 
             // Store image generation records for tracking (anonymous user)
-            imageEditResponse.imageFilenames.forEach { filename ->
+            val generatedImages = imageEditResponse.imageFilenames.map { filename ->
                 val generatedImage =
                     GeneratedImage(
                         filename = filename,
@@ -85,11 +85,14 @@ class PublicImageGenerationService(
                 imageEditResponse.imageFilenames.map { filename ->
                     storagePathService.getImageUrl(ImageType.PUBLIC, filename)
                 }
+            
+            val imageIds = generatedImages.mapNotNull { it.id }
 
             logger.info("Successfully generated ${imageUrls.size} images for public user")
 
             return PublicImageGenerationResponse(
                 imageUrls = imageUrls,
+                generatedImageIds = imageIds,
             )
         } catch (e: Exception) {
             logger.error("Error generating image for public user", e)

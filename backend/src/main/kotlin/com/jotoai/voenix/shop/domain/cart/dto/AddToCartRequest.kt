@@ -10,5 +10,7 @@ data class AddToCartRequest(
     val variantId: Long,
     @field:Min(value = 1, message = "Quantity must be at least 1")
     val quantity: Int = 1,
-    val customData: Map<String, Any> = emptyMap(),
+    val customData: Map<String, Any> = emptyMap(), // Only for crop data and similar non-FK fields
+    val generatedImageId: Long? = null,
+    val promptId: Long? = null,
 )

@@ -5,6 +5,11 @@ import { Prompt } from '@/types/prompt';
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 
+interface GeneratedImageInfo {
+  url: string;
+  generatedImageId?: number;
+}
+
 interface WizardStore {
   // ========== State ==========
   currentStep: WizardStep;
@@ -15,8 +20,9 @@ interface WizardStore {
   selectedMug: MugOption | null;
   selectedVariant: MugVariant | null;
   userData: UserData | null;
-  generatedImageUrls: string[] | null;
+  generatedImages: GeneratedImageInfo[] | null;
   selectedGeneratedImage: string | null;
+  selectedGeneratedImageInfo: GeneratedImageInfo | null;
   generatedImageCropData: GeneratedImageCropData | null;
   isProcessing: boolean;
   error: string | null;
@@ -48,7 +54,9 @@ interface WizardStore {
 
   // ========== Generation Actions ==========
   setGeneratedImages: (urls: string[]) => void;
+  setGeneratedImagesInfo: (images: GeneratedImageInfo[]) => void;
   selectGeneratedImage: (url: string) => void;
+  selectGeneratedImageInfo: (imageInfo: GeneratedImageInfo) => void;
   updateGeneratedImageCropData: (cropData: GeneratedImageCropData | null) => void;
   setProcessing: (isProcessing: boolean) => void;
   setError: (error: string | null) => void;
@@ -136,8 +144,9 @@ export const useWizardStore = create<WizardStore>()(
     selectedMug: null,
     selectedVariant: null,
     userData: null,
-    generatedImageUrls: null,
+    generatedImages: null,
     selectedGeneratedImage: null,
+    selectedGeneratedImageInfo: null,
     generatedImageCropData: null,
     isProcessing: false,
     error: null,
@@ -203,8 +212,9 @@ export const useWizardStore = create<WizardStore>()(
         state.selectedMug = null;
         state.selectedVariant = null;
         state.userData = null;
-        state.generatedImageUrls = null;
+        state.generatedImages = null;
         state.selectedGeneratedImage = null;
+        state.selectedGeneratedImageInfo = null;
         state.generatedImageCropData = null;
         state.isProcessing = false;
         state.error = null;
@@ -278,9 +288,20 @@ export const useWizardStore = create<WizardStore>()(
     // ========== Generation Actions ==========
     setGeneratedImages: (urls) => {
       set((state) => {
-        state.generatedImageUrls = urls;
+        state.generatedImages = urls.map((url) => ({ url }));
         state.selectedGeneratedImage = null; // Reset selection when new images are generated
+        state.selectedGeneratedImageInfo = null;
         state.generatedImageCropData = null; // Reset crop data when new images are generated
+        state.canGoNext = false;
+      });
+    },
+
+    setGeneratedImagesInfo: (images) => {
+      set((state) => {
+        state.generatedImages = images;
+        state.selectedGeneratedImage = null;
+        state.selectedGeneratedImageInfo = null;
+        state.generatedImageCropData = null;
         state.canGoNext = false;
       });
     },
@@ -288,7 +309,18 @@ export const useWizardStore = create<WizardStore>()(
     selectGeneratedImage: (url) => {
       set((state) => {
         state.selectedGeneratedImage = url;
+        const imageInfo = state.generatedImages?.find((img) => img.url === url);
+        state.selectedGeneratedImageInfo = imageInfo || null;
         state.generatedImageCropData = null; // Reset crop data when selecting a different image
+        state.canGoNext = true;
+      });
+    },
+
+    selectGeneratedImageInfo: (imageInfo) => {
+      set((state) => {
+        state.selectedGeneratedImageInfo = imageInfo;
+        state.selectedGeneratedImage = imageInfo.url;
+        state.generatedImageCropData = null;
         state.canGoNext = true;
       });
     },
@@ -353,8 +385,9 @@ export const useWizardStore = create<WizardStore>()(
         selectedMug: state.selectedMug,
         selectedVariant: state.selectedVariant,
         // Deliberately not preserving userData for privacy
-        generatedImageUrls: state.generatedImageUrls,
+        generatedImages: state.generatedImages,
         selectedGeneratedImage: state.selectedGeneratedImage,
+        selectedGeneratedImageInfo: state.selectedGeneratedImageInfo,
         generatedImageCropData: state.generatedImageCropData,
       };
 
@@ -387,8 +420,9 @@ export const useWizardStore = create<WizardStore>()(
           state.selectedPrompt = preservedState.selectedPrompt;
           state.selectedMug = preservedState.selectedMug;
           state.selectedVariant = preservedState.selectedVariant;
-          state.generatedImageUrls = preservedState.generatedImageUrls;
+          state.generatedImages = preservedState.generatedImages;
           state.selectedGeneratedImage = preservedState.selectedGeneratedImage;
+          state.selectedGeneratedImageInfo = preservedState.selectedGeneratedImageInfo;
           state.generatedImageCropData = preservedState.generatedImageCropData;
 
           // Update navigation state

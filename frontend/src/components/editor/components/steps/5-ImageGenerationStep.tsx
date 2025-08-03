@@ -21,11 +21,11 @@ const funnyMessages = [
 export default function ImageGenerationStep() {
   const uploadedImage = useWizardStore((state) => state.uploadedImage);
   const selectedPrompt = useWizardStore((state) => state.selectedPrompt);
-  const generatedImageUrls = useWizardStore((state) => state.generatedImageUrls);
+  const generatedImages = useWizardStore((state) => state.generatedImages);
   const selectedGeneratedImage = useWizardStore((state) => state.selectedGeneratedImage);
   const setProcessing = useWizardStore((state) => state.setProcessing);
-  const setGeneratedImages = useWizardStore((state) => state.setGeneratedImages);
-  const selectGeneratedImage = useWizardStore((state) => state.selectGeneratedImage);
+  const setGeneratedImagesInfo = useWizardStore((state) => state.setGeneratedImagesInfo);
+  const selectGeneratedImageInfo = useWizardStore((state) => state.selectGeneratedImageInfo);
   const { isGenerating, error, generateImages } = useImageGeneration();
   const hasStartedGeneration = useRef(false);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
@@ -41,19 +41,24 @@ export default function ImageGenerationStep() {
   }, [isGenerating]);
 
   useEffect(() => {
-    if (!generatedImageUrls && uploadedImage && selectedPrompt?.id && !hasStartedGeneration.current) {
+    if (!generatedImages && uploadedImage && selectedPrompt?.id && !hasStartedGeneration.current) {
       hasStartedGeneration.current = true;
       const performGeneration = async () => {
         setProcessing(true);
-        const urls = await generateImages(uploadedImage, selectedPrompt.id);
-        if (urls) {
-          setGeneratedImages(urls);
+        const result = await generateImages(uploadedImage, selectedPrompt.id);
+        if (result) {
+          // Combine URLs and IDs into GeneratedImageInfo objects
+          const imagesInfo = result.urls.map((url, index) => ({
+            url,
+            generatedImageId: result.ids[index],
+          }));
+          setGeneratedImagesInfo(imagesInfo);
         }
         setProcessing(false);
       };
       performGeneration();
     }
-  }, [uploadedImage, selectedPrompt?.id, generatedImageUrls, generateImages, setProcessing, setGeneratedImages]);
+  }, [uploadedImage, selectedPrompt?.id, generatedImages, generateImages, setProcessing, setGeneratedImagesInfo]);
 
   if (isGenerating) {
     return (
@@ -79,7 +84,7 @@ export default function ImageGenerationStep() {
     );
   }
 
-  if (!generatedImageUrls) {
+  if (!generatedImages) {
     return null;
   }
 
@@ -90,7 +95,17 @@ export default function ImageGenerationStep() {
         <p className="text-sm text-gray-600">Select the design that best captures your vision from these AI-generated variations</p>
       </div>
 
-      <ImageVariantSelector variants={generatedImageUrls} selectedVariant={selectedGeneratedImage} onVariantSelect={selectGeneratedImage} />
+      <ImageVariantSelector
+        variants={generatedImages.map((img) => img.url)}
+        selectedVariant={selectedGeneratedImage}
+        onVariantSelect={(url) => {
+          // Find the corresponding image info and select it
+          const imageInfo = generatedImages.find((img) => img.url === url);
+          if (imageInfo) {
+            selectGeneratedImageInfo(imageInfo);
+          }
+        }}
+      />
 
       {selectedGeneratedImage && (
         <div className="rounded-lg bg-green-50 p-4">

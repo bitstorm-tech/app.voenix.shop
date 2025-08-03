@@ -1,7 +1,7 @@
 import { Article } from './article';
 
 export interface CartItemCustomData {
-  imageUrl?: string;
+  // Only contains crop data for image positioning on the mug
   cropData?: {
     crop: { x: number; y: number };
     zoom: number;
@@ -11,11 +11,6 @@ export interface CartItemCustomData {
       width: number;
       height: number;
     };
-  };
-  generatedImageId?: number;
-  promptInfo?: {
-    promptId: number;
-    promptText: string;
   };
 }
 
@@ -29,6 +24,10 @@ export interface CartItemDto {
   hasPriceChanged: boolean;
   totalPrice: number; // priceAtTime * quantity in cents
   customData: CartItemCustomData;
+  // New structured fields
+  generatedImageId?: number;
+  generatedImageFilename?: string; // Filename for the generated image
+  promptId?: number;
   position: number;
   createdAt: string;
   updatedAt: string;
@@ -69,8 +68,12 @@ export interface AddToCartRequest {
   variantId: number;
   quantity?: number;
   customData?: CartItemCustomData;
+  // New structured fields
+  generatedImageId?: number;
+  promptId?: number;
 }
 
 export interface UpdateCartItemRequest {
   quantity: number;
+  // Note: generatedImageId and promptId are not updatable after cart item creation
 }

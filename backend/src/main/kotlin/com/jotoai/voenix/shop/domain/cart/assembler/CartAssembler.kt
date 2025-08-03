@@ -29,8 +29,13 @@ class CartAssembler(
             updatedAt = entity.updatedAt,
         )
 
-    fun toItemDto(entity: CartItem): CartItemDto =
-        CartItemDto(
+    fun toItemDto(entity: CartItem): CartItemDto {
+        // Use FK fields directly
+        val generatedImageId = entity.generatedImage?.id
+        val generatedImageFilename = entity.generatedImage?.filename
+        val promptId = entity.prompt?.id
+
+        return CartItemDto(
             id = requireNotNull(entity.id) { "CartItem ID cannot be null when converting to DTO" },
             article = articleAssembler.toDto(entity.article),
             variant = mugArticleVariantAssembler.toDto(entity.variant),
@@ -40,10 +45,14 @@ class CartAssembler(
             hasPriceChanged = entity.hasPriceChanged(),
             totalPrice = entity.getTotalPrice(),
             customData = entity.customData,
+            generatedImageId = generatedImageId,
+            generatedImageFilename = generatedImageFilename,
+            promptId = promptId,
             position = entity.position,
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,
         )
+    }
 
     fun toSummaryDto(entity: Cart): CartSummaryDto =
         CartSummaryDto(

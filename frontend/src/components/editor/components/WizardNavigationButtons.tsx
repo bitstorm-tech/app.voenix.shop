@@ -18,6 +18,7 @@ export default function WizardNavigationButtons() {
   const selectedMug = useWizardStore((state) => state.selectedMug);
   const selectedVariant = useWizardStore((state) => state.selectedVariant);
   const selectedGeneratedImage = useWizardStore((state) => state.selectedGeneratedImage);
+  const selectedGeneratedImageInfo = useWizardStore((state) => state.selectedGeneratedImageInfo);
   const selectedPrompt = useWizardStore((state) => state.selectedPrompt);
   const generatedImageCropData = useWizardStore((state) => state.generatedImageCropData);
   const cropData = useWizardStore((state) => state.cropData);
@@ -51,8 +52,7 @@ export default function WizardNavigationButtons() {
           throw new Error('Please select a mug variant before adding to cart');
         }
 
-        // Determine which image and crop data to use
-        const imageToUse = selectedGeneratedImage;
+        // Determine which crop data to use
         const cropDataToUse = generatedImageCropData || cropData || undefined;
 
         // For authenticated users, use the API-backed cart
@@ -60,15 +60,12 @@ export default function WizardNavigationButtons() {
           articleId: selectedMug.id,
           variantId: selectedVariant.id,
           quantity: 1,
+          // Structured fields for generated image and prompt references
+          generatedImageId: selectedGeneratedImageInfo?.generatedImageId,
+          promptId: selectedPrompt?.id,
+          // Custom data contains only crop data for image positioning
           customData: {
-            imageUrl: imageToUse,
             cropData: cropDataToUse,
-            promptInfo: selectedPrompt
-              ? {
-                  promptId: selectedPrompt.id,
-                  promptText: selectedPrompt.promptText || selectedPrompt.title,
-                }
-              : undefined,
           },
         });
 

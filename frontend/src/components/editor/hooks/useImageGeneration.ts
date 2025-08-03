@@ -2,10 +2,15 @@ import { publicApi, userApi } from '@/lib/api';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { useState } from 'react';
 
+interface GeneratedImageData {
+  urls: string[];
+  ids: number[];
+}
+
 interface UseImageGenerationReturn {
   isGenerating: boolean;
   error: string | null;
-  generateImages: (file: File, promptId: number) => Promise<string[] | null>;
+  generateImages: (file: File, promptId: number) => Promise<GeneratedImageData | null>;
 }
 
 export function useImageGeneration(): UseImageGenerationReturn {
@@ -13,7 +18,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
   const [error, setError] = useState<string | null>(null);
   const isAuthenticated = useWizardStore((state) => state.isAuthenticated);
 
-  const generateImages = async (file: File, promptId: number): Promise<string[] | null> => {
+  const generateImages = async (file: File, promptId: number): Promise<GeneratedImageData | null> => {
     setIsGenerating(true);
     setError(null);
 
@@ -21,8 +26,11 @@ export function useImageGeneration(): UseImageGenerationReturn {
       // Use authenticated endpoint if user is logged in
       const response = isAuthenticated ? await userApi.generateImage(file, promptId) : await publicApi.generateImage(file, promptId);
 
-      // Return the image URLs
-      return response.imageUrls;
+      // Return both URLs and IDs
+      return {
+        urls: response.imageUrls,
+        ids: response.generatedImageIds,
+      };
     } catch (err: unknown) {
       let errorMessage = 'An unexpected error occurred';
 

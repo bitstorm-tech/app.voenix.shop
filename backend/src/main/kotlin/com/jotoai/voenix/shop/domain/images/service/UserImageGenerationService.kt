@@ -86,16 +86,22 @@ class UserImageGenerationService(
                     )
                 }
 
-            // Build URLs for the generated images
+            // Build URLs and IDs for the generated images
             val imageUrls =
                 generatedImages.map { generatedImage ->
                     "/api/user/images/${generatedImage.filename}"
+                }
+            
+            val imageIds =
+                generatedImages.mapNotNull { generatedImage ->
+                    generatedImage.id
                 }
 
             logger.info("Successfully generated ${imageUrls.size} images for user $userId")
 
             return PublicImageGenerationResponse(
                 imageUrls = imageUrls,
+                generatedImageIds = imageIds,
             )
         } catch (e: Exception) {
             logger.error("Error generating image for user $userId", e)
