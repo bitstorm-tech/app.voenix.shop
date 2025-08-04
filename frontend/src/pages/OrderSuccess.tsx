@@ -1,4 +1,5 @@
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { useOrder } from '@/hooks/queries/useOrders';
 import { createManualDownloadUrl, downloadOrderPDF } from '@/lib/pdfDownload';
@@ -90,7 +91,8 @@ export default function OrderSuccessPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
+      <AppHeader />
+      <div className="mx-auto max-w-3xl px-4 pt-8 pb-8 sm:px-6 lg:px-8">
         {/* Success Header */}
         <div className="text-center">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
@@ -302,7 +304,9 @@ export default function OrderSuccessPage() {
             View Order History
           </Button>
           <Button asChild>
-            <Link to="/">Continue Shopping</Link>
+            <Link to="/" reloadDocument>
+              Continue Shopping
+            </Link>
           </Button>
         </div>
       </div>
