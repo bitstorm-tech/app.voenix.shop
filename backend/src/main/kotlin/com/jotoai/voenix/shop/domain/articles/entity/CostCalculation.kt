@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.domain.articles.entity
 
-import com.jotoai.voenix.shop.domain.vat.entity.ValueAddedTax
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -10,7 +9,6 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
@@ -50,18 +48,16 @@ class CostCalculation(
     var purchaseTotalGross: Int = 0,
     @Column(name = "purchase_price_unit", length = 50, nullable = false)
     var purchasePriceUnit: String = "PER_PIECE",
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "purchase_vat_rate_id")
-    var purchaseVatRate: ValueAddedTax? = null,
+    @Column(name = "purchase_vat_rate_id")
+    var purchaseVatRateId: Long? = null,
     @Column(name = "purchase_vat_rate_percent", precision = 5, scale = 2, nullable = false)
     var purchaseVatRatePercent: BigDecimal = BigDecimal("19"),
     @Column(name = "purchase_calculation_mode", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
     var purchaseCalculationMode: CalculationMode = CalculationMode.NET,
     // Sales section fields
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sales_vat_rate_id")
-    var salesVatRate: ValueAddedTax? = null,
+    @Column(name = "sales_vat_rate_id")
+    var salesVatRateId: Long? = null,
     @Column(name = "sales_vat_rate_percent", precision = 5, scale = 2, nullable = false)
     var salesVatRatePercent: BigDecimal = BigDecimal("19"),
     @Column(name = "sales_margin_net", nullable = false)
@@ -118,10 +114,10 @@ class CostCalculation(
             purchaseTotalTax = this.purchaseTotalTax,
             purchaseTotalGross = this.purchaseTotalGross,
             purchasePriceUnit = this.purchasePriceUnit,
-            purchaseVatRateId = this.purchaseVatRate?.id,
+            purchaseVatRateId = this.purchaseVatRateId,
             purchaseVatRatePercent = this.purchaseVatRatePercent,
             purchaseCalculationMode = this.purchaseCalculationMode,
-            salesVatRateId = this.salesVatRate?.id,
+            salesVatRateId = this.salesVatRateId,
             salesVatRatePercent = this.salesVatRatePercent,
             salesMarginNet = this.salesMarginNet,
             salesMarginTax = this.salesMarginTax,

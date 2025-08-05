@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.domain.vat.repository
+package com.jotoai.voenix.shop.modules.vat.internal.repository
 
-import com.jotoai.voenix.shop.domain.vat.entity.ValueAddedTax
+import com.jotoai.voenix.shop.modules.vat.internal.entity.ValueAddedTax
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query

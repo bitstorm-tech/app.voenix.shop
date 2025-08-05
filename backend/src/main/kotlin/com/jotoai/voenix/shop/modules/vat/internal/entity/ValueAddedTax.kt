@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.domain.vat.entity
+package com.jotoai.voenix.shop.modules.vat.internal.entity
 
-import com.jotoai.voenix.shop.domain.vat.dto.ValueAddedTaxDto
+import com.jotoai.voenix.shop.modules.vat.api.dto.ValueAddedTaxDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue

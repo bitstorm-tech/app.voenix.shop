@@ -30,6 +30,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.session:spring-session-jdbc")
 
+    // Spring Modulith
+    implementation("org.springframework.modulith:spring-modulith-starter-core:1.4.2")
+    implementation("org.springframework.modulith:spring-modulith-starter-jpa:1.4.2")
+
     // Database
     implementation("org.flywaydb:flyway-core:11.10.1")
     implementation("org.flywaydb:flyway-database-postgresql:11.10.1")
@@ -61,6 +65,7 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("com.h2database:h2")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    testImplementation("org.springframework.modulith:spring-modulith-starter-test:1.4.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.2")
 }
 

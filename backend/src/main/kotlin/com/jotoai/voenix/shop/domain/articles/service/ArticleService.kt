@@ -29,7 +29,7 @@ import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepo
 import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.service.StoragePathService
 import com.jotoai.voenix.shop.domain.suppliers.repository.SupplierRepository
-import com.jotoai.voenix.shop.domain.vat.repository.ValueAddedTaxRepository
+import com.jotoai.voenix.shop.modules.vat.api.VatQueryService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -44,7 +44,7 @@ class ArticleService(
     private val articleSubCategoryRepository: ArticleSubCategoryRepository,
     private val supplierRepository: SupplierRepository,
     private val costCalculationRepository: CostCalculationRepository,
-    private val valueAddedTaxRepository: ValueAddedTaxRepository,
+    private val vatQueryService: VatQueryService,
     private val mugDetailsService: MugDetailsService,
     private val shirtDetailsService: ShirtDetailsService,
     private val articleAssembler: ArticleAssembler,
@@ -349,19 +349,18 @@ class ArticleService(
         article: Article,
         request: CreateCostCalculationRequest,
     ) {
-        val purchaseVatRate =
-            request.purchaseVatRateId?.let {
-                valueAddedTaxRepository
-                    .findById(it)
-                    .orElseThrow { ResourceNotFoundException("Purchase VAT rate not found with id: $it") }
+        // Validate VAT rates exist if provided
+        request.purchaseVatRateId?.let {
+            if (!vatQueryService.existsById(it)) {
+                throw ResourceNotFoundException("Purchase VAT rate not found with id: $it")
             }
+        }
 
-        val salesVatRate =
-            request.salesVatRateId?.let {
-                valueAddedTaxRepository
-                    .findById(it)
-                    .orElseThrow { ResourceNotFoundException("Sales VAT rate not found with id: $it") }
+        request.salesVatRateId?.let {
+            if (!vatQueryService.existsById(it)) {
+                throw ResourceNotFoundException("Sales VAT rate not found with id: $it")
             }
+        }
 
         val costCalculation =
             CostCalculation(
@@ -377,10 +376,10 @@ class ArticleService(
                 purchaseTotalTax = request.purchaseTotalTax,
                 purchaseTotalGross = request.purchaseTotalGross,
                 purchasePriceUnit = request.purchasePriceUnit,
-                purchaseVatRate = purchaseVatRate,
+                purchaseVatRateId = request.purchaseVatRateId,
                 purchaseVatRatePercent = request.purchaseVatRatePercent,
                 purchaseCalculationMode = request.purchaseCalculationMode,
-                salesVatRate = salesVatRate,
+                salesVatRateId = request.salesVatRateId,
                 salesVatRatePercent = request.salesVatRatePercent,
                 salesMarginNet = request.salesMarginNet,
                 salesMarginTax = request.salesMarginTax,
@@ -411,19 +410,18 @@ class ArticleService(
 
         if (costCalculation != null) {
             // Update existing cost calculation
-            val purchaseVatRate =
-                request.purchaseVatRateId?.let {
-                    valueAddedTaxRepository
-                        .findById(it)
-                        .orElseThrow { ResourceNotFoundException("Purchase VAT rate not found with id: $it") }
+            // Validate VAT rates exist if provided
+            request.purchaseVatRateId?.let {
+                if (!vatQueryService.existsById(it)) {
+                    throw ResourceNotFoundException("Purchase VAT rate not found with id: $it")
                 }
+            }
 
-            val salesVatRate =
-                request.salesVatRateId?.let {
-                    valueAddedTaxRepository
-                        .findById(it)
-                        .orElseThrow { ResourceNotFoundException("Sales VAT rate not found with id: $it") }
+            request.salesVatRateId?.let {
+                if (!vatQueryService.existsById(it)) {
+                    throw ResourceNotFoundException("Sales VAT rate not found with id: $it")
                 }
+            }
 
             // Update the existing cost calculation properties
             costCalculation.purchasePriceNet = request.purchasePriceNet
@@ -437,10 +435,10 @@ class ArticleService(
             costCalculation.purchaseTotalTax = request.purchaseTotalTax
             costCalculation.purchaseTotalGross = request.purchaseTotalGross
             costCalculation.purchasePriceUnit = request.purchasePriceUnit
-            costCalculation.purchaseVatRate = purchaseVatRate
+            costCalculation.purchaseVatRateId = request.purchaseVatRateId
             costCalculation.purchaseVatRatePercent = request.purchaseVatRatePercent
             costCalculation.purchaseCalculationMode = request.purchaseCalculationMode
-            costCalculation.salesVatRate = salesVatRate
+            costCalculation.salesVatRateId = request.salesVatRateId
             costCalculation.salesVatRatePercent = request.salesVatRatePercent
             costCalculation.salesMarginNet = request.salesMarginNet
             costCalculation.salesMarginTax = request.salesMarginTax

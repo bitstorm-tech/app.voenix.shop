@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.vat.dto
+package com.jotoai.voenix.shop.modules.vat.api.dto
 
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
