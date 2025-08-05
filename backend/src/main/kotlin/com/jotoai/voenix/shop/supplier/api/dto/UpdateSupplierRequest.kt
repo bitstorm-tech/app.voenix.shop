@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.suppliers.dto
+package com.jotoai.voenix.shop.supplier.api.dto
 
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Min

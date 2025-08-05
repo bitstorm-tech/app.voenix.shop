@@ -1,7 +1,6 @@
-package com.jotoai.voenix.shop.domain.suppliers.entity
+package com.jotoai.voenix.shop.supplier.internal.entity
 
 import com.jotoai.voenix.shop.domain.countries.entity.Country
-import com.jotoai.voenix.shop.domain.suppliers.dto.SupplierDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -53,27 +52,6 @@ class Supplier(
     @Column(name = "updated_at", nullable = false)
     val updatedAt: LocalDateTime = LocalDateTime.now(),
 ) {
-    fun toDto(): SupplierDto =
-        SupplierDto(
-            id = id!!,
-            name = name,
-            title = title,
-            firstName = firstName,
-            lastName = lastName,
-            street = street,
-            houseNumber = houseNumber,
-            city = city,
-            postalCode = postalCode,
-            country = country?.toDto(),
-            phoneNumber1 = phoneNumber1,
-            phoneNumber2 = phoneNumber2,
-            phoneNumber3 = phoneNumber3,
-            email = email,
-            website = website,
-            createdAt = createdAt,
-            updatedAt = updatedAt,
-        )
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Supplier) return false

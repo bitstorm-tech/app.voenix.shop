@@ -28,7 +28,8 @@ import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantReposi
 import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepository
 import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.service.StoragePathService
-import com.jotoai.voenix.shop.domain.suppliers.repository.SupplierRepository
+import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
+import com.jotoai.voenix.shop.supplier.internal.entity.Supplier
 import com.jotoai.voenix.shop.vat.api.VatQueryService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -42,7 +43,7 @@ class ArticleService(
     private val articleShirtVariantRepository: ShirtArticleVariantRepository,
     private val articleCategoryRepository: ArticleCategoryRepository,
     private val articleSubCategoryRepository: ArticleSubCategoryRepository,
-    private val supplierRepository: SupplierRepository,
+    private val supplierQueryService: SupplierQueryService,
     private val costCalculationRepository: CostCalculationRepository,
     private val vatQueryService: VatQueryService,
     private val mugDetailsService: MugDetailsService,
@@ -113,9 +114,8 @@ class ArticleService(
         // Validate supplier exists if provided
         val supplier =
             request.supplierId?.let { supplierId ->
-                supplierRepository
-                    .findById(supplierId)
-                    .orElseThrow { ResourceNotFoundException("Supplier not found with id: $supplierId") }
+                @Suppress("DEPRECATION")
+                supplierQueryService.getSupplierEntityReference(supplierId) as Supplier
             }
 
         // Validate type-specific details are provided
@@ -197,9 +197,8 @@ class ArticleService(
         // Validate supplier exists if provided
         val supplier =
             request.supplierId?.let { supplierId ->
-                supplierRepository
-                    .findById(supplierId)
-                    .orElseThrow { ResourceNotFoundException("Supplier not found with id: $supplierId") }
+                @Suppress("DEPRECATION")
+                supplierQueryService.getSupplierEntityReference(supplierId) as Supplier
             }
 
         // Update article

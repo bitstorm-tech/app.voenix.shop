@@ -65,4 +65,20 @@ class CountryService(
         }
         countryRepository.deleteById(id)
     }
+
+    /**
+     * Retrieves a country entity reference by its ID for legacy entity relationships.
+     * This method is intended for backward compatibility with existing JPA entities
+     * that have direct foreign key relationships to Country.
+     *
+     * @param id The country ID
+     * @return The country entity reference
+     * @throws ResourceNotFoundException if the country is not found
+     * @deprecated This method should be removed once all entity relationships are refactored
+     */
+    @Deprecated("Use getCountryById instead and refactor entity relationships")
+    fun getCountryEntityReference(id: Long): Country =
+        countryRepository
+            .findById(id)
+            .orElseThrow { ResourceNotFoundException("Country", "id", id) }
 }

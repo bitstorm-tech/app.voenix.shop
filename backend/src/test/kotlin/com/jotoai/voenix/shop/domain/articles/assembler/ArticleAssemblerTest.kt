@@ -8,7 +8,7 @@ import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
 import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
-import com.jotoai.voenix.shop.domain.suppliers.entity.Supplier
+import com.jotoai.voenix.shop.supplier.internal.entity.Supplier
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.suppliers.dto
+package com.jotoai.voenix.shop.supplier.api.dto
 
 import com.jotoai.voenix.shop.domain.countries.dto.CountryDto
 import java.time.LocalDateTime

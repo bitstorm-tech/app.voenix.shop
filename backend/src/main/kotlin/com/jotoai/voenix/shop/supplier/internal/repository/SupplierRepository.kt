@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.domain.suppliers.repository
+package com.jotoai.voenix.shop.supplier.internal.repository
 
-import com.jotoai.voenix.shop.domain.suppliers.entity.Supplier
+import com.jotoai.voenix.shop.supplier.internal.entity.Supplier
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 

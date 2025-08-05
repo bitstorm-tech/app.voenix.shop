@@ -1,9 +1,10 @@
 package com.jotoai.voenix.shop.api.admin.suppliers
 
-import com.jotoai.voenix.shop.domain.suppliers.dto.CreateSupplierRequest
-import com.jotoai.voenix.shop.domain.suppliers.dto.SupplierDto
-import com.jotoai.voenix.shop.domain.suppliers.dto.UpdateSupplierRequest
-import com.jotoai.voenix.shop.domain.suppliers.service.SupplierService
+import com.jotoai.voenix.shop.supplier.api.SupplierFacade
+import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
+import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
+import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
+import com.jotoai.voenix.shop.supplier.api.dto.UpdateSupplierRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -21,21 +22,22 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/suppliers")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminSupplierController(
-    private val supplierService: SupplierService,
+    private val supplierQueryService: SupplierQueryService,
+    private val supplierFacade: SupplierFacade,
 ) {
     @GetMapping
-    fun getAllSuppliers(): ResponseEntity<List<SupplierDto>> = ResponseEntity.ok(supplierService.getAllSuppliers())
+    fun getAllSuppliers(): ResponseEntity<List<SupplierDto>> = ResponseEntity.ok(supplierQueryService.getAllSuppliers())
 
     @GetMapping("/{id}")
     fun getSupplierById(
         @PathVariable id: Long,
-    ): ResponseEntity<SupplierDto> = ResponseEntity.ok(supplierService.getSupplierById(id))
+    ): ResponseEntity<SupplierDto> = ResponseEntity.ok(supplierQueryService.getSupplierById(id))
 
     @PostMapping
     fun createSupplier(
         @Valid @RequestBody request: CreateSupplierRequest,
     ): ResponseEntity<SupplierDto> {
-        val supplier = supplierService.createSupplier(request)
+        val supplier = supplierFacade.createSupplier(request)
         return ResponseEntity.status(HttpStatus.CREATED).body(supplier)
     }
 
@@ -43,13 +45,13 @@ class AdminSupplierController(
     fun updateSupplier(
         @PathVariable id: Long,
         @Valid @RequestBody request: UpdateSupplierRequest,
-    ): ResponseEntity<SupplierDto> = ResponseEntity.ok(supplierService.updateSupplier(id, request))
+    ): ResponseEntity<SupplierDto> = ResponseEntity.ok(supplierFacade.updateSupplier(id, request))
 
     @DeleteMapping("/{id}")
     fun deleteSupplier(
         @PathVariable id: Long,
     ): ResponseEntity<Void> {
-        supplierService.deleteSupplier(id)
+        supplierFacade.deleteSupplier(id)
         return ResponseEntity.noContent().build()
     }
 }
