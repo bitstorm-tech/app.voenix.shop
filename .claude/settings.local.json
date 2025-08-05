@@ -40,7 +40,11 @@
       "Bash(node:*)",
       "Bash(npx eslint:*)",
       "Bash(npm run:*)",
-      "Bash(kill:*)"
+      "Bash(kill:*)",
+      "Bash(mv:*)",
+      "WebFetch(domain:docs.spring.io)",
+      "WebFetch(domain:www.baeldung.com)",
+      "WebFetch(domain:dzone.com)"
     ],
     "deny": []
   }

@@ -29,7 +29,7 @@ import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepo
 import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.service.StoragePathService
 import com.jotoai.voenix.shop.domain.suppliers.repository.SupplierRepository
-import com.jotoai.voenix.shop.modules.vat.api.VatQueryService
+import com.jotoai.voenix.shop.vat.api.VatQueryService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service

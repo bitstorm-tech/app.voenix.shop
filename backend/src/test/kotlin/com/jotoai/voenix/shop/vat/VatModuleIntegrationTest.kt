@@ -1,12 +1,12 @@
-package com.jotoai.voenix.shop.modules.vat
+package com.jotoai.voenix.shop.vat
 
-import com.jotoai.voenix.shop.modules.vat.api.VatFacade
-import com.jotoai.voenix.shop.modules.vat.api.VatQueryService
-import com.jotoai.voenix.shop.modules.vat.api.dto.CreateValueAddedTaxRequest
-import com.jotoai.voenix.shop.modules.vat.events.DefaultVatChangedEvent
-import com.jotoai.voenix.shop.modules.vat.events.VatCreatedEvent
-import com.jotoai.voenix.shop.modules.vat.events.VatDeletedEvent
-import com.jotoai.voenix.shop.modules.vat.events.VatUpdatedEvent
+import com.jotoai.voenix.shop.vat.api.VatFacade
+import com.jotoai.voenix.shop.vat.api.VatQueryService
+import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest
+import com.jotoai.voenix.shop.vat.events.DefaultVatChangedEvent
+import com.jotoai.voenix.shop.vat.events.VatCreatedEvent
+import com.jotoai.voenix.shop.vat.events.VatDeletedEvent
+import com.jotoai.voenix.shop.vat.events.VatUpdatedEvent
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

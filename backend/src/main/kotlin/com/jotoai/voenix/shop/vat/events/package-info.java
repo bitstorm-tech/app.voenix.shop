@@ -7,4 +7,4 @@
  * </p>
  */
 @org.springframework.modulith.NamedInterface("events")
-package com.jotoai.voenix.shop.modules.vat.events;
+package com.jotoai.voenix.shop.vat.events;

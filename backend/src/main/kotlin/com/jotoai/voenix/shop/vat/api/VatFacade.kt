@@ -1,8 +1,8 @@
-package com.jotoai.voenix.shop.modules.vat.api
+package com.jotoai.voenix.shop.vat.api
 
-import com.jotoai.voenix.shop.modules.vat.api.dto.CreateValueAddedTaxRequest
-import com.jotoai.voenix.shop.modules.vat.api.dto.UpdateValueAddedTaxRequest
-import com.jotoai.voenix.shop.modules.vat.api.dto.ValueAddedTaxDto
+import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest
+import com.jotoai.voenix.shop.vat.api.dto.UpdateValueAddedTaxRequest
+import com.jotoai.voenix.shop.vat.api.dto.ValueAddedTaxDto
 
 /**
  * Main facade for VAT module operations.

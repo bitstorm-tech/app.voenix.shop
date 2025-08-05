@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.modules.vat.api
+package com.jotoai.voenix.shop.vat.api
 
-import com.jotoai.voenix.shop.modules.vat.api.dto.ValueAddedTaxDto
+import com.jotoai.voenix.shop.vat.api.dto.ValueAddedTaxDto
 
 /**
  * Query service for VAT module read operations.

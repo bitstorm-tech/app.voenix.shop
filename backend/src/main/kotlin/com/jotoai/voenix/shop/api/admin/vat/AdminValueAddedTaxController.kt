@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.api.admin.vat
 
-import com.jotoai.voenix.shop.modules.vat.api.VatFacade
-import com.jotoai.voenix.shop.modules.vat.api.VatQueryService
-import com.jotoai.voenix.shop.modules.vat.api.dto.CreateValueAddedTaxRequest
-import com.jotoai.voenix.shop.modules.vat.api.dto.UpdateValueAddedTaxRequest
-import com.jotoai.voenix.shop.modules.vat.api.dto.ValueAddedTaxDto
+import com.jotoai.voenix.shop.vat.api.VatFacade
+import com.jotoai.voenix.shop.vat.api.VatQueryService
+import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest
+import com.jotoai.voenix.shop.vat.api.dto.UpdateValueAddedTaxRequest
+import com.jotoai.voenix.shop.vat.api.dto.ValueAddedTaxDto
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize

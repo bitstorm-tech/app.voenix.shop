@@ -7,4 +7,4 @@
  * </p>
  */
 @org.springframework.modulith.NamedInterface("api")
-package com.jotoai.voenix.shop.modules.vat.api;
+package com.jotoai.voenix.shop.vat.api;

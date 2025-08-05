@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.modules.vat.api.dto
+package com.jotoai.voenix.shop.vat.api.dto
 
 import java.time.OffsetDateTime
 

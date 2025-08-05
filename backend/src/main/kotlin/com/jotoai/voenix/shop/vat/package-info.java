@@ -3,8 +3,8 @@
  * <p>
  * This module provides:
  * <ul>
- *   <li>VAT CRUD operations through {@link com.jotoai.voenix.shop.modules.vat.api.VatFacade}</li>
- *   <li>VAT query operations and data access through {@link com.jotoai.voenix.shop.modules.vat.api.VatQueryService}</li>
+ *   <li>VAT CRUD operations through {@link com.jotoai.voenix.shop.vat.api.VatFacade}</li>
+ *   <li>VAT query operations and data access through {@link com.jotoai.voenix.shop.vat.api.VatQueryService}</li>
  *   <li>Domain events for VAT lifecycle changes in the {@code events} package</li>
  * </ul>
  * <p>
@@ -20,4 +20,4 @@
 @org.springframework.modulith.ApplicationModule(
     displayName = "VAT Management"
 )
-package com.jotoai.voenix.shop.modules.vat;
+package com.jotoai.voenix.shop.vat;

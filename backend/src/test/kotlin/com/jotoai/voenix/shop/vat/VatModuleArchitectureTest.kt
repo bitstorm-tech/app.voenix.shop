@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.modules.vat
+package com.jotoai.voenix.shop.vat
 
 import org.junit.jupiter.api.Test
 import org.springframework.modulith.core.ApplicationModules
@@ -26,18 +26,15 @@ class VatModuleArchitectureTest {
     @Test
     fun `should verify VAT module exists`() {
         // Spring Modulith detects modules based on direct sub-packages of the application package
-        // Our VAT module is at com.jotoai.voenix.shop.modules.vat
+        // Our VAT module is now at com.jotoai.voenix.shop.vat
         val vatModule =
             modules
-                .getModuleByName("modules.vat")
-                .orElseGet {
-                    // Try alternate naming
-                    modules.getModuleByName("modules").orElse(null)
-                }
+                .getModuleByName("vat")
+                .orElseThrow { AssertionError("VAT module not found. Available modules: ${modules.map { it.name }}") }
 
-        // Verify that the module exists
-        assert(vatModule != null) {
-            "VAT module not found. Available modules: ${modules.map { it.name }}"
+        // Verify that the module exists and has the correct name
+        assert(vatModule.name == "vat") {
+            "Expected module name to be 'vat', but was '${vatModule.name}'"
         }
     }
 

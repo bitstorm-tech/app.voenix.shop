@@ -5,4 +5,5 @@
  * including request and response objects for VAT operations.
  * </p>
  */
-package com.jotoai.voenix.shop.modules.vat.api.dto;
+@org.springframework.modulith.NamedInterface("api.dto")
+package com.jotoai.voenix.shop.vat.api.dto;

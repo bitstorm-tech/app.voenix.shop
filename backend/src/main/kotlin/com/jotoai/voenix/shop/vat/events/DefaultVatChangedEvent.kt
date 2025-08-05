@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.modules.vat.events
+package com.jotoai.voenix.shop.vat.events
 
 import org.springframework.modulith.events.Externalized
 

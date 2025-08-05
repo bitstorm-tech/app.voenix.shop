@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.modules.vat.internal.exception
+package com.jotoai.voenix.shop.vat.internal.exception
 
 /**
  * Exception thrown when a VAT configuration is not found.

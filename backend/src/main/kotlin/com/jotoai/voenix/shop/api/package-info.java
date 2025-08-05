@@ -8,6 +8,6 @@
  */
 @org.springframework.modulith.ApplicationModule(
     displayName = "REST API",
-    allowedDependencies = {"modules", "modules.vat", "modules.vat :: api", "auth", "domain", "common"}
+    allowedDependencies = {"vat::api", "vat::api.dto", "auth", "domain", "common"}
 )
 package com.jotoai.voenix.shop.api;

@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.modules.vat.events
+package com.jotoai.voenix.shop.vat.events
 
-import com.jotoai.voenix.shop.modules.vat.api.dto.ValueAddedTaxDto
+import com.jotoai.voenix.shop.vat.api.dto.ValueAddedTaxDto
 import org.springframework.modulith.events.Externalized
 
 /**
