@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.supplier.api.dto
 
 import com.jotoai.voenix.shop.domain.countries.dto.CountryDto
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 data class SupplierDto(
     val id: Long,
@@ -19,6 +19,6 @@ data class SupplierDto(
     val phoneNumber3: String?,
     val email: String?,
     val website: String?,
-    val createdAt: LocalDateTime,
-    val updatedAt: LocalDateTime,
+    val createdAt: OffsetDateTime?,
+    val updatedAt: OffsetDateTime?,
 )

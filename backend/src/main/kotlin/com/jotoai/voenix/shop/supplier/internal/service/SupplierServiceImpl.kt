@@ -15,7 +15,6 @@ import com.jotoai.voenix.shop.supplier.internal.repository.SupplierRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
 
 @Service
 @Transactional(readOnly = true)
@@ -33,6 +32,36 @@ class SupplierServiceImpl(
             .map { it.toDto() }
             .orElseThrow { SupplierNotFoundException("Supplier", "id", id) }
 
+    private fun validateUniqueConstraints(
+        name: String?,
+        email: String?,
+        excludeId: Long? = null,
+    ) {
+        if (!name.isNullOrBlank()) {
+            if (excludeId != null) {
+                if (supplierRepository.existsByNameAndIdNot(name, excludeId)) {
+                    throw IllegalArgumentException("Supplier with name '$name' already exists")
+                }
+            } else {
+                if (supplierRepository.existsByName(name)) {
+                    throw IllegalArgumentException("Supplier with name '$name' already exists")
+                }
+            }
+        }
+
+        if (!email.isNullOrBlank()) {
+            if (excludeId != null) {
+                if (supplierRepository.existsByEmailAndIdNot(email, excludeId)) {
+                    throw IllegalArgumentException("Supplier with email '$email' already exists")
+                }
+            } else {
+                if (supplierRepository.existsByEmail(email)) {
+                    throw IllegalArgumentException("Supplier with email '$email' already exists")
+                }
+            }
+        }
+    }
+
     override fun existsById(id: Long): Boolean = supplierRepository.existsById(id)
 
     @Deprecated("Use getSupplierById instead and refactor entity relationships")
@@ -44,12 +73,7 @@ class SupplierServiceImpl(
     @Transactional
     override fun createSupplier(request: CreateSupplierRequest): SupplierDto {
         // Validate unique constraints
-        if (!request.name.isNullOrBlank() && supplierRepository.existsByName(request.name)) {
-            throw IllegalArgumentException("Supplier with name '${request.name}' already exists")
-        }
-        if (!request.email.isNullOrBlank() && supplierRepository.existsByEmail(request.email)) {
-            throw IllegalArgumentException("Supplier with email '${request.email}' already exists")
-        }
+        validateUniqueConstraints(request.name, request.email)
 
         // Fetch country if provided
         val country =
@@ -90,50 +114,38 @@ class SupplierServiceImpl(
         id: Long,
         request: UpdateSupplierRequest,
     ): SupplierDto {
-        val existingSupplier =
+        val supplier =
             supplierRepository
                 .findById(id)
                 .orElseThrow { SupplierNotFoundException("Supplier", "id", id) }
 
-        val oldDto = existingSupplier.toDto()
+        val oldDto = supplier.toDto()
 
         // Validate unique constraints
-        if (!request.name.isNullOrBlank() && supplierRepository.existsByNameAndIdNot(request.name, id)) {
-            throw IllegalArgumentException("Supplier with name '${request.name}' already exists")
+        validateUniqueConstraints(request.name, request.email, id)
+
+        // Update fields directly with mutable properties
+        request.name?.let { supplier.name = it.trim() }
+        request.title?.let { supplier.title = it.trim() }
+        request.firstName?.let { supplier.firstName = it.trim() }
+        request.lastName?.let { supplier.lastName = it.trim() }
+        request.street?.let { supplier.street = it.trim() }
+        request.houseNumber?.let { supplier.houseNumber = it.trim() }
+        request.city?.let { supplier.city = it.trim() }
+        request.postalCode?.let { supplier.postalCode = it }
+        request.phoneNumber1?.let { supplier.phoneNumber1 = it.trim() }
+        request.phoneNumber2?.let { supplier.phoneNumber2 = it.trim() }
+        request.phoneNumber3?.let { supplier.phoneNumber3 = it.trim() }
+        request.email?.let { supplier.email = it.trim() }
+        request.website?.let { supplier.website = it.trim() }
+
+        // Update country if provided
+        request.countryId?.let { countryId ->
+            @Suppress("DEPRECATION")
+            supplier.country = countryService.getCountryEntityReference(countryId)
         }
-        if (!request.email.isNullOrBlank() && supplierRepository.existsByEmailAndIdNot(request.email, id)) {
-            throw IllegalArgumentException("Supplier with email '${request.email}' already exists")
-        }
 
-        // Fetch country if provided
-        val country =
-            request.countryId?.let { countryId ->
-                @Suppress("DEPRECATION")
-                countryService.getCountryEntityReference(countryId)
-            }
-
-        val updatedSupplier =
-            Supplier(
-                id = existingSupplier.id,
-                name = request.name?.trim(),
-                title = request.title?.trim(),
-                firstName = request.firstName?.trim(),
-                lastName = request.lastName?.trim(),
-                street = request.street?.trim(),
-                houseNumber = request.houseNumber?.trim(),
-                city = request.city?.trim(),
-                postalCode = request.postalCode,
-                country = country,
-                phoneNumber1 = request.phoneNumber1?.trim(),
-                phoneNumber2 = request.phoneNumber2?.trim(),
-                phoneNumber3 = request.phoneNumber3?.trim(),
-                email = request.email?.trim(),
-                website = request.website?.trim(),
-                createdAt = existingSupplier.createdAt,
-                updatedAt = LocalDateTime.now(),
-            )
-
-        val savedSupplier = supplierRepository.save(updatedSupplier)
+        val savedSupplier = supplierRepository.save(supplier)
         val result = savedSupplier.toDto()
 
         // Publish event
@@ -156,25 +168,4 @@ class SupplierServiceImpl(
         // Publish event
         eventPublisher.publishEvent(SupplierDeletedEvent(supplierDto))
     }
-
-    private fun Supplier.toDto(): SupplierDto =
-        SupplierDto(
-            id = id!!,
-            name = name,
-            title = title,
-            firstName = firstName,
-            lastName = lastName,
-            street = street,
-            houseNumber = houseNumber,
-            city = city,
-            postalCode = postalCode,
-            country = country?.toDto(),
-            phoneNumber1 = phoneNumber1,
-            phoneNumber2 = phoneNumber2,
-            phoneNumber3 = phoneNumber3,
-            email = email,
-            website = website,
-            createdAt = createdAt,
-            updatedAt = updatedAt,
-        )
 }
