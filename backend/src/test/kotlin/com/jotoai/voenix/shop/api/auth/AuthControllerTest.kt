@@ -7,7 +7,8 @@ import com.jotoai.voenix.shop.auth.repository.RoleRepository
 import com.jotoai.voenix.shop.auth.service.AuthService
 import com.jotoai.voenix.shop.auth.service.UserRegistrationService
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.config.TestSecurityConfig
+import com.jotoai.voenix.shop.domain.images.config.StoragePathConfiguration
+import com.jotoai.voenix.shop.domain.images.service.StoragePathService
 import com.jotoai.voenix.shop.domain.users.dto.UserDto
 import com.jotoai.voenix.shop.domain.users.repository.UserRepository
 import org.junit.jupiter.api.Test
@@ -15,9 +16,9 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -30,8 +31,8 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.time.OffsetDateTime
 
 @WebMvcTest(AuthController::class)
+@AutoConfigureMockMvc(addFilters = false)
 @ActiveProfiles("test")
-@Import(TestSecurityConfig::class)
 class AuthControllerTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -60,13 +61,19 @@ class AuthControllerTest {
     @MockBean
     private lateinit var securityContextRepository: SecurityContextRepository
 
+    @MockBean
+    private lateinit var storagePathService: StoragePathService
+
+    @MockBean
+    private lateinit var storagePathConfiguration: StoragePathConfiguration
+
     @Test
     fun `register should create new user and return login response`() {
         // Given
         val registerRequest =
             RegisterRequest(
                 email = "newuser@example.com",
-                password = "Test123!@#",
+                password = "Test123!@&",
             )
 
         val userDto =
@@ -107,7 +114,7 @@ class AuthControllerTest {
         val registerRequest =
             RegisterRequest(
                 email = "existing@example.com",
-                password = "Test123!@#",
+                password = "Test123!@&",
             )
 
         whenever(authService.register(eq(registerRequest), any(), any()))
@@ -120,7 +127,7 @@ class AuthControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerRequest)),
             ).andExpect(status().isConflict)
-            .andExpect(jsonPath("$.message").value("User with email existing@example.com already exists"))
+            .andExpect(jsonPath("$.message").value("User already exists with email: 'existing@example.com'"))
     }
 
     @Test
@@ -129,7 +136,7 @@ class AuthControllerTest {
         val registerRequest =
             RegisterRequest(
                 email = "invalid-email",
-                password = "Test123!@#",
+                password = "Test123!@&",
             )
 
         // When & Then
@@ -139,7 +146,7 @@ class AuthControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerRequest)),
             ).andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.errors.email").value("Invalid email format"))
+            .andExpect(jsonPath("$.validationErrors.email").value("Invalid email format"))
     }
 
     @Test
@@ -160,7 +167,7 @@ class AuthControllerTest {
             ).andExpect(status().isBadRequest)
             .andExpect(
                 jsonPath(
-                    "$.errors.password",
+                    "$.validationErrors.password",
                 ).value("Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character"),
             )
     }
@@ -181,6 +188,6 @@ class AuthControllerTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(registerRequest)),
             ).andExpect(status().isBadRequest)
-            .andExpect(jsonPath("$.errors.password").exists())
+            .andExpect(jsonPath("$.validationErrors.password").exists())
     }
 }

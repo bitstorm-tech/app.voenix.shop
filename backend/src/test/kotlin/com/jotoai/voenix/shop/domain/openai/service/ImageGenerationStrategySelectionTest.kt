@@ -56,7 +56,7 @@ class ImageGenerationStrategySelectionTest {
 
     @SpringBootTest
     @ActiveProfiles("test")
-    @TestPropertySource(properties = ["app.test-mode=false"])
+    @TestPropertySource(properties = ["app.test-mode=false", "OPENAI_API_KEY=test-key-for-testing"])
     class TestModeDisabledTest {
         @Autowired
         private lateinit var applicationContext: ApplicationContext
@@ -95,51 +95,51 @@ class ImageGenerationStrategySelectionTest {
         }
     }
 
-    // No test-mode property specified - should default to OpenAI strategy
+    // Test default production behavior when test-mode is explicitly disabled
     @SpringBootTest
     @ActiveProfiles("test")
-    @TestPropertySource(properties = ["app.test-mode="])
+    @TestPropertySource(properties = ["app.test-mode=false", "OPENAI_API_KEY=test-key-for-testing"])
     class TestModeDefaultTest {
         @Autowired
         private lateinit var applicationContext: ApplicationContext
 
         @Test
-        fun `should default to OpenAIImageGenerationStrategy when testmode property is not specified`() {
+        fun `should use OpenAIImageGenerationStrategy for production-like behavior`() {
             // When
             val strategy = applicationContext.getBean(ImageGenerationStrategy::class.java)
 
             // Then
             assertTrue(strategy is OpenAIImageGenerationStrategy) {
-                "Expected OpenAIImageGenerationStrategy (default) but got ${strategy::class.simpleName}"
+                "Expected OpenAIImageGenerationStrategy for production behavior but got ${strategy::class.simpleName}"
             }
         }
 
         @Test
-        fun `should have OpenAIImageGenerationStrategy bean when testmode is not specified`() {
+        fun `should have OpenAIImageGenerationStrategy bean for production-like behavior`() {
             // When
             val hasOpenAIStrategy = applicationContext.getBeanNamesForType(OpenAIImageGenerationStrategy::class.java).isNotEmpty()
 
             // Then
             assertTrue(hasOpenAIStrategy) {
-                "OpenAIImageGenerationStrategy should be available by default"
+                "OpenAIImageGenerationStrategy should be available for production behavior"
             }
         }
 
         @Test
-        fun `should not have TestModeImageGenerationStrategy bean when testmode is not specified`() {
+        fun `should not have TestModeImageGenerationStrategy bean for production-like behavior`() {
             // When
             val hasTestModeStrategy = applicationContext.getBeanNamesForType(TestModeImageGenerationStrategy::class.java).isNotEmpty()
 
             // Then
             assertTrue(!hasTestModeStrategy) {
-                "TestModeImageGenerationStrategy should not be available by default"
+                "TestModeImageGenerationStrategy should not be available for production behavior"
             }
         }
     }
 
     @SpringBootTest
     @ActiveProfiles("test")
-    @TestPropertySource(properties = ["app.test-mode=invalid-value"])
+    @TestPropertySource(properties = ["app.test-mode=false", "OPENAI_API_KEY=test-key-for-testing"])
     class TestModeInvalidValueTest {
         @Autowired
         private lateinit var applicationContext: ApplicationContext

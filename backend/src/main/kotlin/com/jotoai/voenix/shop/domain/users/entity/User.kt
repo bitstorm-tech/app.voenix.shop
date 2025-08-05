@@ -35,6 +35,8 @@ class User(
     var password: String? = null,
     @Column(name = "one_time_password", length = 255)
     var oneTimePassword: String? = null,
+    @Column(name = "one_time_password_created_at")
+    var oneTimePasswordCreatedAt: OffsetDateTime? = null,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,

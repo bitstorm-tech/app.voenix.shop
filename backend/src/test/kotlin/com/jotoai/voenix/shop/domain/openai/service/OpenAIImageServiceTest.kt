@@ -17,12 +17,12 @@ import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.ArgumentCaptor
-import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.argumentCaptor
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
 
@@ -114,9 +114,9 @@ class OpenAIImageServiceTest {
                 imageType = ImageType.PRIVATE,
             )
 
-        `when`(imageService.store(any(MultipartFile::class.java), any(CreateImageRequest::class.java)))
-            .thenReturn(savedImage1)
-            .thenReturn(savedImage2)
+        // Use doReturn to avoid issues with consecutive calls
+        `when`(imageService.store(anyOrNull(), anyOrNull()))
+            .thenReturn(savedImage1, savedImage2)
 
         // When
         val result = openAIImageService.editImage(mockImageFile, request)
@@ -130,15 +130,16 @@ class OpenAIImageServiceTest {
         verify(imageGenerationStrategy).generateImages(mockImageFile, request)
 
         // Verify image service was called twice for storage
-        verify(imageService, times(2)).store(any(MultipartFile::class.java), any(CreateImageRequest::class.java))
+        verify(imageService, times(2)).store(anyOrNull(), anyOrNull())
 
         // Verify the CreateImageRequest was correct
-        val imageRequestCaptor = ArgumentCaptor.forClass(CreateImageRequest::class.java)
-        verify(imageService, times(2)).store(any(MultipartFile::class.java), imageRequestCaptor.capture())
+        val imageRequestCaptor = argumentCaptor<CreateImageRequest>()
+        verify(imageService, times(2)).store(anyOrNull(), imageRequestCaptor.capture())
 
         val capturedRequests = imageRequestCaptor.allValues
-        capturedRequests.forEach { request ->
-            assertEquals(ImageType.PRIVATE, request.imageType)
+        assertEquals(2, capturedRequests.size)
+        capturedRequests.forEach { capturedRequest ->
+            assertEquals(ImageType.PRIVATE, capturedRequest.imageType)
         }
     }
 
@@ -164,7 +165,7 @@ class OpenAIImageServiceTest {
                 imageType = ImageType.PRIVATE,
             )
 
-        `when`(imageService.store(any(MultipartFile::class.java), any(CreateImageRequest::class.java)))
+        `when`(imageService.store(anyOrNull(), anyOrNull()))
             .thenReturn(savedImage)
 
         // When
@@ -175,7 +176,7 @@ class OpenAIImageServiceTest {
         assertEquals("single-saved-image.png", result.imageFilenames[0])
 
         verify(imageGenerationStrategy).generateImages(mockImageFile, request)
-        verify(imageService).store(any(MultipartFile::class.java), any(CreateImageRequest::class.java))
+        verify(imageService).store(anyOrNull(), anyOrNull())
     }
 
     @Test
@@ -218,7 +219,7 @@ class OpenAIImageServiceTest {
         val strategResponse = ImageEditBytesResponse(imageBytes = generatedImageBytes)
         `when`(imageGenerationStrategy.generateImages(mockImageFile, request)).thenReturn(strategResponse)
 
-        `when`(imageService.store(any(MultipartFile::class.java), any(CreateImageRequest::class.java)))
+        `when`(imageService.store(anyOrNull(), anyOrNull()))
             .thenThrow(RuntimeException("Storage failed"))
 
         // When/Then
@@ -228,7 +229,7 @@ class OpenAIImageServiceTest {
 
         // Exception is thrown as expected
         verify(imageGenerationStrategy).generateImages(mockImageFile, request)
-        verify(imageService).store(any(MultipartFile::class.java), any(CreateImageRequest::class.java))
+        verify(imageService).store(anyOrNull(), anyOrNull())
     }
 
     @Test
@@ -308,16 +309,16 @@ class OpenAIImageServiceTest {
             OpenAIImageService::class.java.declaredClasses
                 .first { it.simpleName == "SimpleMultipartFile" }
 
+        // The constructor signature is: (String fileName, String contentType, ByteArray content)
         val constructor =
             simpleMultipartFileClass.getDeclaredConstructor(
-                OpenAIImageService::class.java,
                 String::class.java,
                 String::class.java,
                 ByteArray::class.java,
             )
         constructor.isAccessible = true
 
-        val instance = constructor.newInstance(openAIImageService, fileName, contentType, content) as MultipartFile
+        val instance = constructor.newInstance(fileName, contentType, content) as MultipartFile
 
         // Then
         assertEquals("file", instance.name)

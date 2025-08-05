@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.api.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.auth.dto.RegisterRequest
-import com.jotoai.voenix.shop.auth.entity.Role
 import com.jotoai.voenix.shop.auth.repository.RoleRepository
 import com.jotoai.voenix.shop.domain.users.repository.UserRepository
 import org.junit.jupiter.api.BeforeEach
@@ -12,6 +11,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.jdbc.Sql
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -22,6 +22,17 @@ import org.springframework.transaction.annotation.Transactional
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @Transactional
+@Sql(
+    statements = [
+        "CREATE TABLE IF NOT EXISTS SPRING_SESSION (PRIMARY_ID CHAR(36) NOT NULL, SESSION_ID CHAR(36) NOT NULL, CREATION_TIME BIGINT NOT NULL, LAST_ACCESS_TIME BIGINT NOT NULL, MAX_INACTIVE_INTERVAL INT NOT NULL, EXPIRY_TIME BIGINT NOT NULL, PRINCIPAL_NAME VARCHAR(100), CONSTRAINT SPRING_SESSION_PK PRIMARY KEY (PRIMARY_ID))",
+        "CREATE TABLE IF NOT EXISTS SPRING_SESSION_ATTRIBUTES (SESSION_PRIMARY_ID CHAR(36) NOT NULL, ATTRIBUTE_NAME VARCHAR(200) NOT NULL, ATTRIBUTE_BYTES LONGVARBINARY NOT NULL, CONSTRAINT SPRING_SESSION_ATTRIBUTES_PK PRIMARY KEY (SESSION_PRIMARY_ID, ATTRIBUTE_NAME))",
+        "CREATE UNIQUE INDEX IF NOT EXISTS SPRING_SESSION_IX1 ON SPRING_SESSION (SESSION_ID)",
+        "CREATE INDEX IF NOT EXISTS SPRING_SESSION_IX2 ON SPRING_SESSION (EXPIRY_TIME)",
+        "CREATE INDEX IF NOT EXISTS SPRING_SESSION_IX3 ON SPRING_SESSION (PRINCIPAL_NAME)",
+        "INSERT INTO roles (name, description, created_at, updated_at) VALUES ('ADMIN', 'Administrator role', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+        "INSERT INTO roles (name, description, created_at, updated_at) VALUES ('USER', 'Regular user role', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
+    ],
+)
 class AuthRegistrationIntegrationTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -39,14 +50,7 @@ class AuthRegistrationIntegrationTest {
     fun setup() {
         // Clean up any existing test data
         userRepository.deleteAll()
-
-        // Ensure roles exist (they should be created by migrations in a real app)
-        if (!roleRepository.existsById(1L)) {
-            roleRepository.save(Role(id = 1L, name = "ADMIN", description = "Administrator role"))
-        }
-        if (!roleRepository.existsById(2L)) {
-            roleRepository.save(Role(id = 2L, name = "USER", description = "Regular user role"))
-        }
+        // Roles are created by @Sql annotation
     }
 
     @Test
@@ -55,7 +59,7 @@ class AuthRegistrationIntegrationTest {
         val registerRequest =
             RegisterRequest(
                 email = "newuser@example.com",
-                password = "Test123!@#",
+                password = "TestPass123!",
             )
 
         // When & Then

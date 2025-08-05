@@ -5,6 +5,8 @@ import com.jotoai.voenix.shop.api.admin.prompts.AdminPromptController
 import com.jotoai.voenix.shop.api.admin.users.AdminUserController
 import com.jotoai.voenix.shop.auth.config.SecurityConfig
 import com.jotoai.voenix.shop.domain.articles.service.ArticleService
+import com.jotoai.voenix.shop.domain.images.config.StoragePathConfiguration
+import com.jotoai.voenix.shop.domain.images.service.StoragePathService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import com.jotoai.voenix.shop.domain.users.service.UserService
 import org.junit.jupiter.api.Test
@@ -40,6 +42,12 @@ class AdminEndpointSecurityWebMvcTest {
 
     @MockitoBean
     private lateinit var articleService: ArticleService
+
+    @MockitoBean
+    private lateinit var storagePathService: StoragePathService
+
+    @MockitoBean
+    private lateinit var storagePathConfiguration: StoragePathConfiguration
 
     @Test
     fun testAdminEndpointsRequireAuthentication() {
