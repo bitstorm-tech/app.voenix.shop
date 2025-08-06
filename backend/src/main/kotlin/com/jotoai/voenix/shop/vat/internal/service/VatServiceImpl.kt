@@ -5,12 +5,12 @@ import com.jotoai.voenix.shop.vat.api.VatQueryService
 import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest
 import com.jotoai.voenix.shop.vat.api.dto.UpdateValueAddedTaxRequest
 import com.jotoai.voenix.shop.vat.api.dto.ValueAddedTaxDto
+import com.jotoai.voenix.shop.vat.api.exception.VatNotFoundException
 import com.jotoai.voenix.shop.vat.events.DefaultVatChangedEvent
 import com.jotoai.voenix.shop.vat.events.VatCreatedEvent
 import com.jotoai.voenix.shop.vat.events.VatDeletedEvent
 import com.jotoai.voenix.shop.vat.events.VatUpdatedEvent
 import com.jotoai.voenix.shop.vat.internal.entity.ValueAddedTax
-import com.jotoai.voenix.shop.vat.internal.exception.VatNotFoundException
 import com.jotoai.voenix.shop.vat.internal.repository.ValueAddedTaxRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
@@ -34,12 +34,6 @@ class VatServiceImpl(
             .orElseThrow { VatNotFoundException("ValueAddedTax", "id", id) }
 
     override fun existsById(id: Long): Boolean = valueAddedTaxRepository.existsById(id)
-
-    @Deprecated("Use getVatById instead and refactor entity relationships")
-    override fun getVatEntityReference(id: Long): Any =
-        valueAddedTaxRepository
-            .findById(id)
-            .orElseThrow { VatNotFoundException("ValueAddedTax", "id", id) }
 
     @Transactional
     override fun createVat(request: CreateValueAddedTaxRequest): ValueAddedTaxDto {
