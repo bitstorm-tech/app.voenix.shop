@@ -23,7 +23,6 @@ import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsText
-import io.ktor.client.statement.readBytes
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
@@ -157,7 +156,7 @@ class OpenAIImageGenerationStrategy(
                 openAIImage.url != null -> {
                     // Download image from URL
                     logger.debug("Downloading image from URL: ${openAIImage.url}")
-                    httpClient.get(openAIImage.url).readBytes()
+                    httpClient.get(openAIImage.url).body()
                 }
                 openAIImage.b64Json != null -> {
                     // Decode base64 image

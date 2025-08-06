@@ -4,9 +4,9 @@ plugins {
     kotlin("jvm") version "2.2.0"
     kotlin("plugin.spring") version "2.2.0"
     kotlin("plugin.jpa") version "2.2.0"
-    id("org.springframework.boot") version "3.5.3"
+    id("org.springframework.boot") version "3.5.4"
     id("io.spring.dependency-management") version "1.1.7"
-    id("org.flywaydb.flyway") version "11.10.1"
+    id("org.flywaydb.flyway") version "11.10.5"
     id("org.jlleitschuh.gradle.ktlint") version "13.0.0"
 }
 
@@ -35,8 +35,8 @@ dependencies {
     implementation("org.springframework.modulith:spring-modulith-starter-jpa:1.4.2")
 
     // Database
-    implementation("org.flywaydb:flyway-core:11.10.1")
-    implementation("org.flywaydb:flyway-database-postgresql:11.10.1")
+    implementation("org.flywaydb:flyway-core:11.10.5")
+    implementation("org.flywaydb:flyway-database-postgresql:11.10.5")
     implementation("org.postgresql:postgresql:42.7.7")
 
     // Environment variables (.env file support)
@@ -47,14 +47,14 @@ dependencies {
     implementation("com.sksamuel.scrimage:scrimage-webp:4.3.2")
 
     // Ktor Client
-    implementation("io.ktor:ktor-client-core:2.3.12")
-    implementation("io.ktor:ktor-client-cio:2.3.12")
-    implementation("io.ktor:ktor-client-content-negotiation:2.3.12")
-    implementation("io.ktor:ktor-serialization-jackson:2.3.12")
-    implementation("io.ktor:ktor-client-logging:2.3.12")
+    implementation("io.ktor:ktor-client-core:3.2.3")
+    implementation("io.ktor:ktor-client-cio:3.2.3")
+    implementation("io.ktor:ktor-client-content-negotiation:3.2.3")
+    implementation("io.ktor:ktor-serialization-jackson:3.2.3")
+    implementation("io.ktor:ktor-client-logging:3.2.3")
 
     // PDF Generation
-    implementation("org.apache.pdfbox:pdfbox:3.0.3")
+    implementation("org.apache.pdfbox:pdfbox:3.0.5")
 
     // QR Code Generation
     implementation("com.google.zxing:core:3.5.3")
