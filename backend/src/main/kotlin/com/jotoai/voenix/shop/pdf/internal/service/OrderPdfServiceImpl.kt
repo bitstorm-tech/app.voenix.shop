@@ -3,6 +3,7 @@ package com.jotoai.voenix.shop.pdf.internal.service
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
+import com.jotoai.voenix.shop.common.exception.PdfGenerationException
 import com.jotoai.voenix.shop.domain.articles.service.MugDetailsService
 import com.jotoai.voenix.shop.domain.images.service.ImageAccessService
 import com.jotoai.voenix.shop.pdf.api.OrderPdfService
@@ -49,12 +50,30 @@ class OrderPdfServiceImpl(
         private const val MM_TO_POINTS = 2.834645669f
 
         // Layout constants
-        private const val HEADER_HEIGHT = 30f
-        private const val QR_CODE_SIZE = 40f // Reduced by 50% from 80f
-        private const val QR_CODE_MARGIN = 20f
+        private const val HEADER_HEIGHT_POINTS = 30f
+        private const val QR_CODE_SIZE_POINTS = 40f
+        private const val QR_CODE_MARGIN_POINTS = 20f
+        private const val HEADER_MARGIN_FROM_EDGE = 15f
 
-        // QR code settings
-        private const val QR_SIZE_PIXELS = 100 // Reduced by 50% from 200
+        // QR code generation settings
+        private const val QR_SIZE_PIXELS = 100
+
+        // Font settings
+        private const val HEADER_FONT_SIZE = 14f
+        private const val PLACEHOLDER_FONT_SIZE = 12f
+
+        // Image settings
+        private const val PLACEHOLDER_IMAGE_WIDTH = 400
+        private const val PLACEHOLDER_IMAGE_HEIGHT = 300
+        private const val PLACEHOLDER_FONT_SIZE_PIXELS = 24
+
+        // Image format constants
+        private const val IMAGE_FORMAT_PNG = "PNG"
+        private const val PDF_IMAGE_NAME_QR = "QRCode"
+        private const val PDF_IMAGE_NAME_PRODUCT = "ProductImage"
+
+        // Default image margins when mug details are not available
+        private const val DEFAULT_IMAGE_MARGIN_MM = 15f
     }
 
     // Calculate PDF dimensions in points
@@ -126,7 +145,7 @@ class OrderPdfServiceImpl(
                 ),
             )
 
-            throw RuntimeException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
+            throw PdfGenerationException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
         }
     }
 
@@ -143,15 +162,19 @@ class OrderPdfServiceImpl(
         val page = PDPage(PDRectangle(pageWidth, pageHeight))
         document.addPage(page)
 
-        PDPageContentStream(document, page).use { contentStream ->
-            // Add header with order number and page info
-            addHeader(contentStream, orderData.orderNumber ?: "UNKNOWN", pageNumber, totalPages)
+        try {
+            PDPageContentStream(document, page).use { contentStream ->
+                // Add header with order number and page info
+                addHeader(contentStream, orderData.orderNumber ?: "UNKNOWN", pageNumber, totalPages)
 
-            // Add product image (centered)
-            addProductImage(document, contentStream, orderData, orderItem)
+                // Add product image (centered)
+                addProductImage(document, contentStream, orderData, orderItem)
 
-            // Add QR code in bottom left
-            addQrCode(document, contentStream, orderData.id.toString())
+                // Add QR code in bottom left
+                addQrCode(document, contentStream, orderData.id.toString())
+            }
+        } catch (e: Exception) {
+            throw PdfGenerationException("Failed to create page $pageNumber for order ${orderData.orderNumber}", e)
         }
 
         logger.debug("Created page $pageNumber/$totalPages for order ${orderData.orderNumber}")
@@ -168,7 +191,7 @@ class OrderPdfServiceImpl(
         totalPages: Int,
     ) {
         val boldFont = PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD)
-        val fontSize = 14f
+        val fontSize = HEADER_FONT_SIZE
 
         // Create the combined text on one line
         val headerText = "$orderNumber ($pageNumber/$totalPages)"
@@ -179,7 +202,7 @@ class OrderPdfServiceImpl(
 
         // Position for the rotated text on the left side
         // The text will be rotated 90 degrees clockwise
-        val xPosition = margin + 15f // Add more distance from left edge of page for better margin
+        val xPosition = margin + HEADER_MARGIN_FROM_EDGE
         val yPositionBase = pageHeight / 2 // Center vertically on the page
 
         // Move to the position where we want the text
@@ -238,12 +261,12 @@ class OrderPdfServiceImpl(
             val mugDetails = mugDetailsService.findByArticleId(orderItem.article.id)
 
             // Create PDF image object
-            val pdfImage = PDImageXObject.createFromByteArray(document, imageData, "ProductImage")
+            val pdfImage = PDImageXObject.createFromByteArray(document, imageData, PDF_IMAGE_NAME_PRODUCT)
 
             // Use exact print template dimensions from MugArticleDetails
             // Never scale or correct the image size - use exact dimensions from database
             val imageWidthMm = mugDetails?.printTemplateWidthMm?.toFloat() ?: (pdfWidthMm - (2 * pdfMarginMm))
-            val imageHeightMm = mugDetails?.printTemplateHeightMm?.toFloat() ?: (pdfHeightMm - (2 * pdfMarginMm) - 15f)
+            val imageHeightMm = mugDetails?.printTemplateHeightMm?.toFloat() ?: (pdfHeightMm - (2 * pdfMarginMm) - DEFAULT_IMAGE_MARGIN_MM)
 
             // Convert exact dimensions to points (no scaling or aspect ratio correction)
             val imageWidthPt = imageWidthMm * MM_TO_POINTS
@@ -262,8 +285,13 @@ class OrderPdfServiceImpl(
             logger.debug("Using exact print template dimensions: ${imageWidthMm}mm x ${imageHeightMm}mm from MugArticleDetails")
         } catch (e: Exception) {
             logger.error("Failed to add product image for order item ${orderItem.id}", e)
-            // Add placeholder text instead
-            addPlaceholderText(contentStream, "Image not available")
+            try {
+                // Add placeholder text instead
+                addPlaceholderText(contentStream, "Image not available")
+            } catch (placeholderException: Exception) {
+                logger.error("Failed to add placeholder text for order item ${orderItem.id}", placeholderException)
+                throw PdfGenerationException("Failed to add product image and placeholder for order item ${orderItem.id}", e)
+            }
         }
     }
 
@@ -282,21 +310,26 @@ class OrderPdfServiceImpl(
 
             val bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix)
             val qrByteArray = ByteArrayOutputStream()
-            ImageIO.write(bufferedImage, "PNG", qrByteArray)
+            ImageIO.write(bufferedImage, IMAGE_FORMAT_PNG, qrByteArray)
 
-            val qrImage = PDImageXObject.createFromByteArray(document, qrByteArray.toByteArray(), "QRCode")
+            val qrImage = PDImageXObject.createFromByteArray(document, qrByteArray.toByteArray(), PDF_IMAGE_NAME_QR)
 
             // Position QR code in bottom left corner
             val xPosition = margin
             val yPosition = margin
 
-            contentStream.drawImage(qrImage, xPosition, yPosition, QR_CODE_SIZE, QR_CODE_SIZE)
+            contentStream.drawImage(qrImage, xPosition, yPosition, QR_CODE_SIZE_POINTS, QR_CODE_SIZE_POINTS)
 
             logger.debug("Added QR code for order ID $orderId at position ($xPosition, $yPosition)")
         } catch (e: Exception) {
             logger.error("Failed to generate QR code for order ID $orderId", e)
-            // Add fallback text
-            addPlaceholderText(contentStream, "Order ID: $orderId", margin, margin + 10f)
+            try {
+                // Add fallback text
+                addPlaceholderText(contentStream, "Order ID: $orderId", margin, margin + 10f)
+            } catch (placeholderException: Exception) {
+                logger.error("Failed to add QR code fallback text for order ID $orderId", placeholderException)
+                throw PdfGenerationException("Failed to add QR code and fallback text for order ID $orderId", e)
+            }
         }
     }
 
@@ -304,8 +337,8 @@ class OrderPdfServiceImpl(
      * Creates a simple placeholder image when product image is not available
      */
     private fun createPlaceholderImage(): ByteArray {
-        val width = 400
-        val height = 300
+        val width = PLACEHOLDER_IMAGE_WIDTH
+        val height = PLACEHOLDER_IMAGE_HEIGHT
         val image = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
         val graphics = image.createGraphics()
 
@@ -319,7 +352,7 @@ class OrderPdfServiceImpl(
 
         // Add placeholder text
         graphics.color = java.awt.Color.BLACK
-        val font = java.awt.Font("Arial", java.awt.Font.BOLD, 24)
+        val font = java.awt.Font("Arial", java.awt.Font.BOLD, PLACEHOLDER_FONT_SIZE_PIXELS)
         graphics.font = font
         val fontMetrics = graphics.getFontMetrics(font)
         val text = "No Image Available"
@@ -333,8 +366,12 @@ class OrderPdfServiceImpl(
 
         // Convert to byte array
         val outputStream = ByteArrayOutputStream()
-        ImageIO.write(image, "PNG", outputStream)
-        return outputStream.toByteArray()
+        try {
+            ImageIO.write(image, IMAGE_FORMAT_PNG, outputStream)
+            return outputStream.toByteArray()
+        } catch (e: Exception) {
+            throw PdfGenerationException("Failed to create placeholder image", e)
+        }
     }
 
     /**
@@ -349,11 +386,11 @@ class OrderPdfServiceImpl(
         try {
             contentStream.beginText()
             val regularFont = PDType1Font(Standard14Fonts.FontName.HELVETICA)
-            contentStream.setFont(regularFont, 12f)
+            contentStream.setFont(regularFont, PLACEHOLDER_FONT_SIZE)
 
             if (x == pageWidth / 2) {
                 // Center the text
-                val textWidth = regularFont.getStringWidth(text) / 1000 * 12f
+                val textWidth = regularFont.getStringWidth(text) / 1000 * PLACEHOLDER_FONT_SIZE
                 contentStream.newLineAtOffset((pageWidth - textWidth) / 2, y)
             } else {
                 contentStream.newLineAtOffset(x, y)
