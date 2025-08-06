@@ -5,11 +5,11 @@ import com.jotoai.voenix.shop.country.api.CountryQueryService
 import com.jotoai.voenix.shop.country.api.dto.CountryDto
 import com.jotoai.voenix.shop.country.api.dto.CreateCountryRequest
 import com.jotoai.voenix.shop.country.api.dto.UpdateCountryRequest
+import com.jotoai.voenix.shop.country.api.exceptions.CountryNotFoundException
 import com.jotoai.voenix.shop.country.events.CountryCreatedEvent
 import com.jotoai.voenix.shop.country.events.CountryDeletedEvent
 import com.jotoai.voenix.shop.country.events.CountryUpdatedEvent
 import com.jotoai.voenix.shop.country.internal.entity.Country
-import com.jotoai.voenix.shop.country.internal.exception.CountryNotFoundException
 import com.jotoai.voenix.shop.country.internal.repository.CountryRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service

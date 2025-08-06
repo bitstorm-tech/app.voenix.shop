@@ -20,10 +20,10 @@ class Country(
     @Column(nullable = false, unique = true, length = 255)
     var name: String,
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    @Column(name = "created_at", nullable = false, updatable = false)
     val createdAt: OffsetDateTime? = null,
     @UpdateTimestamp
-    @Column(name = "updated_at", nullable = false, columnDefinition = "timestamptz")
+    @Column(name = "updated_at", nullable = false)
     var updatedAt: OffsetDateTime? = null,
 ) {
     fun toDto() =

@@ -109,25 +109,27 @@ class ArticleAssemblerTest {
         `when`(mugArticleVariantAssembler.toDto(testMugVariant))
             .thenReturn(expectedMugVariantDto)
         `when`(supplierQueryService.getSupplierById(1L))
-            .thenReturn(SupplierDto(
-                id = 1L,
-                name = "Test Supplier",
-                title = null,
-                firstName = null,
-                lastName = null,
-                street = null,
-                houseNumber = null,
-                city = null,
-                postalCode = null,
-                country = null,
-                phoneNumber1 = null,
-                phoneNumber2 = null,
-                phoneNumber3 = null,
-                email = null,
-                website = null,
-                createdAt = null,
-                updatedAt = null
-            ))
+            .thenReturn(
+                SupplierDto(
+                    id = 1L,
+                    name = "Test Supplier",
+                    title = null,
+                    firstName = null,
+                    lastName = null,
+                    street = null,
+                    houseNumber = null,
+                    city = null,
+                    postalCode = null,
+                    country = null,
+                    phoneNumber1 = null,
+                    phoneNumber2 = null,
+                    phoneNumber3 = null,
+                    email = null,
+                    website = null,
+                    createdAt = null,
+                    updatedAt = null,
+                ),
+            )
 
         // When
         val result = assembler.toDto(entity)
@@ -199,25 +201,27 @@ class ArticleAssemblerTest {
         `when`(shirtArticleVariantAssembler.toDto(testShirtVariant))
             .thenReturn(expectedShirtVariantDto)
         `when`(supplierQueryService.getSupplierById(1L))
-            .thenReturn(SupplierDto(
-                id = 1L,
-                name = "Test Supplier",
-                title = null,
-                firstName = null,
-                lastName = null,
-                street = null,
-                houseNumber = null,
-                city = null,
-                postalCode = null,
-                country = null,
-                phoneNumber1 = null,
-                phoneNumber2 = null,
-                phoneNumber3 = null,
-                email = null,
-                website = null,
-                createdAt = null,
-                updatedAt = null
-            ))
+            .thenReturn(
+                SupplierDto(
+                    id = 1L,
+                    name = "Test Supplier",
+                    title = null,
+                    firstName = null,
+                    lastName = null,
+                    street = null,
+                    houseNumber = null,
+                    city = null,
+                    postalCode = null,
+                    country = null,
+                    phoneNumber1 = null,
+                    phoneNumber2 = null,
+                    phoneNumber3 = null,
+                    email = null,
+                    website = null,
+                    createdAt = null,
+                    updatedAt = null,
+                ),
+            )
 
         // When
         val result = assembler.toDto(entity)
@@ -624,25 +628,27 @@ class ArticleAssemblerTest {
 
         // Mock the supplier query
         `when`(supplierQueryService.getSupplierById(777L))
-            .thenReturn(SupplierDto(
-                id = 777L,
-                name = "Complex & Special Supplier",
-                title = null,
-                firstName = null,
-                lastName = null,
-                street = null,
-                houseNumber = null,
-                city = null,
-                postalCode = null,
-                country = null,
-                phoneNumber1 = null,
-                phoneNumber2 = null,
-                phoneNumber3 = null,
-                email = null,
-                website = null,
-                createdAt = null,
-                updatedAt = null
-            ))
+            .thenReturn(
+                SupplierDto(
+                    id = 777L,
+                    name = "Complex & Special Supplier",
+                    title = null,
+                    firstName = null,
+                    lastName = null,
+                    street = null,
+                    houseNumber = null,
+                    city = null,
+                    postalCode = null,
+                    country = null,
+                    phoneNumber1 = null,
+                    phoneNumber2 = null,
+                    phoneNumber3 = null,
+                    email = null,
+                    website = null,
+                    createdAt = null,
+                    updatedAt = null,
+                ),
+            )
 
         // When
         val result = assembler.toDto(entity)

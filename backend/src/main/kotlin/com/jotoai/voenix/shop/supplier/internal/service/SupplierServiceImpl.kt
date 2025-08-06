@@ -26,11 +26,11 @@ class SupplierServiceImpl(
     SupplierQueryService {
     override fun getAllSuppliers(): List<SupplierDto> =
         supplierRepository.findAll().map { supplier ->
-            val dto = supplier.toDto()
-            supplier.countryId?.let { countryId ->
-                dto.country = countryQueryService.getCountryById(countryId)
-            }
-            dto
+            val country =
+                supplier.countryId?.let { countryId ->
+                    countryQueryService.getCountryById(countryId)
+                }
+            supplier.toDto().copy(country = country)
         }
 
     override fun getSupplierById(id: Long): SupplierDto {
@@ -38,11 +38,11 @@ class SupplierServiceImpl(
             supplierRepository
                 .findById(id)
                 .orElseThrow { SupplierNotFoundException("Supplier", "id", id) }
-        val dto = supplier.toDto()
-        supplier.countryId?.let { countryId ->
-            dto.country = countryQueryService.getCountryById(countryId)
-        }
-        return dto
+        val country =
+            supplier.countryId?.let { countryId ->
+                countryQueryService.getCountryById(countryId)
+            }
+        return supplier.toDto().copy(country = country)
     }
 
     private fun validateUniqueConstraints(
@@ -108,10 +108,11 @@ class SupplierServiceImpl(
             )
 
         val savedSupplier = supplierRepository.save(supplier)
-        val result = savedSupplier.toDto()
-        savedSupplier.countryId?.let { countryId ->
-            result.country = countryQueryService.getCountryById(countryId)
-        }
+        val country =
+            savedSupplier.countryId?.let { countryId ->
+                countryQueryService.getCountryById(countryId)
+            }
+        val result = savedSupplier.toDto().copy(country = country)
 
         // Publish event
         eventPublisher.publishEvent(SupplierCreatedEvent(result))
@@ -158,10 +159,11 @@ class SupplierServiceImpl(
         }
 
         val savedSupplier = supplierRepository.save(supplier)
-        val result = savedSupplier.toDto()
-        savedSupplier.countryId?.let { countryId ->
-            result.country = countryQueryService.getCountryById(countryId)
-        }
+        val country =
+            savedSupplier.countryId?.let { countryId ->
+                countryQueryService.getCountryById(countryId)
+            }
+        val result = savedSupplier.toDto().copy(country = country)
 
         // Publish event
         eventPublisher.publishEvent(SupplierUpdatedEvent(oldDto, result))
@@ -176,10 +178,11 @@ class SupplierServiceImpl(
                 .findById(id)
                 .orElseThrow { SupplierNotFoundException("Supplier", "id", id) }
 
-        val supplierDto = supplier.toDto()
-        supplier.countryId?.let { countryId ->
-            supplierDto.country = countryQueryService.getCountryById(countryId)
-        }
+        val country =
+            supplier.countryId?.let { countryId ->
+                countryQueryService.getCountryById(countryId)
+            }
+        val supplierDto = supplier.toDto().copy(country = country)
 
         supplierRepository.deleteById(id)
 

@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.country.api
 
 import com.jotoai.voenix.shop.country.api.dto.CountryDto
+import com.jotoai.voenix.shop.country.api.exceptions.CountryNotFoundException
 
 /**
  * Query service for Country module read operations.
@@ -17,7 +18,7 @@ interface CountryQueryService {
      * Retrieves a country by its ID.
      * @param id The country ID
      * @return The country
-     * @throws RuntimeException if the country is not found
+     * @throws CountryNotFoundException if the country is not found
      */
     fun getCountryById(id: Long): CountryDto
 

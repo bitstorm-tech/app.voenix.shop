@@ -1,8 +1,8 @@
-package com.jotoai.voenix.shop.country.internal.exception
+package com.jotoai.voenix.shop.country.api.exceptions
 
 /**
  * Exception thrown when a country is not found.
- * This is an internal exception for the Country module.
+ * This exception is part of the Country module's public API.
  */
 class CountryNotFoundException : RuntimeException {
     constructor(message: String) : super(message)
