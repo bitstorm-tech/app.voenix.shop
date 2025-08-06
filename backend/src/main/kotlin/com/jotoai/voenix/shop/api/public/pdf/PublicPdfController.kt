@@ -6,8 +6,8 @@
 
 package com.jotoai.voenix.shop.api.public.pdf
 
-import com.jotoai.voenix.shop.domain.pdf.dto.PublicPdfGenerationRequest
-import com.jotoai.voenix.shop.domain.pdf.service.PublicPdfService
+import com.jotoai.voenix.shop.pdf.api.PublicPdfService
+import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

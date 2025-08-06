@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.pdf.config
+package com.jotoai.voenix.shop.pdf.internal.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.stereotype.Component

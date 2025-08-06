@@ -5,8 +5,9 @@ import com.jotoai.voenix.shop.domain.orders.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.domain.orders.dto.OrderDto
 import com.jotoai.voenix.shop.domain.orders.enums.OrderStatus
 import com.jotoai.voenix.shop.domain.orders.service.OrderService
-import com.jotoai.voenix.shop.domain.pdf.service.OrderPdfGenerationService
 import com.jotoai.voenix.shop.domain.users.service.UserService
+import com.jotoai.voenix.shop.pdf.api.OrderPdfService
+import com.jotoai.voenix.shop.pdf.internal.service.OrderDataConverter
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
@@ -32,7 +33,8 @@ import java.util.UUID
 class OrderController(
     private val orderService: OrderService,
     private val userService: UserService,
-    private val pdfGenerationService: OrderPdfGenerationService,
+    private val orderPdfService: OrderPdfService,
+    private val orderDataConverter: OrderDataConverter,
 ) {
     /**
      * Creates an order from the user's current cart
@@ -103,9 +105,12 @@ class OrderController(
         // Get order and validate ownership
         val order = orderService.getOrderEntity(userId, orderId)
 
+        // Convert order to PDF data DTO
+        val orderPdfData = orderDataConverter.convertToOrderPdfData(order)
+
         // Generate PDF
-        val pdfBytes = pdfGenerationService.generateOrderPdf(order)
-        val filename = pdfGenerationService.getOrderPdfFilename(order.orderNumber ?: "unknown")
+        val pdfBytes = orderPdfService.generateOrderPdf(orderPdfData)
+        val filename = orderPdfService.getOrderPdfFilename(order.orderNumber ?: "unknown")
 
         // Set response headers
         response.contentType = MediaType.APPLICATION_PDF_VALUE

@@ -1,12 +1,15 @@
-package com.jotoai.voenix.shop.domain.pdf.service
+package com.jotoai.voenix.shop.pdf.internal.service
 
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
 import com.jotoai.voenix.shop.domain.articles.service.MugDetailsService
 import com.jotoai.voenix.shop.domain.images.service.ImageAccessService
-import com.jotoai.voenix.shop.domain.orders.entity.Order
-import com.jotoai.voenix.shop.domain.orders.entity.OrderItem
+import com.jotoai.voenix.shop.pdf.api.OrderPdfService
+import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
+import com.jotoai.voenix.shop.pdf.events.PdfGeneratedEvent
+import com.jotoai.voenix.shop.pdf.events.PdfGenerationFailedEvent
+import com.jotoai.voenix.shop.pdf.events.PdfGenerationType
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -17,6 +20,7 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.apache.pdfbox.util.Matrix
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -29,16 +33,17 @@ import javax.imageio.ImageIO
  * Creates one page per item quantity with product image, header, and QR code.
  */
 @Service
-class OrderPdfGenerationService(
+class OrderPdfServiceImpl(
     @param:Value("\${app.base-url:http://localhost:8080}") private val appBaseUrl: String,
     @param:Value("\${pdf.size.width:239}") private val pdfWidthMm: Float,
     @param:Value("\${pdf.size.height:99}") private val pdfHeightMm: Float,
     @param:Value("\${pdf.margin:1}") private val pdfMarginMm: Float,
     private val imageAccessService: ImageAccessService,
     private val mugDetailsService: MugDetailsService,
-) {
+    private val eventPublisher: ApplicationEventPublisher,
+) : OrderPdfService {
     companion object {
-        private val logger = LoggerFactory.getLogger(OrderPdfGenerationService::class.java)
+        private val logger = LoggerFactory.getLogger(OrderPdfServiceImpl::class.java)
 
         // Conversion factor from millimeters to PDF points
         private const val MM_TO_POINTS = 2.834645669f
@@ -58,37 +63,70 @@ class OrderPdfGenerationService(
     private val margin: Float get() = pdfMarginMm * MM_TO_POINTS
 
     /**
-     * Generates a PDF for the given order.
+     * Generates a PDF for the given order data.
      * Creates one page per item quantity with the product image, header text, and QR code.
      *
-     * @param order The order entity
+     * @param orderData The order data
      * @return PDF as byte array
      */
-    fun generateOrderPdf(order: Order): ByteArray {
-        logger.info("Generating PDF for order ${order.orderNumber} with ${order.getTotalItemCount()} total items")
+    override fun generateOrderPdf(orderData: OrderPdfData): ByteArray {
+        logger.info("Generating PDF for order ${orderData.orderNumber} with ${orderData.getTotalItemCount()} total items")
 
-        val document = PDDocument()
-        return try {
-            var pageNumber = 1
-            val totalPages = order.getTotalItemCount()
+        try {
+            eventPublisher.publishEvent(
+                com.jotoai.voenix.shop.pdf.events.PdfGenerationRequestedEvent(
+                    articleId = null,
+                    orderId = orderData.id.toString(),
+                    generationType = PdfGenerationType.ORDER_PDF,
+                    requestedBy = "user_${orderData.userId}",
+                ),
+            )
 
-            // Generate pages for each item quantity
-            order.items.forEach { orderItem ->
-                repeat(orderItem.quantity) {
-                    createPage(document, order, orderItem, pageNumber, totalPages)
-                    pageNumber++
+            // Use try-with-resources for proper resource management
+            PDDocument().use { document ->
+                var pageNumber = 1
+                val totalPages = orderData.getTotalItemCount()
+
+                // Generate pages for each item quantity
+                orderData.items.forEach { orderItem ->
+                    repeat(orderItem.quantity) {
+                        createPage(document, orderData, orderItem, pageNumber, totalPages)
+                        pageNumber++
+                    }
                 }
-            }
 
-            // Save document to byte array
-            val outputStream = ByteArrayOutputStream()
-            document.save(outputStream)
-            outputStream.toByteArray()
+                // Save document to byte array
+                val outputStream = ByteArrayOutputStream()
+                document.save(outputStream)
+                val pdfBytes = outputStream.toByteArray()
+
+                // Publish success event
+                eventPublisher.publishEvent(
+                    PdfGeneratedEvent(
+                        filename = getOrderPdfFilename(orderData.orderNumber ?: "unknown"),
+                        size = pdfBytes.size.toLong(),
+                        articleId = null,
+                        orderId = orderData.id.toString(),
+                        generationType = PdfGenerationType.ORDER_PDF,
+                    ),
+                )
+
+                return pdfBytes
+            }
         } catch (e: Exception) {
-            logger.error("Failed to generate PDF for order ${order.orderNumber}", e)
-            throw RuntimeException("Failed to generate PDF for order ${order.orderNumber}: ${e.message}", e)
-        } finally {
-            document.close()
+            logger.error("Failed to generate PDF for order ${orderData.orderNumber}", e)
+
+            // Publish failure event
+            eventPublisher.publishEvent(
+                PdfGenerationFailedEvent(
+                    articleId = null,
+                    orderId = orderData.id.toString(),
+                    generationType = PdfGenerationType.ORDER_PDF,
+                    errorMessage = e.message ?: "Unknown error",
+                ),
+            )
+
+            throw RuntimeException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
         }
     }
 
@@ -97,8 +135,8 @@ class OrderPdfGenerationService(
      */
     private fun createPage(
         document: PDDocument,
-        order: Order,
-        orderItem: OrderItem,
+        orderData: OrderPdfData,
+        orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData,
         pageNumber: Int,
         totalPages: Int,
     ) {
@@ -107,16 +145,16 @@ class OrderPdfGenerationService(
 
         PDPageContentStream(document, page).use { contentStream ->
             // Add header with order number and page info
-            addHeader(contentStream, order.orderNumber ?: "UNKNOWN", pageNumber, totalPages)
+            addHeader(contentStream, orderData.orderNumber ?: "UNKNOWN", pageNumber, totalPages)
 
             // Add product image (centered)
-            addProductImage(document, contentStream, order, orderItem)
+            addProductImage(document, contentStream, orderData, orderItem)
 
             // Add QR code in bottom left
-            addQrCode(document, contentStream, order.id.toString())
+            addQrCode(document, contentStream, orderData.id.toString())
         }
 
-        logger.debug("Created page $pageNumber/$totalPages for order ${order.orderNumber}")
+        logger.debug("Created page $pageNumber/$totalPages for order ${orderData.orderNumber}")
     }
 
     /**
@@ -168,8 +206,8 @@ class OrderPdfGenerationService(
     private fun addProductImage(
         document: PDDocument,
         contentStream: PDPageContentStream,
-        order: Order,
-        orderItem: OrderItem,
+        orderData: OrderPdfData,
+        orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData,
     ) {
         try {
             // Get image data - try generated image first, then fallback to placeholder
@@ -180,11 +218,11 @@ class OrderPdfGenerationService(
                             imageAccessService
                                 .validateAccessAndGetImageData(
                                     orderItem.generatedImageFilename!!,
-                                    requireNotNull(order.user.id) { "User ID cannot be null for order ${order.orderNumber}" },
+                                    orderData.userId,
                                 ).first
                         } catch (e: Exception) {
                             logger.warn(
-                                "Could not load generated image ${orderItem.generatedImageFilename} for order ${order.orderNumber}, using placeholder",
+                                "Could not load generated image ${orderItem.generatedImageFilename} for order ${orderData.orderNumber}, using placeholder",
                                 e,
                             )
                             createPlaceholderImage()
@@ -197,10 +235,7 @@ class OrderPdfGenerationService(
                 }
 
             // Get MugArticleDetails for the correct print template dimensions
-            val mugDetails =
-                mugDetailsService.findByArticleId(
-                    requireNotNull(orderItem.article.id) { "Article ID cannot be null for order item ${orderItem.id}" },
-                )
+            val mugDetails = mugDetailsService.findByArticleId(orderItem.article.id)
 
             // Create PDF image object
             val pdfImage = PDImageXObject.createFromByteArray(document, imageData, "ProductImage")
@@ -334,7 +369,7 @@ class OrderPdfGenerationService(
     /**
      * Generates the PDF filename for an order
      */
-    fun getOrderPdfFilename(orderNumber: String): String {
+    override fun getOrderPdfFilename(orderNumber: String): String {
         val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
         return "order_${orderNumber}_$timestamp.pdf"
     }
