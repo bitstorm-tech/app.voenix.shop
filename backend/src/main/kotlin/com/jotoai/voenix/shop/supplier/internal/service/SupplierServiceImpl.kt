@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.supplier.internal.service
 
-import com.jotoai.voenix.shop.domain.countries.service.CountryService
+import com.jotoai.voenix.shop.country.api.CountryQueryService
 import com.jotoai.voenix.shop.supplier.api.SupplierFacade
 import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
 import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
@@ -20,7 +20,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class SupplierServiceImpl(
     private val supplierRepository: SupplierRepository,
-    private val countryService: CountryService,
+    private val countryQueryService: CountryQueryService,
     private val eventPublisher: ApplicationEventPublisher,
 ) : SupplierFacade,
     SupplierQueryService {
@@ -79,7 +79,7 @@ class SupplierServiceImpl(
         val country =
             request.countryId?.let { countryId ->
                 @Suppress("DEPRECATION")
-                countryService.getCountryEntityReference(countryId)
+                countryQueryService.getCountryEntityReference(countryId) as com.jotoai.voenix.shop.country.internal.entity.Country
             }
 
         val supplier =
@@ -142,7 +142,8 @@ class SupplierServiceImpl(
         // Update country if provided
         request.countryId?.let { countryId ->
             @Suppress("DEPRECATION")
-            supplier.country = countryService.getCountryEntityReference(countryId)
+            supplier.country =
+                countryQueryService.getCountryEntityReference(countryId) as com.jotoai.voenix.shop.country.internal.entity.Country
         }
 
         val savedSupplier = supplierRepository.save(supplier)

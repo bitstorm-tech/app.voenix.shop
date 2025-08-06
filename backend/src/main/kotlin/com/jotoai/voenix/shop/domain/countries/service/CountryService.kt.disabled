@@ -4,15 +4,16 @@ import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.countries.dto.CountryDto
 import com.jotoai.voenix.shop.domain.countries.dto.CreateCountryRequest
 import com.jotoai.voenix.shop.domain.countries.dto.UpdateCountryRequest
-import com.jotoai.voenix.shop.domain.countries.entity.Country
-import com.jotoai.voenix.shop.domain.countries.repository.CountryRepository
+import com.jotoai.voenix.shop.domain.countries.entity.CountryOld
+import com.jotoai.voenix.shop.domain.countries.repository.CountryRepositoryOld
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-@Service
+// Temporarily disabled to avoid bean conflicts during migration
+// @Service
 @Transactional(readOnly = true)
-class CountryService(
-    private val countryRepository: CountryRepository,
+class CountryServiceOld(
+    private val countryRepository: CountryRepositoryOld,
 ) {
     fun getAllCountries(): List<CountryDto> = countryRepository.findAll().map { it.toDto() }
 
@@ -29,7 +30,7 @@ class CountryService(
         }
 
         val country =
-            Country(
+            CountryOld(
                 name = request.name,
             )
 
@@ -77,7 +78,7 @@ class CountryService(
      * @deprecated This method should be removed once all entity relationships are refactored
      */
     @Deprecated("Use getCountryById instead and refactor entity relationships")
-    fun getCountryEntityReference(id: Long): Country =
+    fun getCountryEntityReference(id: Long): CountryOld =
         countryRepository
             .findById(id)
             .orElseThrow { ResourceNotFoundException("Country", "id", id) }

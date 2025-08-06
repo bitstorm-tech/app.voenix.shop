@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.supplier.api.dto
 
-import com.jotoai.voenix.shop.domain.countries.dto.CountryDto
+import com.jotoai.voenix.shop.country.api.dto.CountryDto
 import java.time.OffsetDateTime
 
 data class SupplierDto(

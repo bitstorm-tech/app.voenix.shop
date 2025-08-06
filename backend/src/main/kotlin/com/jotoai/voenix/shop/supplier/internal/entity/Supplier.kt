@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.supplier.internal.entity
 
-import com.jotoai.voenix.shop.domain.countries.entity.Country
+import com.jotoai.voenix.shop.country.internal.entity.Country
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

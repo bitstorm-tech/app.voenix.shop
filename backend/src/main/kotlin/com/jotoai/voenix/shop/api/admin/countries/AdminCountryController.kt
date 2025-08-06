@@ -1,9 +1,10 @@
 package com.jotoai.voenix.shop.api.admin.countries
 
-import com.jotoai.voenix.shop.domain.countries.dto.CountryDto
-import com.jotoai.voenix.shop.domain.countries.dto.CreateCountryRequest
-import com.jotoai.voenix.shop.domain.countries.dto.UpdateCountryRequest
-import com.jotoai.voenix.shop.domain.countries.service.CountryService
+import com.jotoai.voenix.shop.country.api.CountryFacade
+import com.jotoai.voenix.shop.country.api.CountryQueryService
+import com.jotoai.voenix.shop.country.api.dto.CountryDto
+import com.jotoai.voenix.shop.country.api.dto.CreateCountryRequest
+import com.jotoai.voenix.shop.country.api.dto.UpdateCountryRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -21,32 +22,33 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/countries")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminCountryController(
-    private val countryService: CountryService,
+    private val countryFacade: CountryFacade,
+    private val countryQueryService: CountryQueryService,
 ) {
     @GetMapping
-    fun getAllCountries(): List<CountryDto> = countryService.getAllCountries()
+    fun getAllCountries(): List<CountryDto> = countryQueryService.getAllCountries()
 
     @GetMapping("/{id}")
     fun getCountryById(
         @PathVariable id: Long,
-    ): CountryDto = countryService.getCountryById(id)
+    ): CountryDto = countryQueryService.getCountryById(id)
 
     @PostMapping
     fun createCountry(
         @Valid @RequestBody createCountryRequest: CreateCountryRequest,
-    ): CountryDto = countryService.createCountry(createCountryRequest)
+    ): CountryDto = countryFacade.createCountry(createCountryRequest)
 
     @PutMapping("/{id}")
     fun updateCountry(
         @PathVariable id: Long,
         @Valid @RequestBody updateCountryRequest: UpdateCountryRequest,
-    ): CountryDto = countryService.updateCountry(id, updateCountryRequest)
+    ): CountryDto = countryFacade.updateCountry(id, updateCountryRequest)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteCountry(
         @PathVariable id: Long,
     ) {
-        countryService.deleteCountry(id)
+        countryFacade.deleteCountry(id)
     }
 }

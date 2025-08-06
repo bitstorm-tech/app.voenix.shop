@@ -11,9 +11,10 @@ import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
 import java.time.OffsetDateTime
 
-@Entity
+// Temporarily disabled to avoid entity conflicts during migration
+// @Entity
 @Table(name = "countries")
-class Country(
+class CountryOld(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
@@ -36,7 +37,7 @@ class Country(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is Country) return false
+        if (other !is CountryOld) return false
         return name == other.name
     }
 

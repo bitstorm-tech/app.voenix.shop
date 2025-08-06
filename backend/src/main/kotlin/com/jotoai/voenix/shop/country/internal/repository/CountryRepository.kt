@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.domain.countries.repository
+package com.jotoai.voenix.shop.country.internal.repository
 
-import com.jotoai.voenix.shop.domain.countries.entity.Country
+import com.jotoai.voenix.shop.country.internal.entity.Country
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
