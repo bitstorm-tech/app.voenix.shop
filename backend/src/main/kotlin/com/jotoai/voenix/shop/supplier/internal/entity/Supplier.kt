@@ -1,15 +1,11 @@
 package com.jotoai.voenix.shop.supplier.internal.entity
 
-import com.jotoai.voenix.shop.country.internal.entity.Country
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
-import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
@@ -37,9 +33,8 @@ class Supplier(
     var city: String? = null,
     @Column(name = "postal_code")
     var postalCode: Int? = null,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "country_id")
-    var country: Country? = null,
+    @Column(name = "country_id")
+    var countryId: Long? = null,
     @Column(name = "phone_number1", length = 50)
     var phoneNumber1: String? = null,
     @Column(name = "phone_number2", length = 50)
@@ -68,7 +63,7 @@ class Supplier(
             houseNumber = this.houseNumber,
             city = this.city,
             postalCode = this.postalCode,
-            country = this.country?.toDto(),
+            country = null, // Will be populated by service layer
             phoneNumber1 = this.phoneNumber1,
             phoneNumber2 = this.phoneNumber2,
             phoneNumber3 = this.phoneNumber3,

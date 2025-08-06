@@ -24,13 +24,26 @@ class SupplierServiceImpl(
     private val eventPublisher: ApplicationEventPublisher,
 ) : SupplierFacade,
     SupplierQueryService {
-    override fun getAllSuppliers(): List<SupplierDto> = supplierRepository.findAll().map { it.toDto() }
+    override fun getAllSuppliers(): List<SupplierDto> =
+        supplierRepository.findAll().map { supplier ->
+            val dto = supplier.toDto()
+            supplier.countryId?.let { countryId ->
+                dto.country = countryQueryService.getCountryById(countryId)
+            }
+            dto
+        }
 
-    override fun getSupplierById(id: Long): SupplierDto =
-        supplierRepository
-            .findById(id)
-            .map { it.toDto() }
-            .orElseThrow { SupplierNotFoundException("Supplier", "id", id) }
+    override fun getSupplierById(id: Long): SupplierDto {
+        val supplier =
+            supplierRepository
+                .findById(id)
+                .orElseThrow { SupplierNotFoundException("Supplier", "id", id) }
+        val dto = supplier.toDto()
+        supplier.countryId?.let { countryId ->
+            dto.country = countryQueryService.getCountryById(countryId)
+        }
+        return dto
+    }
 
     private fun validateUniqueConstraints(
         name: String?,
@@ -64,23 +77,17 @@ class SupplierServiceImpl(
 
     override fun existsById(id: Long): Boolean = supplierRepository.existsById(id)
 
-    @Deprecated("Use getSupplierById instead and refactor entity relationships")
-    override fun getSupplierEntityReference(id: Long): Any =
-        supplierRepository
-            .findById(id)
-            .orElseThrow { SupplierNotFoundException("Supplier", "id", id) }
-
     @Transactional
     override fun createSupplier(request: CreateSupplierRequest): SupplierDto {
         // Validate unique constraints
         validateUniqueConstraints(request.name, request.email)
 
-        // Fetch country if provided
-        val country =
-            request.countryId?.let { countryId ->
-                @Suppress("DEPRECATION")
-                countryQueryService.getCountryEntityReference(countryId) as com.jotoai.voenix.shop.country.internal.entity.Country
+        // Validate country exists if provided
+        request.countryId?.let { countryId ->
+            if (!countryQueryService.existsById(countryId)) {
+                throw IllegalArgumentException("Country not found with id: $countryId")
             }
+        }
 
         val supplier =
             Supplier(
@@ -92,7 +99,7 @@ class SupplierServiceImpl(
                 houseNumber = request.houseNumber?.trim(),
                 city = request.city?.trim(),
                 postalCode = request.postalCode,
-                country = country,
+                countryId = request.countryId,
                 phoneNumber1 = request.phoneNumber1?.trim(),
                 phoneNumber2 = request.phoneNumber2?.trim(),
                 phoneNumber3 = request.phoneNumber3?.trim(),
@@ -102,6 +109,9 @@ class SupplierServiceImpl(
 
         val savedSupplier = supplierRepository.save(supplier)
         val result = savedSupplier.toDto()
+        savedSupplier.countryId?.let { countryId ->
+            result.country = countryQueryService.getCountryById(countryId)
+        }
 
         // Publish event
         eventPublisher.publishEvent(SupplierCreatedEvent(result))
@@ -141,13 +151,17 @@ class SupplierServiceImpl(
 
         // Update country if provided
         request.countryId?.let { countryId ->
-            @Suppress("DEPRECATION")
-            supplier.country =
-                countryQueryService.getCountryEntityReference(countryId) as com.jotoai.voenix.shop.country.internal.entity.Country
+            if (!countryQueryService.existsById(countryId)) {
+                throw IllegalArgumentException("Country not found with id: $countryId")
+            }
+            supplier.countryId = countryId
         }
 
         val savedSupplier = supplierRepository.save(supplier)
         val result = savedSupplier.toDto()
+        savedSupplier.countryId?.let { countryId ->
+            result.country = countryQueryService.getCountryById(countryId)
+        }
 
         // Publish event
         eventPublisher.publishEvent(SupplierUpdatedEvent(oldDto, result))
@@ -163,6 +177,9 @@ class SupplierServiceImpl(
                 .orElseThrow { SupplierNotFoundException("Supplier", "id", id) }
 
         val supplierDto = supplier.toDto()
+        supplier.countryId?.let { countryId ->
+            supplierDto.country = countryQueryService.getCountryById(countryId)
+        }
 
         supplierRepository.deleteById(id)
 

@@ -32,12 +32,6 @@ class CountryServiceImpl(
 
     override fun existsById(id: Long): Boolean = countryRepository.existsById(id)
 
-    @Deprecated("Use getCountryById instead and refactor entity relationships")
-    override fun getCountryEntityReference(id: Long): Any =
-        countryRepository
-            .findById(id)
-            .orElseThrow { CountryNotFoundException("Country", "id", id) }
-
     @Transactional
     override fun createCountry(request: CreateCountryRequest): CountryDto {
         if (countryRepository.existsByName(request.name)) {

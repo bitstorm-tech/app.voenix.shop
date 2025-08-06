@@ -29,7 +29,6 @@ import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepo
 import com.jotoai.voenix.shop.domain.images.dto.ImageType
 import com.jotoai.voenix.shop.domain.images.service.StoragePathService
 import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
-import com.jotoai.voenix.shop.supplier.internal.entity.Supplier
 import com.jotoai.voenix.shop.vat.api.VatQueryService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -112,11 +111,11 @@ class ArticleService(
             }
 
         // Validate supplier exists if provided
-        val supplier =
-            request.supplierId?.let { supplierId ->
-                @Suppress("DEPRECATION")
-                supplierQueryService.getSupplierEntityReference(supplierId) as Supplier
+        request.supplierId?.let { supplierId ->
+            if (!supplierQueryService.existsById(supplierId)) {
+                throw ResourceNotFoundException("Supplier not found with id: $supplierId")
             }
+        }
 
         // Validate type-specific details are provided
         validateTypeSpecificDetails(request.articleType, request)
@@ -131,7 +130,7 @@ class ArticleService(
                 articleType = request.articleType,
                 category = category,
                 subcategory = subcategory,
-                supplier = supplier,
+                supplierId = request.supplierId,
                 supplierArticleName = request.supplierArticleName,
                 supplierArticleNumber = request.supplierArticleNumber,
             )
@@ -195,11 +194,11 @@ class ArticleService(
             }
 
         // Validate supplier exists if provided
-        val supplier =
-            request.supplierId?.let { supplierId ->
-                @Suppress("DEPRECATION")
-                supplierQueryService.getSupplierEntityReference(supplierId) as Supplier
+        request.supplierId?.let { supplierId ->
+            if (!supplierQueryService.existsById(supplierId)) {
+                throw ResourceNotFoundException("Supplier not found with id: $supplierId")
             }
+        }
 
         // Update article
         article.apply {
@@ -209,7 +208,7 @@ class ArticleService(
             active = request.active
             this.category = category
             this.subcategory = subcategory
-            this.supplier = supplier
+            this.supplierId = request.supplierId
             this.supplierArticleName = request.supplierArticleName
             this.supplierArticleNumber = request.supplierArticleNumber
         }
@@ -316,8 +315,8 @@ class ArticleService(
             categoryName = article.category.name,
             subcategoryId = article.subcategory?.id,
             subcategoryName = article.subcategory?.name,
-            supplierId = article.supplier?.id,
-            supplierName = article.supplier?.name,
+            supplierId = article.supplierId,
+            supplierName = article.supplierId?.let { supplierQueryService.getSupplierById(it)?.name },
             supplierArticleName = article.supplierArticleName,
             supplierArticleNumber = article.supplierArticleNumber,
             mugVariants =

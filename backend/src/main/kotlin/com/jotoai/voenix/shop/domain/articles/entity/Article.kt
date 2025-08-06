@@ -3,7 +3,6 @@ package com.jotoai.voenix.shop.domain.articles.entity
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleSubCategory
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
-import com.jotoai.voenix.shop.supplier.internal.entity.Supplier
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -46,9 +45,8 @@ class Article(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id")
     var subcategory: ArticleSubCategory? = null,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "supplier_id")
-    var supplier: Supplier? = null,
+    @Column(name = "supplier_id")
+    var supplierId: Long? = null,
     @Column(name = "supplier_article_name")
     var supplierArticleName: String? = null,
     @Column(name = "supplier_article_number")

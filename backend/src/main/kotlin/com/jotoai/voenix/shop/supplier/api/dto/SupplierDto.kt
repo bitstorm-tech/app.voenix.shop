@@ -13,7 +13,7 @@ data class SupplierDto(
     val houseNumber: String?,
     val city: String?,
     val postalCode: Int?,
-    val country: CountryDto?,
+    var country: CountryDto?,
     val phoneNumber1: String?,
     val phoneNumber2: String?,
     val phoneNumber3: String?,

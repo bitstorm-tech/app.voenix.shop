@@ -8,7 +8,8 @@ import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
 import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
-import com.jotoai.voenix.shop.supplier.internal.entity.Supplier
+import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
+import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -24,18 +25,19 @@ import java.time.OffsetDateTime
 class ArticleAssemblerTest {
     private lateinit var mugArticleVariantAssembler: MugArticleVariantAssembler
     private lateinit var shirtArticleVariantAssembler: ShirtArticleVariantAssembler
+    private lateinit var supplierQueryService: SupplierQueryService
     private lateinit var assembler: ArticleAssembler
 
     private lateinit var testCategory: ArticleCategory
     private lateinit var testSubcategory: ArticleSubCategory
-    private lateinit var testSupplier: Supplier
     // Test variants will be created in individual test methods
 
     @BeforeEach
     fun setUp() {
         mugArticleVariantAssembler = mock(MugArticleVariantAssembler::class.java)
         shirtArticleVariantAssembler = mock(ShirtArticleVariantAssembler::class.java)
-        assembler = ArticleAssembler(mugArticleVariantAssembler, shirtArticleVariantAssembler)
+        supplierQueryService = mock(SupplierQueryService::class.java)
+        assembler = ArticleAssembler(mugArticleVariantAssembler, shirtArticleVariantAssembler, supplierQueryService)
 
         // Setup test data
         testCategory =
@@ -51,12 +53,6 @@ class ArticleAssemblerTest {
                 articleCategory = testCategory,
                 name = "Test Subcategory",
                 description = "Test subcategory description",
-            )
-
-        testSupplier =
-            Supplier(
-                id = 1L,
-                name = "Test Supplier",
             )
 
         // Test variants will be created in individual tests
@@ -78,7 +74,7 @@ class ArticleAssemblerTest {
                 articleType = ArticleType.MUG,
                 category = testCategory,
                 subcategory = testSubcategory,
-                supplier = testSupplier,
+                supplierId = 1L,
                 supplierArticleName = "Supplier Mug Name",
                 supplierArticleNumber = "SMN-001",
                 createdAt = createdAt,
@@ -112,6 +108,26 @@ class ArticleAssemblerTest {
 
         `when`(mugArticleVariantAssembler.toDto(testMugVariant))
             .thenReturn(expectedMugVariantDto)
+        `when`(supplierQueryService.getSupplierById(1L))
+            .thenReturn(SupplierDto(
+                id = 1L,
+                name = "Test Supplier",
+                title = null,
+                firstName = null,
+                lastName = null,
+                street = null,
+                houseNumber = null,
+                city = null,
+                postalCode = null,
+                country = null,
+                phoneNumber1 = null,
+                phoneNumber2 = null,
+                phoneNumber3 = null,
+                email = null,
+                website = null,
+                createdAt = null,
+                updatedAt = null
+            ))
 
         // When
         val result = assembler.toDto(entity)
@@ -155,7 +171,7 @@ class ArticleAssemblerTest {
                 articleType = ArticleType.SHIRT,
                 category = testCategory,
                 subcategory = testSubcategory,
-                supplier = testSupplier,
+                supplierId = 1L,
                 supplierArticleName = "Supplier Shirt Name",
                 supplierArticleNumber = "SSN-002",
             )
@@ -182,6 +198,26 @@ class ArticleAssemblerTest {
 
         `when`(shirtArticleVariantAssembler.toDto(testShirtVariant))
             .thenReturn(expectedShirtVariantDto)
+        `when`(supplierQueryService.getSupplierById(1L))
+            .thenReturn(SupplierDto(
+                id = 1L,
+                name = "Test Supplier",
+                title = null,
+                firstName = null,
+                lastName = null,
+                street = null,
+                houseNumber = null,
+                city = null,
+                postalCode = null,
+                country = null,
+                phoneNumber1 = null,
+                phoneNumber2 = null,
+                phoneNumber3 = null,
+                email = null,
+                website = null,
+                createdAt = null,
+                updatedAt = null
+            ))
 
         // When
         val result = assembler.toDto(entity)
@@ -268,7 +304,7 @@ class ArticleAssemblerTest {
                 active = true,
                 articleType = ArticleType.MUG,
                 category = testCategory,
-                supplier = null,
+                supplierId = null,
                 supplierArticleName = null,
                 supplierArticleNumber = null,
             )
@@ -571,12 +607,6 @@ class ArticleAssemblerTest {
                 description = "Subcategory with special chars",
             )
 
-        val complexSupplier =
-            Supplier(
-                id = 777L,
-                name = "Complex & Special Supplier",
-            )
-
         val entity =
             Article(
                 id = 11L,
@@ -587,10 +617,32 @@ class ArticleAssemblerTest {
                 articleType = ArticleType.MUG,
                 category = complexCategory,
                 subcategory = complexSubcategory,
-                supplier = complexSupplier,
+                supplierId = 777L,
                 supplierArticleName = "Complex & Supplier Article",
                 supplierArticleNumber = "CSA-999",
             )
+
+        // Mock the supplier query
+        `when`(supplierQueryService.getSupplierById(777L))
+            .thenReturn(SupplierDto(
+                id = 777L,
+                name = "Complex & Special Supplier",
+                title = null,
+                firstName = null,
+                lastName = null,
+                street = null,
+                houseNumber = null,
+                city = null,
+                postalCode = null,
+                country = null,
+                phoneNumber1 = null,
+                phoneNumber2 = null,
+                phoneNumber3 = null,
+                email = null,
+                website = null,
+                createdAt = null,
+                updatedAt = null
+            ))
 
         // When
         val result = assembler.toDto(entity)
