@@ -15,6 +15,7 @@ import com.jotoai.voenix.shop.pdf.events.PdfGeneratedEvent
 import com.jotoai.voenix.shop.pdf.events.PdfGenerationFailedEvent
 import com.jotoai.voenix.shop.pdf.events.PdfGenerationType
 import com.jotoai.voenix.shop.pdf.internal.config.PdfQrProperties
+import jakarta.annotation.PostConstruct
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -57,6 +58,15 @@ class PdfServiceImpl(
         private const val IMAGE_FORMAT_PNG = "PNG"
         private const val PDF_IMAGE_NAME_QR = "QRCode"
         private const val PDF_IMAGE_NAME_MAIN = "Image"
+    }
+
+    @PostConstruct
+    fun init() {
+        // Initialize baseUrl from appBaseUrl if not configured
+        if (pdfQrProperties.baseUrl.isEmpty()) {
+            pdfQrProperties.baseUrl = appBaseUrl
+            logger.info("Initialized PDF QR base URL with app base URL: $appBaseUrl")
+        }
     }
 
     private val pdfSize =

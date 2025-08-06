@@ -6,26 +6,29 @@ import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest
 import com.jotoai.voenix.shop.vat.events.DefaultVatChangedEvent
 import com.jotoai.voenix.shop.vat.events.VatCreatedEvent
 import com.jotoai.voenix.shop.vat.events.VatDeletedEvent
-import com.jotoai.voenix.shop.vat.events.VatUpdatedEvent
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.context.event.EventListener
 import org.springframework.test.context.TestPropertySource
-import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
 @TestPropertySource(locations = ["classpath:application-test.properties"])
-@Transactional
 class VatModuleIntegrationTest {
-    private val capturedEvents = mutableListOf<Any>()
-
     @Autowired
     private lateinit var vatFacade: VatFacade
 
     @Autowired
     private lateinit var vatQueryService: VatQueryService
+
+    @Autowired
+    private lateinit var eventCapture: TestEventCapture
+
+    @BeforeEach
+    fun setUp() {
+        eventCapture.clear()
+    }
 
     @Test
     fun `should expose correct public interfaces`() {
@@ -75,7 +78,7 @@ class VatModuleIntegrationTest {
     @Test
     fun `should publish domain events correctly`() {
         // Given - clear captured events
-        capturedEvents.clear()
+        eventCapture.clear()
 
         // When - creating a VAT
         val createRequest =
@@ -89,49 +92,28 @@ class VatModuleIntegrationTest {
         val createdVat = vatFacade.createVat(createRequest)
 
         // Then - verify VatCreatedEvent was published
-        val createdEvents = capturedEvents.filterIsInstance<VatCreatedEvent>()
+        val createdEvents = eventCapture.capturedEvents.filterIsInstance<VatCreatedEvent>()
         assertThat(createdEvents).hasSize(1)
         assertThat(createdEvents.first().vat.id).isEqualTo(createdVat.id)
 
         // And - verify DefaultVatChangedEvent was published
-        val defaultChangedEvents = capturedEvents.filterIsInstance<DefaultVatChangedEvent>()
+        val defaultChangedEvents = eventCapture.capturedEvents.filterIsInstance<DefaultVatChangedEvent>()
         assertThat(defaultChangedEvents).hasSize(1)
         assertThat(defaultChangedEvents.first().newDefaultId).isEqualTo(createdVat.id)
 
         // When - deleting the VAT
-        capturedEvents.clear()
+        eventCapture.clear()
         vatFacade.deleteVat(createdVat.id)
 
         // Then - verify VatDeletedEvent was published
-        val deletedEvents = capturedEvents.filterIsInstance<VatDeletedEvent>()
+        val deletedEvents = eventCapture.capturedEvents.filterIsInstance<VatDeletedEvent>()
         assertThat(deletedEvents).hasSize(1)
         assertThat(deletedEvents.first().vat.id).isEqualTo(createdVat.id)
 
         // And - verify DefaultVatChangedEvent was published for deletion
-        val deletedDefaultChangedEvents = capturedEvents.filterIsInstance<DefaultVatChangedEvent>()
+        val deletedDefaultChangedEvents = eventCapture.capturedEvents.filterIsInstance<DefaultVatChangedEvent>()
         assertThat(deletedDefaultChangedEvents).hasSize(1)
         assertThat(deletedDefaultChangedEvents.first().previousDefaultId).isEqualTo(createdVat.id)
         assertThat(deletedDefaultChangedEvents.first().newDefaultId).isNull()
-    }
-
-    // Event listeners to capture events for testing
-    @EventListener
-    fun handleVatCreatedEvent(event: VatCreatedEvent) {
-        capturedEvents.add(event)
-    }
-
-    @EventListener
-    fun handleVatUpdatedEvent(event: VatUpdatedEvent) {
-        capturedEvents.add(event)
-    }
-
-    @EventListener
-    fun handleVatDeletedEvent(event: VatDeletedEvent) {
-        capturedEvents.add(event)
-    }
-
-    @EventListener
-    fun handleDefaultVatChangedEvent(event: DefaultVatChangedEvent) {
-        capturedEvents.add(event)
     }
 }
