@@ -7,6 +7,9 @@
  */
 @org.springframework.modulith.ApplicationModule(
     displayName = "Domain",
-    allowedDependencies = {"vat::api", "vat::api.dto", "auth", "common"}
+    allowedDependencies = {"vat::api", "vat::api.dto", "auth", "common", "user::api"}
+)
+@org.springframework.modulith.ApplicationModule.Type(
+    org.springframework.modulith.ApplicationModule.Type.Value.OPEN
 )
 package com.jotoai.voenix.shop.domain;

@@ -41,9 +41,7 @@ class UserRoleServiceImpl(
         }
 
         // Add new roles to existing ones
-        val updatedRoles = user.roles.toMutableSet()
-        updatedRoles.addAll(rolesToAssign)
-        user.roles = updatedRoles
+        user.roles.addAll(rolesToAssign)
 
         val savedUser = userRepository.save(user)
         eventPublisher.publishEvent(UserUpdatedEvent(savedUser.toDto()))
@@ -60,8 +58,7 @@ class UserRoleServiceImpl(
                 .orElseThrow { createUserNotFoundException("id", userId) }
 
         // Remove roles by name
-        val updatedRoles = user.roles.filterNot { it.name in roleNames }.toMutableSet()
-        user.roles = updatedRoles
+        user.roles.removeAll { it.name in roleNames }
 
         val savedUser = userRepository.save(user)
         eventPublisher.publishEvent(UserUpdatedEvent(savedUser.toDto()))
@@ -102,7 +99,10 @@ class UserRoleServiceImpl(
                 emptySet()
             }
 
-        user.roles = rolesToSet
+        // Clear existing roles and add new ones instead of replacing the collection
+        // This avoids issues with Hibernate's managed collections
+        user.roles.clear()
+        user.roles.addAll(rolesToSet)
 
         val savedUser = userRepository.save(user)
         eventPublisher.publishEvent(UserUpdatedEvent(savedUser.toDto()))

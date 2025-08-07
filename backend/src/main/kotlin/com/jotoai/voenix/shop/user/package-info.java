@@ -49,6 +49,7 @@
  * @since 1.0.0
  */
 @org.springframework.modulith.ApplicationModule(
-        displayName = "User Management"
+        displayName = "User Management",
+        allowedDependencies = {"common"}
 )
 package com.jotoai.voenix.shop.user;
