@@ -9,7 +9,7 @@ import java.time.LocalDateTime
 
 @Repository
 interface GeneratedImageRepository : JpaRepository<GeneratedImage, Long> {
-    @Query("SELECT COUNT(g) FROM GeneratedImage g WHERE g.user.id = :userId AND g.generatedAt > :startTime")
+    @Query("SELECT COUNT(g) FROM GeneratedImage g WHERE g.userId = :userId AND g.generatedAt > :startTime")
     fun countByUserIdAndGeneratedAtAfter(
         @Param("userId") userId: Long,
         @Param("startTime") startTime: LocalDateTime,

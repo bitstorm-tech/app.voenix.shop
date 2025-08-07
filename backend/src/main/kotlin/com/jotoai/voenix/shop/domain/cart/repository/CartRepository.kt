@@ -21,7 +21,7 @@ interface CartRepository : JpaRepository<Cart, Long> {
         LEFT JOIN FETCH c.items ci
         LEFT JOIN FETCH ci.article a
         LEFT JOIN FETCH ci.variant v
-        WHERE c.user.id = :userId AND c.status = :status
+        WHERE c.userId = :userId AND c.status = :status
         """,
     )
     fun findActiveCartByUserId(
