@@ -3,10 +3,10 @@ package com.jotoai.voenix.shop.api.admin.articles
 import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.service.MugVariantService
-import com.jotoai.voenix.shop.domain.images.dto.CreateImageRequest
-import com.jotoai.voenix.shop.domain.images.dto.CropArea
-import com.jotoai.voenix.shop.domain.images.dto.ImageType
-import com.jotoai.voenix.shop.domain.images.service.ImageService
+import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
+import com.jotoai.voenix.shop.image.api.dto.CropArea
+import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.ImageFacade
 import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
@@ -29,7 +29,7 @@ import org.springframework.web.multipart.MultipartFile
 @PreAuthorize("hasRole('ADMIN')")
 class MugVariantController(
     private val mugVariantService: MugVariantService,
-    private val imageService: ImageService,
+    private val imageFacade: ImageFacade,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(MugVariantController::class.java)
@@ -96,7 +96,7 @@ class MugVariantController(
                 cropArea = cropArea,
             )
 
-        val imageDto = imageService.store(file, imageRequest)
+        val imageDto = imageFacade.createImage(imageRequest)
         val updatedVariant = mugVariantService.updateExampleImage(variantId, imageDto.filename)
 
         return ResponseEntity.ok(updatedVariant)

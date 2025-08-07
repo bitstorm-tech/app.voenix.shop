@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.domain.prompts.service
 
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.images.dto.ImageType
-import com.jotoai.voenix.shop.domain.images.service.ImageService
+import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.domain.prompts.assembler.PromptAssembler
 import com.jotoai.voenix.shop.domain.prompts.dto.AddSlotVariantsRequest
 import com.jotoai.voenix.shop.domain.prompts.dto.CreatePromptRequest

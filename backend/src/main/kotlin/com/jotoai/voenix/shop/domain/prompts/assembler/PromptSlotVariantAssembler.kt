@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.domain.prompts.assembler
 
-import com.jotoai.voenix.shop.domain.images.dto.ImageType
-import com.jotoai.voenix.shop.domain.images.service.StoragePathService
+import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptSlotVariantDto
 import com.jotoai.voenix.shop.domain.prompts.dto.PublicPromptSlotDto
 import com.jotoai.voenix.shop.domain.prompts.entity.PromptSlotVariant

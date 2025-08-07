@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.api.public.images
 
-import com.jotoai.voenix.shop.domain.images.dto.ImageType
-import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationRequest
-import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationResponse
-import com.jotoai.voenix.shop.domain.images.service.ImageService
-import com.jotoai.voenix.shop.domain.images.service.PublicImageGenerationService
+import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
+import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
+import com.jotoai.voenix.shop.image.api.ImageAccessService
+import com.jotoai.voenix.shop.image.api.ImageGenerationService
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -21,8 +21,8 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/api/public/images")
 class PublicImageController(
-    private val publicImageGenerationService: PublicImageGenerationService,
-    private val imageService: ImageService,
+    private val imageGenerationService: ImageGenerationService,
+    private val imageAccessService: ImageAccessService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(PublicImageController::class.java)
@@ -41,7 +41,8 @@ class PublicImageController(
                 n = 4,
             )
 
-        return publicImageGenerationService.generateImage(imageFile, generationRequest)
+        val clientIP = "127.0.0.1" // TODO: Extract real IP address
+        return imageGenerationService.generatePublicImage(generationRequest, clientIP)
     }
 
     @GetMapping("/{filename}")
@@ -50,12 +51,6 @@ class PublicImageController(
     ): ResponseEntity<ByteArray> {
         logger.info("Retrieving public image: $filename")
 
-        val (imageBytes, contentType) = imageService.getImageData(filename, ImageType.PRIVATE)
-
-        return ResponseEntity
-            .ok()
-            .contentType(MediaType.parseMediaType(contentType))
-            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"$filename\"")
-            .body(imageBytes)
+        return imageAccessService.servePublicImage(filename)
     }
 }

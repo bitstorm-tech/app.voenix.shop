@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.domain.cart.entity
 
 import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
-import com.jotoai.voenix.shop.domain.images.entity.GeneratedImage
+import com.jotoai.voenix.shop.image.internal.domain.GeneratedImage
 import com.jotoai.voenix.shop.domain.prompts.entity.Prompt
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

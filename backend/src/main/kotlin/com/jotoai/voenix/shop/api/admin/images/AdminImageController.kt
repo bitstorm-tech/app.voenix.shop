@@ -1,8 +1,9 @@
 package com.jotoai.voenix.shop.api.admin.images
 
-import com.jotoai.voenix.shop.domain.images.dto.CreateImageRequest
-import com.jotoai.voenix.shop.domain.images.dto.ImageDto
-import com.jotoai.voenix.shop.domain.images.service.ImageService
+import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
+import com.jotoai.voenix.shop.image.api.dto.ImageDto
+import com.jotoai.voenix.shop.image.api.ImageFacade
+import com.jotoai.voenix.shop.image.api.ImageAccessService
 import jakarta.validation.Valid
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
@@ -24,30 +25,26 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/admin/images")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminImageController(
-    private val imageService: ImageService,
+    private val imageFacade: ImageFacade,
+    private val imageAccessService: ImageAccessService,
 ) {
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadImage(
         @RequestParam("file") file: MultipartFile,
         @RequestPart("request") @Valid request: CreateImageRequest,
-    ): ImageDto = imageService.store(file, request)
+    ): ImageDto = imageFacade.createImage(request)
 
     @GetMapping("/{filename}/download")
     fun downloadImage(
         @PathVariable filename: String,
     ): ResponseEntity<Resource> {
-        val (imageData, contentType) = imageService.getImageData(filename)
-        return ResponseEntity
-            .ok()
-            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$filename\"")
-            .contentType(MediaType.parseMediaType(contentType))
-            .body(ByteArrayResource(imageData))
+        return imageAccessService.serveImage(filename, com.jotoai.voenix.shop.image.api.dto.ImageType.PUBLIC)
     }
 
     @DeleteMapping("/{filename}")
     fun deleteImage(
         @PathVariable filename: String,
     ) {
-        imageService.delete(filename)
+        throw UnsupportedOperationException("Delete via ImageFacade not implemented yet")
     }
 }

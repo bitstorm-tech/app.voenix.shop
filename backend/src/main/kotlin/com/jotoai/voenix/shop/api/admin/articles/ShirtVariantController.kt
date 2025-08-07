@@ -3,10 +3,10 @@ package com.jotoai.voenix.shop.api.admin.articles
 import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.service.ShirtVariantService
-import com.jotoai.voenix.shop.domain.images.dto.CreateImageRequest
-import com.jotoai.voenix.shop.domain.images.dto.CropArea
-import com.jotoai.voenix.shop.domain.images.dto.ImageType
-import com.jotoai.voenix.shop.domain.images.service.ImageService
+import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
+import com.jotoai.voenix.shop.image.api.dto.CropArea
+import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.ImageFacade
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -28,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile
 @PreAuthorize("hasRole('ADMIN')")
 class ShirtVariantController(
     private val shirtVariantService: ShirtVariantService,
-    private val imageService: ImageService,
+    private val imageFacade: ImageFacade,
 ) {
     @GetMapping("/{articleId}/variants")
     fun findByArticleId(
@@ -86,7 +86,7 @@ class ShirtVariantController(
                 cropArea = cropArea,
             )
 
-        val imageDto = imageService.store(file, imageRequest)
+        val imageDto = imageFacade.createImage(imageRequest)
         val updatedVariant = shirtVariantService.updateExampleImage(variantId, imageDto.filename)
 
         return ResponseEntity.ok(updatedVariant)
