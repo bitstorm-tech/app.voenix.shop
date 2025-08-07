@@ -11,6 +11,14 @@ import org.springframework.http.ResponseEntity
  */
 interface ImageAccessService {
     /**
+     * Returns raw image bytes and content type for internal consumers.
+     */
+    fun getImageData(
+        filename: String,
+        userId: Long? = null,
+    ): Pair<ByteArray, String>
+
+    /**
      * Serves an image file with proper headers and access control.
      */
     fun serveImage(

@@ -18,6 +18,15 @@ class ImageAccessServiceImpl(
     private val imageService: ImageService,
     private val imageAccessValidationService: ImageAccessValidationService,
 ) : ImageAccessService {
+    override fun getImageData(
+        filename: String,
+        userId: Long?,
+    ): Pair<ByteArray, String> =
+        when {
+            userId != null -> imageAccessValidationService.validateAccessAndGetImageData(filename, userId)
+            else -> imageService.getImageData(filename)
+        }
+
     override fun serveImage(
         filename: String,
         imageType: ImageType,

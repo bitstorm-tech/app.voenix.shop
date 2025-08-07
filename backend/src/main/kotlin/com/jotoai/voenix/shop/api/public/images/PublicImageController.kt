@@ -41,7 +41,7 @@ class PublicImageController(
             )
 
         val clientIP = "127.0.0.1" // TODO: Extract real IP address
-        return imageGenerationService.generatePublicImage(generationRequest, clientIP)
+        return imageGenerationService.generatePublicImage(generationRequest, clientIP, imageFile)
     }
 
     @GetMapping("/{filename}")

@@ -1,10 +1,12 @@
 package com.jotoai.voenix.shop.image.events
 
+import org.springframework.modulith.events.Externalized
 import java.time.LocalDateTime
 
 /**
  * Event published when an AI image is generated.
  */
+@Externalized
 data class ImageGeneratedEvent(
     val imageId: Long,
     val filename: String,

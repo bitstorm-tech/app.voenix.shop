@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.image.api.ImageGenerationService
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import org.springframework.stereotype.Service
+import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
 /**
@@ -18,14 +19,10 @@ class ImageGenerationServiceImpl(
     override fun generatePublicImage(
         request: PublicImageGenerationRequest,
         ipAddress: String,
+        imageFile: MultipartFile,
     ): PublicImageGenerationResponse {
-        // This method has a design limitation - it doesn't have access to the MultipartFile
-        // that the underlying generation services require. This is a known API limitation.
-        throw UnsupportedOperationException(
-            "This method cannot be implemented without the image file parameter. " +
-                "Use the controller endpoints which handle MultipartFile directly, or " +
-                "extend the API interface to include the image file parameter.",
-        )
+        // Delegate the actual work to the orchestrator which knows how to handle the MultipartFile
+        return imageGenerationOrchestrator.generatePublicImage(imageFile, request)
     }
 
     override fun generateUserImage(

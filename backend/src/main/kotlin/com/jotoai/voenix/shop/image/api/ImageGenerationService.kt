@@ -2,6 +2,7 @@ package com.jotoai.voenix.shop.image.api
 
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
+import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
 /**
@@ -15,6 +16,7 @@ interface ImageGenerationService {
     fun generatePublicImage(
         request: PublicImageGenerationRequest,
         ipAddress: String,
+        imageFile: MultipartFile,
     ): PublicImageGenerationResponse
 
     /**
