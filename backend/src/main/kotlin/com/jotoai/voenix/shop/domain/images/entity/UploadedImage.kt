@@ -1,14 +1,11 @@
 package com.jotoai.voenix.shop.domain.images.entity
 
-import com.jotoai.voenix.shop.user.internal.entity.User
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
 import java.time.LocalDateTime
@@ -30,9 +27,8 @@ class UploadedImage(
     var contentType: String,
     @Column(name = "file_size", nullable = false)
     var fileSize: Long,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    var user: User,
+    @Column(name = "user_id", nullable = false)
+    var userId: Long,
     @Column(name = "uploaded_at", nullable = false)
     var uploadedAt: LocalDateTime = LocalDateTime.now(),
     @OneToMany(mappedBy = "uploadedImage", fetch = FetchType.LAZY)

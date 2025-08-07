@@ -58,7 +58,7 @@ class ImageAccessService(
                     generatedImageRepository.findByFilename(filename)
                         ?: throw ResourceNotFoundException("Generated image not found")
 
-                if (generatedImage.user?.id != userId) {
+                if (generatedImage.userId != userId) {
                     throw ResourceNotFoundException("Generated image not found or access denied")
                 }
 
@@ -95,7 +95,7 @@ class ImageAccessService(
         userId: Long,
     ): Boolean {
         val generatedImage = generatedImageRepository.findByFilename(filename)
-        return generatedImage?.user?.id == userId
+        return generatedImage?.userId == userId
     }
 
     /**

@@ -6,7 +6,6 @@ import com.jotoai.voenix.shop.domain.images.entity.GeneratedImage
 import com.jotoai.voenix.shop.domain.images.entity.UploadedImage
 import com.jotoai.voenix.shop.domain.images.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.domain.images.repository.UploadedImageRepository
-import com.jotoai.voenix.shop.user.internal.entity.User
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -47,13 +46,13 @@ class UserImageStorageService(
     @Transactional
     fun storeUploadedImage(
         imageFile: MultipartFile,
-        user: User,
+        userId: Long,
     ): UploadedImage {
         validateImageFile(imageFile)
 
         val uuid = UUID.randomUUID()
         val originalFilename = imageFile.originalFilename ?: "unknown"
-        val userStorageDir = getUserStorageDirectory(user.id!!)
+        val userStorageDir = getUserStorageDirectory(userId)
 
         // Determine file extension - convert to PNG if not already PNG
         val contentType = imageFile.contentType?.lowercase() ?: ""
@@ -63,7 +62,7 @@ class UserImageStorageService(
         val storedFilename = "$uuid$ORIGINAL_SUFFIX$fileExtension"
         val filePath = userStorageDir.resolve(storedFilename)
 
-        logger.info("Storing uploaded image for user ${user.id}: $storedFilename")
+        logger.info("Storing uploaded image for user $userId: $storedFilename")
 
         try {
             // Create user directory if it doesn't exist
@@ -88,7 +87,7 @@ class UserImageStorageService(
                     storedFilename = storedFilename,
                     contentType = "image/png", // Always PNG after conversion
                     fileSize = imageBytes.size.toLong(),
-                    user = user,
+                    userId = userId,
                     uploadedAt = LocalDateTime.now(),
                 )
 
@@ -114,11 +113,11 @@ class UserImageStorageService(
         promptId: Long,
         generationNumber: Int,
     ): GeneratedImage {
-        val userStorageDir = getUserStorageDirectory(uploadedImage.user.id!!)
+        val userStorageDir = getUserStorageDirectory(uploadedImage.userId)
         val storedFilename = "${uploadedImage.uuid}$GENERATED_PREFIX$generationNumber.png"
         val filePath = userStorageDir.resolve(storedFilename)
 
-        logger.info("Storing generated image for user ${uploadedImage.user.id}: $storedFilename")
+        logger.info("Storing generated image for user ${uploadedImage.userId}: $storedFilename")
 
         try {
             Files.write(filePath, imageBytes)
@@ -129,7 +128,7 @@ class UserImageStorageService(
                 GeneratedImage(
                     filename = storedFilename,
                     promptId = promptId,
-                    user = uploadedImage.user,
+                    userId = uploadedImage.userId,
                     uploadedImage = uploadedImage,
                     generatedAt = LocalDateTime.now(),
                 )

@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.domain.images.entity
 
-import com.jotoai.voenix.shop.user.internal.entity.User
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -22,9 +21,8 @@ class GeneratedImage(
     var filename: String,
     @Column(name = "prompt_id", nullable = false)
     var promptId: Long,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = true)
-    var user: User? = null,
+    @Column(name = "user_id", nullable = true)
+    var userId: Long? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploaded_image_id", nullable = true)
     var uploadedImage: UploadedImage? = null,

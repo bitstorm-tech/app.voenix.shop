@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.user.internal.entity
 
-import com.jotoai.voenix.shop.auth.entity.Role
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -43,6 +42,8 @@ class User(
     @UpdateTimestamp
     @Column(name = "updated_at", columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
+    @Column(name = "deleted_at", columnDefinition = "timestamptz")
+    var deletedAt: OffsetDateTime? = null,
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "user_roles",
@@ -51,6 +52,25 @@ class User(
     )
     var roles: Set<Role> = mutableSetOf(),
 ) {
+    /**
+     * Checks if the user is active (not soft deleted).
+     */
+    fun isActive(): Boolean = deletedAt == null
+
+    /**
+     * Marks the user as deleted with the current timestamp.
+     */
+    fun markAsDeleted() {
+        deletedAt = OffsetDateTime.now()
+    }
+
+    /**
+     * Restores a soft-deleted user.
+     */
+    fun restore() {
+        deletedAt = null
+    }
+
     fun toDto() =
         UserDto(
             id = requireNotNull(this.id) { "User ID cannot be null when converting to DTO" },

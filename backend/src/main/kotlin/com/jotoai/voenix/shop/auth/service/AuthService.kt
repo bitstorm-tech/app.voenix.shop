@@ -7,8 +7,9 @@ import com.jotoai.voenix.shop.auth.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.dto.SessionInfo
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.user.api.UserAuthenticationService
 import com.jotoai.voenix.shop.user.api.UserQueryService
-import com.jotoai.voenix.shop.user.internal.repository.UserRepository
+import com.jotoai.voenix.shop.user.api.UserRoleManagementService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.AuthenticationManager
@@ -23,8 +24,9 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class AuthService(
     private val authenticationManager: AuthenticationManager,
-    private val userRepository: UserRepository, // Keep for role access
+    private val userAuthenticationService: UserAuthenticationService,
     private val userQueryService: UserQueryService,
+    private val userRoleManagementService: UserRoleManagementService,
     private val securityContextRepository: SecurityContextRepository,
     private val userRegistrationService: UserRegistrationService,
 ) {
@@ -52,16 +54,13 @@ class AuthService(
 
             val userDetails = authentication.principal as CustomUserDetails
             val userDto = userQueryService.getUserById(userDetails.id)
-            val user =
-                userRepository.findById(userDetails.id).orElseThrow {
-                    UsernameNotFoundException("User not found with ID: ${userDetails.id}")
-                }
+            val userRoles = userRoleManagementService.getUserRoles(userDetails.id)
             val session = request.getSession(true)
 
             return LoginResponse(
                 user = userDto,
                 sessionId = session.id,
-                roles = user.roles.map { it.name },
+                roles = userRoles.toList(),
             )
         } catch (_: BadCredentialsException) {
             throw BadCredentialsException("Invalid email or password")
@@ -86,16 +85,13 @@ class AuthService(
             is CustomUserDetails -> {
                 try {
                     val userDto = userQueryService.getUserById(principal.id)
-                    val user = userRepository.findById(principal.id).orElse(null)
-                    if (user != null) {
-                        SessionInfo(
-                            authenticated = true,
-                            user = userDto,
-                            roles = user.roles.map { it.name },
-                        )
-                    } else {
-                        SessionInfo(authenticated = false)
-                    }
+                    val userRoles = userRoleManagementService.getUserRoles(principal.id)
+
+                    SessionInfo(
+                        authenticated = true,
+                        user = userDto,
+                        roles = userRoles.toList(),
+                    )
                 } catch (e: Exception) {
                     SessionInfo(authenticated = false)
                 }
@@ -131,25 +127,34 @@ class AuthService(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ): LoginResponse {
-        val existingUser = userRepository.findByEmail(registerGuestRequest.email).orElse(null)
+        // Check if user already exists
+        val existsUser = userQueryService.existsByEmail(registerGuestRequest.email)
 
-        if (existingUser != null) {
-            // If user exists and has no password, update their details
-            if (existingUser.password == null) {
-                val updatedUser =
+        if (existsUser) {
+            try {
+                val existingUser = userQueryService.getUserByEmail(registerGuestRequest.email)
+                // Try to get authentication info to see if they have a password
+                val authInfo = userAuthenticationService.loadUserByEmail(registerGuestRequest.email)
+
+                // If user exists and has no password, update their details
+                if (authInfo?.passwordHash == null) {
                     userRegistrationService.updateUser(
-                        user = existingUser,
+                        userId = existingUser.id,
                         firstName = registerGuestRequest.firstName,
                         lastName = registerGuestRequest.lastName,
                         phoneNumber = registerGuestRequest.phoneNumber,
                     )
 
-                return userRegistrationService.authenticateGuestUser(
-                    user = updatedUser,
-                    request = request,
-                    response = response,
-                )
-            } else {
+                    return userRegistrationService.authenticateGuestUser(
+                        userId = existingUser.id,
+                        request = request,
+                        response = response,
+                    )
+                } else {
+                    // User exists with password, cannot register as guest
+                    throw ResourceAlreadyExistsException("User", "email", registerGuestRequest.email)
+                }
+            } catch (e: Exception) {
                 // User exists with password, cannot register as guest
                 throw ResourceAlreadyExistsException("User", "email", registerGuestRequest.email)
             }
@@ -164,7 +169,7 @@ class AuthService(
             )
 
         return userRegistrationService.authenticateGuestUser(
-            user = savedUser,
+            userId = savedUser.id,
             request = request,
             response = response,
         )

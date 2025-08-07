@@ -8,7 +8,7 @@ import com.jotoai.voenix.shop.domain.images.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
-import com.jotoai.voenix.shop.user.internal.repository.UserRepository
+import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,7 +21,7 @@ class UserImageGenerationService(
     private val openAIImageService: OpenAIImageService,
     private val promptService: PromptService,
     private val generatedImageRepository: GeneratedImageRepository,
-    private val userRepository: UserRepository,
+    private val userQueryService: UserQueryService,
     private val storagePathService: StoragePathService,
     private val userImageStorageService: UserImageStorageService,
 ) {
@@ -50,14 +50,11 @@ class UserImageGenerationService(
         logger.info("Processing authenticated image generation request for user $userId with prompt ID: ${request.promptId}")
 
         try {
-            // Get user entity
-            val user =
-                userRepository.findById(userId).orElseThrow {
-                    ResourceNotFoundException("User not found")
-                }
+            // Validate user exists
+            userQueryService.getUserById(userId)
 
             // Store the uploaded image first using the new storage pattern
-            val uploadedImage = userImageStorageService.storeUploadedImage(imageFile, user)
+            val uploadedImage = userImageStorageService.storeUploadedImage(imageFile, userId)
             logger.info("Stored uploaded image with UUID: ${uploadedImage.uuid}")
 
             val openAIRequest =

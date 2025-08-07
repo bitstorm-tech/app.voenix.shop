@@ -15,6 +15,9 @@ data class CreateUserRequest(
     val lastName: String? = null,
     @field:Size(max = 255, message = "Phone number must not exceed 255 characters")
     val phoneNumber: String? = null,
+    // Note: Password should be handled through UserPasswordService for security
+    // This field is deprecated and should not be used for raw passwords
+    @Deprecated("Use UserPasswordService for password operations", level = DeprecationLevel.WARNING)
     @field:Size(max = 255, message = "Password must not exceed 255 characters")
     val password: String? = null,
 ) {

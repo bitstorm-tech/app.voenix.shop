@@ -15,10 +15,16 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.argThat
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.context.ApplicationEventPublisher
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.Optional
 
 class CountryServiceImplTest {
     private lateinit var countryRepository: CountryRepository
@@ -121,7 +127,7 @@ class CountryServiceImplTest {
         verify(countryRepository).save(any())
         verify(eventPublisher).publishEvent(
             argThat<CountryCreatedEvent> {
-                country.id == 1L && country.name == "New Country"
+                this.country.id == 1L && this.country.name == "New Country"
             },
         )
     }
@@ -174,7 +180,7 @@ class CountryServiceImplTest {
 
         verify(eventPublisher).publishEvent(
             argThat<CountryUpdatedEvent> {
-                oldCountry.id == oldDto.id && newCountry.name == "Updated Country"
+                this.oldCountry.id == oldDto.id && this.newCountry.name == "Updated Country"
             },
         )
     }
@@ -207,7 +213,7 @@ class CountryServiceImplTest {
             )
 
         whenever(countryRepository.findById(1L)).thenReturn(Optional.of(country))
-        doNothing().whenever(countryRepository).deleteById(1L)
+        doNothing().`when`(countryRepository).deleteById(1L)
 
         // When
         countryService.deleteCountry(countryId)
@@ -216,7 +222,7 @@ class CountryServiceImplTest {
         verify(countryRepository).deleteById(1L)
         verify(eventPublisher).publishEvent(
             argThat<CountryDeletedEvent> {
-                country.id == 1L
+                this.country.id == 1L
             },
         )
     }

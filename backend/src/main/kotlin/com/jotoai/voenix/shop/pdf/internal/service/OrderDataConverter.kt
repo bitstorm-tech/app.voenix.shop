@@ -17,7 +17,7 @@ class OrderDataConverter {
         OrderPdfData(
             id = requireNotNull(order.id) { "Order ID cannot be null for order ${order.orderNumber}" },
             orderNumber = order.orderNumber,
-            userId = requireNotNull(order.user.id) { "User ID cannot be null for order ${order.orderNumber}" },
+            userId = order.userId,
             items = order.items.map { convertToOrderItemPdfData(it) },
         )
 

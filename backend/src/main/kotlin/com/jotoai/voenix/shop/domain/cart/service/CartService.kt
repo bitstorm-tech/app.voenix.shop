@@ -19,8 +19,7 @@ import com.jotoai.voenix.shop.domain.cart.exception.CartOperationException
 import com.jotoai.voenix.shop.domain.cart.repository.CartRepository
 import com.jotoai.voenix.shop.domain.images.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptRepository
-import com.jotoai.voenix.shop.user.internal.entity.User
-import com.jotoai.voenix.shop.user.internal.repository.UserRepository
+import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.orm.ObjectOptimisticLockingFailureException
@@ -31,7 +30,7 @@ import java.time.OffsetDateTime
 @Service
 class CartService(
     private val cartRepository: CartRepository,
-    private val userRepository: UserRepository,
+    private val userQueryService: UserQueryService,
     private val articleRepository: ArticleRepository,
     private val mugVariantRepository: MugArticleVariantRepository,
     private val generatedImageRepository: GeneratedImageRepository,
@@ -45,14 +44,15 @@ class CartService(
      */
     @Transactional
     fun getOrCreateActiveCart(userId: Long): CartDto {
-        val user = findUserById(userId)
+        // Validate user exists
+        userQueryService.getUserById(userId)
 
         val cart =
             cartRepository
                 .findActiveCartByUserId(userId)
                 .orElseGet {
                     logger.debug("Creating new cart for user: {}", userId)
-                    createNewCart(user)
+                    createNewCart(userId)
                 }
 
         return cartAssembler.toDto(cart)
@@ -83,7 +83,8 @@ class CartService(
         userId: Long,
         request: AddToCartRequest,
     ): CartDto {
-        val user = findUserById(userId)
+        // Validate user exists
+        userQueryService.getUserById(userId)
         val article = findArticleById(request.articleId)
         val variant = findVariantById(request.variantId)
 
@@ -95,7 +96,7 @@ class CartService(
         val cart =
             cartRepository
                 .findActiveCartByUserId(userId)
-                .orElseGet { createNewCart(user) }
+                .orElseGet { createNewCart(userId) }
 
         // Get current price from cost calculation
         val currentPrice = getCurrentPrice(article)
@@ -308,20 +309,15 @@ class CartService(
         return cartAssembler.toDto(savedCart)
     }
 
-    private fun createNewCart(user: User): Cart {
+    private fun createNewCart(userId: Long): Cart {
         val cart =
             Cart(
-                user = user,
+                userId = userId,
                 status = CartStatus.ACTIVE,
                 expiresAt = OffsetDateTime.now().plusDays(DEFAULT_CART_EXPIRY_DAYS),
             )
         return cartRepository.save(cart)
     }
-
-    private fun findUserById(userId: Long): User =
-        userRepository
-            .findById(userId)
-            .orElseThrow { ResourceNotFoundException("User not found with id: $userId") }
 
     private fun findArticleById(articleId: Long): Article =
         articleRepository

@@ -17,7 +17,7 @@ class CartAssembler(
     fun toDto(entity: Cart): CartDto =
         CartDto(
             id = requireNotNull(entity.id) { "Cart ID cannot be null when converting to DTO" },
-            userId = entity.user.id!!,
+            userId = entity.userId,
             status = entity.status,
             version = entity.version,
             expiresAt = entity.expiresAt,

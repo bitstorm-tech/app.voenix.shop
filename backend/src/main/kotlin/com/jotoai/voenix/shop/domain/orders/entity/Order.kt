@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.domain.orders.entity
 
 import com.jotoai.voenix.shop.domain.cart.entity.Cart
 import com.jotoai.voenix.shop.domain.orders.enums.OrderStatus
-import com.jotoai.voenix.shop.user.internal.entity.User
 import jakarta.persistence.AttributeOverride
 import jakarta.persistence.AttributeOverrides
 import jakarta.persistence.CascadeType
@@ -34,9 +33,8 @@ class Order(
     val id: UUID? = null,
     @Column(name = "order_number", unique = true, length = 50, insertable = false, updatable = false)
     var orderNumber: String? = null,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    var user: User,
+    @Column(name = "user_id", nullable = false)
+    var userId: Long,
     @Column(name = "customer_email", nullable = false, length = 255)
     var customerEmail: String,
     @Column(name = "customer_first_name", nullable = false, length = 255)

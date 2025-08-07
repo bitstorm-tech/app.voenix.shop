@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.domain.cart.entity
 
 import com.jotoai.voenix.shop.domain.cart.enums.CartStatus
-import com.jotoai.voenix.shop.user.internal.entity.User
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -9,8 +8,6 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
@@ -26,9 +23,8 @@ class Cart(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long? = null,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    var user: User,
+    @Column(name = "user_id", nullable = false)
+    var userId: Long,
     @Column(name = "status", nullable = false, length = 20)
     var status: CartStatus = CartStatus.ACTIVE,
     @Version

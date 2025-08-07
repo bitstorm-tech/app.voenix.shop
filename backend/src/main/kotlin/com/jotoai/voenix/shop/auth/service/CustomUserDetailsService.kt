@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.auth.service
 
+import com.jotoai.voenix.shop.auth.dto.CustomUserDetails
 import com.jotoai.voenix.shop.user.api.UserAuthenticationService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -13,7 +14,15 @@ class CustomUserDetailsService(
 ) : UserDetailsService {
     @Transactional(readOnly = true)
     override fun loadUserByUsername(username: String): UserDetails {
-        val userDetails = userAuthenticationService.loadUserByEmail(username)
-        return userDetails ?: throw UsernameNotFoundException("User not found with email: $username")
+        val authDto =
+            userAuthenticationService.loadUserByEmail(username)
+                ?: throw UsernameNotFoundException("User not found with email: $username")
+
+        return CustomUserDetails(
+            id = authDto.id,
+            email = authDto.email,
+            passwordHash = authDto.passwordHash,
+            userRoles = authDto.roles,
+        )
     }
 }

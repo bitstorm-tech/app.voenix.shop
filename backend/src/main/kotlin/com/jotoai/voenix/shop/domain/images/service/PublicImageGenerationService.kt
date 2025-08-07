@@ -74,7 +74,7 @@ class PublicImageGenerationService(
                         GeneratedImage(
                             filename = filename,
                             promptId = request.promptId,
-                            user = null, // Anonymous user
+                            userId = null, // Anonymous user
                             ipAddress = ipAddress,
                             generatedAt = LocalDateTime.now(),
                         )
