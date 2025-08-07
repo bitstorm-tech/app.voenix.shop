@@ -44,7 +44,7 @@ class User(
     var updatedAt: OffsetDateTime? = null,
     @Column(name = "deleted_at", columnDefinition = "timestamptz")
     var deletedAt: OffsetDateTime? = null,
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "user_roles",
         joinColumns = [JoinColumn(name = "user_id")],

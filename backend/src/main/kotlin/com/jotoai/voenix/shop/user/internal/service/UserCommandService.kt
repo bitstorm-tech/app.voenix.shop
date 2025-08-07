@@ -19,6 +19,7 @@ import com.jotoai.voenix.shop.user.internal.repository.UserRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.OffsetDateTime
 
 /**
  * Implementation of UserFacade for command operations (create, update, delete).
@@ -32,6 +33,11 @@ class UserCommandService(
 ) : UserFacade {
     @Transactional
     override fun createUser(request: CreateUserRequest): UserDto {
+        // Validate email format
+        if (!isValidEmail(request.email)) {
+            throw IllegalArgumentException("Invalid email format: ${request.email}")
+        }
+        
         if (userRepository.existsActiveByEmail(request.email)) {
             throw ResourceAlreadyExistsException("User", "email", request.email)
         }
@@ -93,7 +99,14 @@ class UserCommandService(
         user.markAsDeleted()
         val deletedUser = userRepository.save(user)
 
-        eventPublisher.publishEvent(UserDeletedEvent(id, deletedUser.email))
+        eventPublisher.publishEvent(
+            UserDeletedEvent(
+                userId = id,
+                userEmail = deletedUser.email,
+                deletedAt = deletedUser.deletedAt ?: OffsetDateTime.now(),
+                isHardDelete = false,
+            ),
+        )
     }
 
     @Transactional
@@ -106,7 +119,14 @@ class UserCommandService(
         val userEmail = user.email
         userRepository.deleteById(id)
 
-        eventPublisher.publishEvent(UserDeletedEvent(id, userEmail))
+        eventPublisher.publishEvent(
+            UserDeletedEvent(
+                userId = id,
+                userEmail = userEmail,
+                deletedAt = OffsetDateTime.now(),
+                isHardDelete = true,
+            ),
+        )
     }
 
     @Transactional
@@ -134,11 +154,28 @@ class UserCommandService(
     override fun bulkCreateUsers(request: BulkCreateUsersRequest): BulkOperationResult<UserDto> {
         val successful = mutableListOf<UserDto>()
         val failed = mutableListOf<BulkOperationError>()
+        val usersToCreate = mutableListOf<User>()
 
+        // Validate all users first
         request.users.forEachIndexed { index, userRequest ->
             try {
-                val createdUser = createUser(userRequest)
-                successful.add(createdUser)
+                // Validate email format
+                if (!isValidEmail(userRequest.email)) {
+                    throw IllegalArgumentException("Invalid email format: ${userRequest.email}")
+                }
+                
+                if (userRepository.existsActiveByEmail(userRequest.email)) {
+                    throw ResourceAlreadyExistsException("User", "email", userRequest.email)
+                }
+                
+                val user = User(
+                    email = userRequest.email,
+                    firstName = userRequest.firstName,
+                    lastName = userRequest.lastName,
+                    phoneNumber = userRequest.phoneNumber,
+                    password = userRequest.password,
+                )
+                usersToCreate.add(user)
             } catch (e: Exception) {
                 failed.add(
                     BulkOperationError(
@@ -147,6 +184,16 @@ class UserCommandService(
                         error = e.message ?: "Unknown error",
                     ),
                 )
+            }
+        }
+
+        // Batch save all valid users
+        if (usersToCreate.isNotEmpty()) {
+            val savedUsers = userRepository.saveAll(usersToCreate)
+            savedUsers.forEach { user ->
+                val dto = user.toDto()
+                successful.add(dto)
+                eventPublisher.publishEvent(UserCreatedEvent(dto))
             }
         }
 
@@ -197,5 +244,13 @@ class UserCommandService(
         }
 
         return BulkOperationResult(successful, failed)
+    }
+    
+    /**
+     * Validates email format using a simple regex pattern.
+     */
+    private fun isValidEmail(email: String): Boolean {
+        val emailRegex = "^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+\\.[A-Za-z]{2,})\$".toRegex()
+        return email.matches(emailRegex)
     }
 }

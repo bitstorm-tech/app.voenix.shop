@@ -6,7 +6,7 @@ import org.springframework.modulith.events.Externalized
 /**
  * Event published when a user is updated.
  */
-@Externalized
+@Externalized("voenix.user::updated")
 data class UserUpdatedEvent(
     val user: UserDto,
 )

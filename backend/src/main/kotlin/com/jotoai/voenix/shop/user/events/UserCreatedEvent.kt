@@ -6,7 +6,7 @@ import org.springframework.modulith.events.Externalized
 /**
  * Event published when a new user is created.
  */
-@Externalized
+@Externalized("voenix.user::created")
 data class UserCreatedEvent(
     val user: UserDto,
 )

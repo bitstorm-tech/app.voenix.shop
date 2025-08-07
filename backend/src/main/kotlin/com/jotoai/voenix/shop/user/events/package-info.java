@@ -5,4 +5,5 @@
  * operations occur. Other modules can listen to these events for cross-cutting concerns.
  * </p>
  */
+@org.springframework.modulith.NamedInterface("events")
 package com.jotoai.voenix.shop.user.events;

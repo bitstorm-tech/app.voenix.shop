@@ -29,6 +29,11 @@ interface UserRepository :
         @Param("id") id: Long,
     ): Optional<User>
 
+    @Query("SELECT u FROM User u LEFT JOIN FETCH u.roles WHERE u.id = :id AND u.deletedAt IS NULL")
+    fun findActiveByIdWithRoles(
+        @Param("id") id: Long,
+    ): Optional<User>
+
     // Active user queries
     @Query("SELECT u FROM User u WHERE u.deletedAt IS NULL")
     fun findAllActive(): List<User>
