@@ -14,7 +14,14 @@ import org.springframework.scheduling.annotation.Scheduled
 @EnableScheduling
 class CacheConfig {
     @Bean
-    fun cacheManager(): CacheManager = ConcurrentMapCacheManager("publicPrompts")
+    fun cacheManager(): CacheManager =
+        ConcurrentMapCacheManager(
+            "publicPrompts",
+            "uploadedImages",
+            "generatedImages",
+            "userUploadedImages",
+            "userGeneratedImages",
+        )
 
     @Scheduled(fixedDelay = 300000) // 5 minutes in milliseconds
     @CacheEvict(value = ["publicPrompts"], allEntries = true)

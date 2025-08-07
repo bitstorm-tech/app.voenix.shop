@@ -1,13 +1,13 @@
 package com.jotoai.voenix.shop.api.user
 
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.ImageGenerationService
+import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
+import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
+import com.jotoai.voenix.shop.image.internal.service.UserImageGenerationService
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -30,6 +30,7 @@ class UserImageController(
     private val imageFacade: ImageFacade,
     private val imageAccessService: ImageAccessService,
     private val userQueryService: UserQueryService,
+    private val userImageGenerationService: UserImageGenerationService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(UserImageController::class.java)
@@ -61,13 +62,16 @@ class UserImageController(
         val user = userQueryService.getUserByEmail(userDetails.username)
         logger.info("User ${user.id} retrieving image: $filename")
 
-        // Validate access and get image data with proper security checks
-        val (imageBytes, contentType) = imageAccessService.validateAccessAndGetImageData(filename, user.id)
+        // Use the serveUserImage method instead which handles validation internally
+        val response = imageAccessService.serveUserImage(filename, user.id)
+
+        // Convert Resource response to ByteArray response for consistency with the API contract
+        val resource = response.body!!
+        val imageBytes = resource.inputStream.readAllBytes()
 
         return ResponseEntity
             .ok()
-            .contentType(MediaType.parseMediaType(contentType))
-            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"$filename\"")
+            .headers(response.headers)
             .body(imageBytes)
     }
 }

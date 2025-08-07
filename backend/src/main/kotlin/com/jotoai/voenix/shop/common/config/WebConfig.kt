@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.common.config
 
-import com.jotoai.voenix.shop.image.internal.service.StoragePathService
+import com.jotoai.voenix.shop.image.api.StoragePathService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ClassPathResource

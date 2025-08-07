@@ -1,7 +1,9 @@
 package com.jotoai.voenix.shop.image.api
 
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
+import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
+import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
@@ -16,7 +18,7 @@ interface ImageFacade {
     fun createUploadedImage(
         file: MultipartFile,
         userId: Long,
-    ): ImageDto
+    ): UploadedImageDto
 
     /**
      * Creates an image from a create request.
@@ -29,7 +31,7 @@ interface ImageFacade {
     fun getUploadedImageByUuid(
         uuid: UUID,
         userId: Long,
-    ): ImageDto
+    ): UploadedImageDto
 
     /**
      * Deletes an uploaded image.
@@ -42,5 +44,37 @@ interface ImageFacade {
     /**
      * Retrieves all uploaded images for a user.
      */
-    fun getUserUploadedImages(userId: Long): List<ImageDto>
+    fun getUserUploadedImages(userId: Long): List<UploadedImageDto>
+
+    // Generated images management
+
+    /**
+     * Retrieves a generated image by its UUID.
+     */
+    fun getGeneratedImageByUuid(
+        uuid: UUID,
+        userId: Long? = null,
+    ): GeneratedImageDto
+
+    /**
+     * Updates a generated image.
+     */
+    fun updateGeneratedImage(
+        uuid: UUID,
+        updateData: Map<String, Any>,
+        userId: Long? = null,
+    ): GeneratedImageDto
+
+    /**
+     * Deletes a generated image.
+     */
+    fun deleteGeneratedImage(
+        uuid: UUID,
+        userId: Long? = null,
+    )
+
+    /**
+     * Retrieves all generated images for a user.
+     */
+    fun getUserGeneratedImages(userId: Long): List<GeneratedImageDto>
 }

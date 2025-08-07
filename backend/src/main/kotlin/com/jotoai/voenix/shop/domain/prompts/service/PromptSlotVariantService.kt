@@ -2,8 +2,6 @@ package com.jotoai.voenix.shop.domain.prompts.service
 
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.domain.prompts.assembler.PromptSlotVariantAssembler
 import com.jotoai.voenix.shop.domain.prompts.dto.CreatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptSlotVariantDto
@@ -11,6 +9,8 @@ import com.jotoai.voenix.shop.domain.prompts.dto.UpdatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.domain.prompts.entity.PromptSlotVariant
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptSlotTypeRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptSlotVariantRepository
+import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.internal.service.ImageService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

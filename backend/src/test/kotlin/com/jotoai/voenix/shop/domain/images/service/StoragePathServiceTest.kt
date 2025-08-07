@@ -1,8 +1,9 @@
 package com.jotoai.voenix.shop.domain.images.service
 
-import com.jotoai.voenix.shop.domain.images.config.ImageTypePathConfig
-import com.jotoai.voenix.shop.domain.images.config.StoragePathConfiguration
-import com.jotoai.voenix.shop.domain.images.dto.ImageType
+import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.internal.config.ImageTypePathConfig
+import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
+import com.jotoai.voenix.shop.image.internal.service.StoragePathServiceImpl
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -21,7 +22,7 @@ class StoragePathServiceTest {
     @TempDir
     lateinit var tempDir: Path
 
-    private lateinit var storagePathService: StoragePathService
+    private lateinit var storagePathService: StoragePathServiceImpl
 
     @BeforeEach
     fun setUp() {
@@ -53,7 +54,7 @@ class StoragePathServiceTest {
                 pathMappings = pathMappings,
             )
 
-        storagePathService = StoragePathService(configuration)
+        storagePathService = StoragePathServiceImpl(configuration)
     }
 
     @Test
@@ -101,7 +102,7 @@ class StoragePathServiceTest {
                 pathMappings = pathMappings,
             )
 
-        val service = StoragePathService(configuration)
+        val service = StoragePathServiceImpl(configuration)
         val filename = "test-image.jpg"
         val imageUrl = service.getImageUrl(ImageType.PRIVATE, filename)
         assertEquals("/api/user/images/test-image.jpg", imageUrl)
@@ -179,7 +180,7 @@ class StoragePathServiceTest {
                 pathMappings = pathMappings,
             )
 
-        val service = StoragePathService(configuration)
+        val service = StoragePathServiceImpl(configuration)
 
         try {
             service.getPhysicalPath(ImageType.PUBLIC)

@@ -5,9 +5,9 @@ import com.jotoai.voenix.shop.api.admin.prompts.AdminPromptController
 import com.jotoai.voenix.shop.api.admin.users.AdminUserController
 import com.jotoai.voenix.shop.auth.config.SecurityConfig
 import com.jotoai.voenix.shop.domain.articles.service.ArticleService
-import com.jotoai.voenix.shop.domain.images.config.StoragePathConfiguration
-import com.jotoai.voenix.shop.domain.images.service.StoragePathService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
+import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.user.api.UserFacade
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.junit.jupiter.api.Test

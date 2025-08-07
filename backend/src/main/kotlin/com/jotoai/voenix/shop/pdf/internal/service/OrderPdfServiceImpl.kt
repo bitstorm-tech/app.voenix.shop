@@ -6,6 +6,7 @@ import com.google.zxing.qrcode.QRCodeWriter
 import com.jotoai.voenix.shop.common.exception.PdfGenerationException
 import com.jotoai.voenix.shop.domain.articles.service.MugDetailsService
 import com.jotoai.voenix.shop.image.api.ImageAccessService
+import com.jotoai.voenix.shop.image.internal.service.ImageAccessValidationService
 import com.jotoai.voenix.shop.pdf.api.OrderPdfService
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
 import com.jotoai.voenix.shop.pdf.events.PdfGeneratedEvent
@@ -40,6 +41,7 @@ class OrderPdfServiceImpl(
     @param:Value("\${pdf.size.height:99}") private val pdfHeightMm: Float,
     @param:Value("\${pdf.margin:1}") private val pdfMarginMm: Float,
     private val imageAccessService: ImageAccessService,
+    private val imageAccessValidationService: ImageAccessValidationService,
     private val mugDetailsService: MugDetailsService,
     private val eventPublisher: ApplicationEventPublisher,
 ) : OrderPdfService {
@@ -238,7 +240,7 @@ class OrderPdfServiceImpl(
                 when {
                     orderItem.generatedImageFilename != null -> {
                         try {
-                            imageAccessService
+                            imageAccessValidationService
                                 .validateAccessAndGetImageData(
                                     orderItem.generatedImageFilename!!,
                                     orderData.userId,

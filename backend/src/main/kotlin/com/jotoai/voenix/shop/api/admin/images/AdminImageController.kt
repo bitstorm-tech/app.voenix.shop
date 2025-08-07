@@ -1,13 +1,11 @@
 package com.jotoai.voenix.shop.api.admin.images
 
+import com.jotoai.voenix.shop.image.api.ImageAccessService
+import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
-import com.jotoai.voenix.shop.image.api.ImageFacade
-import com.jotoai.voenix.shop.image.api.ImageAccessService
 import jakarta.validation.Valid
-import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
-import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -37,14 +35,10 @@ class AdminImageController(
     @GetMapping("/{filename}/download")
     fun downloadImage(
         @PathVariable filename: String,
-    ): ResponseEntity<Resource> {
-        return imageAccessService.serveImage(filename, com.jotoai.voenix.shop.image.api.dto.ImageType.PUBLIC)
-    }
+    ): ResponseEntity<Resource> = imageAccessService.serveImage(filename, com.jotoai.voenix.shop.image.api.dto.ImageType.PUBLIC)
 
     @DeleteMapping("/{filename}")
     fun deleteImage(
         @PathVariable filename: String,
-    ) {
-        throw UnsupportedOperationException("Delete via ImageFacade not implemented yet")
-    }
+    ): Unit = throw UnsupportedOperationException("Delete via ImageFacade not implemented yet")
 }

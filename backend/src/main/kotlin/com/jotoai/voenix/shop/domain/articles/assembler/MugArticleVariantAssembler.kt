@@ -2,8 +2,8 @@ package com.jotoai.voenix.shop.domain.articles.assembler
 
 import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
-import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.springframework.stereotype.Component
 
 /**

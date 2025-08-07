@@ -18,27 +18,40 @@ class ImageAccessServiceImpl(
     private val imageService: ImageService,
     private val imageAccessValidationService: ImageAccessValidationService,
 ) : ImageAccessService {
-
-    override fun serveImage(filename: String, imageType: ImageType, format: ImageFormat?): ResponseEntity<Resource> {
+    override fun serveImage(
+        filename: String,
+        imageType: ImageType,
+        format: ImageFormat?,
+    ): ResponseEntity<Resource> {
         val (imageData, contentType) = imageService.getImageData(filename)
         return createImageResponse(imageData, contentType, filename)
     }
 
-    override fun serveUserImage(filename: String, userId: Long, format: ImageFormat?): ResponseEntity<Resource> {
+    override fun serveUserImage(
+        filename: String,
+        userId: Long,
+        format: ImageFormat?,
+    ): ResponseEntity<Resource> {
         val (imageData, contentType) = imageAccessValidationService.validateAccessAndGetImageData(filename, userId)
         return createImageResponse(imageData, contentType, filename)
     }
 
-    override fun servePublicImage(filename: String, format: ImageFormat?): ResponseEntity<Resource> {
+    override fun servePublicImage(
+        filename: String,
+        format: ImageFormat?,
+    ): ResponseEntity<Resource> {
         val (imageData, contentType) = imageService.getImageData(filename)
         return createImageResponse(imageData, contentType, filename)
     }
 
-    private fun createImageResponse(imageData: ByteArray, contentType: String, filename: String): ResponseEntity<Resource> {
-        return ResponseEntity
+    private fun createImageResponse(
+        imageData: ByteArray,
+        contentType: String,
+        filename: String,
+    ): ResponseEntity<Resource> =
+        ResponseEntity
             .ok()
             .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"$filename\"")
             .contentType(MediaType.parseMediaType(contentType))
             .body(ByteArrayResource(imageData))
-    }
 }

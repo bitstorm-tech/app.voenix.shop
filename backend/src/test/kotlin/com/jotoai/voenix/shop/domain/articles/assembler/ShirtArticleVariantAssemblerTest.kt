@@ -4,8 +4,8 @@ import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
-import com.jotoai.voenix.shop.domain.images.dto.ImageType
-import com.jotoai.voenix.shop.domain.images.service.StoragePathService
+import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach

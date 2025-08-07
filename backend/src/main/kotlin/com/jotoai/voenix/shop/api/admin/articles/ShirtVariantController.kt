@@ -3,10 +3,10 @@ package com.jotoai.voenix.shop.api.admin.articles
 import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.service.ShirtVariantService
+import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.ImageFacade
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType

@@ -1,17 +1,13 @@
 package com.jotoai.voenix.shop.image.internal.service
 
-import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.internal.domain.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.domain.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
-import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.io.IOException
-import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.util.UUID
@@ -26,12 +22,11 @@ import java.util.UUID
 class UserImageStorageService(
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
-    private val storagePathService: StoragePathService,
+    private val storagePathService: com.jotoai.voenix.shop.image.api.StoragePathService,
     private val imageConversionService: ImageConversionService,
-) {
+) : BaseStorageService() {
     companion object {
-        private val logger = LoggerFactory.getLogger(UserImageStorageService::class.java)
-        private const val MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+        private const val MAX_FILE_SIZE = 10 * 1024 * 1024L // 10MB
         private val ALLOWED_CONTENT_TYPES = setOf("image/jpeg", "image/jpg", "image/png", "image/webp")
         private const val ORIGINAL_SUFFIX = "_original"
         private const val GENERATED_PREFIX = "_generated_"
@@ -48,7 +43,7 @@ class UserImageStorageService(
         imageFile: MultipartFile,
         userId: Long,
     ): UploadedImage {
-        validateImageFile(imageFile)
+        validateFile(imageFile, MAX_FILE_SIZE, ALLOWED_CONTENT_TYPES)
 
         val uuid = UUID.randomUUID()
         val originalFilename = imageFile.originalFilename ?: "unknown"
@@ -64,38 +59,33 @@ class UserImageStorageService(
 
         logger.info("Storing uploaded image for user $userId: $storedFilename")
 
-        try {
-            // Create user directory if it doesn't exist
-            Files.createDirectories(userStorageDir)
+        // Create user directory if it doesn't exist
+        ensureDirectoryExists(userStorageDir)
 
-            var imageBytes = imageFile.bytes
+        var imageBytes = imageFile.bytes
 
-            // Convert to PNG if necessary
-            if (!isPng) {
-                logger.debug("Converting image from $contentType to PNG")
-                imageBytes = imageConversionService.convertToPng(imageBytes)
-            }
-
-            Files.write(filePath, imageBytes)
-            logger.info("Successfully stored uploaded image: ${filePath.toAbsolutePath()}")
-
-            // Save to database
-            val uploadedImage =
-                UploadedImage(
-                    uuid = uuid,
-                    originalFilename = originalFilename,
-                    storedFilename = storedFilename,
-                    contentType = "image/png", // Always PNG after conversion
-                    fileSize = imageBytes.size.toLong(),
-                    userId = userId,
-                    uploadedAt = LocalDateTime.now(),
-                )
-
-            return uploadedImageRepository.save(uploadedImage)
-        } catch (e: IOException) {
-            logger.error("Failed to store uploaded image at ${filePath.toAbsolutePath()}: ${e.message}", e)
-            throw RuntimeException("Failed to store uploaded image: ${e.message}", e)
+        // Convert to PNG if necessary
+        if (!isPng) {
+            logger.debug("Converting image from $contentType to PNG")
+            imageBytes = imageConversionService.convertToPng(imageBytes)
         }
+
+        writeFile(filePath, imageBytes)
+        logger.info("Successfully stored uploaded image: ${filePath.toAbsolutePath()}")
+
+        // Save to database
+        val uploadedImage =
+            UploadedImage(
+                uuid = uuid,
+                originalFilename = originalFilename,
+                storedFilename = storedFilename,
+                contentType = "image/png", // Always PNG after conversion
+                fileSize = imageBytes.size.toLong(),
+                userId = userId,
+                uploadedAt = LocalDateTime.now(),
+            )
+
+        return uploadedImageRepository.save(uploadedImage)
     }
 
     /**
@@ -119,25 +109,20 @@ class UserImageStorageService(
 
         logger.info("Storing generated image for user ${uploadedImage.userId}: $storedFilename")
 
-        try {
-            Files.write(filePath, imageBytes)
-            logger.info("Successfully stored generated image: ${filePath.toAbsolutePath()}")
+        writeFile(filePath, imageBytes)
+        logger.info("Successfully stored generated image: ${filePath.toAbsolutePath()}")
 
-            // Save to database
-            val generatedImage =
-                GeneratedImage(
-                    filename = storedFilename,
-                    promptId = promptId,
-                    userId = uploadedImage.userId,
-                    uploadedImage = uploadedImage,
-                    generatedAt = LocalDateTime.now(),
-                )
+        // Save to database
+        val generatedImage =
+            GeneratedImage(
+                filename = storedFilename,
+                promptId = promptId,
+                userId = uploadedImage.userId,
+                uploadedImage = uploadedImage,
+                generatedAt = LocalDateTime.now(),
+            )
 
-            return generatedImageRepository.save(generatedImage)
-        } catch (e: IOException) {
-            logger.error("Failed to store generated image at ${filePath.toAbsolutePath()}: ${e.message}", e)
-            throw RuntimeException("Failed to store generated image: ${e.message}", e)
-        }
+        return generatedImageRepository.save(generatedImage)
     }
 
     /**
@@ -153,7 +138,7 @@ class UserImageStorageService(
         val userStorageDir = getUserStorageDirectory(userId)
         val filePath = userStorageDir.resolve(filename)
 
-        if (!Files.exists(filePath)) {
+        if (!fileExists(filePath)) {
             throw ResourceNotFoundException("Image $filename not found for user $userId")
         }
 
@@ -163,14 +148,9 @@ class UserImageStorageService(
             throw ResourceNotFoundException("Image $filename not found for user $userId")
         }
 
-        try {
-            val bytes = Files.readAllBytes(filePath)
-            val contentType = Files.probeContentType(filePath) ?: "image/png"
-            return Pair(bytes, contentType)
-        } catch (e: IOException) {
-            logger.error("Failed to read image file $filename for user $userId", e)
-            throw RuntimeException("Failed to read image file: ${e.message}", e)
-        }
+        val bytes = readFile(filePath)
+        val contentType = probeContentType(filePath, "image/png")
+        return Pair(bytes, contentType)
     }
 
     /**
@@ -194,20 +174,5 @@ class UserImageStorageService(
     private fun getUserStorageDirectory(userId: Long): Path {
         val storageRoot = storagePathService.getStorageRoot()
         return storageRoot.resolve("private").resolve("images").resolve(userId.toString())
-    }
-
-    private fun validateImageFile(file: MultipartFile) {
-        if (file.isEmpty) {
-            throw BadRequestException("Image file is required")
-        }
-
-        if (file.size > MAX_FILE_SIZE) {
-            throw BadRequestException("Image file size must be less than 10MB")
-        }
-
-        val contentType = file.contentType?.lowercase() ?: ""
-        if (contentType !in ALLOWED_CONTENT_TYPES) {
-            throw BadRequestException("Invalid image format. Allowed formats: JPEG, PNG, WebP")
-        }
     }
 }

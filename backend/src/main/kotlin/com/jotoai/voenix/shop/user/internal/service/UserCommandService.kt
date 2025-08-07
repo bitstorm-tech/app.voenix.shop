@@ -37,7 +37,7 @@ class UserCommandService(
         if (!isValidEmail(request.email)) {
             throw IllegalArgumentException("Invalid email format: ${request.email}")
         }
-        
+
         if (userRepository.existsActiveByEmail(request.email)) {
             throw ResourceAlreadyExistsException("User", "email", request.email)
         }
@@ -163,18 +163,19 @@ class UserCommandService(
                 if (!isValidEmail(userRequest.email)) {
                     throw IllegalArgumentException("Invalid email format: ${userRequest.email}")
                 }
-                
+
                 if (userRepository.existsActiveByEmail(userRequest.email)) {
                     throw ResourceAlreadyExistsException("User", "email", userRequest.email)
                 }
-                
-                val user = User(
-                    email = userRequest.email,
-                    firstName = userRequest.firstName,
-                    lastName = userRequest.lastName,
-                    phoneNumber = userRequest.phoneNumber,
-                    password = userRequest.password,
-                )
+
+                val user =
+                    User(
+                        email = userRequest.email,
+                        firstName = userRequest.firstName,
+                        lastName = userRequest.lastName,
+                        phoneNumber = userRequest.phoneNumber,
+                        password = userRequest.password,
+                    )
                 usersToCreate.add(user)
             } catch (e: Exception) {
                 failed.add(
@@ -245,7 +246,7 @@ class UserCommandService(
 
         return BulkOperationResult(successful, failed)
     }
-    
+
     /**
      * Validates email format using a simple regex pattern.
      */

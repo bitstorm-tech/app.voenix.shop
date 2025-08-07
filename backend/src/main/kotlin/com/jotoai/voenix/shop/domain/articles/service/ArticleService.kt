@@ -26,8 +26,8 @@ import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
 import com.jotoai.voenix.shop.domain.articles.repository.CostCalculationRepository
 import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepository
-import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
 import com.jotoai.voenix.shop.vat.api.VatQueryService
 import org.springframework.data.domain.PageRequest

@@ -2,12 +2,12 @@ package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
-import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
+import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
+import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
+import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -22,7 +22,7 @@ class UserImageGenerationService(
     private val promptService: PromptService,
     private val generatedImageRepository: GeneratedImageRepository,
     private val userQueryService: UserQueryService,
-    private val storagePathService: StoragePathService,
+    private val storagePathService: com.jotoai.voenix.shop.image.api.StoragePathService,
     private val userImageStorageService: UserImageStorageService,
 ) {
     companion object {

@@ -1,7 +1,8 @@
 package com.jotoai.voenix.shop.image.internal.service
 
-import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
+import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.io.IOException
@@ -13,11 +14,11 @@ import java.nio.file.Path
  * Handles both physical file system paths for storage and URL paths for web access.
  */
 @Service
-class StoragePathService(
+class StoragePathServiceImpl(
     private val storagePathConfiguration: StoragePathConfiguration,
-) {
+) : StoragePathService {
     companion object {
-        private val logger = LoggerFactory.getLogger(StoragePathService::class.java)
+        private val logger = LoggerFactory.getLogger(StoragePathServiceImpl::class.java)
     }
 
     init {
@@ -32,7 +33,7 @@ class StoragePathService(
      * @param imageType The type of image
      * @return The absolute Path where files of this type should be stored
      */
-    fun getPhysicalPath(imageType: ImageType): Path {
+    override fun getPhysicalPath(imageType: ImageType): Path {
         val pathConfig = getPathConfig(imageType)
         return storagePathConfiguration.storageRoot.resolve(pathConfig.relativePath)
     }
@@ -44,7 +45,7 @@ class StoragePathService(
      * @param filename The filename
      * @return The absolute Path to the specific file
      */
-    fun getPhysicalFilePath(
+    override fun getPhysicalFilePath(
         imageType: ImageType,
         filename: String,
     ): Path = getPhysicalPath(imageType).resolve(filename)
@@ -56,7 +57,7 @@ class StoragePathService(
      * @param imageType The type of image
      * @return The URL path prefix for this image type
      */
-    fun getUrlPath(imageType: ImageType): String = getPathConfig(imageType).urlPath
+    override fun getUrlPath(imageType: ImageType): String = getPathConfig(imageType).urlPath
 
     /**
      * Gets the complete URL for a specific image file.
@@ -65,7 +66,7 @@ class StoragePathService(
      * @param filename The filename
      * @return The complete URL path to access this specific image
      */
-    fun getImageUrl(
+    override fun getImageUrl(
         imageType: ImageType,
         filename: String,
     ): String {
@@ -83,14 +84,14 @@ class StoragePathService(
      * @param imageType The type of image
      * @return true if publicly accessible, false if API-controlled access
      */
-    fun isPubliclyAccessible(imageType: ImageType): Boolean = getPathConfig(imageType).isPubliclyAccessible
+    override fun isPubliclyAccessible(imageType: ImageType): Boolean = getPathConfig(imageType).isPubliclyAccessible
 
     /**
      * Gets all configured image types.
      *
      * @return Set of all configured ImageType values
      */
-    fun getAllConfiguredImageTypes(): Set<ImageType> = storagePathConfiguration.pathMappings.keys
+    override fun getAllConfiguredImageTypes(): Set<ImageType> = storagePathConfiguration.pathMappings.keys
 
     /**
      * Finds the ImageType for a given filename by checking which directory contains it.
@@ -99,7 +100,7 @@ class StoragePathService(
      * @param filename The filename to search for
      * @return The ImageType if found, null otherwise
      */
-    fun findImageTypeByFilename(filename: String): ImageType? =
+    override fun findImageTypeByFilename(filename: String): ImageType? =
         storagePathConfiguration.pathMappings.keys.find { imageType ->
             val filePath = getPhysicalFilePath(imageType, filename)
             Files.exists(filePath)
@@ -111,14 +112,14 @@ class StoragePathService(
      * @param imageType The type of image
      * @return The relative path from storage root
      */
-    fun getRelativePath(imageType: ImageType): String = getPathConfig(imageType).relativePath
+    override fun getRelativePath(imageType: ImageType): String = getPathConfig(imageType).relativePath
 
     /**
      * Gets the storage root path.
      *
      * @return The absolute Path to the storage root directory
      */
-    fun getStorageRoot(): Path = storagePathConfiguration.storageRoot
+    override fun getStorageRoot(): Path = storagePathConfiguration.storageRoot
 
     private fun getPathConfig(imageType: ImageType) =
         storagePathConfiguration.pathMappings[imageType]

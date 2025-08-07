@@ -6,8 +6,8 @@ import com.jotoai.voenix.shop.auth.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.service.AuthService
 import com.jotoai.voenix.shop.auth.service.UserRegistrationService
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.domain.images.config.StoragePathConfiguration
-import com.jotoai.voenix.shop.domain.images.service.StoragePathService
+import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import com.jotoai.voenix.shop.user.internal.repository.RoleRepository
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository

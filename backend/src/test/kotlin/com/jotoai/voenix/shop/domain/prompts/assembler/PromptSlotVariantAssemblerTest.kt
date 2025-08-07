@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.domain.prompts.assembler
 
-import com.jotoai.voenix.shop.domain.images.dto.ImageType
-import com.jotoai.voenix.shop.domain.images.service.StoragePathService
 import com.jotoai.voenix.shop.domain.prompts.entity.PromptSlotType
 import com.jotoai.voenix.shop.domain.prompts.entity.PromptSlotVariant
+import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull

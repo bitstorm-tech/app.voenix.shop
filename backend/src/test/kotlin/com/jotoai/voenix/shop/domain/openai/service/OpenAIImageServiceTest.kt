@@ -1,9 +1,5 @@
 package com.jotoai.voenix.shop.domain.openai.service
 
-import com.jotoai.voenix.shop.domain.images.dto.CreateImageRequest
-import com.jotoai.voenix.shop.domain.images.dto.ImageDto
-import com.jotoai.voenix.shop.domain.images.dto.ImageType
-import com.jotoai.voenix.shop.domain.images.service.ImageService
 import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.domain.openai.dto.ImageEditBytesResponse
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
@@ -12,6 +8,10 @@ import com.jotoai.voenix.shop.domain.openai.dto.TestPromptResponse
 import com.jotoai.voenix.shop.domain.openai.dto.enums.ImageBackground
 import com.jotoai.voenix.shop.domain.openai.dto.enums.ImageQuality
 import com.jotoai.voenix.shop.domain.openai.dto.enums.ImageSize
+import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
+import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
+import com.jotoai.voenix.shop.image.internal.service.ImageService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -103,13 +103,13 @@ class OpenAIImageServiceTest {
 
         // Mock image service responses
         val savedImage1 =
-            ImageDto(
+            SimpleImageDto(
                 filename = "saved-image-1.png",
                 imageType = ImageType.PRIVATE,
             )
 
         val savedImage2 =
-            ImageDto(
+            SimpleImageDto(
                 filename = "saved-image-2.png",
                 imageType = ImageType.PRIVATE,
             )
@@ -160,7 +160,7 @@ class OpenAIImageServiceTest {
         `when`(imageGenerationStrategy.generateImages(mockImageFile, request)).thenReturn(strategResponse)
 
         val savedImage =
-            ImageDto(
+            SimpleImageDto(
                 filename = "single-saved-image.png",
                 imageType = ImageType.PRIVATE,
             )

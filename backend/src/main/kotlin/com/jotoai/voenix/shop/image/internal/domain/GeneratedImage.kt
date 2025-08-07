@@ -10,6 +10,7 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import java.time.LocalDateTime
+import java.util.UUID
 
 @Entity
 @Table(name = "generated_images")
@@ -17,6 +18,8 @@ class GeneratedImage(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
+    @Column(nullable = false, unique = true)
+    var uuid: UUID = UUID.randomUUID(),
     @Column(nullable = false, unique = true)
     var filename: String,
     @Column(name = "prompt_id", nullable = false)
@@ -34,8 +37,8 @@ class GeneratedImage(
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is GeneratedImage) return false
-        return filename == other.filename
+        return uuid == other.uuid
     }
 
-    override fun hashCode(): Int = filename.hashCode()
+    override fun hashCode(): Int = uuid.hashCode()
 }

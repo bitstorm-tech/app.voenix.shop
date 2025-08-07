@@ -2,14 +2,14 @@ package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
+import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
+import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.internal.domain.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
-import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
-import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
-import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -24,7 +24,7 @@ class PublicImageGenerationService(
     private val promptService: PromptService,
     private val generatedImageRepository: GeneratedImageRepository,
     private val request: HttpServletRequest,
-    private val storagePathService: StoragePathService,
+    private val storagePathService: com.jotoai.voenix.shop.image.api.StoragePathService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(PublicImageGenerationService::class.java)

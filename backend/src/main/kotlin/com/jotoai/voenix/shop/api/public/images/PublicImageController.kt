@@ -1,12 +1,11 @@
 package com.jotoai.voenix.shop.api.public.images
 
-import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageGenerationService
+import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
+import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import org.slf4j.LoggerFactory
-import org.springframework.http.HttpHeaders
+import org.springframework.core.io.Resource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
@@ -48,7 +47,7 @@ class PublicImageController(
     @GetMapping("/{filename}")
     fun getImage(
         @PathVariable filename: String,
-    ): ResponseEntity<ByteArray> {
+    ): ResponseEntity<Resource> {
         logger.info("Retrieving public image: $filename")
 
         return imageAccessService.servePublicImage(filename)

@@ -4,8 +4,8 @@ import com.jotoai.voenix.shop.auth.config.SecurityConfig
 import com.jotoai.voenix.shop.domain.articles.dto.PublicMugDto
 import com.jotoai.voenix.shop.domain.articles.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.domain.articles.service.ArticleService
-import com.jotoai.voenix.shop.domain.images.config.StoragePathConfiguration
-import com.jotoai.voenix.shop.domain.images.service.StoragePathService
+import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
