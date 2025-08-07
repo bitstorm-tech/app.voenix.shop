@@ -44,7 +44,8 @@
       "Bash(mv:*)",
       "WebFetch(domain:docs.spring.io)",
       "WebFetch(domain:www.baeldung.com)",
-      "WebFetch(domain:dzone.com)"
+      "WebFetch(domain:dzone.com)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

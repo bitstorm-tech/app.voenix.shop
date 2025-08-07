@@ -3,6 +3,7 @@ package com.jotoai.voenix.shop.supplier
 import com.jotoai.voenix.shop.supplier.api.SupplierFacade
 import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
 import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
+import com.jotoai.voenix.shop.supplier.api.exceptions.DuplicateSupplierException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -114,8 +115,8 @@ class SupplierModuleIntegrationTest {
         // Then - should throw exception
         try {
             supplierFacade.createSupplier(duplicateNameRequest)
-            throw AssertionError("Should have thrown IllegalArgumentException for duplicate name")
-        } catch (e: IllegalArgumentException) {
+            throw AssertionError("Should have thrown DuplicateSupplierException for duplicate name")
+        } catch (e: DuplicateSupplierException) {
             assertThat(e.message).contains("Supplier with name")
         }
 
@@ -125,8 +126,8 @@ class SupplierModuleIntegrationTest {
         // Then - should throw exception
         try {
             supplierFacade.createSupplier(duplicateEmailRequest)
-            throw AssertionError("Should have thrown IllegalArgumentException for duplicate email")
-        } catch (e: IllegalArgumentException) {
+            throw AssertionError("Should have thrown DuplicateSupplierException for duplicate email")
+        } catch (e: DuplicateSupplierException) {
             assertThat(e.message).contains("Supplier with email")
         }
 

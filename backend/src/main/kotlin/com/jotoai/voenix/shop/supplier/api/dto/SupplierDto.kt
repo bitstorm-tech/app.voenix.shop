@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.supplier.api.dto
 
-import com.jotoai.voenix.shop.country.api.dto.CountryDto
 import java.time.OffsetDateTime
 
 data class SupplierDto(
@@ -13,7 +12,8 @@ data class SupplierDto(
     val houseNumber: String?,
     val city: String?,
     val postalCode: Int?,
-    val country: CountryDto?,
+    val countryId: Long?,
+    val countryName: String?,
     val phoneNumber1: String?,
     val phoneNumber2: String?,
     val phoneNumber3: String?,

@@ -63,7 +63,8 @@ class Supplier(
             houseNumber = this.houseNumber,
             city = this.city,
             postalCode = this.postalCode,
-            country = null, // Will be populated by service layer
+            countryId = this.countryId,
+            countryName = null, // Will be populated by service layer
             phoneNumber1 = this.phoneNumber1,
             phoneNumber2 = this.phoneNumber2,
             phoneNumber3 = this.phoneNumber3,
