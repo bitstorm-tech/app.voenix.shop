@@ -7,8 +7,8 @@ import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepository
+import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.internal.service.ImageService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional
 class ShirtVariantService(
     private val articleRepository: ArticleRepository,
     private val shirtVariantRepository: ShirtArticleVariantRepository,
-    private val imageService: ImageService,
+    private val imageStorageService: ImageStorageService,
     private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
 ) {
     companion object {
@@ -74,7 +74,7 @@ class ShirtVariantService(
         // Delete associated image if exists
         variant.exampleImageFilename?.let { filename ->
             try {
-                imageService.delete(filename, ImageType.SHIRT_VARIANT_EXAMPLE)
+                imageStorageService.deleteFile(filename, ImageType.SHIRT_VARIANT_EXAMPLE)
             } catch (e: Exception) {
                 logger.warn("Failed to delete shirt variant example image during variant deletion: $filename", e)
             }

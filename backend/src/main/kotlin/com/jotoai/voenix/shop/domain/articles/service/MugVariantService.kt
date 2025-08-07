@@ -7,8 +7,8 @@ import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
 import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
+import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.internal.service.ImageService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional
 class MugVariantService(
     private val articleRepository: ArticleRepository,
     private val mugVariantRepository: MugArticleVariantRepository,
-    private val imageService: ImageService,
+    private val imageStorageService: ImageStorageService,
     private val mugArticleVariantAssembler: MugArticleVariantAssembler,
 ) {
     companion object {
@@ -117,7 +117,7 @@ class MugVariantService(
         // Delete associated image if exists
         variant.exampleImageFilename?.let { filename ->
             try {
-                imageService.delete(filename, ImageType.MUG_VARIANT_EXAMPLE)
+                imageStorageService.deleteFile(filename, ImageType.MUG_VARIANT_EXAMPLE)
             } catch (e: Exception) {
                 logger.warn("Failed to delete mug variant example image during variant deletion: $filename", e)
             }
@@ -162,7 +162,7 @@ class MugVariantService(
         // Delete the image file if it exists
         variant.exampleImageFilename?.let { filename ->
             try {
-                imageService.delete(filename, ImageType.MUG_VARIANT_EXAMPLE)
+                imageStorageService.deleteFile(filename, ImageType.MUG_VARIANT_EXAMPLE)
             } catch (e: Exception) {
                 logger.warn("Failed to delete mug variant example image: $filename", e)
             }

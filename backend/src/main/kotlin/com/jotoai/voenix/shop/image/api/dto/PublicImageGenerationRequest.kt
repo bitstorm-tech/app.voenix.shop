@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.image.api.dto
 
-import com.jotoai.voenix.shop.domain.openai.dto.enums.ImageBackground
-import com.jotoai.voenix.shop.domain.openai.dto.enums.ImageQuality
-import com.jotoai.voenix.shop.domain.openai.dto.enums.ImageSize
+import com.jotoai.voenix.shop.image.api.enums.ImageBackground
+import com.jotoai.voenix.shop.image.api.enums.ImageQuality
+import com.jotoai.voenix.shop.image.api.enums.ImageSize
 import jakarta.validation.constraints.NotNull
 
 data class PublicImageGenerationRequest(

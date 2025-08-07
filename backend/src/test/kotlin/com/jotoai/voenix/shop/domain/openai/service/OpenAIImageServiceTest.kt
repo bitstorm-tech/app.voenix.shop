@@ -5,13 +5,10 @@ import com.jotoai.voenix.shop.domain.openai.dto.ImageEditBytesResponse
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequestParams
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptResponse
-import com.jotoai.voenix.shop.domain.openai.dto.enums.ImageBackground
-import com.jotoai.voenix.shop.domain.openai.dto.enums.ImageQuality
-import com.jotoai.voenix.shop.domain.openai.dto.enums.ImageSize
-import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
-import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
-import com.jotoai.voenix.shop.image.internal.service.ImageService
+import com.jotoai.voenix.shop.image.api.ImageStorageService
+import com.jotoai.voenix.shop.image.api.enums.ImageBackground
+import com.jotoai.voenix.shop.image.api.enums.ImageQuality
+import com.jotoai.voenix.shop.image.api.enums.ImageSize
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -22,21 +19,20 @@ import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.anyOrNull
-import org.mockito.kotlin.argumentCaptor
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
 
 class OpenAIImageServiceTest {
-    private lateinit var imageService: ImageService
+    private lateinit var imageStorageService: ImageStorageService
     private lateinit var imageGenerationStrategy: ImageGenerationStrategy
     private lateinit var openAIImageService: OpenAIImageService
     private lateinit var mockImageFile: MultipartFile
 
     @BeforeEach
     fun setUp() {
-        imageService = mock(ImageService::class.java)
+        imageStorageService = mock(ImageStorageService::class.java)
         imageGenerationStrategy = mock(ImageGenerationStrategy::class.java)
-        openAIImageService = OpenAIImageService(imageService, imageGenerationStrategy)
+        openAIImageService = OpenAIImageService(imageStorageService, imageGenerationStrategy)
 
         mockImageFile =
             MockMultipartFile(
@@ -102,21 +98,12 @@ class OpenAIImageServiceTest {
         `when`(imageGenerationStrategy.generateImages(mockImageFile, request)).thenReturn(strategResponse)
 
         // Mock image service responses
-        val savedImage1 =
-            SimpleImageDto(
-                filename = "saved-image-1.png",
-                imageType = ImageType.PRIVATE,
-            )
-
-        val savedImage2 =
-            SimpleImageDto(
-                filename = "saved-image-2.png",
-                imageType = ImageType.PRIVATE,
-            )
+        val savedFilename1 = "saved-image-1.png"
+        val savedFilename2 = "saved-image-2.png"
 
         // Use doReturn to avoid issues with consecutive calls
-        `when`(imageService.store(anyOrNull(), anyOrNull()))
-            .thenReturn(savedImage1, savedImage2)
+        `when`(imageStorageService.storeFile(anyOrNull(), anyOrNull()))
+            .thenReturn(savedFilename1, savedFilename2)
 
         // When
         val result = openAIImageService.editImage(mockImageFile, request)
@@ -130,17 +117,7 @@ class OpenAIImageServiceTest {
         verify(imageGenerationStrategy).generateImages(mockImageFile, request)
 
         // Verify image service was called twice for storage
-        verify(imageService, times(2)).store(anyOrNull(), anyOrNull())
-
-        // Verify the CreateImageRequest was correct
-        val imageRequestCaptor = argumentCaptor<CreateImageRequest>()
-        verify(imageService, times(2)).store(anyOrNull(), imageRequestCaptor.capture())
-
-        val capturedRequests = imageRequestCaptor.allValues
-        assertEquals(2, capturedRequests.size)
-        capturedRequests.forEach { capturedRequest ->
-            assertEquals(ImageType.PRIVATE, capturedRequest.imageType)
-        }
+        verify(imageStorageService, times(2)).storeFile(anyOrNull(), anyOrNull())
     }
 
     @Test
@@ -159,14 +136,10 @@ class OpenAIImageServiceTest {
         val strategResponse = ImageEditBytesResponse(imageBytes = generatedImageBytes)
         `when`(imageGenerationStrategy.generateImages(mockImageFile, request)).thenReturn(strategResponse)
 
-        val savedImage =
-            SimpleImageDto(
-                filename = "single-saved-image.png",
-                imageType = ImageType.PRIVATE,
-            )
+        val savedFilename = "single-saved-image.png"
 
-        `when`(imageService.store(anyOrNull(), anyOrNull()))
-            .thenReturn(savedImage)
+        `when`(imageStorageService.storeFile(anyOrNull(), anyOrNull()))
+            .thenReturn(savedFilename)
 
         // When
         val result = openAIImageService.editImage(mockImageFile, request)
@@ -176,7 +149,7 @@ class OpenAIImageServiceTest {
         assertEquals("single-saved-image.png", result.imageFilenames[0])
 
         verify(imageGenerationStrategy).generateImages(mockImageFile, request)
-        verify(imageService).store(anyOrNull(), anyOrNull())
+        verify(imageStorageService).storeFile(anyOrNull(), anyOrNull())
     }
 
     @Test
@@ -219,7 +192,7 @@ class OpenAIImageServiceTest {
         val strategResponse = ImageEditBytesResponse(imageBytes = generatedImageBytes)
         `when`(imageGenerationStrategy.generateImages(mockImageFile, request)).thenReturn(strategResponse)
 
-        `when`(imageService.store(anyOrNull(), anyOrNull()))
+        `when`(imageStorageService.storeFile(anyOrNull(), anyOrNull()))
             .thenThrow(RuntimeException("Storage failed"))
 
         // When/Then
@@ -229,7 +202,7 @@ class OpenAIImageServiceTest {
 
         // Exception is thrown as expected
         verify(imageGenerationStrategy).generateImages(mockImageFile, request)
-        verify(imageService).store(anyOrNull(), anyOrNull())
+        verify(imageStorageService).storeFile(anyOrNull(), anyOrNull())
     }
 
     @Test

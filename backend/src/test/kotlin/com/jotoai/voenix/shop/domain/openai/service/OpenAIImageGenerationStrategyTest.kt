@@ -3,13 +3,13 @@ package com.jotoai.voenix.shop.domain.openai.service
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
-import com.jotoai.voenix.shop.domain.openai.dto.enums.ImageBackground
-import com.jotoai.voenix.shop.domain.openai.dto.enums.ImageQuality
-import com.jotoai.voenix.shop.domain.openai.dto.enums.ImageSize
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptDto
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptSlotTypeDto
 import com.jotoai.voenix.shop.domain.prompts.dto.PromptSlotVariantDto
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
+import com.jotoai.voenix.shop.image.api.enums.ImageBackground
+import com.jotoai.voenix.shop.image.api.enums.ImageQuality
+import com.jotoai.voenix.shop.image.api.enums.ImageSize
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows

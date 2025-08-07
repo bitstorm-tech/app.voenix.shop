@@ -1,121 +1,296 @@
 package com.jotoai.voenix.shop.image.internal.service
 
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
+import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
+import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
+import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
+import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
+import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
+import com.jotoai.voenix.shop.image.events.ImageCreatedEvent
+import com.jotoai.voenix.shop.image.events.ImageDeletedEvent
+import com.jotoai.voenix.shop.image.events.ImageUpdatedEvent
+import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
+/**
+ * Main service for image operations that coordinates business logic and delegates to specialized services.
+ * This service handles entity persistence, event publishing, and business rules while delegating
+ * storage operations to ImageStorageService and generation operations to generation services.
+ */
 @Service
 class ImageService(
-    private val imageConversionService: ImageConversionService,
-    private val storagePathService: com.jotoai.voenix.shop.image.api.StoragePathService,
-) : BaseStorageService() {
-    init {
-        logger.info("Initializing ImageService with StoragePathService")
-        logger.info("Storage root: ${storagePathService.getStorageRoot()}")
-        // Directory creation is now handled by StoragePathService
-    }
+    private val imageStorageService: ImageStorageService,
+    private val userImageStorageService: UserImageStorageService,
+    private val uploadedImageRepository: UploadedImageRepository,
+    private val generatedImageRepository: GeneratedImageRepository,
+    private val applicationEventPublisher: ApplicationEventPublisher,
+) {
+    private val logger = org.slf4j.LoggerFactory.getLogger(ImageService::class.java)
 
+    /**
+     * Stores an image file using the storage service. This is primarily for compatibility.
+     * For user uploads, use createUploadedImage instead.
+     */
     fun store(
         file: MultipartFile,
         request: CreateImageRequest,
     ): ImageDto {
-        logger.debug("Starting file upload - Type: {}, Original filename: {}", request.imageType, file.originalFilename)
-
-        // Use ImageType configuration for validation
-        validateFile(file, request.imageType.maxFileSize, request.imageType.allowedContentTypes.toSet())
-
-        val originalFilename = file.originalFilename ?: "unknown"
-
-        // Use ImageType configuration to determine file extension
-        val fileExtension = request.imageType.getFileExtension(originalFilename)
-        val storedFilename = "${UUID.randomUUID()}$fileExtension"
-
-        val targetPath = storagePathService.getPhysicalPath(request.imageType)
-        val filePath = targetPath.resolve(storedFilename)
-
-        logger.info("Storing file - Target path: ${filePath.toAbsolutePath()}")
-
-        try {
-            var imageBytes = file.bytes
-
-            // Apply cropping if requested
-            if (request.cropArea != null) {
-                // Get original image dimensions for logging
-                val originalImage = imageConversionService.getImageDimensions(imageBytes)
-                logger.info(
-                    "Applying crop - Original image: ${originalImage.width}x${originalImage.height}, " +
-                        "Crop area: x=${request.cropArea.x}, y=${request.cropArea.y}, " +
-                        "width=${request.cropArea.width}, height=${request.cropArea.height}",
-                )
-                imageBytes = imageConversionService.cropImage(imageBytes, request.cropArea)
-                val croppedImage = imageConversionService.getImageDimensions(imageBytes)
-                logger.info("Crop result - New dimensions: ${croppedImage.width}x${croppedImage.height}")
-            }
-
-            // Use ImageType configuration to determine if WebP conversion is needed
-            if (request.imageType.requiresWebPConversion) {
-                logger.debug("Converting image to WebP format")
-                val webpBytes = imageConversionService.convertToWebP(imageBytes)
-                writeFile(filePath, webpBytes)
-                logger.info("Successfully stored WebP image: ${filePath.toAbsolutePath()}")
-            } else {
-                // Store the image (cropped or original)
-                writeFile(filePath, imageBytes)
-                logger.info("Successfully stored image: ${filePath.toAbsolutePath()}")
-            }
-        } catch (e: IllegalArgumentException) {
-            logger.error("Invalid crop parameters: ${e.message}", e)
-            throw IllegalArgumentException("Invalid crop parameters: ${e.message}", e)
-        }
-
-        return SimpleImageDto(
-            filename = storedFilename,
-            imageType = request.imageType,
-        )
+        logger.debug("Delegating image storage - Type: {}, Original filename: {}", request.imageType, file.originalFilename)
+        return imageStorageService.storeImage(file, request)
     }
 
+    /**
+     * Retrieves image data by delegating to the storage service.
+     */
     fun getImageData(
         filename: String,
         imageType: ImageType,
-    ): Pair<ByteArray, String> {
-        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+    ): Pair<ByteArray, String> = imageStorageService.getImageData(filename, imageType)
 
-        if (!fileExists(filePath)) {
-            throw ResourceNotFoundException("Image with filename $filename not found")
-        }
-
-        val bytes = readFile(filePath)
-        val contentType = probeContentType(filePath, "application/octet-stream")
-        return Pair(bytes, contentType)
-    }
-
+    /**
+     * Deletes an image by delegating to the storage service.
+     */
     fun delete(
         filename: String,
         imageType: ImageType,
-    ) {
-        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+    ) = imageStorageService.deleteImage(filename, imageType)
 
-        if (!deleteFile(filePath)) {
-            throw ResourceNotFoundException("Image with filename $filename not found")
+    /**
+     * Retrieves image data by filename only (searches across image types).
+     */
+    fun getImageData(filename: String): Pair<ByteArray, String> = imageStorageService.getImageData(filename)
+
+    /**
+     * Deletes an image by filename only (searches across image types).
+     */
+    fun delete(filename: String) = imageStorageService.deleteImage(filename)
+
+    // Uploaded Image Business Logic
+
+    @Transactional
+    fun createUploadedImage(
+        file: MultipartFile,
+        userId: Long,
+    ): UploadedImageDto {
+        try {
+            val uploadedImage = userImageStorageService.storeUploadedImage(file, userId)
+
+            // Publish event
+            applicationEventPublisher.publishEvent(
+                ImageCreatedEvent(
+                    imageId = uploadedImage.id ?: throw ImageStorageException("Image ID not generated"),
+                    filename = uploadedImage.storedFilename,
+                    uuid = uploadedImage.uuid,
+                    userId = userId,
+                ),
+            )
+
+            return UploadedImageDto(
+                filename = uploadedImage.storedFilename,
+                imageType = ImageType.PRIVATE,
+                uuid = uploadedImage.uuid,
+                originalFilename = uploadedImage.originalFilename,
+                contentType = uploadedImage.contentType,
+                fileSize = uploadedImage.fileSize,
+                uploadedAt = uploadedImage.uploadedAt,
+            )
+        } catch (e: Exception) {
+            throw ImageStorageException("Failed to create uploaded image: ${e.message}", e)
         }
     }
 
-    fun getImageData(filename: String): Pair<ByteArray, String> {
-        val imageType =
-            storagePathService.findImageTypeByFilename(filename)
-                ?: throw ResourceNotFoundException("Image with filename $filename not found")
-        return getImageData(filename, imageType)
+    @Transactional(readOnly = true)
+    fun getUploadedImageByUuid(
+        uuid: UUID,
+        userId: Long,
+    ): UploadedImageDto {
+        val uploadedImage =
+            uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
+                ?: throw ImageNotFoundException("Uploaded image with UUID $uuid not found for user $userId")
+
+        return UploadedImageDto(
+            filename = uploadedImage.storedFilename,
+            imageType = ImageType.PRIVATE,
+            uuid = uploadedImage.uuid,
+            originalFilename = uploadedImage.originalFilename,
+            contentType = uploadedImage.contentType,
+            fileSize = uploadedImage.fileSize,
+            uploadedAt = uploadedImage.uploadedAt,
+        )
     }
 
-    fun delete(filename: String) {
-        val imageType =
-            storagePathService.findImageTypeByFilename(filename)
-                ?: throw ResourceNotFoundException("Image with filename $filename not found")
-        delete(filename, imageType)
+    @Transactional
+    fun deleteUploadedImage(
+        uuid: UUID,
+        userId: Long,
+    ) {
+        val uploadedImage =
+            uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
+                ?: throw ImageNotFoundException("Uploaded image with UUID $uuid not found for user $userId")
+
+        try {
+            // Delete file from storage
+            imageStorageService.deleteImage(uploadedImage.storedFilename)
+
+            // Delete from database
+            uploadedImageRepository.delete(uploadedImage)
+
+            // Publish event
+            applicationEventPublisher.publishEvent(
+                ImageDeletedEvent(
+                    imageId = uploadedImage.id!!,
+                    filename = uploadedImage.storedFilename,
+                    uuid = uploadedImage.uuid,
+                    userId = userId,
+                ),
+            )
+        } catch (e: Exception) {
+            throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
+        }
     }
+
+    @Transactional(readOnly = true)
+    fun getUserUploadedImages(userId: Long): List<UploadedImageDto> =
+        uploadedImageRepository
+            .findAllByUserIdWithGeneratedImages(userId)
+            .map { uploadedImage ->
+                UploadedImageDto(
+                    filename = uploadedImage.storedFilename,
+                    imageType = ImageType.PRIVATE,
+                    uuid = uploadedImage.uuid,
+                    originalFilename = uploadedImage.originalFilename,
+                    contentType = uploadedImage.contentType,
+                    fileSize = uploadedImage.fileSize,
+                    uploadedAt = uploadedImage.uploadedAt,
+                )
+            }
+
+    // Generated Image Business Logic
+
+    @Transactional(readOnly = true)
+    fun getGeneratedImageByUuid(
+        uuid: UUID,
+        userId: Long?,
+    ): GeneratedImageDto {
+        val generatedImage =
+            if (userId != null) {
+                generatedImageRepository.findByUuidAndUserId(uuid, userId)
+                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found for user $userId")
+            } else {
+                generatedImageRepository.findByUuid(uuid)
+                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found")
+            }
+
+        return GeneratedImageDto(
+            filename = generatedImage.filename,
+            imageType = ImageType.GENERATED,
+            promptId = generatedImage.promptId,
+            userId = generatedImage.userId,
+            generatedAt = generatedImage.generatedAt,
+            ipAddress = generatedImage.ipAddress,
+        )
+    }
+
+    @Transactional
+    fun updateGeneratedImage(
+        uuid: UUID,
+        updateRequest: UpdateGeneratedImageRequest,
+        userId: Long?,
+    ): GeneratedImageDto {
+        val generatedImage =
+            if (userId != null) {
+                generatedImageRepository.findByUuidAndUserId(uuid, userId)
+                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found for user $userId")
+            } else {
+                generatedImageRepository.findByUuid(uuid)
+                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found")
+            }
+
+        // Update allowed fields if provided
+        updateRequest.promptId?.let { generatedImage.promptId = it }
+        updateRequest.userId?.let { generatedImage.userId = it }
+        updateRequest.ipAddress?.let { generatedImage.ipAddress = it }
+
+        try {
+            val saved = generatedImageRepository.save(generatedImage)
+
+            // Publish event
+            applicationEventPublisher.publishEvent(
+                ImageUpdatedEvent(
+                    imageId = saved.id!!,
+                    filename = saved.filename,
+                    uuid = saved.uuid,
+                    userId = saved.userId,
+                ),
+            )
+
+            return GeneratedImageDto(
+                filename = saved.filename,
+                imageType = ImageType.GENERATED,
+                promptId = saved.promptId,
+                userId = saved.userId,
+                generatedAt = saved.generatedAt,
+                ipAddress = saved.ipAddress,
+            )
+        } catch (e: Exception) {
+            throw ImageStorageException("Failed to update generated image: ${e.message}", e)
+        }
+    }
+
+    @Transactional
+    fun deleteGeneratedImage(
+        uuid: UUID,
+        userId: Long?,
+    ) {
+        val generatedImage =
+            if (userId != null) {
+                generatedImageRepository.findByUuidAndUserId(uuid, userId)
+                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found for user $userId")
+            } else {
+                generatedImageRepository.findByUuid(uuid)
+                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found")
+            }
+
+        try {
+            // Delete file from storage
+            imageStorageService.deleteImage(generatedImage.filename)
+
+            // Delete from database
+            generatedImageRepository.delete(generatedImage)
+
+            // Publish event
+            applicationEventPublisher.publishEvent(
+                ImageDeletedEvent(
+                    imageId = generatedImage.id!!,
+                    filename = generatedImage.filename,
+                    uuid = generatedImage.uuid,
+                    userId = generatedImage.userId,
+                ),
+            )
+        } catch (e: Exception) {
+            throw ImageStorageException("Failed to delete generated image: ${e.message}", e)
+        }
+    }
+
+    @Transactional(readOnly = true)
+    fun getUserGeneratedImages(userId: Long): List<GeneratedImageDto> =
+        generatedImageRepository
+            .findAllByUserIdWithUploadedImage(userId)
+            .map { generatedImage ->
+                GeneratedImageDto(
+                    filename = generatedImage.filename,
+                    imageType = ImageType.GENERATED,
+                    promptId = generatedImage.promptId,
+                    userId = generatedImage.userId,
+                    generatedAt = generatedImage.generatedAt,
+                    ipAddress = generatedImage.ipAddress,
+                )
+            }
 }

@@ -5,7 +5,6 @@ import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.ImageGenerationService
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
-import com.jotoai.voenix.shop.image.internal.service.UserImageGenerationService
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
@@ -30,7 +29,6 @@ class UserImageController(
     private val imageFacade: ImageFacade,
     private val imageAccessService: ImageAccessService,
     private val userQueryService: UserQueryService,
-    private val userImageGenerationService: UserImageGenerationService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(UserImageController::class.java)
@@ -51,7 +49,26 @@ class UserImageController(
                 n = 4,
             )
 
-        return userImageGenerationService.generateImage(imageFile, generationRequest, user.id)
+        // First upload the image to get UUID
+        val uploadedImage = imageFacade.createUploadedImage(imageFile, user.id)
+
+        // Then generate images using the uploaded image UUID
+        val generatedImageIds =
+            (1..generationRequest.n).map {
+                imageGenerationService.generateUserImage(promptId, uploadedImage.uuid, user.id)
+            }
+
+        // Create response with API URLs and parse IDs from generated filenames
+        val imageUrls =
+            generatedImageIds.map { filename ->
+                "/api/user/images/$filename"
+            }
+
+        // For now, return empty list for generated image IDs as the public API returns filenames
+        return PublicImageGenerationResponse(
+            imageUrls = imageUrls,
+            generatedImageIds = emptyList(),
+        )
     }
 
     @GetMapping("/{filename}")

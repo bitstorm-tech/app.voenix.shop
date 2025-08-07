@@ -5,6 +5,9 @@ import com.jotoai.voenix.shop.domain.openai.dto.ImageEditResponse
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptResponse
 import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
+import com.jotoai.voenix.shop.image.api.enums.ImageBackground
+import com.jotoai.voenix.shop.image.api.enums.ImageQuality
+import com.jotoai.voenix.shop.image.api.enums.ImageSize
 import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
@@ -41,18 +44,14 @@ class AdminOpenAIImageController(
             TestPromptRequest(
                 masterPrompt = masterPrompt,
                 specificPrompt = specificPrompt ?: "",
-                background =
-                    com.jotoai.voenix.shop.domain.openai.dto.enums.ImageBackground
-                        .valueOf(background.uppercase()),
-                quality =
-                    com.jotoai.voenix.shop.domain.openai.dto.enums.ImageQuality
-                        .valueOf(quality.uppercase()),
+                background = ImageBackground.valueOf(background.uppercase()),
+                quality = ImageQuality.valueOf(quality.uppercase()),
                 size =
                     when (size) {
-                        "1024x1024" -> com.jotoai.voenix.shop.domain.openai.dto.enums.ImageSize.SQUARE_1024X1024
-                        "1536x1024" -> com.jotoai.voenix.shop.domain.openai.dto.enums.ImageSize.LANDSCAPE_1536X1024
-                        "1024x1536" -> com.jotoai.voenix.shop.domain.openai.dto.enums.ImageSize.PORTRAIT_1024X1536
-                        else -> com.jotoai.voenix.shop.domain.openai.dto.enums.ImageSize.SQUARE_1024X1024
+                        "1024x1024" -> ImageSize.SQUARE_1024X1024
+                        "1536x1024" -> ImageSize.LANDSCAPE_1536X1024
+                        "1024x1536" -> ImageSize.PORTRAIT_1024X1536
+                        else -> ImageSize.SQUARE_1024X1024
                     },
             ),
         )

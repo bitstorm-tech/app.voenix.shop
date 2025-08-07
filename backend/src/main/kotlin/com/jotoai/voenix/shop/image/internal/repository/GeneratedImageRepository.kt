@@ -49,4 +49,12 @@ interface GeneratedImageRepository : JpaRepository<GeneratedImage, Long> {
         uuid: UUID,
         userId: Long,
     ): GeneratedImage?
+
+    /**
+     * Check if a generated image exists by ID and user ID
+     */
+    fun existsByIdAndUserId(
+        id: Long,
+        userId: Long,
+    ): Boolean
 }

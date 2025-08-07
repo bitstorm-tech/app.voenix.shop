@@ -18,7 +18,7 @@ import com.jotoai.voenix.shop.domain.cart.exception.CartNotFoundException
 import com.jotoai.voenix.shop.domain.cart.exception.CartOperationException
 import com.jotoai.voenix.shop.domain.cart.repository.CartRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptRepository
-import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
 import org.springframework.dao.OptimisticLockingFailureException
@@ -33,7 +33,7 @@ class CartService(
     private val userQueryService: UserQueryService,
     private val articleRepository: ArticleRepository,
     private val mugVariantRepository: MugArticleVariantRepository,
-    private val generatedImageRepository: GeneratedImageRepository,
+    private val imageQueryService: ImageQueryService,
     private val promptRepository: PromptRepository,
     private val cartAssembler: CartAssembler,
 ) {
@@ -101,13 +101,12 @@ class CartService(
         // Get current price from cost calculation
         val currentPrice = getCurrentPrice(article)
 
-        // Validate and fetch related entities if provided
-        val generatedImage =
-            request.generatedImageId?.let { imageId ->
-                generatedImageRepository
-                    .findById(imageId)
-                    .orElseThrow { ResourceNotFoundException("Generated image not found with id: $imageId") }
+        // Validate related entities if provided
+        request.generatedImageId?.let { imageId ->
+            if (!imageQueryService.existsGeneratedImageById(imageId)) {
+                throw ResourceNotFoundException("Generated image not found with id: $imageId")
             }
+        }
 
         val prompt =
             request.promptId?.let { promptId ->
@@ -128,7 +127,7 @@ class CartService(
                 priceAtTime = currentPrice,
                 originalPrice = currentPrice,
                 customData = request.customData,
-                generatedImage = generatedImage,
+                generatedImageId = request.generatedImageId,
                 prompt = prompt,
             )
 
@@ -183,11 +182,10 @@ class CartService(
 
         // Update FK fields directly
         request.generatedImageId?.let { imageId ->
-            val generatedImage =
-                generatedImageRepository
-                    .findById(imageId)
-                    .orElseThrow { ResourceNotFoundException("Generated image not found with id: $imageId") }
-            cartItem.generatedImage = generatedImage
+            if (!imageQueryService.existsGeneratedImageById(imageId)) {
+                throw ResourceNotFoundException("Generated image not found with id: $imageId")
+            }
+            cartItem.generatedImageId = imageId
         }
 
         request.promptId?.let { promptId ->

@@ -10,7 +10,7 @@ import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
 import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
 import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
-import com.jotoai.voenix.shop.image.internal.service.ImageService
+import com.jotoai.voenix.shop.image.api.ImageStorageService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -27,7 +27,7 @@ import java.util.Optional
 class MugVariantServiceTest {
     private lateinit var articleRepository: ArticleRepository
     private lateinit var mugVariantRepository: MugArticleVariantRepository
-    private lateinit var imageService: ImageService
+    private lateinit var imageStorageService: ImageStorageService
     private lateinit var mugArticleVariantAssembler: MugArticleVariantAssembler
     private lateinit var mugVariantService: MugVariantService
 
@@ -38,9 +38,9 @@ class MugVariantServiceTest {
     fun setUp() {
         articleRepository = mock(ArticleRepository::class.java)
         mugVariantRepository = mock(MugArticleVariantRepository::class.java)
-        imageService = mock(ImageService::class.java)
+        imageStorageService = mock(ImageStorageService::class.java)
         mugArticleVariantAssembler = mock(MugArticleVariantAssembler::class.java)
-        mugVariantService = MugVariantService(articleRepository, mugVariantRepository, imageService, mugArticleVariantAssembler)
+        mugVariantService = MugVariantService(articleRepository, mugVariantRepository, imageStorageService, mugArticleVariantAssembler)
 
         // Setup test data
         testCategory =

@@ -5,9 +5,8 @@ import com.jotoai.voenix.shop.domain.openai.dto.ImageEditBytesResponse
 import com.jotoai.voenix.shop.domain.openai.dto.ImageEditResponse
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptResponse
-import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
+import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.internal.service.ImageService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -20,7 +19,7 @@ import java.io.InputStream
  */
 @Service
 class OpenAIImageService(
-    private val imageService: ImageService,
+    private val imageStorageService: ImageStorageService,
     private val imageGenerationStrategy: ImageGenerationStrategy,
 ) {
     companion object {
@@ -63,13 +62,7 @@ class OpenAIImageService(
                             "image/png",
                             imageBytes,
                         )
-                    val savedImage =
-                        imageService.store(
-                            multipartFile,
-                            CreateImageRequest(imageType = ImageType.PRIVATE),
-                        )
-
-                    savedImage.filename
+                    imageStorageService.storeFile(multipartFile, ImageType.PRIVATE)
                 }
 
             return ImageEditResponse(imageFilenames = savedImageFilenames)

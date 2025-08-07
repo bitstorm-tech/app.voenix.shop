@@ -31,8 +31,8 @@ class CartAssembler(
 
     fun toItemDto(entity: CartItem): CartItemDto {
         // Use FK fields directly
-        val generatedImageId = entity.generatedImage?.id
-        val generatedImageFilename = entity.generatedImage?.filename
+        val generatedImageId = entity.generatedImageId
+        val generatedImageFilename: String? = null // TODO: Get from image service if needed
         val promptId = entity.prompt?.id
 
         return CartItemDto(

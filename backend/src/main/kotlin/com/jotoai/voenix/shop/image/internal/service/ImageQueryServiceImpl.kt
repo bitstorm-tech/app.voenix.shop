@@ -51,4 +51,11 @@ class ImageQueryServiceImpl(
         uuid: UUID,
         userId: Long,
     ): Boolean = uploadedImageRepository.findByUserIdAndUuid(userId, uuid) != null
+
+    override fun existsGeneratedImageById(id: Long): Boolean = generatedImageRepository.existsById(id)
+
+    override fun existsGeneratedImageByIdAndUserId(
+        id: Long,
+        userId: Long,
+    ): Boolean = generatedImageRepository.existsByIdAndUserId(id, userId)
 }

@@ -3,7 +3,6 @@ package com.jotoai.voenix.shop.domain.cart.entity
 import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
 import com.jotoai.voenix.shop.domain.prompts.entity.Prompt
-import com.jotoai.voenix.shop.image.internal.domain.GeneratedImage
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -43,9 +42,8 @@ class CartItem(
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "custom_data", nullable = false, columnDefinition = "jsonb")
     var customData: Map<String, Any> = emptyMap(), // Only for crop data and similar non-FK fields
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "generated_image_id", nullable = true)
-    var generatedImage: GeneratedImage? = null,
+    @Column(name = "generated_image_id", nullable = true)
+    var generatedImageId: Long? = null,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prompt_id", nullable = true)
     var prompt: Prompt? = null,

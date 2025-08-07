@@ -7,20 +7,25 @@ import org.springframework.stereotype.Service
 import java.util.UUID
 
 /**
- * Implementation of ImageGenerationService that delegates to existing generation services.
+ * Implementation of ImageGenerationService that delegates to the ImageGenerationOrchestrator.
+ * This facade provides a clean API for image generation while the orchestrator handles
+ * the coordination between different generation services.
  */
 @Service
 class ImageGenerationServiceImpl(
-    private val publicImageGenerationService: PublicImageGenerationService,
-    private val userImageGenerationService: UserImageGenerationService,
+    private val imageGenerationOrchestrator: ImageGenerationOrchestrator,
 ) : ImageGenerationService {
     override fun generatePublicImage(
         request: PublicImageGenerationRequest,
         ipAddress: String,
     ): PublicImageGenerationResponse {
-        // PublicImageGenerationService doesn't take IP address separately
-        // We need to rework this call
-        throw UnsupportedOperationException("Need to implement generateImage call")
+        // This method has a design limitation - it doesn't have access to the MultipartFile
+        // that the underlying generation services require. This is a known API limitation.
+        throw UnsupportedOperationException(
+            "This method cannot be implemented without the image file parameter. " +
+                "Use the controller endpoints which handle MultipartFile directly, or " +
+                "extend the API interface to include the image file parameter.",
+        )
     }
 
     override fun generateUserImage(
@@ -28,17 +33,32 @@ class ImageGenerationServiceImpl(
         uploadedImageUuid: UUID?,
         userId: Long,
     ): String {
-        // UserImageGenerationService uses different method signature
-        throw UnsupportedOperationException("Need to implement generateImage call")
+        // This method has design limitations:
+        // 1. It can only return a single filename but generation typically produces multiple images
+        // 2. The current API design doesn't align well with the multi-image generation capability
+
+        requireNotNull(uploadedImageUuid) { "Uploaded image UUID is required for user image generation" }
+
+        try {
+            // Delegate to orchestrator for UUID-based generation
+            val response =
+                imageGenerationOrchestrator.generateUserImageFromUpload(
+                    promptId = promptId,
+                    uploadedImageUuid = uploadedImageUuid,
+                    userId = userId,
+                )
+
+            // Return the first generated image filename
+            // Note: This is a design limitation - we can only return one filename
+            return response.imageUrls.firstOrNull()?.substringAfterLast("/")
+                ?: throw RuntimeException("No images were generated")
+        } catch (e: Exception) {
+            throw RuntimeException("Failed to generate user image: ${e.message}", e)
+        }
     }
 
     override fun isRateLimited(
         userId: Long?,
         ipAddress: String?,
-    ): Boolean =
-        when {
-            userId != null -> false // TODO: implement rate limiting check
-            ipAddress != null -> false // TODO: implement rate limiting check
-            else -> true
-        }
+    ): Boolean = imageGenerationOrchestrator.isRateLimited(userId, ipAddress)
 }

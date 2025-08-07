@@ -36,4 +36,17 @@ interface ImageQueryService {
         uuid: UUID,
         userId: Long,
     ): Boolean
+
+    /**
+     * Checks if a generated image exists by its Long ID.
+     */
+    fun existsGeneratedImageById(id: Long): Boolean
+
+    /**
+     * Checks if a generated image exists by its Long ID and belongs to the specified user.
+     */
+    fun existsGeneratedImageByIdAndUserId(
+        id: Long,
+        userId: Long,
+    ): Boolean
 }

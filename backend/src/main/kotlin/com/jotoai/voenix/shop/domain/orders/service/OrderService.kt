@@ -99,8 +99,8 @@ class OrderService(
                     quantity = cartItem.quantity,
                     pricePerItem = cartItem.priceAtTime,
                     totalPrice = cartItem.getTotalPrice(),
-                    generatedImageId = cartItem.generatedImage?.id,
-                    generatedImageFilename = cartItem.generatedImage?.filename,
+                    generatedImageId = cartItem.generatedImageId,
+                    generatedImageFilename = null, // TODO: Get from image service if needed
                     prompt = cartItem.prompt,
                     customData = cartItem.customData,
                 )

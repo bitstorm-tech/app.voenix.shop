@@ -5,7 +5,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
 import com.jotoai.voenix.shop.common.exception.PdfGenerationException
 import com.jotoai.voenix.shop.domain.articles.service.ArticleService
-import com.jotoai.voenix.shop.image.internal.service.ImageService
+import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.pdf.api.PdfFacade
 import com.jotoai.voenix.shop.pdf.api.PdfQueryService
 import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
@@ -41,7 +41,7 @@ class PdfServiceImpl(
     @param:Value("\${pdf.margin}") private val marginMm: Float,
     @param:Value("\${app.base-url}") private val appBaseUrl: String,
     private val articleService: ArticleService,
-    private val imageService: ImageService,
+    private val storagePathService: StoragePathService,
     private val pdfQrProperties: PdfQrProperties,
     private val eventPublisher: ApplicationEventPublisher,
 ) : PdfFacade,
@@ -93,10 +93,14 @@ class PdfServiceImpl(
                 article.mugDetails
                     ?: throw IllegalArgumentException("Article ${request.articleId} is not a mug or has no mug details")
 
-            // Load image data using the filename
-            val (imageData, _) =
+            // Load image data using the filename and StoragePathService
+            val imageData =
                 try {
-                    imageService.getImageData(request.imageFilename)
+                    val imageType =
+                        storagePathService.findImageTypeByFilename(request.imageFilename)
+                            ?: throw PdfGenerationException("Could not determine image type for filename: ${request.imageFilename}")
+                    val imagePath = storagePathService.getPhysicalFilePath(imageType, request.imageFilename)
+                    imagePath.toFile().readBytes()
                 } catch (e: Exception) {
                     throw PdfGenerationException("Failed to load image data for filename: ${request.imageFilename}", e)
                 }

@@ -12,8 +12,8 @@ import com.jotoai.voenix.shop.domain.prompts.repository.PromptCategoryRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptSlotVariantRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptSubCategoryRepository
+import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.internal.service.ImageService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -25,7 +25,7 @@ class PromptService(
     private val promptCategoryRepository: PromptCategoryRepository,
     private val promptSubCategoryRepository: PromptSubCategoryRepository,
     private val promptSlotVariantRepository: PromptSlotVariantRepository,
-    private val imageService: ImageService,
+    private val imageStorageService: ImageStorageService,
     private val promptAssembler: PromptAssembler,
 ) {
     companion object {
@@ -119,7 +119,7 @@ class PromptService(
             if (oldFilename != null && oldFilename != newFilename) {
                 // Delete old image if filename changed
                 try {
-                    imageService.delete(oldFilename, ImageType.PROMPT_EXAMPLE)
+                    imageStorageService.deleteFile(oldFilename, ImageType.PROMPT_EXAMPLE)
                 } catch (e: Exception) {
                     logger.warn("Failed to delete old prompt example image: $oldFilename", e)
                 }
@@ -155,7 +155,7 @@ class PromptService(
         // Delete associated image if exists
         prompt.exampleImageFilename?.let { filename ->
             try {
-                imageService.delete(filename, ImageType.PROMPT_EXAMPLE)
+                imageStorageService.deleteFile(filename, ImageType.PROMPT_EXAMPLE)
             } catch (e: Exception) {
                 logger.warn("Failed to delete prompt example image during prompt deletion: $filename", e)
             }

@@ -9,8 +9,8 @@ import com.jotoai.voenix.shop.domain.prompts.dto.UpdatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.domain.prompts.entity.PromptSlotVariant
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptSlotTypeRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptSlotVariantRepository
+import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.internal.service.ImageService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional
 class PromptSlotVariantService(
     private val promptSlotVariantRepository: PromptSlotVariantRepository,
     private val promptSlotTypeRepository: PromptSlotTypeRepository,
-    private val imageService: ImageService,
+    private val imageStorageService: ImageStorageService,
     private val promptSlotVariantAssembler: PromptSlotVariantAssembler,
 ) {
     fun getAllSlotVariants(): List<PromptSlotVariantDto> =
@@ -102,7 +102,7 @@ class PromptSlotVariantService(
             if (oldFilename != null && oldFilename != newFilename) {
                 // Delete old image if filename changed
                 try {
-                    imageService.delete(oldFilename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+                    imageStorageService.deleteFile(oldFilename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
                 } catch (_: Exception) {
                     // Log but don't fail if old image doesn't exist
                 }
@@ -128,7 +128,7 @@ class PromptSlotVariantService(
         // Delete associated image if exists
         promptSlotVariant.exampleImageFilename?.let { filename ->
             try {
-                imageService.delete(filename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+                imageStorageService.deleteFile(filename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
             } catch (_: Exception) {
                 // Log but don't fail if image doesn't exist
             }
