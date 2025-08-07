@@ -10,8 +10,6 @@ import com.jotoai.voenix.shop.country.events.CountryUpdatedEvent
 import com.jotoai.voenix.shop.country.internal.entity.Country
 import com.jotoai.voenix.shop.country.internal.repository.CountryRepository
 import com.jotoai.voenix.shop.country.internal.service.CountryServiceImpl
-import java.time.OffsetDateTime
-import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -19,6 +17,8 @@ import org.junit.jupiter.api.assertNotNull
 import org.junit.jupiter.api.assertThrows
 import org.mockito.kotlin.*
 import org.springframework.context.ApplicationEventPublisher
+import java.time.OffsetDateTime
+import java.util.*
 
 class CountryServiceImplTest {
     private lateinit var countryRepository: CountryRepository
@@ -156,20 +156,22 @@ class CountryServiceImplTest {
         // Then
         assertEquals("Updated Country", result.name)
         verify(countryRepository).save(any())
-        
-        val oldDto = CountryDto(
-            id = existingCountry.id!!,
-            name = existingCountry.name,
-            createdAt = existingCountry.createdAt,
-            updatedAt = existingCountry.updatedAt
-        )
-        val newDto = CountryDto(
-            id = updatedCountry.id!!,
-            name = updatedCountry.name,
-            createdAt = updatedCountry.createdAt,
-            updatedAt = updatedCountry.updatedAt
-        )
-        
+
+        val oldDto =
+            CountryDto(
+                id = existingCountry.id!!,
+                name = existingCountry.name,
+                createdAt = existingCountry.createdAt,
+                updatedAt = existingCountry.updatedAt,
+            )
+        val newDto =
+            CountryDto(
+                id = updatedCountry.id!!,
+                name = updatedCountry.name,
+                createdAt = updatedCountry.createdAt,
+                updatedAt = updatedCountry.updatedAt,
+            )
+
         verify(eventPublisher).publishEvent(
             argThat<CountryUpdatedEvent> {
                 oldCountry.id == oldDto.id && newCountry.name == "Updated Country"

@@ -5,8 +5,12 @@ import com.jotoai.voenix.shop.auth.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.entity.Role
 import com.jotoai.voenix.shop.auth.repository.RoleRepository
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.users.entity.User
-import com.jotoai.voenix.shop.domain.users.repository.UserRepository
+import com.jotoai.voenix.shop.user.api.UserFacade
+import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
+import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
+import com.jotoai.voenix.shop.user.internal.entity.User
+import com.jotoai.voenix.shop.user.internal.repository.UserRepository
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.AuthenticationManager
@@ -19,7 +23,9 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class UserRegistrationService(
-    private val userRepository: UserRepository,
+    private val userRepository: UserRepository, // Direct access for role assignment
+    private val userFacade: UserFacade,
+    private val userQueryService: UserQueryService,
     private val roleRepository: RoleRepository,
     private val passwordEncoder: PasswordEncoder,
     private val authenticationManager: AuthenticationManager,
@@ -37,17 +43,26 @@ class UserRegistrationService(
         phoneNumber: String? = null,
         roleNames: Set<String> = setOf("USER"),
     ): User {
-        val roles = findRolesByNames(roleNames)
-
-        val user =
-            User(
-                email = email,
-                password = password?.let { passwordEncoder.encode(it) },
-                firstName = firstName,
-                lastName = lastName,
-                phoneNumber = phoneNumber,
-                roles = roles,
+        // Create user via facade
+        val userDto =
+            userFacade.createUser(
+                CreateUserRequest(
+                    email = email,
+                    firstName = firstName,
+                    lastName = lastName,
+                    phoneNumber = phoneNumber,
+                    password = password?.let { passwordEncoder.encode(it) },
+                ),
             )
+
+        // Get the entity and assign roles (this requires direct repository access)
+        val user =
+            userRepository.findById(userDto.id).orElseThrow {
+                ResourceNotFoundException("User", "id", userDto.id)
+            }
+
+        val roles = findRolesByNames(roleNames)
+        user.roles = roles
 
         return userRepository.save(user)
     }
@@ -62,11 +77,20 @@ class UserRegistrationService(
         lastName: String? = null,
         phoneNumber: String? = null,
     ): User {
-        firstName?.let { user.firstName = it }
-        lastName?.let { user.lastName = it }
-        phoneNumber?.let { user.phoneNumber = it }
+        // Update via facade
+        userFacade.updateUser(
+            user.id!!,
+            UpdateUserRequest(
+                firstName = firstName,
+                lastName = lastName,
+                phoneNumber = phoneNumber,
+            ),
+        )
 
-        return userRepository.save(user)
+        // Return updated entity (refresh from database)
+        return userRepository.findById(user.id!!).orElseThrow {
+            ResourceNotFoundException("User", "id", user.id!!)
+        }
     }
 
     /**
@@ -128,6 +152,7 @@ class UserRegistrationService(
 
         // Get user details and create session
         val userDetails = authentication.principal as CustomUserDetails
+        val userDto = userQueryService.getUserById(userDetails.id)
         val user =
             userRepository.findById(userDetails.id).orElseThrow {
                 ResourceNotFoundException("User", "id", userDetails.id.toString())
@@ -135,7 +160,7 @@ class UserRegistrationService(
         val session = request.getSession(true)
 
         return LoginResponse(
-            user = user.toDto(),
+            user = userDto,
             sessionId = session.id,
             roles = user.roles.map { it.name },
         )
@@ -144,11 +169,11 @@ class UserRegistrationService(
     /**
      * Finds roles by their names
      */
-    private fun findRolesByNames(roleNames: Set<String>): Set<Role> =
+    private fun findRolesByNames(roleNames: Set<String>): MutableSet<Role> =
         roleNames
             .map { roleName ->
                 roleRepository.findByName(roleName).orElseThrow {
                     ResourceNotFoundException("Role", "name", roleName)
                 }
-            }.toSet()
+            }.toMutableSet()
 }

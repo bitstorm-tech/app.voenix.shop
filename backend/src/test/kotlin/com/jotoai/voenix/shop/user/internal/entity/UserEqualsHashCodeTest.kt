@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.users.entity
+package com.jotoai.voenix.shop.user.internal.entity
 
 import com.jotoai.voenix.shop.auth.entity.Role
 import org.assertj.core.api.Assertions.assertThat

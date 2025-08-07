@@ -13,8 +13,8 @@ import com.jotoai.voenix.shop.domain.orders.entity.Order
 import com.jotoai.voenix.shop.domain.orders.entity.OrderItem
 import com.jotoai.voenix.shop.domain.orders.enums.OrderStatus
 import com.jotoai.voenix.shop.domain.orders.repository.OrderRepository
-import com.jotoai.voenix.shop.domain.users.entity.User
-import com.jotoai.voenix.shop.domain.users.repository.UserRepository
+import com.jotoai.voenix.shop.user.internal.entity.User
+import com.jotoai.voenix.shop.user.internal.repository.UserRepository
 import jakarta.persistence.EntityManager
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Pageable

@@ -5,7 +5,7 @@ import com.jotoai.voenix.shop.domain.images.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.domain.images.service.ImageAccessService
 import com.jotoai.voenix.shop.domain.images.service.ImageService
 import com.jotoai.voenix.shop.domain.images.service.UserImageGenerationService
-import com.jotoai.voenix.shop.domain.users.service.UserService
+import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -29,7 +29,7 @@ class UserImageController(
     private val userImageGenerationService: UserImageGenerationService,
     private val imageService: ImageService,
     private val imageAccessService: ImageAccessService,
-    private val userService: UserService,
+    private val userQueryService: UserQueryService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(UserImageController::class.java)
@@ -41,7 +41,7 @@ class UserImageController(
         @RequestParam("promptId") promptId: Long,
         @AuthenticationPrincipal userDetails: UserDetails,
     ): PublicImageGenerationResponse {
-        val user = userService.getUserByEmail(userDetails.username)
+        val user = userQueryService.getUserByEmail(userDetails.username)
         logger.info("Received authenticated image generation request from user ${user.id} for prompt ID: $promptId")
 
         val generationRequest =
@@ -58,7 +58,7 @@ class UserImageController(
         @PathVariable filename: String,
         @AuthenticationPrincipal userDetails: UserDetails,
     ): ResponseEntity<ByteArray> {
-        val user = userService.getUserByEmail(userDetails.username)
+        val user = userQueryService.getUserByEmail(userDetails.username)
         logger.info("User ${user.id} retrieving image: $filename")
 
         // Validate access and get image data with proper security checks

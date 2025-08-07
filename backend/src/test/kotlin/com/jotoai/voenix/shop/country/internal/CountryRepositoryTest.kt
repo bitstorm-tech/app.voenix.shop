@@ -35,7 +35,7 @@ class CountryRepositoryTest {
         // Given
         val country =
             Country(
-                name = "Germany"
+                name = "Germany",
             )
 
         // When
@@ -57,15 +57,15 @@ class CountryRepositoryTest {
         // Given
         val country1 =
             Country(
-                name = "Germany"
+                name = "Germany",
             )
         val country2 =
             Country(
-                name = "France"
+                name = "France",
             )
         val country3 =
             Country(
-                name = "Italy"
+                name = "Italy",
             )
 
         countryRepository.save(country1)
@@ -90,7 +90,7 @@ class CountryRepositoryTest {
         // Given
         val country =
             Country(
-                name = "Germany"
+                name = "Germany",
             )
         val savedCountry = countryRepository.save(country)
         testEntityManager.flush()
@@ -116,7 +116,7 @@ class CountryRepositoryTest {
         // Given
         val country =
             Country(
-                name = "Germany"
+                name = "Germany",
             )
         val savedCountry = countryRepository.save(country)
         testEntityManager.flush()

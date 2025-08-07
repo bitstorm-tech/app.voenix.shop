@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.domain.images.entity
 
-import com.jotoai.voenix.shop.domain.users.entity.User
+import com.jotoai.voenix.shop.user.internal.entity.User
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType

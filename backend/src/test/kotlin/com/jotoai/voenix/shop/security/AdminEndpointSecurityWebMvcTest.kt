@@ -8,7 +8,8 @@ import com.jotoai.voenix.shop.domain.articles.service.ArticleService
 import com.jotoai.voenix.shop.domain.images.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.domain.images.service.StoragePathService
 import com.jotoai.voenix.shop.domain.prompts.service.PromptService
-import com.jotoai.voenix.shop.domain.users.service.UserService
+import com.jotoai.voenix.shop.user.api.UserFacade
+import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,7 +36,10 @@ class AdminEndpointSecurityWebMvcTest {
     private lateinit var mockMvc: MockMvc
 
     @MockitoBean
-    private lateinit var userService: UserService
+    private lateinit var userFacade: UserFacade
+
+    @MockitoBean
+    private lateinit var userQueryService: UserQueryService
 
     @MockitoBean
     private lateinit var promptService: PromptService
@@ -86,7 +90,7 @@ class AdminEndpointSecurityWebMvcTest {
     @WithMockUser(username = "admin@test.com", roles = ["ADMIN"])
     fun testAdminEndpointsAccessibleWithAdminRole() {
         // Mock service responses
-        `when`(userService.getAllUsers()).thenReturn(emptyList())
+        `when`(userQueryService.getAllUsers()).thenReturn(emptyList())
         `when`(promptService.getAllPrompts()).thenReturn(emptyList())
         `when`(articleService.findAll(0, 20, null, null, null, null)).thenReturn(
             com.jotoai.voenix.shop.common.dto.PaginatedResponse(

@@ -6,7 +6,7 @@ import com.jotoai.voenix.shop.domain.images.entity.GeneratedImage
 import com.jotoai.voenix.shop.domain.images.entity.UploadedImage
 import com.jotoai.voenix.shop.domain.images.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.domain.images.repository.UploadedImageRepository
-import com.jotoai.voenix.shop.domain.users.entity.User
+import com.jotoai.voenix.shop.user.internal.entity.User
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

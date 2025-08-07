@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.domain.orders.entity
 
 import com.jotoai.voenix.shop.domain.cart.entity.Cart
 import com.jotoai.voenix.shop.domain.orders.enums.OrderStatus
-import com.jotoai.voenix.shop.domain.users.entity.User
+import com.jotoai.voenix.shop.user.internal.entity.User
 import jakarta.persistence.AttributeOverride
 import jakarta.persistence.AttributeOverrides
 import jakarta.persistence.CascadeType

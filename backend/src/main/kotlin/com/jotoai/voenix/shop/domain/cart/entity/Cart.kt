@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.domain.cart.entity
 
 import com.jotoai.voenix.shop.domain.cart.enums.CartStatus
-import com.jotoai.voenix.shop.domain.users.entity.User
+import com.jotoai.voenix.shop.user.internal.entity.User
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

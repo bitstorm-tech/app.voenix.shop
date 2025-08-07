@@ -2,9 +2,10 @@ package com.jotoai.voenix.shop.api.user
 
 import com.jotoai.voenix.shop.auth.dto.SessionInfo
 import com.jotoai.voenix.shop.auth.service.AuthService
-import com.jotoai.voenix.shop.domain.users.dto.UpdateUserRequest
-import com.jotoai.voenix.shop.domain.users.dto.UserDto
-import com.jotoai.voenix.shop.domain.users.service.UserService
+import com.jotoai.voenix.shop.user.api.UserFacade
+import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
+import com.jotoai.voenix.shop.user.api.dto.UserDto
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.security.access.prepost.PreAuthorize
@@ -23,20 +24,21 @@ import org.springframework.web.bind.annotation.RestController
 @PreAuthorize("hasRole('USER')")
 class UserAuthController(
     private val authService: AuthService,
-    private val userService: UserService,
+    private val userFacade: UserFacade,
+    private val userQueryService: UserQueryService,
 ) {
     @GetMapping("/profile")
     fun getCurrentUserProfile(
         @AuthenticationPrincipal userDetails: UserDetails,
-    ): UserDto = userService.getUserByEmail(userDetails.username)
+    ): UserDto = userQueryService.getUserByEmail(userDetails.username)
 
     @PutMapping("/profile")
     fun updateCurrentUserProfile(
         @AuthenticationPrincipal userDetails: UserDetails,
         @Valid @RequestBody updateUserRequest: UpdateUserRequest,
     ): UserDto {
-        val currentUser = userService.getUserByEmail(userDetails.username)
-        return userService.updateUser(currentUser.id, updateUserRequest)
+        val currentUser = userQueryService.getUserByEmail(userDetails.username)
+        return userFacade.updateUser(currentUser.id, updateUserRequest)
     }
 
     @GetMapping("/session")
@@ -52,8 +54,8 @@ class UserAuthController(
         @AuthenticationPrincipal userDetails: UserDetails,
         request: HttpServletRequest,
     ) {
-        val currentUser = userService.getUserByEmail(userDetails.username)
-        userService.deleteUser(currentUser.id)
+        val currentUser = userQueryService.getUserByEmail(userDetails.username)
+        userFacade.deleteUser(currentUser.id)
         authService.logout(request)
     }
 }

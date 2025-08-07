@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.domain.users.repository
+package com.jotoai.voenix.shop.user.internal.repository
 
-import com.jotoai.voenix.shop.domain.users.entity.User
+import com.jotoai.voenix.shop.user.internal.entity.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.util.Optional

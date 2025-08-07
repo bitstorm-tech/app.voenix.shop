@@ -19,8 +19,8 @@ import com.jotoai.voenix.shop.domain.cart.exception.CartOperationException
 import com.jotoai.voenix.shop.domain.cart.repository.CartRepository
 import com.jotoai.voenix.shop.domain.images.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.domain.prompts.repository.PromptRepository
-import com.jotoai.voenix.shop.domain.users.entity.User
-import com.jotoai.voenix.shop.domain.users.repository.UserRepository
+import com.jotoai.voenix.shop.user.internal.entity.User
+import com.jotoai.voenix.shop.user.internal.repository.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.orm.ObjectOptimisticLockingFailureException

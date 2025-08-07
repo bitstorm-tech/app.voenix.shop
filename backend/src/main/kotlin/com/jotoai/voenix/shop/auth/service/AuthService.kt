@@ -7,7 +7,8 @@ import com.jotoai.voenix.shop.auth.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.dto.SessionInfo
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.domain.users.repository.UserRepository
+import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.internal.repository.UserRepository
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.AuthenticationManager
@@ -22,7 +23,8 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class AuthService(
     private val authenticationManager: AuthenticationManager,
-    private val userRepository: UserRepository,
+    private val userRepository: UserRepository, // Keep for role access
+    private val userQueryService: UserQueryService,
     private val securityContextRepository: SecurityContextRepository,
     private val userRegistrationService: UserRegistrationService,
 ) {
@@ -49,6 +51,7 @@ class AuthService(
             securityContextRepository.saveContext(context, request, response)
 
             val userDetails = authentication.principal as CustomUserDetails
+            val userDto = userQueryService.getUserById(userDetails.id)
             val user =
                 userRepository.findById(userDetails.id).orElseThrow {
                     UsernameNotFoundException("User not found with ID: ${userDetails.id}")
@@ -56,7 +59,7 @@ class AuthService(
             val session = request.getSession(true)
 
             return LoginResponse(
-                user = user.toDto(),
+                user = userDto,
                 sessionId = session.id,
                 roles = user.roles.map { it.name },
             )
@@ -81,14 +84,19 @@ class AuthService(
 
         return when (val principal = authentication.principal) {
             is CustomUserDetails -> {
-                val user = userRepository.findById(principal.id).orElse(null)
-                if (user != null) {
-                    SessionInfo(
-                        authenticated = true,
-                        user = user.toDto(),
-                        roles = user.roles.map { it.name },
-                    )
-                } else {
+                try {
+                    val userDto = userQueryService.getUserById(principal.id)
+                    val user = userRepository.findById(principal.id).orElse(null)
+                    if (user != null) {
+                        SessionInfo(
+                            authenticated = true,
+                            user = userDto,
+                            roles = user.roles.map { it.name },
+                        )
+                    } else {
+                        SessionInfo(authenticated = false)
+                    }
+                } catch (e: Exception) {
                     SessionInfo(authenticated = false)
                 }
             }
@@ -102,7 +110,7 @@ class AuthService(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ): LoginResponse {
-        if (userRepository.existsByEmail(registerRequest.email)) {
+        if (userQueryService.existsByEmail(registerRequest.email)) {
             throw ResourceAlreadyExistsException("User", "email", registerRequest.email)
         }
         userRegistrationService.createUser(

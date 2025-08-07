@@ -5,7 +5,7 @@ import com.jotoai.voenix.shop.domain.cart.dto.CartDto
 import com.jotoai.voenix.shop.domain.cart.dto.CartSummaryDto
 import com.jotoai.voenix.shop.domain.cart.dto.UpdateCartItemRequest
 import com.jotoai.voenix.shop.domain.cart.service.CartService
-import com.jotoai.voenix.shop.domain.users.service.UserService
+import com.jotoai.voenix.shop.user.api.UserQueryService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 @PreAuthorize("hasRole('USER')")
 class CartController(
     private val cartService: CartService,
-    private val userService: UserService,
+    private val userQueryService: UserQueryService,
 ) {
     /**
      * Gets the current user's active cart
@@ -112,7 +112,7 @@ class CartController(
     }
 
     private fun getCurrentUserId(userDetails: UserDetails): Long {
-        val user = userService.getUserByEmail(userDetails.username)
+        val user = userQueryService.getUserByEmail(userDetails.username)
         return user.id
     }
 }

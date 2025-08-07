@@ -9,8 +9,8 @@ import com.jotoai.voenix.shop.auth.service.UserRegistrationService
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.domain.images.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.domain.images.service.StoragePathService
-import com.jotoai.voenix.shop.domain.users.dto.UserDto
-import com.jotoai.voenix.shop.domain.users.repository.UserRepository
+import com.jotoai.voenix.shop.user.api.dto.UserDto
+import com.jotoai.voenix.shop.user.internal.repository.UserRepository
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq

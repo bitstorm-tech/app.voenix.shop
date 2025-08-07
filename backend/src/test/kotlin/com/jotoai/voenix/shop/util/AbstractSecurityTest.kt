@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.auth.dto.LoginRequest
 import com.jotoai.voenix.shop.config.TestDataConfig
 import com.jotoai.voenix.shop.config.TestSecurityConfig
-import com.jotoai.voenix.shop.domain.users.repository.UserRepository
+import com.jotoai.voenix.shop.user.internal.repository.UserRepository
 import jakarta.servlet.http.Cookie
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
