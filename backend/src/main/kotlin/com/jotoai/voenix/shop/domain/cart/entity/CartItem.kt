@@ -1,7 +1,5 @@
 package com.jotoai.voenix.shop.domain.cart.entity
 
-import com.jotoai.voenix.shop.article.internal.entity.Article
-import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -27,12 +25,10 @@ class CartItem(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cart_id", nullable = false)
     var cart: Cart,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "article_id", nullable = false)
-    var article: Article,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "variant_id", nullable = false)
-    var variant: MugArticleVariant,
+    @Column(name = "article_id", nullable = false)
+    var articleId: Long,
+    @Column(name = "variant_id", nullable = false)
+    var variantId: Long,
     @Column(name = "quantity", nullable = false)
     var quantity: Int,
     @Column(name = "price_at_time", nullable = false)

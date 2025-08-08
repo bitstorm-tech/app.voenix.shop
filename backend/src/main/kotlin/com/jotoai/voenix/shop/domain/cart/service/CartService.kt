@@ -1,10 +1,6 @@
 package com.jotoai.voenix.shop.domain.cart.service
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
-import com.jotoai.voenix.shop.article.internal.entity.Article
-import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
-import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
-import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.cart.assembler.CartAssembler
 import com.jotoai.voenix.shop.domain.cart.dto.AddToCartRequest
@@ -32,8 +28,6 @@ import java.time.OffsetDateTime
 class CartService(
     private val cartRepository: CartRepository,
     private val userQueryService: UserQueryService,
-    private val articleRepository: ArticleRepository,
-    private val mugVariantRepository: MugArticleVariantRepository,
     private val imageQueryService: ImageQueryService,
     private val promptRepository: PromptRepository,
     private val cartAssembler: CartAssembler,
@@ -87,11 +81,20 @@ class CartService(
     ): CartDto {
         // Validate user exists
         userQueryService.getUserById(userId)
-        val article = findArticleById(request.articleId)
-        val variant = findVariantById(request.variantId)
+
+        // Validate article and variant exist using ArticleQueryService
+        val articlesById = articleQueryService.getArticlesByIds(listOf(request.articleId))
+        if (request.articleId !in articlesById) {
+            throw ResourceNotFoundException("Article not found with id: ${request.articleId}")
+        }
+
+        val variantsById = articleQueryService.getMugVariantsByIds(listOf(request.variantId))
+        if (request.variantId !in variantsById) {
+            throw ResourceNotFoundException("Variant not found with id: ${request.variantId}")
+        }
 
         // Validate that the variant belongs to the article
-        if (variant.article.id != article.id) {
+        if (!articleQueryService.validateVariantBelongsToArticle(request.articleId, request.variantId)) {
             throw CartOperationException("Variant ${request.variantId} does not belong to article ${request.articleId}")
         }
 
@@ -101,7 +104,7 @@ class CartService(
                 .orElseGet { createNewCart(userId) }
 
         // Get current price from cost calculation
-        val currentPrice = getCurrentPrice(article)
+        val currentPrice = articleQueryService.getCurrentGrossPrice(request.articleId)
 
         // Validate related entities if provided
         request.generatedImageId?.let { imageId ->
@@ -123,8 +126,8 @@ class CartService(
         val cartItem =
             CartItem(
                 cart = cart,
-                article = article,
-                variant = variant,
+                articleId = request.articleId,
+                variantId = request.variantId,
                 quantity = request.quantity,
                 priceAtTime = currentPrice,
                 originalPrice = currentPrice,
@@ -282,7 +285,7 @@ class CartService(
         var pricesUpdated = false
 
         cart.items.forEach { item ->
-            val currentPrice = getCurrentPrice(item.article)
+            val currentPrice = articleQueryService.getCurrentGrossPrice(item.articleId)
             if (item.originalPrice != currentPrice) {
                 item.originalPrice = currentPrice
                 pricesUpdated = true
@@ -318,18 +321,6 @@ class CartService(
             )
         return cartRepository.save(cart)
     }
-
-    private fun findArticleById(articleId: Long): Article =
-        articleRepository
-            .findById(articleId)
-            .orElseThrow { ResourceNotFoundException("Article not found with id: $articleId") }
-
-    private fun findVariantById(variantId: Long): MugArticleVariant =
-        mugVariantRepository
-            .findById(variantId)
-            .orElseThrow { ResourceNotFoundException("Variant not found with id: $variantId") }
-
-    private fun getCurrentPrice(article: Article): Long = articleQueryService.getCurrentGrossPrice(requireNotNull(article.id))
 
     companion object {
         private const val DEFAULT_CART_EXPIRY_DAYS = 30L

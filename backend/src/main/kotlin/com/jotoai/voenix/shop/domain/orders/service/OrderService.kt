@@ -96,8 +96,8 @@ class OrderService(
             val orderItem =
                 OrderItem(
                     order = order,
-                    article = cartItem.article,
-                    variant = cartItem.variant,
+                    articleId = cartItem.articleId,
+                    variantId = cartItem.variantId,
                     quantity = cartItem.quantity,
                     pricePerItem = cartItem.priceAtTime,
                     totalPrice = cartItem.getTotalPrice(),
@@ -258,7 +258,7 @@ class OrderService(
      */
     private fun refreshCartPrices(cart: Cart) {
         cart.items.forEach { item ->
-            val currentPrice = getCurrentPrice(item.article)
+            val currentPrice = articleQueryService.getCurrentGrossPrice(item.articleId)
             if (item.priceAtTime != currentPrice) {
                 logger.warn(
                     "Price changed for cart item {}: {} -> {}",
@@ -270,12 +270,6 @@ class OrderService(
             }
         }
     }
-
-    /**
-     * Gets current price from article cost calculation
-     */
-    private fun getCurrentPrice(article: com.jotoai.voenix.shop.article.internal.entity.Article): Long =
-        articleQueryService.getCurrentGrossPrice(requireNotNull(article.id))
 
     private fun findActiveCartByUserId(userId: Long): Cart =
         cartRepository

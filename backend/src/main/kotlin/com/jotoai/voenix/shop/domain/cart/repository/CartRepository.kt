@@ -19,8 +19,6 @@ interface CartRepository : JpaRepository<Cart, Long> {
         """
         SELECT c FROM Cart c 
         LEFT JOIN FETCH c.items ci
-        LEFT JOIN FETCH ci.article a
-        LEFT JOIN FETCH ci.variant v
         WHERE c.userId = :userId AND c.status = :status
         """,
     )

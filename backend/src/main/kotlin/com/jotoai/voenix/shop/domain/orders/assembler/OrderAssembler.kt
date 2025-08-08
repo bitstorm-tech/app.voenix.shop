@@ -33,8 +33,8 @@ class OrderAssembler(
             notes = entity.notes,
             items =
                 run {
-                    val articleIds = entity.items.mapNotNull { it.article.id }.distinct()
-                    val variantIds = entity.items.mapNotNull { it.variant.id }.distinct()
+                    val articleIds = entity.items.map { it.articleId }.distinct()
+                    val variantIds = entity.items.map { it.variantId }.distinct()
                     val articlesById = articleQueryService.getArticlesByIds(articleIds)
                     val variantsById = articleQueryService.getMugVariantsByIds(variantIds)
                     entity.items.map { toItemDto(it, articlesById, variantsById) }
@@ -52,11 +52,11 @@ class OrderAssembler(
         OrderItemDto(
             id = requireNotNull(entity.id) { "OrderItem ID cannot be null when converting to DTO" },
             article =
-                articlesById[requireNotNull(entity.article.id)]
-                    ?: throw IllegalStateException("Missing ArticleDto for id: ${entity.article.id}"),
+                articlesById[entity.articleId]
+                    ?: throw IllegalStateException("Missing ArticleDto for id: ${entity.articleId}"),
             variant =
-                variantsById[requireNotNull(entity.variant.id)]
-                    ?: throw IllegalStateException("Missing MugArticleVariantDto for id: ${entity.variant.id}"),
+                variantsById[entity.variantId]
+                    ?: throw IllegalStateException("Missing MugArticleVariantDto for id: ${entity.variantId}"),
             quantity = entity.quantity,
             pricePerItem = entity.pricePerItem,
             totalPrice = entity.totalPrice,

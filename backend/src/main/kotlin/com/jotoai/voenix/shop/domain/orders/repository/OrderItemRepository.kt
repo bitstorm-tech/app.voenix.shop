@@ -15,8 +15,6 @@ interface OrderItemRepository : JpaRepository<OrderItem, UUID> {
     @Query(
         """
         SELECT oi FROM OrderItem oi
-        LEFT JOIN FETCH oi.article a
-        LEFT JOIN FETCH oi.variant v
         LEFT JOIN FETCH oi.prompt p
         WHERE oi.order.id = :orderId
         ORDER BY oi.createdAt ASC

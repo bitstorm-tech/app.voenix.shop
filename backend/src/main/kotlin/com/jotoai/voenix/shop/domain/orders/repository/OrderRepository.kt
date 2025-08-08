@@ -25,8 +25,6 @@ interface OrderRepository : JpaRepository<Order, UUID> {
         """
         SELECT o FROM Order o 
         LEFT JOIN FETCH o.items oi
-        LEFT JOIN FETCH oi.article a
-        LEFT JOIN FETCH oi.variant v
         WHERE o.userId = :userId
         ORDER BY o.createdAt DESC
         """,
@@ -43,8 +41,6 @@ interface OrderRepository : JpaRepository<Order, UUID> {
         """
         SELECT o FROM Order o 
         LEFT JOIN FETCH o.items oi
-        LEFT JOIN FETCH oi.article a
-        LEFT JOIN FETCH oi.variant v
         WHERE o.userId = :userId AND o.status = :status
         ORDER BY o.createdAt DESC
         """,
@@ -62,8 +58,6 @@ interface OrderRepository : JpaRepository<Order, UUID> {
         """
         SELECT o FROM Order o 
         LEFT JOIN FETCH o.items oi
-        LEFT JOIN FETCH oi.article a
-        LEFT JOIN FETCH oi.variant v
         LEFT JOIN FETCH oi.prompt p
         WHERE o.id = :orderId AND o.userId = :userId
         """,

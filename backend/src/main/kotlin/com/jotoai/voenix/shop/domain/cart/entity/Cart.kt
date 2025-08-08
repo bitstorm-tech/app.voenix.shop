@@ -64,8 +64,8 @@ class Cart(
     fun addOrUpdateItem(item: CartItem) {
         val existingItem =
             items.find {
-                it.article.id == item.article.id &&
-                    it.variant.id == item.variant.id &&
+                it.articleId == item.articleId &&
+                    it.variantId == item.variantId &&
                     it.customData == item.customData
             }
 

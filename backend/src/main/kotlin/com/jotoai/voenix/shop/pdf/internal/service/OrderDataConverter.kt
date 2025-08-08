@@ -26,12 +26,10 @@ class OrderDataConverter {
             id = requireNotNull(orderItem.id) { "OrderItem ID cannot be null" },
             quantity = orderItem.quantity,
             generatedImageFilename = orderItem.generatedImageFilename,
-            article = convertToArticlePdfData(orderItem.article),
-        )
-
-    private fun convertToArticlePdfData(article: com.jotoai.voenix.shop.article.internal.entity.Article): ArticlePdfData =
-        ArticlePdfData(
-            id = requireNotNull(article.id) { "Article ID cannot be null" },
-            mugDetails = null, // Will be populated by service layer as needed
+            article =
+                ArticlePdfData(
+                    id = orderItem.articleId,
+                    mugDetails = null, // Will be populated by service layer as needed
+                ),
         )
 }
