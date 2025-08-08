@@ -1,9 +1,9 @@
-package com.jotoai.voenix.shop.domain.articles.dto
+package com.jotoai.voenix.shop.article.api.dto
 
-import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
+import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import java.time.OffsetDateTime
 
-data class ArticleDto(
+data class ArticleWithDetailsDto(
     val id: Long,
     val name: String,
     val descriptionShort: String,
@@ -20,6 +20,9 @@ data class ArticleDto(
     val supplierArticleNumber: String? = null,
     val mugVariants: List<MugArticleVariantDto>? = null,
     val shirtVariants: List<ShirtArticleVariantDto>? = null,
+    val mugDetails: MugArticleDetailsDto? = null,
+    val shirtDetails: ShirtArticleDetailsDto? = null,
+    val costCalculation: CostCalculationDto? = null,
     val createdAt: OffsetDateTime? = null,
     val updatedAt: OffsetDateTime? = null,
 )

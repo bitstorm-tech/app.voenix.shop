@@ -100,7 +100,7 @@ class CostCalculation(
     var updatedAt: OffsetDateTime? = null,
 ) {
     fun toDto() =
-        com.jotoai.voenix.shop.domain.articles.dto.CostCalculationDto(
+        com.jotoai.voenix.shop.article.api.dto.CostCalculationDto(
             id = requireNotNull(this.id) { "CostCalculation ID cannot be null when converting to DTO" },
             articleId = requireNotNull(this.article.id) { "Article ID cannot be null when converting to DTO" },
             purchasePriceNet = this.purchasePriceNet,

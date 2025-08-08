@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.domain.articles.service
 
-import com.jotoai.voenix.shop.domain.articles.dto.CreateMugDetailsRequest
-import com.jotoai.voenix.shop.domain.articles.dto.MugArticleDetailsDto
-import com.jotoai.voenix.shop.domain.articles.dto.UpdateMugDetailsRequest
+import com.jotoai.voenix.shop.article.api.dto.CreateMugDetailsRequest
+import com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto
+import com.jotoai.voenix.shop.article.api.dto.UpdateMugDetailsRequest
 import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleDetails
 import com.jotoai.voenix.shop.domain.articles.repository.MugArticleDetailsRepository

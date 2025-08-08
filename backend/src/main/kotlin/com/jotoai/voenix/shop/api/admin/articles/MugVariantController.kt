@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.api.admin.articles
 
-import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
-import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
+import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
 import com.jotoai.voenix.shop.image.api.ImageFacade

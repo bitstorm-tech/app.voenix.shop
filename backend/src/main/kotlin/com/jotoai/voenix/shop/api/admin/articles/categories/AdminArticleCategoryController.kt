@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.api.admin.articles.categories
 
-import com.jotoai.voenix.shop.domain.articles.categories.dto.ArticleCategoryDto
-import com.jotoai.voenix.shop.domain.articles.categories.dto.CreateArticleCategoryRequest
-import com.jotoai.voenix.shop.domain.articles.categories.dto.UpdateArticleCategoryRequest
 import com.jotoai.voenix.shop.article.api.categories.ArticleCategoryFacade
 import com.jotoai.voenix.shop.article.api.categories.ArticleCategoryQueryService
+import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
+import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleCategoryRequest
+import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleCategoryRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize

@@ -28,6 +28,7 @@ class AdminPromptController(
 ) {
     private val writeFacade: PromptFacade
         get() = requireNotNull(promptFacade) { "PromptFacade bean is required for write operations" }
+
     @GetMapping
     fun getAllPrompts(): List<PromptDto> = promptQueryService.getAllPrompts()
 

@@ -2,13 +2,13 @@ package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.ArticleFacade
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.dto.ArticleDto
+import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
+import com.jotoai.voenix.shop.article.api.dto.CreateArticleRequest
+import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
+import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
+import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.common.dto.PaginatedResponse
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleDto
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleWithDetailsDto
-import com.jotoai.voenix.shop.domain.articles.dto.CreateArticleRequest
-import com.jotoai.voenix.shop.domain.articles.dto.PublicMugDto
-import com.jotoai.voenix.shop.domain.articles.dto.UpdateArticleRequest
-import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
 import com.jotoai.voenix.shop.domain.articles.service.ArticleService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,8 +20,8 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class ArticleApiAdapter(
     private val delegate: ArticleService,
-) : ArticleQueryService, ArticleFacade {
-
+) : ArticleQueryService,
+    ArticleFacade {
     override fun findAll(
         page: Int,
         size: Int,
@@ -29,8 +29,7 @@ class ArticleApiAdapter(
         categoryId: Long?,
         subcategoryId: Long?,
         active: Boolean?,
-    ): PaginatedResponse<ArticleDto> =
-        delegate.findAll(page, size, articleType, categoryId, subcategoryId, active)
+    ): PaginatedResponse<ArticleDto> = delegate.findAll(page, size, articleType, categoryId, subcategoryId, active)
 
     override fun findById(id: Long): ArticleWithDetailsDto = delegate.findById(id)
 

@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.api.admin.articles
 
-import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtArticleVariantRequest
-import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleVariantDto
+import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
+import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.api.variants.ShirtVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.ShirtVariantQueryService
 import com.jotoai.voenix.shop.image.api.ImageFacade

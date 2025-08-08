@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.domain.articles.assembler
 
-import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleVariantDto
+import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType

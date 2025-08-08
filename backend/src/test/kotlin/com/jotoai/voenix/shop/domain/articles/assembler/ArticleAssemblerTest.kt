@@ -1,13 +1,13 @@
 package com.jotoai.voenix.shop.domain.articles.assembler
 
+import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
+import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleSubCategory
-import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
-import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
 import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
-import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
 import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
 import org.junit.jupiter.api.Assertions.assertEquals

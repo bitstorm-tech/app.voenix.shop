@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.api.public.mugs
 
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
+import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.auth.config.SecurityConfig
-import com.jotoai.voenix.shop.domain.articles.dto.PublicMugDto
-import com.jotoai.voenix.shop.domain.articles.dto.PublicMugVariantDto
-import com.jotoai.voenix.shop.domain.articles.service.ArticleService
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import org.junit.jupiter.api.Test
@@ -22,7 +22,7 @@ class PublicMugControllerTest {
     private lateinit var mockMvc: MockMvc
 
     @MockitoBean
-    private lateinit var articleService: ArticleService
+    private lateinit var articleQueryService: ArticleQueryService
 
     @MockitoBean
     private lateinit var storagePathService: StoragePathService
@@ -91,7 +91,7 @@ class PublicMugControllerTest {
                 ),
             )
 
-        `when`(articleService.findPublicMugs()).thenReturn(mugs)
+        `when`(articleQueryService.findPublicMugs()).thenReturn(mugs)
 
         // When & Then
         mockMvc
@@ -121,7 +121,7 @@ class PublicMugControllerTest {
     @Test
     fun `should return empty list when no mugs available`() {
         // Given
-        `when`(articleService.findPublicMugs()).thenReturn(emptyList())
+        `when`(articleQueryService.findPublicMugs()).thenReturn(emptyList())
 
         // When & Then
         mockMvc

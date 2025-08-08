@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.categories.dto
+package com.jotoai.voenix.shop.article.api.dto.categories
 
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size

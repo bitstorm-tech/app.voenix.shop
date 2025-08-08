@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.enums
+package com.jotoai.voenix.shop.article.api.enums
 
 enum class VariantType {
     COLOR,

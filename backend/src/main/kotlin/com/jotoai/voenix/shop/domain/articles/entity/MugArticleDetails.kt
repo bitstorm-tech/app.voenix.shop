@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.domain.articles.entity
 
-import com.jotoai.voenix.shop.domain.articles.dto.MugArticleDetailsDto
+import com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id

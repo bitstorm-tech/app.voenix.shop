@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.domain.articles.categories.service
 
+import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
+import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleCategoryRequest
+import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleCategoryRequest
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.articles.categories.dto.ArticleCategoryDto
-import com.jotoai.voenix.shop.domain.articles.categories.dto.CreateArticleCategoryRequest
-import com.jotoai.voenix.shop.domain.articles.categories.dto.UpdateArticleCategoryRequest
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleCategoryRepository
 import org.springframework.stereotype.Service

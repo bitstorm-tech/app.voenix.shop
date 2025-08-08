@@ -2,9 +2,9 @@ package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.categories.ArticleCategoryFacade
 import com.jotoai.voenix.shop.article.api.categories.ArticleCategoryQueryService
-import com.jotoai.voenix.shop.domain.articles.categories.dto.ArticleCategoryDto
-import com.jotoai.voenix.shop.domain.articles.categories.dto.CreateArticleCategoryRequest
-import com.jotoai.voenix.shop.domain.articles.categories.dto.UpdateArticleCategoryRequest
+import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
+import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleCategoryRequest
+import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleCategoryRequest
 import com.jotoai.voenix.shop.domain.articles.categories.service.ArticleCategoryService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class CategoryApiAdapter(
     private val delegate: ArticleCategoryService,
-) : ArticleCategoryQueryService, ArticleCategoryFacade {
-
+) : ArticleCategoryQueryService,
+    ArticleCategoryFacade {
     override fun getAllCategories(): List<ArticleCategoryDto> = delegate.getAllCategories()
 
     override fun getCategoryById(id: Long): ArticleCategoryDto = delegate.getCategoryById(id)
@@ -22,8 +22,7 @@ class CategoryApiAdapter(
     override fun searchCategoriesByName(name: String): List<ArticleCategoryDto> = delegate.searchCategoriesByName(name)
 
     @Transactional
-    override fun createCategory(request: CreateArticleCategoryRequest): ArticleCategoryDto =
-        delegate.createCategory(request)
+    override fun createCategory(request: CreateArticleCategoryRequest): ArticleCategoryDto = delegate.createCategory(request)
 
     @Transactional
     override fun updateCategory(

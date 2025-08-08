@@ -4,7 +4,8 @@ import com.jotoai.voenix.shop.api.admin.articles.ArticleController
 import com.jotoai.voenix.shop.api.admin.prompts.AdminPromptController
 import com.jotoai.voenix.shop.api.admin.users.AdminUserController
 import com.jotoai.voenix.shop.auth.config.SecurityConfig
-import com.jotoai.voenix.shop.domain.articles.service.ArticleService
+import com.jotoai.voenix.shop.article.api.ArticleFacade
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
@@ -45,7 +46,10 @@ class AdminEndpointSecurityWebMvcTest {
     private lateinit var promptQueryService: PromptQueryService
 
     @MockitoBean
-    private lateinit var articleService: ArticleService
+    private lateinit var articleQueryService: ArticleQueryService
+
+    @MockitoBean
+    private lateinit var articleFacade: ArticleFacade
 
     @MockitoBean
     private lateinit var storagePathService: StoragePathService
@@ -92,7 +96,7 @@ class AdminEndpointSecurityWebMvcTest {
         // Mock service responses
         `when`(userQueryService.getAllUsers()).thenReturn(emptyList())
         `when`(promptQueryService.getAllPrompts()).thenReturn(emptyList())
-        `when`(articleService.findAll(0, 20, null, null, null, null)).thenReturn(
+        `when`(articleQueryService.findAll(0, 20, null, null, null, null)).thenReturn(
             com.jotoai.voenix.shop.common.dto.PaginatedResponse(
                 content = emptyList(),
                 currentPage = 0,

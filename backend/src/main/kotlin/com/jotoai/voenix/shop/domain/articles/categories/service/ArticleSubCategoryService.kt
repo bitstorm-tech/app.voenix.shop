@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.domain.articles.categories.service
 
+import com.jotoai.voenix.shop.article.api.dto.categories.ArticleSubCategoryDto
+import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleSubCategoryRequest
+import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleSubCategoryRequest
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.articles.categories.dto.ArticleSubCategoryDto
-import com.jotoai.voenix.shop.domain.articles.categories.dto.CreateArticleSubCategoryRequest
-import com.jotoai.voenix.shop.domain.articles.categories.dto.UpdateArticleSubCategoryRequest
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleSubCategory
 import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleCategoryRepository
 import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleSubCategoryRepository

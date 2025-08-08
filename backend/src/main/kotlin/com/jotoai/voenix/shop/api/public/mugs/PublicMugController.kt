@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.api.public.mugs
 
-import com.jotoai.voenix.shop.domain.articles.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController

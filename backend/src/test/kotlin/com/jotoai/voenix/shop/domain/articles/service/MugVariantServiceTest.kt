@@ -1,13 +1,13 @@
 package com.jotoai.voenix.shop.domain.articles.service
 
+import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
+import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.articles.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory
-import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
-import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
-import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
 import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.image.api.ImageStorageService

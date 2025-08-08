@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.domain.articles.service
 
+import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
+import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.articles.assembler.ShirtArticleVariantAssembler
-import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtArticleVariantRequest
-import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepository

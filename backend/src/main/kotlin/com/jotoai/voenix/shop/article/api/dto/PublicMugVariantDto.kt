@@ -1,16 +1,15 @@
-package com.jotoai.voenix.shop.domain.articles.dto
+package com.jotoai.voenix.shop.article.api.dto
 
 import java.time.OffsetDateTime
 
-data class MugArticleVariantDto(
+data class PublicMugVariantDto(
     val id: Long,
-    val articleId: Long,
-    val insideColorCode: String,
-    val outsideColorCode: String,
-    val name: String,
+    val mugId: Long,
+    val colorCode: String, // Using outsideColorCode as primary color
     val exampleImageUrl: String?,
     val articleVariantNumber: String?,
     val isDefault: Boolean,
+    val exampleImageFilename: String?,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,
 )

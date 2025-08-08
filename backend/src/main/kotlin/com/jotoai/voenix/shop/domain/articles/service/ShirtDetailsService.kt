@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.domain.articles.service
 
-import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtDetailsRequest
-import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleDetailsDto
-import com.jotoai.voenix.shop.domain.articles.dto.UpdateShirtDetailsRequest
+import com.jotoai.voenix.shop.article.api.dto.CreateShirtDetailsRequest
+import com.jotoai.voenix.shop.article.api.dto.ShirtArticleDetailsDto
+import com.jotoai.voenix.shop.article.api.dto.UpdateShirtDetailsRequest
 import com.jotoai.voenix.shop.domain.articles.entity.Article
 import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleDetails
 import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleDetailsRepository

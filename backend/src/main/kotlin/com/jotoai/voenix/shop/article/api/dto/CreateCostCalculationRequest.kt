@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.dto
+package com.jotoai.voenix.shop.article.api.dto
 
 import com.fasterxml.jackson.annotation.JsonAlias
 import com.jotoai.voenix.shop.domain.articles.entity.CalculationMode
@@ -11,108 +11,108 @@ import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotNull
 import java.math.BigDecimal
 
-data class UpdateCostCalculationRequest(
+data class CreateCostCalculationRequest(
     // Purchase section fields
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
-    val purchasePriceNet: Int,
+    val purchasePriceNet: Int = 0,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
-    val purchasePriceTax: Int,
+    val purchasePriceTax: Int = 0,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
-    val purchasePriceGross: Int,
+    val purchasePriceGross: Int = 0,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
-    val purchaseCostNet: Int,
+    val purchaseCostNet: Int = 0,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
-    val purchaseCostTax: Int,
+    val purchaseCostTax: Int = 0,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
-    val purchaseCostGross: Int,
+    val purchaseCostGross: Int = 0,
     @field:NotNull
     @field:DecimalMin("0.00")
     @field:DecimalMax("999.99")
-    val purchaseCostPercent: BigDecimal,
+    val purchaseCostPercent: BigDecimal = BigDecimal.ZERO,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
-    val purchaseTotalNet: Int,
+    val purchaseTotalNet: Int = 0,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
-    val purchaseTotalTax: Int,
+    val purchaseTotalTax: Int = 0,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
-    val purchaseTotalGross: Int,
+    val purchaseTotalGross: Int = 0,
     @field:NotNull
-    val purchasePriceUnit: String,
-    val purchaseVatRateId: Long?,
+    val purchasePriceUnit: String = "PER_PIECE",
+    val purchaseVatRateId: Long? = null,
     @field:NotNull
     @field:DecimalMin("0.00")
     @field:DecimalMax("999.99")
-    val purchaseVatRatePercent: BigDecimal,
+    val purchaseVatRatePercent: BigDecimal = BigDecimal("19"),
     @field:NotNull
-    val purchaseCalculationMode: CalculationMode,
+    val purchaseCalculationMode: CalculationMode = CalculationMode.NET,
     // Sales section fields
-    val salesVatRateId: Long?,
+    val salesVatRateId: Long? = null,
     @field:NotNull
     @field:DecimalMin("0.00")
     @field:DecimalMax("999.99")
-    val salesVatRatePercent: BigDecimal,
+    val salesVatRatePercent: BigDecimal = BigDecimal("19"),
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
     @JsonAlias("marginNet")
-    val salesMarginNet: Int,
+    val salesMarginNet: Int = 0,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
     @JsonAlias("marginTax")
-    val salesMarginTax: Int,
+    val salesMarginTax: Int = 0,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
     @JsonAlias("marginGross")
-    val salesMarginGross: Int,
+    val salesMarginGross: Int = 0,
     @field:NotNull
     @field:DecimalMin("0.00")
     @field:DecimalMax("999.99")
     @JsonAlias("marginPercent")
-    val salesMarginPercent: BigDecimal,
+    val salesMarginPercent: BigDecimal = BigDecimal.ZERO,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
-    val salesTotalNet: Int,
+    val salesTotalNet: Int = 0,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
-    val salesTotalTax: Int,
+    val salesTotalTax: Int = 0,
     @field:NotNull
     @field:Min(0)
     @field:Max(9999999999)
-    val salesTotalGross: Int,
+    val salesTotalGross: Int = 0,
     @field:NotNull
-    val salesPriceUnit: String,
+    val salesPriceUnit: String = "PER_PIECE",
     @field:NotNull
-    val salesCalculationMode: CalculationMode,
+    val salesCalculationMode: CalculationMode = CalculationMode.NET,
     // UI state fields
     @field:NotNull
-    val purchasePriceCorresponds: Any, // Can be Boolean or CalculationMode
+    val purchasePriceCorresponds: Any = CalculationMode.NET, // Can be Boolean or CalculationMode
     @field:NotNull
-    val salesPriceCorresponds: Any, // Can be Boolean or CalculationMode
+    val salesPriceCorresponds: Any = CalculationMode.NET, // Can be Boolean or CalculationMode
     @field:NotNull
-    val purchaseActiveRow: PurchaseActiveRow,
+    val purchaseActiveRow: PurchaseActiveRow = PurchaseActiveRow.COST,
     @field:NotNull
-    val salesActiveRow: SalesActiveRow,
+    val salesActiveRow: SalesActiveRow = SalesActiveRow.MARGIN,
 ) {
     fun getPurchasePriceCorrespondsAsEnum(): CalculationMode =
         when (purchasePriceCorresponds) {

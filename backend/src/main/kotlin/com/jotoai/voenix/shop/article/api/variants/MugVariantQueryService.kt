@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.api.variants
 
-import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 
 /**
  * Query service for Mug variant read operations.

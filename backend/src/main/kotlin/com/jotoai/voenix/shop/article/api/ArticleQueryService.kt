@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.article.api
 
+import com.jotoai.voenix.shop.article.api.dto.ArticleDto
+import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
+import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
+import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.common.dto.PaginatedResponse
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleDto
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleWithDetailsDto
-import com.jotoai.voenix.shop.domain.articles.dto.PublicMugDto
-import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
 
 /**
  * Query service for Article module read operations.

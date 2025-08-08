@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.domain.articles.assembler
 
-import com.jotoai.voenix.shop.domain.articles.dto.ArticleDto
+import com.jotoai.voenix.shop.article.api.dto.ArticleDto
+import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.domain.articles.entity.Article
-import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
 import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
 import org.springframework.stereotype.Component
 

@@ -1,12 +1,11 @@
-package com.jotoai.voenix.shop.domain.articles.dto
+package com.jotoai.voenix.shop.article.api.dto
 
-import com.jotoai.voenix.shop.domain.articles.enums.ArticleType
-import com.jotoai.voenix.shop.domain.articles.enums.FitType
+import com.jotoai.voenix.shop.article.api.enums.FitType
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Positive
 
-data class CreateArticleRequest(
+data class UpdateArticleRequest(
     @field:NotBlank(message = "Name is required")
     val name: String,
     @field:NotBlank(message = "Short description is required")
@@ -14,25 +13,21 @@ data class CreateArticleRequest(
     @field:NotBlank(message = "Long description is required")
     val descriptionLong: String,
     val active: Boolean = true,
-    @field:NotNull(message = "Article type is required")
-    val articleType: ArticleType,
     @field:NotNull(message = "Category ID is required")
     val categoryId: Long,
     val subcategoryId: Long? = null,
     val supplierId: Long? = null,
     val supplierArticleName: String? = null,
     val supplierArticleNumber: String? = null,
-    val mugVariants: List<CreateMugArticleVariantRequest>? = null,
-    val shirtVariants: List<CreateShirtArticleVariantRequest>? = null,
     // Mug-specific details
-    val mugDetails: CreateMugDetailsRequest? = null,
+    val mugDetails: UpdateMugDetailsRequest? = null,
     // Shirt-specific details
-    val shirtDetails: CreateShirtDetailsRequest? = null,
+    val shirtDetails: UpdateShirtDetailsRequest? = null,
     // Cost calculation
-    val costCalculation: CreateCostCalculationRequest? = null,
+    val costCalculation: UpdateCostCalculationRequest? = null,
 )
 
-data class CreateMugDetailsRequest(
+data class UpdateMugDetailsRequest(
     @field:NotNull(message = "Height is required")
     @field:Positive(message = "Height must be positive")
     val heightMm: Int,
@@ -49,7 +44,7 @@ data class CreateMugDetailsRequest(
     val dishwasherSafe: Boolean = true,
 )
 
-data class CreateShirtDetailsRequest(
+data class UpdateShirtDetailsRequest(
     @field:NotBlank(message = "Material is required")
     val material: String,
     val careInstructions: String? = null,
