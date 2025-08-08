@@ -31,9 +31,28 @@ class PromptAssembler(
             title = entity.title,
             promptText = entity.promptText,
             categoryId = entity.categoryId,
-            category = entity.category?.let { promptCategoryAssembler.toDto(it) },
+            category = entity.category?.let {
+                com.jotoai.voenix.shop.prompt.api.dto.categories.PromptCategoryDto(
+                    id = requireNotNull(it.id) { "PromptCategory ID cannot be null when converting to DTO" },
+                    name = it.name,
+                    promptsCount = 0,
+                    subcategoriesCount = 0,
+                    createdAt = it.createdAt,
+                    updatedAt = it.updatedAt,
+                )
+            },
             subcategoryId = entity.subcategoryId,
-            subcategory = entity.subcategory?.let { promptSubCategoryAssembler.toDto(it) },
+            subcategory = entity.subcategory?.let {
+                com.jotoai.voenix.shop.prompt.api.dto.subcategories.PromptSubCategoryDto(
+                    id = requireNotNull(it.id) { "PromptSubCategory ID cannot be null when converting to DTO" },
+                    promptCategoryId = requireNotNull(it.promptCategory.id) { "PromptCategory ID cannot be null when converting to DTO" },
+                    name = it.name,
+                    description = it.description,
+                    promptsCount = 0,
+                    createdAt = it.createdAt,
+                    updatedAt = it.updatedAt,
+                )
+            },
             active = entity.active,
             slots =
                 entity.promptSlotVariantMappings.map {
@@ -62,8 +81,19 @@ class PromptAssembler(
                 entity.exampleImageFilename?.let { filename ->
                     storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, filename)
                 },
-            category = entity.category?.let { promptCategoryAssembler.toPublicDto(it) },
-            subcategory = entity.subcategory?.let { promptSubCategoryAssembler.toPublicDto(it) },
+            category = entity.category?.let {
+                com.jotoai.voenix.shop.prompt.api.dto.public.PublicPromptCategoryDto(
+                    id = requireNotNull(it.id) { "PromptCategory ID cannot be null when converting to DTO" },
+                    name = it.name,
+                )
+            },
+            subcategory = entity.subcategory?.let {
+                com.jotoai.voenix.shop.prompt.api.dto.public.PublicPromptSubCategoryDto(
+                    id = requireNotNull(it.id) { "PromptSubCategory ID cannot be null when converting to DTO" },
+                    name = it.name,
+                    description = it.description,
+                )
+            },
             slots =
                 entity.promptSlotVariantMappings.map {
                     promptSlotVariantAssembler.toPublicDto(it.promptSlotVariant)

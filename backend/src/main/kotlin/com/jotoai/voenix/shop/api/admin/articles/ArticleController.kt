@@ -30,7 +30,7 @@ class ArticleController(
     @GetMapping
     fun findAll(
         @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "10") size: Int,
+        @RequestParam(defaultValue = "20") size: Int,
         @RequestParam(required = false) type: ArticleType?,
         @RequestParam(required = false) categoryId: Long?,
         @RequestParam(required = false) subcategoryId: Long?,

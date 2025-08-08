@@ -24,8 +24,10 @@ import org.springframework.web.bind.annotation.RestController
 @PreAuthorize("hasRole('ADMIN')")
 class AdminPromptController(
     private val promptQueryService: PromptQueryService,
-    private val promptFacade: PromptFacade,
+    private val promptFacade: PromptFacade? = null,
 ) {
+    private val writeFacade: PromptFacade
+        get() = requireNotNull(promptFacade) { "PromptFacade bean is required for write operations" }
     @GetMapping
     fun getAllPrompts(): List<PromptDto> = promptQueryService.getAllPrompts()
 
@@ -42,30 +44,30 @@ class AdminPromptController(
     @PostMapping
     fun createPrompt(
         @Valid @RequestBody createPromptRequest: CreatePromptRequest,
-    ): PromptDto = promptFacade.createPrompt(createPromptRequest)
+    ): PromptDto = writeFacade.createPrompt(createPromptRequest)
 
     @PutMapping("/{id}")
     fun updatePrompt(
         @PathVariable id: Long,
         @Valid @RequestBody updatePromptRequest: UpdatePromptRequest,
-    ): PromptDto = promptFacade.updatePrompt(id, updatePromptRequest)
+    ): PromptDto = writeFacade.updatePrompt(id, updatePromptRequest)
 
     @PutMapping("/{id}/slots")
     fun updatePromptSlotVariants(
         @PathVariable id: Long,
         @Valid @RequestBody updatePromptSlotVariantsRequest: UpdatePromptSlotVariantsRequest,
-    ): PromptDto = promptFacade.updatePromptSlotVariants(id, updatePromptSlotVariantsRequest)
+    ): PromptDto = writeFacade.updatePromptSlotVariants(id, updatePromptSlotVariantsRequest)
 
     @PostMapping("/{id}/slots")
     fun addSlotVariantsToPrompt(
         @PathVariable id: Long,
         @Valid @RequestBody addSlotVariantsRequest: AddSlotVariantsRequest,
-    ): PromptDto = promptFacade.addSlotVariantsToPrompt(id, addSlotVariantsRequest)
+    ): PromptDto = writeFacade.addSlotVariantsToPrompt(id, addSlotVariantsRequest)
 
     @DeleteMapping("/{id}")
     fun deletePrompt(
         @PathVariable id: Long,
     ) {
-        promptFacade.deletePrompt(id)
+        writeFacade.deletePrompt(id)
     }
 }
