@@ -3,11 +3,11 @@ package com.jotoai.voenix.shop.api.admin.articles
 import com.jotoai.voenix.shop.article.api.ArticleFacade
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
+import com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.article.api.dto.CreateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
-import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -37,7 +37,7 @@ class ArticleController(
         @RequestParam(required = false) categoryId: Long?,
         @RequestParam(required = false) subcategoryId: Long?,
         @RequestParam(required = false) active: Boolean?,
-    ): ResponseEntity<PaginatedResponse<ArticleDto>> {
+    ): ResponseEntity<ArticlePaginatedResponse<ArticleDto>> {
         val response =
             articleQueryService.findAll(
                 page = page,

@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.article.api
 
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
+import com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
-import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 
 /**
  * Query service for Article module read operations.
@@ -31,7 +31,7 @@ interface ArticleQueryService {
         categoryId: Long? = null,
         subcategoryId: Long? = null,
         active: Boolean? = null,
-    ): PaginatedResponse<ArticleDto>
+    ): ArticlePaginatedResponse<ArticleDto>
 
     fun findById(id: Long): ArticleWithDetailsDto
 

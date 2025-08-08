@@ -97,7 +97,7 @@ class AdminEndpointSecurityWebMvcTest {
         `when`(userQueryService.getAllUsers()).thenReturn(emptyList())
         `when`(promptQueryService.getAllPrompts()).thenReturn(emptyList())
         `when`(articleQueryService.findAll(0, 20, null, null, null, null)).thenReturn(
-            com.jotoai.voenix.shop.common.dto.PaginatedResponse(
+            com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse(
                 content = emptyList(),
                 currentPage = 0,
                 totalPages = 0,

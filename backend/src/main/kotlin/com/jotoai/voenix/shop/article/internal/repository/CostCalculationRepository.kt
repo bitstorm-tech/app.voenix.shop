@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.repository
 
-import com.jotoai.voenix.shop.domain.articles.entity.CostCalculation
+import com.jotoai.voenix.shop.article.internal.entity.CostCalculation
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import java.util.Optional

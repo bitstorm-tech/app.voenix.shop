@@ -2,11 +2,11 @@ package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.slf4j.LoggerFactory
@@ -32,7 +32,7 @@ class MugVariantServiceImpl(
     ): MugArticleVariantDto {
         val article =
             articleRepository.findById(articleId).orElse(null)
-                ?: throw ResourceNotFoundException("Article not found with id: $articleId")
+                ?: throw ArticleNotFoundException("Article not found with id: $articleId")
 
         // Check if this should be the default variant
         val existingVariants = mugVariantRepository.findByArticleId(articleId)
@@ -66,7 +66,7 @@ class MugVariantServiceImpl(
     ): MugArticleVariantDto {
         val variant =
             mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
-                ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
+                ?: throw ArticleNotFoundException("Mug variant not found with id: $variantId")
 
         val articleId = variant.article.id!!
         val wasDefault = variant.isDefault
@@ -110,7 +110,7 @@ class MugVariantServiceImpl(
     override fun delete(variantId: Long) {
         val variant =
             mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
-                ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
+                ?: throw ArticleNotFoundException("Mug variant not found with id: $variantId")
 
         val articleId = variant.article.id!!
         val wasDefault = variant.isDefault
@@ -148,7 +148,7 @@ class MugVariantServiceImpl(
     ): MugArticleVariantDto {
         val variant =
             mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
-                ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
+                ?: throw ArticleNotFoundException("Mug variant not found with id: $variantId")
 
         variant.exampleImageFilename = filename
         return mugArticleVariantAssembler.toDto(mugVariantRepository.save(variant))
@@ -158,7 +158,7 @@ class MugVariantServiceImpl(
     override fun removeExampleImage(variantId: Long): MugArticleVariantDto {
         val variant =
             mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
-                ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
+                ?: throw ArticleNotFoundException("Mug variant not found with id: $variantId")
 
         // Delete the image file if it exists
         variant.exampleImageFilename?.let { filename ->

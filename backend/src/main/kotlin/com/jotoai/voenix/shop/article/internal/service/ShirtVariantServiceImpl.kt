@@ -2,11 +2,11 @@ package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
+import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRepository
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.slf4j.LoggerFactory
@@ -33,7 +33,7 @@ class ShirtVariantServiceImpl(
         val article =
             articleRepository
                 .findById(articleId)
-                .orElseThrow { ResourceNotFoundException("Article not found with id: $articleId") }
+                .orElseThrow { ArticleNotFoundException("Article not found with id: $articleId") }
 
         val variant =
             ShirtArticleVariant(
@@ -54,7 +54,7 @@ class ShirtVariantServiceImpl(
         val variant =
             shirtVariantRepository
                 .findById(variantId)
-                .orElseThrow { ResourceNotFoundException("Shirt variant not found with id: $variantId") }
+                .orElseThrow { ArticleNotFoundException("Shirt variant not found with id: $variantId") }
 
         variant.apply {
             color = request.color
@@ -70,7 +70,7 @@ class ShirtVariantServiceImpl(
         val variant =
             shirtVariantRepository
                 .findById(variantId)
-                .orElseThrow { ResourceNotFoundException("Shirt variant not found with id: $variantId") }
+                .orElseThrow { ArticleNotFoundException("Shirt variant not found with id: $variantId") }
 
         // Delete associated image if exists
         variant.exampleImageFilename?.let { filename ->
@@ -96,7 +96,7 @@ class ShirtVariantServiceImpl(
         val variant =
             shirtVariantRepository
                 .findById(variantId)
-                .orElseThrow { ResourceNotFoundException("Shirt variant not found with id: $variantId") }
+                .orElseThrow { ArticleNotFoundException("Shirt variant not found with id: $variantId") }
 
         variant.exampleImageFilename = filename
         return shirtArticleVariantAssembler.toDto(shirtVariantRepository.save(variant))

@@ -3,9 +3,9 @@ package com.jotoai.voenix.shop.article.internal.service
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
 import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleCategoryRequest
 import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleCategoryRequest
+import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleCategoryRepository
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -21,7 +21,7 @@ class ArticleCategoryServiceImpl(
         articleCategoryRepository
             .findById(id)
             .map { it.toDto() }
-            .orElseThrow { ResourceNotFoundException("ArticleCategory", "id", id) }
+            .orElseThrow { ArticleNotFoundException("ArticleCategory not found with id: $id") }
 
     override fun searchCategoriesByName(name: String): List<ArticleCategoryDto> =
         articleCategoryRepository.findByNameContainingIgnoreCase(name).map { it.toDto() }
@@ -50,7 +50,7 @@ class ArticleCategoryServiceImpl(
         val category =
             articleCategoryRepository
                 .findById(id)
-                .orElseThrow { ResourceNotFoundException("ArticleCategory", "id", id) }
+                .orElseThrow { ArticleNotFoundException("ArticleCategory not found with id: $id") }
 
         request.name?.let { newName ->
             if (newName != category.name && articleCategoryRepository.existsByNameIgnoreCase(newName)) {
@@ -68,7 +68,7 @@ class ArticleCategoryServiceImpl(
     @Transactional
     override fun deleteCategory(id: Long) {
         if (!articleCategoryRepository.existsById(id)) {
-            throw ResourceNotFoundException("ArticleCategory", "id", id)
+            throw ArticleNotFoundException("ArticleCategory not found with id: $id")
         }
         articleCategoryRepository.deleteById(id)
     }

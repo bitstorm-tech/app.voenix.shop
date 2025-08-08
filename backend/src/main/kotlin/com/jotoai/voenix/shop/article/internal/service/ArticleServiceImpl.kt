@@ -3,6 +3,7 @@ package com.jotoai.voenix.shop.article.internal.service
 import com.jotoai.voenix.shop.article.api.ArticleFacade
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
+import com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.article.api.dto.CreateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.CreateCostCalculationRequest
@@ -13,21 +14,20 @@ import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.UpdateCostCalculationRequest
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.assembler.ArticleAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleCategoryRepository
 import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleSubCategoryRepository
 import com.jotoai.voenix.shop.article.internal.entity.Article
+import com.jotoai.voenix.shop.article.internal.entity.CostCalculation
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.CostCalculationRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRepository
-import com.jotoai.voenix.shop.common.dto.PaginatedResponse
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.articles.entity.CostCalculation
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
@@ -63,7 +63,7 @@ class ArticleServiceImpl(
         categoryId: Long?,
         subcategoryId: Long?,
         active: Boolean?,
-    ): PaginatedResponse<ArticleDto> {
+    ): ArticlePaginatedResponse<ArticleDto> {
         val pageable = PageRequest.of(page, size, Sort.by("id").descending())
         val articlesPage =
             articleRepository.findAllWithFilters(
@@ -74,7 +74,7 @@ class ArticleServiceImpl(
                 pageable = pageable,
             )
 
-        return PaginatedResponse(
+        return ArticlePaginatedResponse(
             content = articlesPage.content.map { articleAssembler.toDto(it) },
             currentPage = articlesPage.number,
             totalPages = articlesPage.totalPages,
@@ -88,14 +88,14 @@ class ArticleServiceImpl(
         // First, fetch article with basic details to determine the type
         val articleBasic =
             articleRepository.findByIdWithBasicDetails(id)
-                ?: throw ResourceNotFoundException("Article not found with id: $id")
+                ?: throw ArticleNotFoundException("Article not found with id: $id")
 
         // Then fetch with appropriate variants based on article type
         val article =
             when (articleBasic.articleType) {
                 ArticleType.MUG -> articleRepository.findMugByIdWithDetails(id)
                 ArticleType.SHIRT -> articleRepository.findShirtByIdWithDetails(id)
-            } ?: throw ResourceNotFoundException("Article not found with id: $id")
+            } ?: throw ArticleNotFoundException("Article not found with id: $id")
 
         return buildArticleWithDetailsDto(article)
     }
@@ -105,18 +105,18 @@ class ArticleServiceImpl(
         val category =
             articleCategoryRepository
                 .findById(request.categoryId)
-                .orElseThrow { ResourceNotFoundException("Category not found with id: ${request.categoryId}") }
+                .orElseThrow { ArticleNotFoundException("Category not found with id: ${request.categoryId}") }
         val subcategory =
             request.subcategoryId?.let {
                 articleSubCategoryRepository
                     .findById(it)
-                    .orElseThrow { ResourceNotFoundException("Subcategory not found with id: $it") }
+                    .orElseThrow { ArticleNotFoundException("Subcategory not found with id: $it") }
             }
 
         // Validate supplier exists if provided
         request.supplierId?.let { supplierId ->
             if (!supplierQueryService.existsById(supplierId)) {
-                throw ResourceNotFoundException("Supplier not found with id: $supplierId")
+                throw ArticleNotFoundException("Supplier not found with id: $supplierId")
             }
         }
 
@@ -180,26 +180,26 @@ class ArticleServiceImpl(
         val article =
             articleRepository
                 .findById(id)
-                .orElseThrow { ResourceNotFoundException("Article not found with id: $id") }
+                .orElseThrow { ArticleNotFoundException("Article not found with id: $id") }
 
         // Validate category exists
         val category =
             articleCategoryRepository
                 .findById(request.categoryId)
-                .orElseThrow { ResourceNotFoundException("Category not found with id: ${request.categoryId}") }
+                .orElseThrow { ArticleNotFoundException("Category not found with id: ${request.categoryId}") }
 
         // Validate subcategory if provided
         val subcategory =
             request.subcategoryId?.let {
                 articleSubCategoryRepository
                     .findById(it)
-                    .orElseThrow { ResourceNotFoundException("Subcategory not found with id: $it") }
+                    .orElseThrow { ArticleNotFoundException("Subcategory not found with id: $it") }
             }
 
         // Validate supplier exists if provided
         request.supplierId?.let { supplierId ->
             if (!supplierQueryService.existsById(supplierId)) {
-                throw ResourceNotFoundException("Supplier not found with id: $supplierId")
+                throw ArticleNotFoundException("Supplier not found with id: $supplierId")
             }
         }
 
@@ -241,7 +241,7 @@ class ArticleServiceImpl(
     @Transactional
     override fun delete(id: Long) {
         if (!articleRepository.existsById(id)) {
-            throw ResourceNotFoundException("Article not found with id: $id")
+            throw ArticleNotFoundException("Article not found with id: $id")
         }
         articleRepository.deleteById(id)
     }
@@ -353,13 +353,13 @@ class ArticleServiceImpl(
         // Validate VAT rates exist if provided
         request.purchaseVatRateId?.let {
             if (!vatQueryService.existsById(it)) {
-                throw ResourceNotFoundException("Purchase VAT rate not found with id: $it")
+                throw ArticleNotFoundException("Purchase VAT rate not found with id: $it")
             }
         }
 
         request.salesVatRateId?.let {
             if (!vatQueryService.existsById(it)) {
-                throw ResourceNotFoundException("Sales VAT rate not found with id: $it")
+                throw ArticleNotFoundException("Sales VAT rate not found with id: $it")
             }
         }
 
@@ -414,13 +414,13 @@ class ArticleServiceImpl(
             // Validate VAT rates exist if provided
             request.purchaseVatRateId?.let {
                 if (!vatQueryService.existsById(it)) {
-                    throw ResourceNotFoundException("Purchase VAT rate not found with id: $it")
+                    throw ArticleNotFoundException("Purchase VAT rate not found with id: $it")
                 }
             }
 
             request.salesVatRateId?.let {
                 if (!vatQueryService.existsById(it)) {
-                    throw ResourceNotFoundException("Sales VAT rate not found with id: $it")
+                    throw ArticleNotFoundException("Sales VAT rate not found with id: $it")
                 }
             }
 

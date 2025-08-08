@@ -3,10 +3,10 @@ package com.jotoai.voenix.shop.article.internal.service
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleSubCategoryDto
 import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleSubCategoryRequest
 import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleSubCategoryRequest
+import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleSubCategory
 import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleCategoryRepository
 import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleSubCategoryRepository
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -23,7 +23,7 @@ class ArticleSubCategoryServiceImpl(
         articleSubCategoryRepository
             .findById(id)
             .map { it.toDto() }
-            .orElseThrow { ResourceNotFoundException("ArticleSubCategory", "id", id) }
+            .orElseThrow { ArticleNotFoundException("ArticleSubCategory not found with id: $id") }
 
     override fun getSubCategoriesByCategoryId(categoryId: Long): List<ArticleSubCategoryDto> =
         articleSubCategoryRepository.findByArticleCategoryId(categoryId).map { it.toDto() }
@@ -42,7 +42,7 @@ class ArticleSubCategoryServiceImpl(
         val articleCategory =
             articleCategoryRepository
                 .findById(request.articleCategoryId)
-                .orElseThrow { ResourceNotFoundException("ArticleCategory", "id", request.articleCategoryId) }
+                .orElseThrow { ArticleNotFoundException("ArticleCategory not found with id: ${request.articleCategoryId}") }
 
         if (articleSubCategoryRepository.existsByArticleCategoryIdAndNameIgnoreCase(request.articleCategoryId, request.name)) {
             throw IllegalArgumentException("Subcategory with name '${request.name}' already exists in this category")
@@ -67,13 +67,13 @@ class ArticleSubCategoryServiceImpl(
         val subCategory =
             articleSubCategoryRepository
                 .findById(id)
-                .orElseThrow { ResourceNotFoundException("ArticleSubCategory", "id", id) }
+                .orElseThrow { ArticleNotFoundException("ArticleSubCategory not found with id: $id") }
 
         request.articleCategoryId?.let { newCategoryId ->
             val newCategory =
                 articleCategoryRepository
                     .findById(newCategoryId)
-                    .orElseThrow { ResourceNotFoundException("ArticleCategory", "id", newCategoryId) }
+                    .orElseThrow { ArticleNotFoundException("ArticleCategory not found with id: $newCategoryId") }
             subCategory.articleCategory = newCategory
         }
 
@@ -96,7 +96,7 @@ class ArticleSubCategoryServiceImpl(
     @Transactional
     override fun deleteSubCategory(id: Long) {
         if (!articleSubCategoryRepository.existsById(id)) {
-            throw ResourceNotFoundException("ArticleSubCategory", "id", id)
+            throw ArticleNotFoundException("ArticleSubCategory not found with id: $id")
         }
         articleSubCategoryRepository.deleteById(id)
     }

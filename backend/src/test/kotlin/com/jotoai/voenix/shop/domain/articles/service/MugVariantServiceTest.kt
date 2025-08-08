@@ -3,13 +3,13 @@ package com.jotoai.voenix.shop.domain.articles.service
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -344,7 +344,7 @@ class MugVariantServiceTest {
     }
 
     @Test
-    fun `create should throw ResourceNotFoundException when article not found`() {
+    fun `create should throw ArticleNotFoundException when article not found`() {
         // Given
         val request =
             CreateMugArticleVariantRequest(
@@ -358,13 +358,13 @@ class MugVariantServiceTest {
         `when`(articleRepository.findById(999L)).thenReturn(Optional.empty())
 
         // When/Then
-        assertThrows<ResourceNotFoundException> {
+        assertThrows<ArticleNotFoundException> {
             mugVariantService.create(999L, request)
         }
     }
 
     @Test
-    fun `update should throw ResourceNotFoundException when variant not found`() {
+    fun `update should throw ArticleNotFoundException when variant not found`() {
         // Given
         val request =
             CreateMugArticleVariantRequest(
@@ -378,7 +378,7 @@ class MugVariantServiceTest {
         `when`(mugVariantRepository.findByIdWithArticle(999L)).thenReturn(Optional.empty())
 
         // When/Then
-        assertThrows<ResourceNotFoundException> {
+        assertThrows<ArticleNotFoundException> {
             mugVariantService.update(999L, request)
         }
     }
