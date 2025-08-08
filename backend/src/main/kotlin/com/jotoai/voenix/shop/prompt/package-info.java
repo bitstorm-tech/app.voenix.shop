@@ -5,4 +5,7 @@
  *
  * <p>External modules should only depend on the API interfaces in the {@code api} package.
  */
+@org.springframework.modulith.ApplicationModule(
+        displayName = "Prompt Management"
+)
 package com.jotoai.voenix.shop.prompt;
