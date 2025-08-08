@@ -1,9 +1,9 @@
-package com.jotoai.voenix.shop.domain.articles.service
+package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.articles.assembler.ShirtArticleVariantAssembler
+import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
 import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepository
@@ -14,18 +14,20 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class ShirtVariantService(
+class ShirtVariantServiceImpl(
+    
     private val articleRepository: ArticleRepository,
     private val shirtVariantRepository: ShirtArticleVariantRepository,
     private val imageStorageService: ImageStorageService,
     private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
-) {
+) : com.jotoai.voenix.shop.article.api.variants.ShirtVariantQueryService,
+    com.jotoai.voenix.shop.article.api.variants.ShirtVariantFacade {
     companion object {
-        private val logger = LoggerFactory.getLogger(ShirtVariantService::class.java)
+        private val logger = LoggerFactory.getLogger(ShirtVariantServiceImpl::class.java)
     }
 
     @Transactional
-    fun create(
+    override fun create(
         articleId: Long,
         request: CreateShirtArticleVariantRequest,
     ): ShirtArticleVariantDto {
@@ -46,7 +48,7 @@ class ShirtVariantService(
     }
 
     @Transactional
-    fun update(
+    override fun update(
         variantId: Long,
         request: CreateShirtArticleVariantRequest,
     ): ShirtArticleVariantDto {
@@ -65,7 +67,7 @@ class ShirtVariantService(
     }
 
     @Transactional
-    fun delete(variantId: Long) {
+    override fun delete(variantId: Long) {
         val variant =
             shirtVariantRepository
                 .findById(variantId)
@@ -84,11 +86,11 @@ class ShirtVariantService(
     }
 
     @Transactional(readOnly = true)
-    fun findByArticleId(articleId: Long): List<ShirtArticleVariantDto> =
+    override fun findByArticleId(articleId: Long): List<ShirtArticleVariantDto> =
         shirtVariantRepository.findByArticleId(articleId).map { shirtArticleVariantAssembler.toDto(it) }
 
     @Transactional
-    fun updateExampleImage(
+    override fun updateExampleImage(
         variantId: Long,
         filename: String,
     ): ShirtArticleVariantDto {

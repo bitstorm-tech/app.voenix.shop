@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.categories.service
+package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleSubCategoryDto
 import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleSubCategoryRequest
@@ -12,22 +12,24 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional(readOnly = true)
-class ArticleSubCategoryService(
+class ArticleSubCategoryServiceImpl(
+    
     private val articleSubCategoryRepository: ArticleSubCategoryRepository,
     private val articleCategoryRepository: ArticleCategoryRepository,
-) {
-    fun getAllSubCategories(): List<ArticleSubCategoryDto> = articleSubCategoryRepository.findAll().map { it.toDto() }
+) : com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryQueryService,
+    com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryFacade {
+    override fun getAllSubCategories(): List<ArticleSubCategoryDto> = articleSubCategoryRepository.findAll().map { it.toDto() }
 
-    fun getSubCategoryById(id: Long): ArticleSubCategoryDto =
+    override fun getSubCategoryById(id: Long): ArticleSubCategoryDto =
         articleSubCategoryRepository
             .findById(id)
             .map { it.toDto() }
             .orElseThrow { ResourceNotFoundException("ArticleSubCategory", "id", id) }
 
-    fun getSubCategoriesByCategoryId(categoryId: Long): List<ArticleSubCategoryDto> =
+    override fun getSubCategoriesByCategoryId(categoryId: Long): List<ArticleSubCategoryDto> =
         articleSubCategoryRepository.findByArticleCategoryId(categoryId).map { it.toDto() }
 
-    fun searchSubCategoriesByName(name: String): List<ArticleSubCategoryDto> =
+    override fun searchSubCategoriesByName(name: String): List<ArticleSubCategoryDto> =
         articleSubCategoryRepository.findByNameContainingIgnoreCase(name).map { it.toDto() }
 
     fun searchSubCategoriesByCategoryAndName(
@@ -37,7 +39,7 @@ class ArticleSubCategoryService(
         articleSubCategoryRepository.findByArticleCategoryIdAndNameContainingIgnoreCase(categoryId, name).map { it.toDto() }
 
     @Transactional
-    fun createSubCategory(request: CreateArticleSubCategoryRequest): ArticleSubCategoryDto {
+    override fun createSubCategory(request: CreateArticleSubCategoryRequest): ArticleSubCategoryDto {
         val articleCategory =
             articleCategoryRepository
                 .findById(request.articleCategoryId)
@@ -59,7 +61,7 @@ class ArticleSubCategoryService(
     }
 
     @Transactional
-    fun updateSubCategory(
+    override fun updateSubCategory(
         id: Long,
         request: UpdateArticleSubCategoryRequest,
     ): ArticleSubCategoryDto {
@@ -93,7 +95,7 @@ class ArticleSubCategoryService(
     }
 
     @Transactional
-    fun deleteSubCategory(id: Long) {
+    override fun deleteSubCategory(id: Long) {
         if (!articleSubCategoryRepository.existsById(id)) {
             throw ResourceNotFoundException("ArticleSubCategory", "id", id)
         }

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.assembler
+package com.jotoai.voenix.shop.article.internal.assembler
 
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory

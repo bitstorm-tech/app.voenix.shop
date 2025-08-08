@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.domain.orders.assembler
 
-import com.jotoai.voenix.shop.domain.articles.assembler.ArticleAssembler
-import com.jotoai.voenix.shop.domain.articles.assembler.MugArticleVariantAssembler
+import com.jotoai.voenix.shop.article.internal.assembler.ArticleAssembler
+import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.orders.dto.AddressDto
 import com.jotoai.voenix.shop.domain.orders.dto.OrderDto
 import com.jotoai.voenix.shop.domain.orders.dto.OrderItemDto

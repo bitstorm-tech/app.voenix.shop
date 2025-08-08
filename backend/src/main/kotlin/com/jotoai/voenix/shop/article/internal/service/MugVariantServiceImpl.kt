@@ -1,9 +1,9 @@
-package com.jotoai.voenix.shop.domain.articles.service
+package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.articles.assembler.MugArticleVariantAssembler
+import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
 import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
 import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
@@ -14,18 +14,20 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class MugVariantService(
+class MugVariantServiceImpl(
+    
     private val articleRepository: ArticleRepository,
     private val mugVariantRepository: MugArticleVariantRepository,
     private val imageStorageService: ImageStorageService,
     private val mugArticleVariantAssembler: MugArticleVariantAssembler,
-) {
+) : com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService,
+    com.jotoai.voenix.shop.article.api.variants.MugVariantFacade {
     companion object {
-        private val logger = LoggerFactory.getLogger(MugVariantService::class.java)
+        private val logger = LoggerFactory.getLogger(MugVariantServiceImpl::class.java)
     }
 
     @Transactional
-    fun create(
+    override fun create(
         articleId: Long,
         request: CreateMugArticleVariantRequest,
     ): MugArticleVariantDto {
@@ -59,7 +61,7 @@ class MugVariantService(
     }
 
     @Transactional
-    fun update(
+    override fun update(
         variantId: Long,
         request: CreateMugArticleVariantRequest,
     ): MugArticleVariantDto {
@@ -106,7 +108,7 @@ class MugVariantService(
     }
 
     @Transactional
-    fun delete(variantId: Long) {
+    override fun delete(variantId: Long) {
         val variant =
             mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
                 ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")
@@ -137,11 +139,11 @@ class MugVariantService(
     }
 
     @Transactional(readOnly = true)
-    fun findByArticleId(articleId: Long): List<MugArticleVariantDto> =
+    override fun findByArticleId(articleId: Long): List<MugArticleVariantDto> =
         mugVariantRepository.findByArticleIdWithArticle(articleId).map { mugArticleVariantAssembler.toDto(it) }
 
     @Transactional
-    fun updateExampleImage(
+    override fun updateExampleImage(
         variantId: Long,
         filename: String,
     ): MugArticleVariantDto {
@@ -154,7 +156,7 @@ class MugVariantService(
     }
 
     @Transactional
-    fun removeExampleImage(variantId: Long): MugArticleVariantDto {
+    override fun removeExampleImage(variantId: Long): MugArticleVariantDto {
         val variant =
             mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
                 ?: throw ResourceNotFoundException("Mug variant not found with id: $variantId")

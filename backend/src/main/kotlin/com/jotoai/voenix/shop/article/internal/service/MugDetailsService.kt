@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.service
+package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.dto.CreateMugDetailsRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto

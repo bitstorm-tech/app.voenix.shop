@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.service
+package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
@@ -13,9 +13,9 @@ import com.jotoai.voenix.shop.article.api.dto.UpdateCostCalculationRequest
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.articles.assembler.ArticleAssembler
-import com.jotoai.voenix.shop.domain.articles.assembler.MugArticleVariantAssembler
-import com.jotoai.voenix.shop.domain.articles.assembler.ShirtArticleVariantAssembler
+import com.jotoai.voenix.shop.article.internal.assembler.ArticleAssembler
+import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
+import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleCategoryRepository
 import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleSubCategoryRepository
 import com.jotoai.voenix.shop.domain.articles.entity.Article
@@ -33,10 +33,13 @@ import com.jotoai.voenix.shop.vat.api.VatQueryService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.ArticleFacade
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class ArticleService(
+class ArticleServiceImpl(
+    
     private val articleRepository: ArticleRepository,
     private val articleMugVariantRepository: MugArticleVariantRepository,
     private val articleShirtVariantRepository: ShirtArticleVariantRepository,
@@ -51,15 +54,15 @@ class ArticleService(
     private val mugArticleVariantAssembler: MugArticleVariantAssembler,
     private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
     private val storagePathService: StoragePathService,
-) {
+) : ArticleQueryService, ArticleFacade {
     @Transactional(readOnly = true)
-    fun findAll(
+    override fun findAll(
         page: Int,
         size: Int,
-        articleType: ArticleType? = null,
-        categoryId: Long? = null,
-        subcategoryId: Long? = null,
-        active: Boolean? = null,
+        articleType: ArticleType?,
+        categoryId: Long?,
+        subcategoryId: Long?,
+        active: Boolean?,
     ): PaginatedResponse<ArticleDto> {
         val pageable = PageRequest.of(page, size, Sort.by("id").descending())
         val articlesPage =
@@ -81,7 +84,7 @@ class ArticleService(
     }
 
     @Transactional(readOnly = true)
-    fun findById(id: Long): ArticleWithDetailsDto {
+    override fun findById(id: Long): ArticleWithDetailsDto {
         // First, fetch article with basic details to determine the type
         val articleBasic =
             articleRepository.findByIdWithBasicDetails(id)
@@ -98,7 +101,7 @@ class ArticleService(
     }
 
     @Transactional
-    fun create(request: CreateArticleRequest): ArticleWithDetailsDto {
+    override fun create(request: CreateArticleRequest): ArticleWithDetailsDto {
         val category =
             articleCategoryRepository
                 .findById(request.categoryId)
@@ -170,7 +173,7 @@ class ArticleService(
     }
 
     @Transactional
-    fun update(
+    override fun update(
         id: Long,
         request: UpdateArticleRequest,
     ): ArticleWithDetailsDto {
@@ -236,7 +239,7 @@ class ArticleService(
     }
 
     @Transactional
-    fun delete(id: Long) {
+    override fun delete(id: Long) {
         if (!articleRepository.existsById(id)) {
             throw ResourceNotFoundException("Article not found with id: $id")
         }
@@ -493,7 +496,7 @@ class ArticleService(
     }
 
     @Transactional(readOnly = true)
-    fun findPublicMugs(): List<PublicMugDto> {
+    override fun findPublicMugs(): List<PublicMugDto> {
         // Find all active mug articles with their details
         val mugs = articleRepository.findAllActiveMugsWithDetails(ArticleType.MUG)
 

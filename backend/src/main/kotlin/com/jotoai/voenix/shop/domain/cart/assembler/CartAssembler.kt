@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.domain.cart.assembler
 
-import com.jotoai.voenix.shop.domain.articles.assembler.ArticleAssembler
-import com.jotoai.voenix.shop.domain.articles.assembler.MugArticleVariantAssembler
+import com.jotoai.voenix.shop.article.internal.assembler.ArticleAssembler
+import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.domain.cart.dto.CartDto
 import com.jotoai.voenix.shop.domain.cart.dto.CartItemDto
 import com.jotoai.voenix.shop.domain.cart.dto.CartSummaryDto

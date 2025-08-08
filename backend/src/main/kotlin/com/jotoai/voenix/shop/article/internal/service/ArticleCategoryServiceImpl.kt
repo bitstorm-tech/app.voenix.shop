@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.categories.service
+package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
 import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleCategoryRequest
@@ -11,22 +11,24 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional(readOnly = true)
-class ArticleCategoryService(
+class ArticleCategoryServiceImpl(
+    
     private val articleCategoryRepository: ArticleCategoryRepository,
-) {
-    fun getAllCategories(): List<ArticleCategoryDto> = articleCategoryRepository.findAll().map { it.toDto() }
+) : com.jotoai.voenix.shop.article.api.categories.ArticleCategoryQueryService,
+    com.jotoai.voenix.shop.article.api.categories.ArticleCategoryFacade {
+    override fun getAllCategories(): List<ArticleCategoryDto> = articleCategoryRepository.findAll().map { it.toDto() }
 
-    fun getCategoryById(id: Long): ArticleCategoryDto =
+    override fun getCategoryById(id: Long): ArticleCategoryDto =
         articleCategoryRepository
             .findById(id)
             .map { it.toDto() }
             .orElseThrow { ResourceNotFoundException("ArticleCategory", "id", id) }
 
-    fun searchCategoriesByName(name: String): List<ArticleCategoryDto> =
+    override fun searchCategoriesByName(name: String): List<ArticleCategoryDto> =
         articleCategoryRepository.findByNameContainingIgnoreCase(name).map { it.toDto() }
 
     @Transactional
-    fun createCategory(request: CreateArticleCategoryRequest): ArticleCategoryDto {
+    override fun createCategory(request: CreateArticleCategoryRequest): ArticleCategoryDto {
         if (articleCategoryRepository.existsByNameIgnoreCase(request.name)) {
             throw IllegalArgumentException("Category with name '${request.name}' already exists")
         }
@@ -42,7 +44,7 @@ class ArticleCategoryService(
     }
 
     @Transactional
-    fun updateCategory(
+    override fun updateCategory(
         id: Long,
         request: UpdateArticleCategoryRequest,
     ): ArticleCategoryDto {
@@ -65,7 +67,7 @@ class ArticleCategoryService(
     }
 
     @Transactional
-    fun deleteCategory(id: Long) {
+    override fun deleteCategory(id: Long) {
         if (!articleCategoryRepository.existsById(id)) {
             throw ResourceNotFoundException("ArticleCategory", "id", id)
         }

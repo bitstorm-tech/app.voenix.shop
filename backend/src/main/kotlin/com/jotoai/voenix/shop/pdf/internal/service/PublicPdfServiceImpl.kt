@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.pdf.internal.service
 
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.articles.service.ArticleService
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.pdf.api.PdfFacade
 import com.jotoai.voenix.shop.pdf.api.PublicPdfService
 import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class PublicPdfServiceImpl(
     private val pdfFacade: PdfFacade,
-    private val articleService: ArticleService,
+    private val articleQueryService: ArticleQueryService,
     private val eventPublisher: ApplicationEventPublisher,
 ) : PublicPdfService {
     companion object {
@@ -44,7 +44,7 @@ class PublicPdfServiceImpl(
 
             val article =
                 try {
-                    articleService.findById(request.mugId)
+                    articleQueryService.findById(request.mugId)
                 } catch (e: ResourceNotFoundException) {
                     throw BadRequestException("Mug not found or unavailable")
                 }

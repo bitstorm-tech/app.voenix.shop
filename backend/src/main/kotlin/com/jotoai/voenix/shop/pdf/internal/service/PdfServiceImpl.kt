@@ -4,7 +4,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
 import com.jotoai.voenix.shop.common.exception.PdfGenerationException
-import com.jotoai.voenix.shop.domain.articles.service.ArticleService
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.pdf.api.PdfFacade
 import com.jotoai.voenix.shop.pdf.api.PdfQueryService
@@ -40,7 +40,7 @@ class PdfServiceImpl(
     @param:Value("\${pdf.size.height}") private val pdfHeightMm: Float,
     @param:Value("\${pdf.margin}") private val marginMm: Float,
     @param:Value("\${app.base-url}") private val appBaseUrl: String,
-    private val articleService: ArticleService,
+    private val articleQueryService: ArticleQueryService,
     private val storagePathService: StoragePathService,
     private val pdfQrProperties: PdfQrProperties,
     private val eventPublisher: ApplicationEventPublisher,
@@ -87,7 +87,7 @@ class PdfServiceImpl(
                 ),
             )
 
-            val article = articleService.findById(request.articleId)
+            val article = articleQueryService.findById(request.articleId)
 
             val mugDetails =
                 article.mugDetails

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.service
+package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.dto.CreateShirtDetailsRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleDetailsDto
