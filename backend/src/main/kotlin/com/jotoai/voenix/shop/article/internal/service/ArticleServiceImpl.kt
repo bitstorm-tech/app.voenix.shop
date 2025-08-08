@@ -556,4 +556,56 @@ class ArticleServiceImpl(
             }
         }
     }
+
+    override fun getArticlesByIds(ids: Collection<Long>): Map<Long, com.jotoai.voenix.shop.article.api.dto.ArticleDto> {
+        if (ids.isEmpty()) return emptyMap()
+        val articles = articleRepository.findAllById(ids)
+        return articles.associate { a ->
+            val dto = com.jotoai.voenix.shop.article.api.dto.ArticleDto(
+                id = requireNotNull(a.id),
+                name = a.name,
+                descriptionShort = a.descriptionShort,
+                descriptionLong = a.descriptionLong,
+                active = a.active,
+                articleType = a.articleType,
+                categoryId = a.category.id!!,
+                categoryName = a.category.name,
+                subcategoryId = a.subcategory?.id,
+                subcategoryName = a.subcategory?.name,
+                supplierId = a.supplierId,
+                supplierName = a.supplierId?.let { supplierQueryService.getSupplierById(it)?.name },
+                supplierArticleName = a.supplierArticleName,
+                supplierArticleNumber = a.supplierArticleNumber,
+                mugVariants = null,
+                shirtVariants = null,
+                createdAt = a.createdAt,
+                updatedAt = a.updatedAt,
+            )
+            dto.id to dto
+        }
+    }
+
+    override fun getMugVariantsByIds(ids: Collection<Long>): Map<Long, com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto> {
+        if (ids.isEmpty()) return emptyMap()
+        val variants = articleMugVariantRepository.findAllById(ids)
+        return variants.associate { v ->
+            val dto = mugArticleVariantAssembler.toDto(v)
+            dto.id to dto
+        }
+    }
+
+    override fun getCurrentGrossPrice(articleId: Long): Long {
+        val cost = costCalculationRepository.findByArticleId(articleId).orElse(null)
+        return cost?.salesTotalGross?.toLong() ?: 0L
+        
+    }
+
+    override fun validateVariantBelongsToArticle(articleId: Long, variantId: Long): Boolean {
+        val variantOpt = articleMugVariantRepository.findById(variantId)
+        return variantOpt.map { it.article.id == articleId }.orElse(false)
+    }
+
+    override fun getMugDetailsByArticleId(articleId: Long): com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto? {
+        return mugDetailsService.findByArticleId(articleId)
+    }
 }

@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.domain.orders.assembler
 
-import com.jotoai.voenix.shop.article.internal.assembler.ArticleAssembler
-import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.domain.orders.dto.AddressDto
 import com.jotoai.voenix.shop.domain.orders.dto.OrderDto
 import com.jotoai.voenix.shop.domain.orders.dto.OrderItemDto
@@ -13,8 +12,7 @@ import org.springframework.stereotype.Component
 @Component
 class OrderAssembler(
     @param:Value("\${app.base-url:http://localhost:8080}") private val appBaseUrl: String,
-    private val articleAssembler: ArticleAssembler,
-    private val mugArticleVariantAssembler: MugArticleVariantAssembler,
+    private val articleQueryService: ArticleQueryService,
 ) {
     fun toDto(entity: Order): OrderDto =
         OrderDto(
@@ -33,17 +31,29 @@ class OrderAssembler(
             status = entity.status,
             cartId = entity.cart.id!!,
             notes = entity.notes,
-            items = entity.items.map { toItemDto(it) },
+            items = run {
+                val articleIds = entity.items.mapNotNull { it.article.id }.distinct()
+                val variantIds = entity.items.mapNotNull { it.variant.id }.distinct()
+                val articlesById = articleQueryService.getArticlesByIds(articleIds)
+                val variantsById = articleQueryService.getMugVariantsByIds(variantIds)
+                entity.items.map { toItemDto(it, articlesById, variantsById) }
+            },
             pdfUrl = generatePdfUrl(entity.id),
             createdAt = requireNotNull(entity.createdAt) { "Order createdAt cannot be null when converting to DTO" },
             updatedAt = requireNotNull(entity.updatedAt) { "Order updatedAt cannot be null when converting to DTO" },
         )
 
-    fun toItemDto(entity: OrderItem): OrderItemDto =
+    fun toItemDto(
+        entity: OrderItem,
+        articlesById: Map<Long, com.jotoai.voenix.shop.article.api.dto.ArticleDto>,
+        variantsById: Map<Long, com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto>,
+    ): OrderItemDto =
         OrderItemDto(
             id = requireNotNull(entity.id) { "OrderItem ID cannot be null when converting to DTO" },
-            article = articleAssembler.toDto(entity.article),
-            variant = mugArticleVariantAssembler.toDto(entity.variant),
+            article = articlesById[requireNotNull(entity.article.id)]
+                ?: throw IllegalStateException("Missing ArticleDto for id: ${entity.article.id}"),
+            variant = variantsById[requireNotNull(entity.variant.id)]
+                ?: throw IllegalStateException("Missing MugArticleVariantDto for id: ${entity.variant.id}"),
             quantity = entity.quantity,
             pricePerItem = entity.pricePerItem,
             totalPrice = entity.totalPrice,

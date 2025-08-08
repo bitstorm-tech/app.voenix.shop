@@ -4,7 +4,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
 import com.jotoai.voenix.shop.common.exception.PdfGenerationException
-import com.jotoai.voenix.shop.article.internal.service.MugDetailsService
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.pdf.api.OrderPdfService
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
@@ -40,7 +40,7 @@ class OrderPdfServiceImpl(
     @param:Value("\${pdf.size.height:99}") private val pdfHeightMm: Float,
     @param:Value("\${pdf.margin:1}") private val pdfMarginMm: Float,
     private val imageAccessService: ImageAccessService,
-    private val mugDetailsService: MugDetailsService,
+    private val articleQueryService: ArticleQueryService,
     private val eventPublisher: ApplicationEventPublisher,
 ) : OrderPdfService {
     companion object {
@@ -254,7 +254,7 @@ class OrderPdfServiceImpl(
                 }
 
             // Get MugArticleDetails for the correct print template dimensions
-            val mugDetails = mugDetailsService.findByArticleId(orderItem.article.id)
+            val mugDetails = articleQueryService.getMugDetailsByArticleId(orderItem.article.id)
 
             // Create PDF image object
             val pdfImage = PDImageXObject.createFromByteArray(document, imageData, PDF_IMAGE_NAME_PRODUCT)

@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.article.api.dto
 
-import com.jotoai.voenix.shop.domain.articles.entity.CalculationMode
-import com.jotoai.voenix.shop.domain.articles.entity.PurchaseActiveRow
-import com.jotoai.voenix.shop.domain.articles.entity.SalesActiveRow
+import com.jotoai.voenix.shop.article.api.enums.CalculationMode
+import com.jotoai.voenix.shop.article.api.enums.PurchaseActiveRow
+import com.jotoai.voenix.shop.article.api.enums.SalesActiveRow
 import java.math.BigDecimal
 import java.time.OffsetDateTime
 

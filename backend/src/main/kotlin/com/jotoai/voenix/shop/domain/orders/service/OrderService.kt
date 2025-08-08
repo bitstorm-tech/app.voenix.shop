@@ -14,6 +14,7 @@ import com.jotoai.voenix.shop.domain.orders.entity.OrderItem
 import com.jotoai.voenix.shop.domain.orders.enums.OrderStatus
 import com.jotoai.voenix.shop.domain.orders.repository.OrderRepository
 import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import jakarta.persistence.EntityManager
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Pageable
@@ -28,6 +29,7 @@ class OrderService(
     private val userQueryService: UserQueryService,
     private val orderAssembler: OrderAssembler,
     private val entityManager: EntityManager,
+    private val articleQueryService: ArticleQueryService,
 ) {
     private val logger = LoggerFactory.getLogger(OrderService::class.java)
 
@@ -273,7 +275,7 @@ class OrderService(
      * Gets current price from article cost calculation
      */
     private fun getCurrentPrice(article: com.jotoai.voenix.shop.domain.articles.entity.Article): Long =
-        article.costCalculation?.salesTotalGross?.toLong() ?: 0L
+        articleQueryService.getCurrentGrossPrice(requireNotNull(article.id))
 
     private fun findActiveCartByUserId(userId: Long): Cart =
         cartRepository

@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.domain.cart.assembler
 
-import com.jotoai.voenix.shop.article.internal.assembler.ArticleAssembler
-import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.domain.cart.dto.CartDto
 import com.jotoai.voenix.shop.domain.cart.dto.CartItemDto
 import com.jotoai.voenix.shop.domain.cart.dto.CartSummaryDto
@@ -11,8 +10,7 @@ import org.springframework.stereotype.Component
 
 @Component
 class CartAssembler(
-    private val articleAssembler: ArticleAssembler,
-    private val mugArticleVariantAssembler: MugArticleVariantAssembler,
+    private val articleQueryService: ArticleQueryService,
 ) {
     fun toDto(entity: Cart): CartDto =
         CartDto(
@@ -21,7 +19,13 @@ class CartAssembler(
             status = entity.status,
             version = entity.version,
             expiresAt = entity.expiresAt,
-            items = entity.items.map { toItemDto(it) },
+            items = run {
+                val articleIds = entity.items.mapNotNull { it.article.id }.distinct()
+                val variantIds = entity.items.mapNotNull { it.variant.id }.distinct()
+                val articlesById = articleQueryService.getArticlesByIds(articleIds)
+                val variantsById = articleQueryService.getMugVariantsByIds(variantIds)
+                entity.items.map { toItemDto(it, articlesById, variantsById) }
+            },
             totalItemCount = entity.getTotalItemCount(),
             totalPrice = entity.getTotalPrice(),
             isEmpty = entity.isEmpty(),
@@ -29,7 +33,11 @@ class CartAssembler(
             updatedAt = entity.updatedAt,
         )
 
-    fun toItemDto(entity: CartItem): CartItemDto {
+    fun toItemDto(
+        entity: CartItem,
+        articlesById: Map<Long, com.jotoai.voenix.shop.article.api.dto.ArticleDto>,
+        variantsById: Map<Long, com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto>,
+    ): CartItemDto {
         // Use FK fields directly
         val generatedImageId = entity.generatedImageId
         val generatedImageFilename: String? = null // TODO: Get from image service if needed
@@ -37,8 +45,10 @@ class CartAssembler(
 
         return CartItemDto(
             id = requireNotNull(entity.id) { "CartItem ID cannot be null when converting to DTO" },
-            article = articleAssembler.toDto(entity.article),
-            variant = mugArticleVariantAssembler.toDto(entity.variant),
+            article = articlesById[requireNotNull(entity.article.id)]
+                ?: throw IllegalStateException("Missing ArticleDto for id: ${entity.article.id}"),
+            variant = variantsById[requireNotNull(entity.variant.id)]
+                ?: throw IllegalStateException("Missing MugArticleVariantDto for id: ${entity.variant.id}"),
             quantity = entity.quantity,
             priceAtTime = entity.priceAtTime,
             originalPrice = entity.originalPrice,

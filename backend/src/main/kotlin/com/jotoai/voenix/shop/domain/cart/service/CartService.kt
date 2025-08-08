@@ -18,6 +18,7 @@ import com.jotoai.voenix.shop.domain.cart.exception.CartNotFoundException
 import com.jotoai.voenix.shop.domain.cart.exception.CartOperationException
 import com.jotoai.voenix.shop.domain.cart.repository.CartRepository
 import com.jotoai.voenix.shop.image.api.ImageQueryService
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
@@ -36,6 +37,7 @@ class CartService(
     private val imageQueryService: ImageQueryService,
     private val promptRepository: PromptRepository,
     private val cartAssembler: CartAssembler,
+    private val articleQueryService: ArticleQueryService,
 ) {
     private val logger = LoggerFactory.getLogger(CartService::class.java)
 
@@ -328,8 +330,7 @@ class CartService(
             .orElseThrow { ResourceNotFoundException("Variant not found with id: $variantId") }
 
     private fun getCurrentPrice(article: Article): Long {
-        // Get price from cost calculation, default to 0 if not available
-        return article.costCalculation?.salesTotalGross?.toLong() ?: 0L
+        return articleQueryService.getCurrentGrossPrice(requireNotNull(article.id))
     }
 
     companion object {

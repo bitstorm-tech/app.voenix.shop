@@ -54,7 +54,7 @@ class CostCalculation(
     var purchaseVatRatePercent: BigDecimal = BigDecimal("19"),
     @Column(name = "purchase_calculation_mode", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    var purchaseCalculationMode: CalculationMode = CalculationMode.NET,
+    var purchaseCalculationMode: com.jotoai.voenix.shop.article.api.enums.CalculationMode = com.jotoai.voenix.shop.article.api.enums.CalculationMode.NET,
     // Sales section fields
     @Column(name = "sales_vat_rate_id")
     var salesVatRateId: Long? = null,
@@ -78,20 +78,20 @@ class CostCalculation(
     var salesPriceUnit: String = "PER_PIECE",
     @Column(name = "sales_calculation_mode", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    var salesCalculationMode: CalculationMode = CalculationMode.NET,
+    var salesCalculationMode: com.jotoai.voenix.shop.article.api.enums.CalculationMode = com.jotoai.voenix.shop.article.api.enums.CalculationMode.NET,
     // UI state fields
     @Column(name = "purchase_price_corresponds", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    var purchasePriceCorresponds: CalculationMode = CalculationMode.NET,
+    var purchasePriceCorresponds: com.jotoai.voenix.shop.article.api.enums.CalculationMode = com.jotoai.voenix.shop.article.api.enums.CalculationMode.NET,
     @Column(name = "sales_price_corresponds", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    var salesPriceCorresponds: CalculationMode = CalculationMode.NET,
+    var salesPriceCorresponds: com.jotoai.voenix.shop.article.api.enums.CalculationMode = com.jotoai.voenix.shop.article.api.enums.CalculationMode.NET,
     @Column(name = "purchase_active_row", length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
-    var purchaseActiveRow: PurchaseActiveRow = PurchaseActiveRow.COST,
+    var purchaseActiveRow: com.jotoai.voenix.shop.article.api.enums.PurchaseActiveRow = com.jotoai.voenix.shop.article.api.enums.PurchaseActiveRow.COST,
     @Column(name = "sales_active_row", length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
-    var salesActiveRow: SalesActiveRow = SalesActiveRow.MARGIN,
+    var salesActiveRow: com.jotoai.voenix.shop.article.api.enums.SalesActiveRow = com.jotoai.voenix.shop.article.api.enums.SalesActiveRow.MARGIN,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     var createdAt: OffsetDateTime? = null,
@@ -143,60 +143,4 @@ class CostCalculation(
     }
 
     override fun hashCode(): Int = id?.hashCode() ?: 0
-}
-
-enum class CalculationMode {
-    NET,
-    GROSS,
-}
-
-enum class PurchaseActiveRow {
-    COST,
-    COST_PERCENT,
-    ;
-
-    companion object {
-        @JvmStatic
-        @com.fasterxml.jackson.annotation.JsonCreator
-        fun fromValue(value: String): PurchaseActiveRow =
-            when (value.lowercase()) {
-                "cost" -> COST
-                "costpercent", "cost_percent" -> COST_PERCENT
-                else -> throw IllegalArgumentException("Unknown PurchaseActiveRow value: $value")
-            }
-    }
-
-    @com.fasterxml.jackson.annotation.JsonValue
-    fun toValue(): String =
-        when (this) {
-            COST -> "cost"
-            COST_PERCENT -> "costPercent"
-        }
-}
-
-enum class SalesActiveRow {
-    MARGIN,
-    MARGIN_PERCENT,
-    TOTAL,
-    ;
-
-    companion object {
-        @JvmStatic
-        @com.fasterxml.jackson.annotation.JsonCreator
-        fun fromValue(value: String): SalesActiveRow =
-            when (value.lowercase()) {
-                "margin" -> MARGIN
-                "marginpercent", "margin_percent" -> MARGIN_PERCENT
-                "total" -> TOTAL
-                else -> throw IllegalArgumentException("Unknown SalesActiveRow value: $value")
-            }
-    }
-
-    @com.fasterxml.jackson.annotation.JsonValue
-    fun toValue(): String =
-        when (this) {
-            MARGIN -> "margin"
-            MARGIN_PERCENT -> "marginPercent"
-            TOTAL -> "total"
-        }
 }

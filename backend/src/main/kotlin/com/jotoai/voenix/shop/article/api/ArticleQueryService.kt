@@ -10,7 +10,12 @@ import com.jotoai.voenix.shop.common.dto.PaginatedResponse
  * Query service for Article module read operations.
  * Transitional PR1 version referencing existing DTOs in domain.articles.
  */
-interface ArticleQueryService {
+interface ArticleQueryService { 
+    fun getArticlesByIds(ids: Collection<Long>): Map<Long, ArticleDto>
+    fun getMugVariantsByIds(ids: Collection<Long>): Map<Long, com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto>
+    fun getCurrentGrossPrice(articleId: Long): Long
+    fun validateVariantBelongsToArticle(articleId: Long, variantId: Long): Boolean
+    fun getMugDetailsByArticleId(articleId: Long): com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto?
     fun findAll(
         page: Int,
         size: Int,
