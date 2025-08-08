@@ -53,8 +53,7 @@ class ArticleServiceImpl(
     private val mugArticleVariantAssembler: MugArticleVariantAssembler,
     private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
     private val storagePathService: StoragePathService,
-) :
-    ArticleQueryService,
+) : ArticleQueryService,
     ArticleFacade {
     @Transactional(readOnly = true)
     override fun findAll(
@@ -564,25 +563,25 @@ class ArticleServiceImpl(
         return articles.associate { a ->
             val dto =
                 com.jotoai.voenix.shop.article.api.dto.ArticleDto(
-                id = requireNotNull(a.id),
-                name = a.name,
-                descriptionShort = a.descriptionShort,
-                descriptionLong = a.descriptionLong,
-                active = a.active,
-                articleType = a.articleType,
-                categoryId = a.category.id!!,
-                categoryName = a.category.name,
-                subcategoryId = a.subcategory?.id,
-                subcategoryName = a.subcategory?.name,
-                supplierId = a.supplierId,
-                supplierName = a.supplierId?.let { supplierQueryService.getSupplierById(it)?.name },
-                supplierArticleName = a.supplierArticleName,
-                supplierArticleNumber = a.supplierArticleNumber,
-                mugVariants = null,
-                shirtVariants = null,
-                createdAt = a.createdAt,
-                updatedAt = a.updatedAt,
-            )
+                    id = requireNotNull(a.id),
+                    name = a.name,
+                    descriptionShort = a.descriptionShort,
+                    descriptionLong = a.descriptionLong,
+                    active = a.active,
+                    articleType = a.articleType,
+                    categoryId = a.category.id!!,
+                    categoryName = a.category.name,
+                    subcategoryId = a.subcategory?.id,
+                    subcategoryName = a.subcategory?.name,
+                    supplierId = a.supplierId,
+                    supplierName = a.supplierId?.let { supplierQueryService.getSupplierById(it)?.name },
+                    supplierArticleName = a.supplierArticleName,
+                    supplierArticleNumber = a.supplierArticleNumber,
+                    mugVariants = null,
+                    shirtVariants = null,
+                    createdAt = a.createdAt,
+                    updatedAt = a.updatedAt,
+                )
             dto.id to dto
         }
     }
@@ -601,7 +600,10 @@ class ArticleServiceImpl(
         return cost?.salesTotalGross?.toLong() ?: 0L
     }
 
-    override fun validateVariantBelongsToArticle(articleId: Long, variantId: Long): Boolean {
+    override fun validateVariantBelongsToArticle(
+        articleId: Long,
+        variantId: Long,
+    ): Boolean {
         val variantOpt = articleMugVariantRepository.findById(variantId)
         return variantOpt.map { it.article.id == articleId }.orElse(false)
     }

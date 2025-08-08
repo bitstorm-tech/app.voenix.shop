@@ -329,8 +329,7 @@ class CartService(
             .findById(variantId)
             .orElseThrow { ResourceNotFoundException("Variant not found with id: $variantId") }
 
-    private fun getCurrentPrice(article: Article): Long =
-        articleQueryService.getCurrentGrossPrice(requireNotNull(article.id))
+    private fun getCurrentPrice(article: Article): Long = articleQueryService.getCurrentGrossPrice(requireNotNull(article.id))
 
     companion object {
         private const val DEFAULT_CART_EXPIRY_DAYS = 30L

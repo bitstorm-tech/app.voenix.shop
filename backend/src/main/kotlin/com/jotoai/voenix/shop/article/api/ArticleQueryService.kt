@@ -17,7 +17,10 @@ interface ArticleQueryService {
 
     fun getCurrentGrossPrice(articleId: Long): Long
 
-    fun validateVariantBelongsToArticle(articleId: Long, variantId: Long): Boolean
+    fun validateVariantBelongsToArticle(
+        articleId: Long,
+        variantId: Long,
+    ): Boolean
 
     fun getMugDetailsByArticleId(articleId: Long): com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto?
 
