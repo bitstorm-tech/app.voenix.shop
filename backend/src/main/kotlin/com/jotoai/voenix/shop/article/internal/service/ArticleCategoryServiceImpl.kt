@@ -3,16 +3,15 @@ package com.jotoai.voenix.shop.article.internal.service
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
 import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleCategoryRequest
 import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleCategoryRequest
+import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
+import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleCategoryRepository
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory
-import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleCategoryRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 @Transactional(readOnly = true)
 class ArticleCategoryServiceImpl(
-    
     private val articleCategoryRepository: ArticleCategoryRepository,
 ) : com.jotoai.voenix.shop.article.api.categories.ArticleCategoryQueryService,
     com.jotoai.voenix.shop.article.api.categories.ArticleCategoryFacade {

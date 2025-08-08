@@ -1,10 +1,11 @@
 package com.jotoai.voenix.shop.domain.cart.service
 
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.internal.entity.Article
+import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
+import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
+import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.articles.entity.Article
-import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
-import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
-import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.domain.cart.assembler.CartAssembler
 import com.jotoai.voenix.shop.domain.cart.dto.AddToCartRequest
 import com.jotoai.voenix.shop.domain.cart.dto.CartDto
@@ -18,7 +19,6 @@ import com.jotoai.voenix.shop.domain.cart.exception.CartNotFoundException
 import com.jotoai.voenix.shop.domain.cart.exception.CartOperationException
 import com.jotoai.voenix.shop.domain.cart.repository.CartRepository
 import com.jotoai.voenix.shop.image.api.ImageQueryService
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
@@ -329,9 +329,8 @@ class CartService(
             .findById(variantId)
             .orElseThrow { ResourceNotFoundException("Variant not found with id: $variantId") }
 
-    private fun getCurrentPrice(article: Article): Long {
-        return articleQueryService.getCurrentGrossPrice(requireNotNull(article.id))
-    }
+    private fun getCurrentPrice(article: Article): Long =
+        articleQueryService.getCurrentGrossPrice(requireNotNull(article.id))
 
     companion object {
         private const val DEFAULT_CART_EXPIRY_DAYS = 30L

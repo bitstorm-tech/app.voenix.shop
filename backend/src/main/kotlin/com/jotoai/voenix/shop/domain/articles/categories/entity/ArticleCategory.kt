@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.categories.entity
+package com.jotoai.voenix.shop.article.internal.categories.entity
 
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
 import jakarta.persistence.Column

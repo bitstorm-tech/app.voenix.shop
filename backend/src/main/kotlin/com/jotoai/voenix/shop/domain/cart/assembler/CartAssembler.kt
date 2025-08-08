@@ -19,12 +19,13 @@ class CartAssembler(
             status = entity.status,
             version = entity.version,
             expiresAt = entity.expiresAt,
-            items = run {
-                val articleIds = entity.items.mapNotNull { it.article.id }.distinct()
-                val variantIds = entity.items.mapNotNull { it.variant.id }.distinct()
-                val articlesById = articleQueryService.getArticlesByIds(articleIds)
-                val variantsById = articleQueryService.getMugVariantsByIds(variantIds)
-                entity.items.map { toItemDto(it, articlesById, variantsById) }
+            items =
+                    run {
+                    val articleIds = entity.items.mapNotNull { it.article.id }.distinct()
+                    val variantIds = entity.items.mapNotNull { it.variant.id }.distinct()
+                    val articlesById = articleQueryService.getArticlesByIds(articleIds)
+                    val variantsById = articleQueryService.getMugVariantsByIds(variantIds)
+                    entity.items.map { toItemDto(it, articlesById, variantsById) }
             },
             totalItemCount = entity.getTotalItemCount(),
             totalPrice = entity.getTotalPrice(),
@@ -45,9 +46,11 @@ class CartAssembler(
 
         return CartItemDto(
             id = requireNotNull(entity.id) { "CartItem ID cannot be null when converting to DTO" },
-            article = articlesById[requireNotNull(entity.article.id)]
+            article =
+                    articlesById[requireNotNull(entity.article.id)]
                 ?: throw IllegalStateException("Missing ArticleDto for id: ${entity.article.id}"),
-            variant = variantsById[requireNotNull(entity.variant.id)]
+            variant =
+                    variantsById[requireNotNull(entity.variant.id)]
                 ?: throw IllegalStateException("Missing MugArticleVariantDto for id: ${entity.variant.id}"),
             quantity = entity.quantity,
             priceAtTime = entity.priceAtTime,

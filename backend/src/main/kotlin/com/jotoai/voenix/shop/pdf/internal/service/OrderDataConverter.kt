@@ -29,7 +29,7 @@ class OrderDataConverter {
             article = convertToArticlePdfData(orderItem.article),
         )
 
-    private fun convertToArticlePdfData(article: com.jotoai.voenix.shop.domain.articles.entity.Article): ArticlePdfData =
+    private fun convertToArticlePdfData(article: com.jotoai.voenix.shop.article.internal.entity.Article): ArticlePdfData =
         ArticlePdfData(
             id = requireNotNull(article.id) { "Article ID cannot be null" },
             mugDetails = null, // Will be populated by service layer as needed

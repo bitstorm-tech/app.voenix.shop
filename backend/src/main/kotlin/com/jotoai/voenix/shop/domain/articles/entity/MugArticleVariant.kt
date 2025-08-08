@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.entity
+package com.jotoai.voenix.shop.article.internal.entity
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

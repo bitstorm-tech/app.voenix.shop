@@ -2,11 +2,11 @@ package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
-import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
-import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
-import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
+import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
+import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
+import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
+import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.slf4j.LoggerFactory
@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class MugVariantServiceImpl(
-    
     private val articleRepository: ArticleRepository,
     private val mugVariantRepository: MugArticleVariantRepository,
     private val imageStorageService: ImageStorageService,

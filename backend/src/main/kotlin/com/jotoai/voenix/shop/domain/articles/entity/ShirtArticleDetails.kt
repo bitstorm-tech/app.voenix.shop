@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.entity
+package com.jotoai.voenix.shop.article.internal.entity
 
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleDetailsDto
 import com.jotoai.voenix.shop.article.api.enums.FitType

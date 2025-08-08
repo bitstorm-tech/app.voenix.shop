@@ -1,5 +1,7 @@
 package com.jotoai.voenix.shop.article.internal.service
 
+import com.jotoai.voenix.shop.article.api.ArticleFacade
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.article.api.dto.CreateArticleRequest
@@ -11,21 +13,21 @@ import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.UpdateCostCalculationRequest
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
-import com.jotoai.voenix.shop.common.dto.PaginatedResponse
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.article.internal.assembler.ArticleAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
-import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleCategoryRepository
-import com.jotoai.voenix.shop.domain.articles.categories.repository.ArticleSubCategoryRepository
-import com.jotoai.voenix.shop.domain.articles.entity.Article
+import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleCategoryRepository
+import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleSubCategoryRepository
+import com.jotoai.voenix.shop.article.internal.entity.Article
+import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
+import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
+import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
+import com.jotoai.voenix.shop.article.internal.repository.CostCalculationRepository
+import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
+import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRepository
+import com.jotoai.voenix.shop.common.dto.PaginatedResponse
+import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.articles.entity.CostCalculation
-import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
-import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
-import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
-import com.jotoai.voenix.shop.domain.articles.repository.CostCalculationRepository
-import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
-import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepository
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
@@ -33,13 +35,10 @@ import com.jotoai.voenix.shop.vat.api.VatQueryService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
-import com.jotoai.voenix.shop.article.api.ArticleFacade
 import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ArticleServiceImpl(
-    
     private val articleRepository: ArticleRepository,
     private val articleMugVariantRepository: MugArticleVariantRepository,
     private val articleShirtVariantRepository: ShirtArticleVariantRepository,
@@ -54,7 +53,9 @@ class ArticleServiceImpl(
     private val mugArticleVariantAssembler: MugArticleVariantAssembler,
     private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
     private val storagePathService: StoragePathService,
-) : ArticleQueryService, ArticleFacade {
+) :
+    ArticleQueryService,
+    ArticleFacade {
     @Transactional(readOnly = true)
     override fun findAll(
         page: Int,
@@ -561,7 +562,8 @@ class ArticleServiceImpl(
         if (ids.isEmpty()) return emptyMap()
         val articles = articleRepository.findAllById(ids)
         return articles.associate { a ->
-            val dto = com.jotoai.voenix.shop.article.api.dto.ArticleDto(
+            val dto =
+                com.jotoai.voenix.shop.article.api.dto.ArticleDto(
                 id = requireNotNull(a.id),
                 name = a.name,
                 descriptionShort = a.descriptionShort,
@@ -597,7 +599,6 @@ class ArticleServiceImpl(
     override fun getCurrentGrossPrice(articleId: Long): Long {
         val cost = costCalculationRepository.findByArticleId(articleId).orElse(null)
         return cost?.salesTotalGross?.toLong() ?: 0L
-        
     }
 
     override fun validateVariantBelongsToArticle(articleId: Long, variantId: Long): Boolean {
@@ -605,7 +606,6 @@ class ArticleServiceImpl(
         return variantOpt.map { it.article.id == articleId }.orElse(false)
     }
 
-    override fun getMugDetailsByArticleId(articleId: Long): com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto? {
-        return mugDetailsService.findByArticleId(articleId)
-    }
+    override fun getMugDetailsByArticleId(articleId: Long): com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto? =
+        mugDetailsService.findByArticleId(articleId)
 }

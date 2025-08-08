@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.domain.articles.repository
+package com.jotoai.voenix.shop.article.internal.repository
 
-import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleDetails
+import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleDetails
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 

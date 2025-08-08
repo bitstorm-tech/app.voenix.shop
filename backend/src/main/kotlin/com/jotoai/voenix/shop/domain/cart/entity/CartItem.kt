@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.domain.cart.entity
 
-import com.jotoai.voenix.shop.domain.articles.entity.Article
-import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
+import com.jotoai.voenix.shop.article.internal.entity.Article
+import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

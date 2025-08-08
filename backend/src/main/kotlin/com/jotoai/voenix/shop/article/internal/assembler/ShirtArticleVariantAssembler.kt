@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.article.internal.assembler
 
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
-import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
+import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.springframework.stereotype.Component

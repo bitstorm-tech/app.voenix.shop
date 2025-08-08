@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.pdf.internal.service
 
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.pdf.api.PdfFacade
 import com.jotoai.voenix.shop.pdf.api.PublicPdfService
 import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest

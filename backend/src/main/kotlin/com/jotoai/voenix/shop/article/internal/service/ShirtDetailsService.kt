@@ -3,9 +3,9 @@ package com.jotoai.voenix.shop.article.internal.service
 import com.jotoai.voenix.shop.article.api.dto.CreateShirtDetailsRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleDetailsDto
 import com.jotoai.voenix.shop.article.api.dto.UpdateShirtDetailsRequest
-import com.jotoai.voenix.shop.domain.articles.entity.Article
-import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleDetails
-import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleDetailsRepository
+import com.jotoai.voenix.shop.article.internal.entity.Article
+import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleDetails
+import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleDetailsRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

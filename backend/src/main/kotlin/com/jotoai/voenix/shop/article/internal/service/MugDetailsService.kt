@@ -3,9 +3,9 @@ package com.jotoai.voenix.shop.article.internal.service
 import com.jotoai.voenix.shop.article.api.dto.CreateMugDetailsRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto
 import com.jotoai.voenix.shop.article.api.dto.UpdateMugDetailsRequest
-import com.jotoai.voenix.shop.domain.articles.entity.Article
-import com.jotoai.voenix.shop.domain.articles.entity.MugArticleDetails
-import com.jotoai.voenix.shop.domain.articles.repository.MugArticleDetailsRepository
+import com.jotoai.voenix.shop.article.internal.entity.Article
+import com.jotoai.voenix.shop.article.internal.entity.MugArticleDetails
+import com.jotoai.voenix.shop.article.internal.repository.MugArticleDetailsRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

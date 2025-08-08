@@ -2,11 +2,11 @@ package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
-import com.jotoai.voenix.shop.domain.articles.entity.ShirtArticleVariant
-import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
-import com.jotoai.voenix.shop.domain.articles.repository.ShirtArticleVariantRepository
+import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
+import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
+import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRepository
+import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.slf4j.LoggerFactory
@@ -15,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ShirtVariantServiceImpl(
-    
     private val articleRepository: ArticleRepository,
     private val shirtVariantRepository: ShirtArticleVariantRepository,
     private val imageStorageService: ImageStorageService,

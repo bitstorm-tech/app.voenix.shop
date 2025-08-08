@@ -3,13 +3,13 @@ package com.jotoai.voenix.shop.domain.articles.service
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
-import com.jotoai.voenix.shop.domain.articles.categories.entity.ArticleCategory
-import com.jotoai.voenix.shop.domain.articles.entity.Article
-import com.jotoai.voenix.shop.domain.articles.entity.MugArticleVariant
-import com.jotoai.voenix.shop.domain.articles.repository.ArticleRepository
-import com.jotoai.voenix.shop.domain.articles.repository.MugArticleVariantRepository
+import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
+import com.jotoai.voenix.shop.article.internal.entity.Article
+import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
+import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
+import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
+import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -40,7 +40,13 @@ class MugVariantServiceTest {
         mugVariantRepository = mock(MugArticleVariantRepository::class.java)
         imageStorageService = mock(ImageStorageService::class.java)
         mugArticleVariantAssembler = mock(MugArticleVariantAssembler::class.java)
-        mugVariantService = com.jotoai.voenix.shop.article.internal.service.MugVariantServiceImpl(articleRepository, mugVariantRepository, imageStorageService, mugArticleVariantAssembler)
+        mugVariantService =
+            com.jotoai.voenix.shop.article.internal.service.MugVariantServiceImpl(
+                articleRepository,
+                mugVariantRepository,
+                imageStorageService,
+                mugArticleVariantAssembler,
+            )
 
         // Setup test data
         testCategory =

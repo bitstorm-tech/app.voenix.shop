@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.articles.repository
+package com.jotoai.voenix.shop.article.internal.repository
 
 import com.jotoai.voenix.shop.domain.articles.entity.CostCalculation
 import org.springframework.data.jpa.repository.JpaRepository

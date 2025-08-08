@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.domain.orders.service
 
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
@@ -14,7 +15,6 @@ import com.jotoai.voenix.shop.domain.orders.entity.OrderItem
 import com.jotoai.voenix.shop.domain.orders.enums.OrderStatus
 import com.jotoai.voenix.shop.domain.orders.repository.OrderRepository
 import com.jotoai.voenix.shop.user.api.UserQueryService
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import jakarta.persistence.EntityManager
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Pageable
@@ -274,7 +274,7 @@ class OrderService(
     /**
      * Gets current price from article cost calculation
      */
-    private fun getCurrentPrice(article: com.jotoai.voenix.shop.domain.articles.entity.Article): Long =
+    private fun getCurrentPrice(article: com.jotoai.voenix.shop.article.internal.entity.Article): Long =
         articleQueryService.getCurrentGrossPrice(requireNotNull(article.id))
 
     private fun findActiveCartByUserId(userId: Long): Cart =

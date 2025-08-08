@@ -1,5 +1,9 @@
 package com.jotoai.voenix.shop.domain.articles.entity
 
+import com.jotoai.voenix.shop.article.api.enums.CalculationMode
+import com.jotoai.voenix.shop.article.api.enums.PurchaseActiveRow
+import com.jotoai.voenix.shop.article.api.enums.SalesActiveRow
+import com.jotoai.voenix.shop.article.internal.entity.Article
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType
@@ -54,7 +58,7 @@ class CostCalculation(
     var purchaseVatRatePercent: BigDecimal = BigDecimal("19"),
     @Column(name = "purchase_calculation_mode", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    var purchaseCalculationMode: com.jotoai.voenix.shop.article.api.enums.CalculationMode = com.jotoai.voenix.shop.article.api.enums.CalculationMode.NET,
+    var purchaseCalculationMode: CalculationMode = CalculationMode.NET,
     // Sales section fields
     @Column(name = "sales_vat_rate_id")
     var salesVatRateId: Long? = null,
@@ -78,20 +82,20 @@ class CostCalculation(
     var salesPriceUnit: String = "PER_PIECE",
     @Column(name = "sales_calculation_mode", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    var salesCalculationMode: com.jotoai.voenix.shop.article.api.enums.CalculationMode = com.jotoai.voenix.shop.article.api.enums.CalculationMode.NET,
+    var salesCalculationMode: CalculationMode = CalculationMode.NET,
     // UI state fields
     @Column(name = "purchase_price_corresponds", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    var purchasePriceCorresponds: com.jotoai.voenix.shop.article.api.enums.CalculationMode = com.jotoai.voenix.shop.article.api.enums.CalculationMode.NET,
+    var purchasePriceCorresponds: CalculationMode = CalculationMode.NET,
     @Column(name = "sales_price_corresponds", length = 10, nullable = false)
     @Enumerated(EnumType.STRING)
-    var salesPriceCorresponds: com.jotoai.voenix.shop.article.api.enums.CalculationMode = com.jotoai.voenix.shop.article.api.enums.CalculationMode.NET,
+    var salesPriceCorresponds: CalculationMode = CalculationMode.NET,
     @Column(name = "purchase_active_row", length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
-    var purchaseActiveRow: com.jotoai.voenix.shop.article.api.enums.PurchaseActiveRow = com.jotoai.voenix.shop.article.api.enums.PurchaseActiveRow.COST,
+    var purchaseActiveRow: PurchaseActiveRow = PurchaseActiveRow.COST,
     @Column(name = "sales_active_row", length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
-    var salesActiveRow: com.jotoai.voenix.shop.article.api.enums.SalesActiveRow = com.jotoai.voenix.shop.article.api.enums.SalesActiveRow.MARGIN,
+    var salesActiveRow: SalesActiveRow = SalesActiveRow.MARGIN,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     var createdAt: OffsetDateTime? = null,

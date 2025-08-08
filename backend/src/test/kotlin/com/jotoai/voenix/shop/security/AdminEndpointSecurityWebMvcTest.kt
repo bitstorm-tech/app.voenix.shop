@@ -3,9 +3,9 @@ package com.jotoai.voenix.shop.security
 import com.jotoai.voenix.shop.api.admin.articles.ArticleController
 import com.jotoai.voenix.shop.api.admin.prompts.AdminPromptController
 import com.jotoai.voenix.shop.api.admin.users.AdminUserController
-import com.jotoai.voenix.shop.auth.config.SecurityConfig
 import com.jotoai.voenix.shop.article.api.ArticleFacade
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.auth.config.SecurityConfig
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
