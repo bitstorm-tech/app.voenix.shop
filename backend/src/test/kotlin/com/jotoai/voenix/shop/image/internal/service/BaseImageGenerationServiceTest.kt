@@ -3,14 +3,14 @@ package com.jotoai.voenix.shop.image.internal.service
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
-import com.jotoai.voenix.shop.domain.prompts.dto.PromptDto
-import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.enums.ImageBackground
 import com.jotoai.voenix.shop.image.api.enums.ImageQuality
 import com.jotoai.voenix.shop.image.api.enums.ImageSize
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -24,7 +24,7 @@ import java.time.LocalDateTime
 
 class BaseImageGenerationServiceTest {
     private lateinit var openAIImageService: OpenAIImageService
-    private lateinit var promptService: PromptService
+    private lateinit var promptQueryService: PromptQueryService
     private lateinit var generatedImageRepository: GeneratedImageRepository
     private lateinit var baseImageGenerationService: TestableBaseImageGenerationService
 
@@ -35,13 +35,13 @@ class BaseImageGenerationServiceTest {
     @BeforeEach
     fun setUp() {
         openAIImageService = mock()
-        promptService = mock()
+        promptQueryService = mock()
         generatedImageRepository = mock()
 
         baseImageGenerationService =
             TestableBaseImageGenerationService(
                 openAIImageService = openAIImageService,
-                promptService = promptService,
+                promptService = promptQueryService,
                 generatedImageRepository = generatedImageRepository,
             )
 
@@ -196,7 +196,7 @@ class BaseImageGenerationServiceTest {
         val promptId = 1L
         val activePrompt = createPrompt(id = promptId, active = true)
 
-        whenever(promptService.getPromptById(promptId)).thenReturn(activePrompt)
+        whenever(promptQueryService.getPromptById(promptId)).thenReturn(activePrompt)
 
         // When & Then - should not throw
         baseImageGenerationService.testValidatePrompt(promptId)
@@ -208,7 +208,7 @@ class BaseImageGenerationServiceTest {
         val promptId = 1L
         val inactivePrompt = createPrompt(id = promptId, active = false)
 
-        whenever(promptService.getPromptById(promptId)).thenReturn(inactivePrompt)
+        whenever(promptQueryService.getPromptById(promptId)).thenReturn(inactivePrompt)
 
         // When & Then
         val exception =
@@ -224,7 +224,7 @@ class BaseImageGenerationServiceTest {
         // Given
         val promptId = 999L
 
-        whenever(promptService.getPromptById(promptId))
+        whenever(promptQueryService.getPromptById(promptId))
             .thenThrow(ResourceNotFoundException("Prompt not found"))
 
         // When & Then
@@ -430,7 +430,7 @@ class BaseImageGenerationServiceTest {
      */
     private class TestableBaseImageGenerationService(
         openAIImageService: OpenAIImageService,
-        promptService: PromptService,
+        promptService: PromptQueryService,
         generatedImageRepository: GeneratedImageRepository,
     ) : BaseImageGenerationService(openAIImageService, promptService, generatedImageRepository) {
         fun testValidateImageFile(file: MultipartFile) = validateImageFile(file)

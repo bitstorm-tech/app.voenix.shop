@@ -15,10 +15,8 @@ import com.jotoai.voenix.shop.prompt.events.PromptCreatedEvent
 import com.jotoai.voenix.shop.prompt.events.PromptDeletedEvent
 import com.jotoai.voenix.shop.prompt.events.PromptUpdatedEvent
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
-import com.jotoai.voenix.shop.prompt.internal.repository.PromptCategoryRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
-import com.jotoai.voenix.shop.prompt.internal.repository.PromptSubCategoryRepository
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
@@ -28,11 +26,10 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class PromptServiceImpl(
     private val promptRepository: PromptRepository,
-    private val promptCategoryRepository: PromptCategoryRepository,
-    private val promptSubCategoryRepository: PromptSubCategoryRepository,
     private val promptSlotVariantRepository: PromptSlotVariantRepository,
     private val imageStorageService: ImageStorageService,
     private val promptAssembler: PromptAssembler,
+    private val promptValidator: PromptValidator,
     private val eventPublisher: ApplicationEventPublisher,
 ) : PromptFacade,
     PromptQueryService {
@@ -66,15 +63,9 @@ class PromptServiceImpl(
 
     @Transactional
     override fun createPrompt(request: CreatePromptRequest): PromptDto {
-        // Validate category exists if provided
-        if (request.categoryId != null && !promptCategoryRepository.existsById(request.categoryId)) {
-            throw PromptNotFoundException("PromptCategory", "id", request.categoryId)
-        }
-
-        // Validate subcategory exists if provided
-        if (request.subcategoryId != null && !promptSubCategoryRepository.existsById(request.subcategoryId)) {
-            throw PromptNotFoundException("PromptSubCategory", "id", request.subcategoryId)
-        }
+        // Validate the entire prompt request
+        val slotVariantIds = request.slots.map { it.slotId }
+        promptValidator.validatePromptRequest(request.categoryId, request.subcategoryId, slotVariantIds)
 
         val prompt =
             Prompt(
@@ -117,15 +108,10 @@ class PromptServiceImpl(
 
         val oldDto = promptAssembler.toDto(prompt)
 
-        // Validate category exists if provided
-        if (request.categoryId != null && !promptCategoryRepository.existsById(request.categoryId)) {
-            throw PromptNotFoundException("PromptCategory", "id", request.categoryId)
-        }
-
-        // Validate subcategory exists if provided
-        if (request.subcategoryId != null && !promptSubCategoryRepository.existsById(request.subcategoryId)) {
-            throw PromptNotFoundException("PromptSubCategory", "id", request.subcategoryId)
-        }
+        // Validate category and subcategory if provided
+        promptValidator.validateCategoryExists(request.categoryId)
+        promptValidator.validateSubcategoryExists(request.subcategoryId)
+        promptValidator.validateSubcategoryBelongsToCategory(request.categoryId, request.subcategoryId)
 
         request.title?.let { prompt.title = it }
         request.promptText?.let { prompt.promptText = it }
@@ -149,6 +135,9 @@ class PromptServiceImpl(
 
         // Update slot variants if provided
         request.slots?.let { slotVariants ->
+            val slotVariantIds = slotVariants.map { it.slotId }
+            promptValidator.validateSlotVariantsExist(slotVariantIds)
+
             prompt.clearPromptSlotVariants()
             slotVariants.forEach { slotVariantRequest ->
                 val promptSlotVariant =
@@ -202,12 +191,10 @@ class PromptServiceImpl(
                 .findById(promptId)
                 .orElseThrow { PromptNotFoundException("Prompt", "id", promptId) }
 
+        // Validate all slot variants exist
+        promptValidator.validateSlotVariantsExist(request.slotIds)
+
         val promptSlotVariants = promptSlotVariantRepository.findAllById(request.slotIds)
-        if (promptSlotVariants.size != request.slotIds.size) {
-            val foundIds = promptSlotVariants.mapNotNull { it.id }
-            val missingIds = request.slotIds - foundIds.toSet()
-            throw PromptNotFoundException("Prompt slot variant", "ids", missingIds.joinToString(", "))
-        }
 
         promptSlotVariants.forEach { promptSlotVariant ->
             prompt.addPromptSlotVariant(promptSlotVariant)
@@ -226,6 +213,10 @@ class PromptServiceImpl(
             promptRepository
                 .findById(promptId)
                 .orElseThrow { PromptNotFoundException("Prompt", "id", promptId) }
+
+        // Validate all slot variants exist
+        val slotVariantIds = request.slotVariants.map { it.slotId }
+        promptValidator.validateSlotVariantsExist(slotVariantIds)
 
         // Clear existing slot variants
         prompt.clearPromptSlotVariants()

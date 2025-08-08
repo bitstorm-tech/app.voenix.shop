@@ -1,16 +1,16 @@
-package com.jotoai.voenix.shop.domain.prompts.assembler
+package com.jotoai.voenix.shop.prompt.internal.service
 
-import com.jotoai.voenix.shop.domain.prompts.dto.PromptSlotVariantDto
-import com.jotoai.voenix.shop.domain.prompts.dto.PublicPromptSlotDto
-import com.jotoai.voenix.shop.domain.prompts.entity.Prompt
-import com.jotoai.voenix.shop.domain.prompts.entity.PromptCategory
-import com.jotoai.voenix.shop.domain.prompts.entity.PromptSlotType
-import com.jotoai.voenix.shop.domain.prompts.entity.PromptSlotVariant
-import com.jotoai.voenix.shop.domain.prompts.entity.PromptSlotVariantMapping
-import com.jotoai.voenix.shop.domain.prompts.entity.PromptSlotVariantMappingId
-import com.jotoai.voenix.shop.domain.prompts.entity.PromptSubCategory
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.prompt.api.dto.public.PublicPromptSlotDto
+import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.PromptSlotVariantDto
+import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
+import com.jotoai.voenix.shop.prompt.internal.entity.PromptCategory
+import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType
+import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
+import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariantMapping
+import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariantMappingId
+import com.jotoai.voenix.shop.prompt.internal.entity.PromptSubCategory
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -26,6 +26,8 @@ import java.time.OffsetDateTime
 
 class PromptAssemblerTest {
     private lateinit var promptSlotVariantAssembler: PromptSlotVariantAssembler
+    private lateinit var promptCategoryAssembler: PromptCategoryAssembler
+    private lateinit var promptSubCategoryAssembler: PromptSubCategoryAssembler
     private lateinit var storagePathService: StoragePathService
     private lateinit var assembler: PromptAssembler
 
@@ -37,8 +39,10 @@ class PromptAssemblerTest {
     @BeforeEach
     fun setUp() {
         promptSlotVariantAssembler = mock(PromptSlotVariantAssembler::class.java)
+        promptCategoryAssembler = mock(PromptCategoryAssembler::class.java)
+        promptSubCategoryAssembler = mock(PromptSubCategoryAssembler::class.java)
         storagePathService = mock(StoragePathService::class.java)
-        assembler = PromptAssembler(promptSlotVariantAssembler, storagePathService)
+        assembler = PromptAssembler(promptSlotVariantAssembler, promptCategoryAssembler, promptSubCategoryAssembler, storagePathService)
 
         // Setup test data
         testCategory =

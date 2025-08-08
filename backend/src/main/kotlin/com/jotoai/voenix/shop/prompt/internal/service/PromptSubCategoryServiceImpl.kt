@@ -11,7 +11,6 @@ import com.jotoai.voenix.shop.prompt.events.PromptSubCategoryDeletedEvent
 import com.jotoai.voenix.shop.prompt.events.PromptSubCategoryUpdatedEvent
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSubCategory
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptCategoryRepository
-import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSubCategoryRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
@@ -22,23 +21,26 @@ import org.springframework.transaction.annotation.Transactional
 class PromptSubCategoryServiceImpl(
     private val promptSubCategoryRepository: PromptSubCategoryRepository,
     private val promptCategoryRepository: PromptCategoryRepository,
-    private val promptRepository: PromptRepository,
+    private val promptSubCategoryAssembler: PromptSubCategoryAssembler,
     private val eventPublisher: ApplicationEventPublisher,
 ) : PromptSubCategoryFacade,
     PromptSubCategoryQueryService {
-    override fun getAllPromptSubCategories(): List<PromptSubCategoryDto> = promptSubCategoryRepository.findAll().map { it.toDto() }
+    override fun getAllPromptSubCategories(): List<PromptSubCategoryDto> =
+        promptSubCategoryRepository.findAll().map {
+            promptSubCategoryAssembler.toDto(it)
+        }
 
     override fun getPromptSubCategoryById(id: Long): PromptSubCategoryDto =
         promptSubCategoryRepository
             .findById(id)
-            .map { it.toDto() }
+            .map { promptSubCategoryAssembler.toDto(it) }
             .orElseThrow { PromptSubCategoryNotFoundException("PromptSubCategory", "id", id) }
 
     override fun getPromptSubCategoriesByCategory(categoryId: Long): List<PromptSubCategoryDto> =
-        promptSubCategoryRepository.findByPromptCategoryId(categoryId).map { it.toDto() }
+        promptSubCategoryRepository.findByPromptCategoryId(categoryId).map { promptSubCategoryAssembler.toDto(it) }
 
     override fun searchPromptSubCategoriesByName(name: String): List<PromptSubCategoryDto> =
-        promptSubCategoryRepository.findByNameContainingIgnoreCase(name).map { it.toDto() }
+        promptSubCategoryRepository.findByNameContainingIgnoreCase(name).map { promptSubCategoryAssembler.toDto(it) }
 
     override fun existsById(id: Long): Boolean = promptSubCategoryRepository.existsById(id)
 
@@ -57,7 +59,7 @@ class PromptSubCategoryServiceImpl(
             )
 
         val saved = promptSubCategoryRepository.save(promptSubCategory)
-        val result = saved.toDto()
+        val result = promptSubCategoryAssembler.toDto(saved)
 
         eventPublisher.publishEvent(PromptSubCategoryCreatedEvent(result))
         return result
@@ -73,7 +75,7 @@ class PromptSubCategoryServiceImpl(
                 .findById(id)
                 .orElseThrow { PromptSubCategoryNotFoundException("PromptSubCategory", "id", id) }
 
-        val oldDto = promptSubCategory.toDto()
+        val oldDto = promptSubCategoryAssembler.toDto(promptSubCategory)
 
         request.name?.let { promptSubCategory.name = it }
         request.description?.let { promptSubCategory.description = it }
@@ -86,7 +88,7 @@ class PromptSubCategoryServiceImpl(
         }
 
         val saved = promptSubCategoryRepository.save(promptSubCategory)
-        val result = saved.toDto()
+        val result = promptSubCategoryAssembler.toDto(saved)
 
         eventPublisher.publishEvent(PromptSubCategoryUpdatedEvent(oldDto, result))
         return result
@@ -99,20 +101,9 @@ class PromptSubCategoryServiceImpl(
                 .findById(id)
                 .orElseThrow { PromptSubCategoryNotFoundException("PromptSubCategory", "id", id) }
 
-        val dto = promptSubCategory.toDto()
+        val dto = promptSubCategoryAssembler.toDto(promptSubCategory)
         promptSubCategoryRepository.deleteById(id)
 
         eventPublisher.publishEvent(PromptSubCategoryDeletedEvent(dto))
     }
-
-    private fun PromptSubCategory.toDto(): PromptSubCategoryDto =
-        PromptSubCategoryDto(
-            id = this.id!!,
-            promptCategoryId = this.promptCategory.id!!,
-            name = this.name,
-            description = this.description,
-            promptsCount = promptRepository.countBySubcategoryId(this.id),
-            createdAt = this.createdAt,
-            updatedAt = this.updatedAt,
-        )
 }

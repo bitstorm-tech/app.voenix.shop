@@ -11,8 +11,6 @@ import com.jotoai.voenix.shop.prompt.events.PromptCategoryDeletedEvent
 import com.jotoai.voenix.shop.prompt.events.PromptCategoryUpdatedEvent
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptCategory
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptCategoryRepository
-import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
-import com.jotoai.voenix.shop.prompt.internal.repository.PromptSubCategoryRepository
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,47 +19,25 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class PromptCategoryServiceImpl(
     private val promptCategoryRepository: PromptCategoryRepository,
-    private val promptRepository: PromptRepository,
-    private val promptSubCategoryRepository: PromptSubCategoryRepository,
+    private val promptCategoryAssembler: PromptCategoryAssembler,
     private val eventPublisher: ApplicationEventPublisher,
 ) : PromptCategoryFacade,
     PromptCategoryQueryService {
     override fun getAllPromptCategories(): List<PromptCategoryDto> =
         promptCategoryRepository.findAll().map { category ->
-            PromptCategoryDto(
-                id = category.id!!,
-                name = category.name,
-                promptsCount = promptRepository.countByCategoryId(category.id),
-                subcategoriesCount = promptSubCategoryRepository.countByPromptCategoryId(category.id).toInt(),
-                createdAt = category.createdAt,
-                updatedAt = category.updatedAt,
-            )
+            promptCategoryAssembler.toDto(category)
         }
 
     override fun getPromptCategoryById(id: Long): PromptCategoryDto =
         promptCategoryRepository
             .findById(id)
             .map { category ->
-                PromptCategoryDto(
-                    id = category.id!!,
-                    name = category.name,
-                    promptsCount = promptRepository.countByCategoryId(category.id),
-                    subcategoriesCount = promptSubCategoryRepository.countByPromptCategoryId(category.id).toInt(),
-                    createdAt = category.createdAt,
-                    updatedAt = category.updatedAt,
-                )
+                promptCategoryAssembler.toDto(category)
             }.orElseThrow { PromptCategoryNotFoundException("PromptCategory", "id", id) }
 
     override fun searchPromptCategoriesByName(name: String): List<PromptCategoryDto> =
         promptCategoryRepository.findByNameContainingIgnoreCase(name).map { category ->
-            PromptCategoryDto(
-                id = category.id!!,
-                name = category.name,
-                promptsCount = promptRepository.countByCategoryId(category.id),
-                subcategoriesCount = promptSubCategoryRepository.countByPromptCategoryId(category.id).toInt(),
-                createdAt = category.createdAt,
-                updatedAt = category.updatedAt,
-            )
+            promptCategoryAssembler.toDto(category)
         }
 
     override fun existsById(id: Long): Boolean = promptCategoryRepository.existsById(id)
@@ -74,15 +50,7 @@ class PromptCategoryServiceImpl(
             )
 
         val savedPromptCategory = promptCategoryRepository.save(promptCategory)
-        val result =
-            PromptCategoryDto(
-                id = savedPromptCategory.id!!,
-                name = savedPromptCategory.name,
-                promptsCount = 0, // New category has no prompts
-                subcategoriesCount = 0, // New category has no subcategories
-                createdAt = savedPromptCategory.createdAt,
-                updatedAt = savedPromptCategory.updatedAt,
-            )
+        val result = promptCategoryAssembler.toDto(savedPromptCategory)
 
         // Publish event
         eventPublisher.publishEvent(PromptCategoryCreatedEvent(result))
@@ -105,15 +73,7 @@ class PromptCategoryServiceImpl(
         request.name?.let { promptCategory.name = it }
 
         val updatedPromptCategory = promptCategoryRepository.save(promptCategory)
-        val result =
-            PromptCategoryDto(
-                id = updatedPromptCategory.id!!,
-                name = updatedPromptCategory.name,
-                promptsCount = promptRepository.countByCategoryId(updatedPromptCategory.id),
-                subcategoriesCount = promptSubCategoryRepository.countByPromptCategoryId(updatedPromptCategory.id).toInt(),
-                createdAt = updatedPromptCategory.createdAt,
-                updatedAt = updatedPromptCategory.updatedAt,
-            )
+        val result = promptCategoryAssembler.toDto(updatedPromptCategory)
 
         // Publish event
         eventPublisher.publishEvent(PromptCategoryUpdatedEvent(oldDto, result))

@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component
 @Component
 class PromptAssembler(
     private val promptSlotVariantAssembler: PromptSlotVariantAssembler,
+    private val promptCategoryAssembler: PromptCategoryAssembler,
+    private val promptSubCategoryAssembler: PromptSubCategoryAssembler,
     private val storagePathService: StoragePathService,
 ) {
     /**
@@ -29,9 +31,9 @@ class PromptAssembler(
             title = entity.title,
             promptText = entity.promptText,
             categoryId = entity.categoryId,
-            category = null, // TODO: implement category conversion
+            category = entity.category?.let { promptCategoryAssembler.toDto(it) },
             subcategoryId = entity.subcategoryId,
-            subcategory = null, // TODO: implement subcategory conversion
+            subcategory = entity.subcategory?.let { promptSubCategoryAssembler.toDto(it) },
             active = entity.active,
             slots =
                 entity.promptSlotVariantMappings.map {
@@ -60,8 +62,8 @@ class PromptAssembler(
                 entity.exampleImageFilename?.let { filename ->
                     storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, filename)
                 },
-            category = null, // TODO: implement category conversion
-            subcategory = null, // TODO: implement subcategory conversion
+            category = entity.category?.let { promptCategoryAssembler.toPublicDto(it) },
+            subcategory = entity.subcategory?.let { promptSubCategoryAssembler.toPublicDto(it) },
             slots =
                 entity.promptSlotVariantMappings.map {
                     promptSlotVariantAssembler.toPublicDto(it.promptSlotVariant)

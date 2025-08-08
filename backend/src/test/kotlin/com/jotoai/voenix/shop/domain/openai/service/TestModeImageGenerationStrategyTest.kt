@@ -3,11 +3,11 @@ package com.jotoai.voenix.shop.domain.openai.service
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
-import com.jotoai.voenix.shop.domain.prompts.dto.PromptDto
-import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import com.jotoai.voenix.shop.image.api.enums.ImageBackground
 import com.jotoai.voenix.shop.image.api.enums.ImageQuality
 import com.jotoai.voenix.shop.image.api.enums.ImageSize
+import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -21,14 +21,14 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
 
 class TestModeImageGenerationStrategyTest {
-    private lateinit var promptService: PromptService
+    private lateinit var promptQueryService: PromptQueryService
     private lateinit var testModeStrategy: TestModeImageGenerationStrategy
     private lateinit var mockImageFile: MultipartFile
 
     @BeforeEach
     fun setUp() {
-        promptService = mock(PromptService::class.java)
-        testModeStrategy = TestModeImageGenerationStrategy(promptService)
+        promptQueryService = mock(PromptQueryService::class.java)
+        testModeStrategy = TestModeImageGenerationStrategy(promptQueryService)
 
         // Create a mock image file with some test data
         mockImageFile =
@@ -70,7 +70,7 @@ class TestModeImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptService.getPromptById(promptId)).thenReturn(mockPrompt)
+        `when`(promptQueryService.getPromptById(promptId)).thenReturn(mockPrompt)
 
         // When
         val result = testModeStrategy.generateImages(mockImageFile, request)
@@ -86,7 +86,7 @@ class TestModeImageGenerationStrategyTest {
         }
 
         // Verify prompt service was called
-        verify(promptService).getPromptById(promptId)
+        verify(promptQueryService).getPromptById(promptId)
     }
 
     @Test
@@ -117,7 +117,7 @@ class TestModeImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptService.getPromptById(1L)).thenReturn(mockPrompt)
+        `when`(promptQueryService.getPromptById(1L)).thenReturn(mockPrompt)
 
         // When
         val result = testModeStrategy.generateImages(mockImageFile, request)
@@ -162,7 +162,7 @@ class TestModeImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptService.getPromptById(1L)).thenReturn(mockPrompt)
+        `when`(promptQueryService.getPromptById(1L)).thenReturn(mockPrompt)
 
         // When
         val result = testModeStrategy.generateImages(mockImageFile, request)
@@ -201,7 +201,7 @@ class TestModeImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptService.getPromptById(1L)).thenReturn(mockPrompt)
+        `when`(promptQueryService.getPromptById(1L)).thenReturn(mockPrompt)
 
         // When
         val result = testModeStrategy.generateImages(mockImageFile, request)
@@ -225,14 +225,14 @@ class TestModeImageGenerationStrategyTest {
                 background = ImageBackground.AUTO,
             )
 
-        `when`(promptService.getPromptById(999L)).thenThrow(ResourceNotFoundException("Prompt not found"))
+        `when`(promptQueryService.getPromptById(999L)).thenThrow(ResourceNotFoundException("Prompt not found"))
 
         // When/Then
         assertThrows<ResourceNotFoundException> {
             testModeStrategy.generateImages(mockImageFile, request)
         }
 
-        verify(promptService).getPromptById(999L)
+        verify(promptQueryService).getPromptById(999L)
     }
 
     @Test
@@ -271,7 +271,7 @@ class TestModeImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptService.getPromptById(1L)).thenReturn(mockPrompt)
+        `when`(promptQueryService.getPromptById(1L)).thenReturn(mockPrompt)
 
         // When
         val result = testModeStrategy.generateImages(jpegImageFile, request)
@@ -319,7 +319,7 @@ class TestModeImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptService.getPromptById(1L)).thenReturn(mockPrompt)
+        `when`(promptQueryService.getPromptById(1L)).thenReturn(mockPrompt)
 
         // When
         val result = testModeStrategy.generateImages(emptyImageFile, request)
