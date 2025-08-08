@@ -5,7 +5,7 @@ import com.jotoai.voenix.shop.domain.openai.dto.ImageEditBytesResponse
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequestParams
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptResponse
-import com.jotoai.voenix.shop.domain.prompts.service.PromptService
+import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
@@ -20,7 +20,7 @@ import java.util.UUID
 @Service
 @ConditionalOnProperty(name = ["app.test-mode"], havingValue = "true")
 class TestModeImageGenerationStrategy(
-    private val promptService: PromptService,
+    private val promptQueryService: PromptQueryService,
 ) : ImageGenerationStrategy {
     companion object {
         private val logger = LoggerFactory.getLogger(TestModeImageGenerationStrategy::class.java)
@@ -40,7 +40,7 @@ class TestModeImageGenerationStrategy(
         logger.info("TEST MODE: Generating {} mock images for prompt ID: {}", request.n, request.promptId)
 
         // Validate that the prompt exists (same as real implementation)
-        val prompt = promptService.getPromptById(request.promptId)
+        val prompt = promptQueryService.getPromptById(request.promptId)
         logger.debug("TEST MODE: Using prompt '{}' for mock generation", prompt.promptText)
 
         // Return the original image N times

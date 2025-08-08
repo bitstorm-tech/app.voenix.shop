@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.api.public.prompts
 
-import com.jotoai.voenix.shop.domain.prompts.dto.PublicPromptDto
-import com.jotoai.voenix.shop.domain.prompts.service.PublicPromptService
+import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.prompt.api.dto.public.PublicPromptDto
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/prompts")
 class PublicPromptController(
-    private val publicPromptService: PublicPromptService,
+    private val promptQueryService: PromptQueryService,
 ) {
     @GetMapping
-    fun getAllActivePrompts(): List<PublicPromptDto> = publicPromptService.getAllActivePrompts()
+    fun getAllActivePrompts(): List<PublicPromptDto> = promptQueryService.getAllActivePrompts()
 }

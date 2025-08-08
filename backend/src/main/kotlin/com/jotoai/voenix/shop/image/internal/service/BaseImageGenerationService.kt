@@ -4,10 +4,10 @@ import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
-import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import org.slf4j.LoggerFactory
 import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDateTime
@@ -18,7 +18,7 @@ import java.time.LocalDateTime
  */
 abstract class BaseImageGenerationService(
     protected val openAIImageService: OpenAIImageService,
-    protected val promptService: PromptService,
+    protected val promptQueryService: PromptQueryService,
     protected val generatedImageRepository: GeneratedImageRepository,
 ) {
     companion object {
@@ -59,7 +59,7 @@ abstract class BaseImageGenerationService(
      * @throws BadRequestException if the prompt is inactive
      */
     protected fun validatePrompt(promptId: Long) {
-        val prompt = promptService.getPromptById(promptId)
+        val prompt = promptQueryService.getPromptById(promptId)
         if (!prompt.active) {
             throw BadRequestException("The selected prompt is not available")
         }

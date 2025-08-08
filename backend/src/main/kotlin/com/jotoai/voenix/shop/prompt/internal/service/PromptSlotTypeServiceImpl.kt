@@ -1,0 +1,106 @@
+package com.jotoai.voenix.shop.prompt.internal.service
+
+import com.jotoai.voenix.shop.prompt.api.PromptSlotTypeFacade
+import com.jotoai.voenix.shop.prompt.api.PromptSlotTypeQueryService
+import com.jotoai.voenix.shop.prompt.api.dto.slottypes.CreatePromptSlotTypeRequest
+import com.jotoai.voenix.shop.prompt.api.dto.slottypes.PromptSlotTypeDto
+import com.jotoai.voenix.shop.prompt.api.dto.slottypes.UpdatePromptSlotTypeRequest
+import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSlotTypeNotFoundException
+import com.jotoai.voenix.shop.prompt.events.PromptSlotTypeCreatedEvent
+import com.jotoai.voenix.shop.prompt.events.PromptSlotTypeDeletedEvent
+import com.jotoai.voenix.shop.prompt.events.PromptSlotTypeUpdatedEvent
+import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType
+import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository
+import org.springframework.context.ApplicationEventPublisher
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+
+@Service
+@Transactional(readOnly = true)
+class PromptSlotTypeServiceImpl(
+    private val promptSlotTypeRepository: PromptSlotTypeRepository,
+    private val eventPublisher: ApplicationEventPublisher,
+) : PromptSlotTypeFacade,
+    PromptSlotTypeQueryService {
+    override fun getAllPromptSlotTypes(): List<PromptSlotTypeDto> = promptSlotTypeRepository.findAll().map { it.toDto() }
+
+    override fun getPromptSlotTypeById(id: Long): PromptSlotTypeDto =
+        promptSlotTypeRepository
+            .findById(id)
+            .map { it.toDto() }
+            .orElseThrow { PromptSlotTypeNotFoundException("PromptSlotType", "id", id) }
+
+    override fun existsById(id: Long): Boolean = promptSlotTypeRepository.existsById(id)
+
+    @Transactional
+    override fun createPromptSlotType(request: CreatePromptSlotTypeRequest): PromptSlotTypeDto {
+        if (promptSlotTypeRepository.existsByName(request.name)) {
+            throw IllegalArgumentException("PromptSlotType with name '${request.name}' already exists")
+        }
+
+        if (promptSlotTypeRepository.existsByPosition(request.position)) {
+            throw IllegalArgumentException("PromptSlotType with position '${request.position}' already exists")
+        }
+
+        val promptSlotType = PromptSlotType(name = request.name, position = request.position)
+        val saved = promptSlotTypeRepository.save(promptSlotType)
+        val result = saved.toDto()
+
+        eventPublisher.publishEvent(PromptSlotTypeCreatedEvent(result))
+        return result
+    }
+
+    @Transactional
+    override fun updatePromptSlotType(
+        id: Long,
+        request: UpdatePromptSlotTypeRequest,
+    ): PromptSlotTypeDto {
+        val promptSlotType =
+            promptSlotTypeRepository
+                .findById(id)
+                .orElseThrow { PromptSlotTypeNotFoundException("PromptSlotType", "id", id) }
+
+        val oldDto = promptSlotType.toDto()
+
+        request.name?.let {
+            if (promptSlotTypeRepository.existsByNameAndIdNot(it, id)) {
+                throw IllegalArgumentException("PromptSlotType with name '$it' already exists")
+            }
+            promptSlotType.name = it
+        }
+        request.position?.let {
+            if (promptSlotTypeRepository.existsByPositionAndIdNot(it, id)) {
+                throw IllegalArgumentException("PromptSlotType with position '$it' already exists")
+            }
+            promptSlotType.position = it
+        }
+
+        val saved = promptSlotTypeRepository.save(promptSlotType)
+        val result = saved.toDto()
+
+        eventPublisher.publishEvent(PromptSlotTypeUpdatedEvent(oldDto, result))
+        return result
+    }
+
+    @Transactional
+    override fun deletePromptSlotType(id: Long) {
+        val promptSlotType =
+            promptSlotTypeRepository
+                .findById(id)
+                .orElseThrow { PromptSlotTypeNotFoundException("PromptSlotType", "id", id) }
+
+        val dto = promptSlotType.toDto()
+        promptSlotTypeRepository.deleteById(id)
+
+        eventPublisher.publishEvent(PromptSlotTypeDeletedEvent(dto))
+    }
+
+    private fun PromptSlotType.toDto(): PromptSlotTypeDto =
+        PromptSlotTypeDto(
+            id = this.id!!,
+            name = this.name,
+            position = this.position,
+            createdAt = this.createdAt,
+            updatedAt = this.updatedAt,
+        )
+}

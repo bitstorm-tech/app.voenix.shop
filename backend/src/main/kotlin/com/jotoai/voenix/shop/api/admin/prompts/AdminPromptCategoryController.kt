@@ -1,9 +1,10 @@
 package com.jotoai.voenix.shop.api.admin.prompts
 
-import com.jotoai.voenix.shop.domain.prompts.dto.CreatePromptCategoryRequest
-import com.jotoai.voenix.shop.domain.prompts.dto.PromptCategoryDto
-import com.jotoai.voenix.shop.domain.prompts.dto.UpdatePromptCategoryRequest
-import com.jotoai.voenix.shop.domain.prompts.service.PromptCategoryService
+import com.jotoai.voenix.shop.prompt.api.PromptCategoryFacade
+import com.jotoai.voenix.shop.prompt.api.PromptCategoryQueryService
+import com.jotoai.voenix.shop.prompt.api.dto.categories.CreatePromptCategoryRequest
+import com.jotoai.voenix.shop.prompt.api.dto.categories.PromptCategoryDto
+import com.jotoai.voenix.shop.prompt.api.dto.categories.UpdatePromptCategoryRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -22,37 +23,38 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/prompts/categories")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminPromptCategoryController(
-    private val promptCategoryService: PromptCategoryService,
+    private val promptCategoryQueryService: PromptCategoryQueryService,
+    private val promptCategoryFacade: PromptCategoryFacade,
 ) {
     @GetMapping
-    fun getAllCategories(): List<PromptCategoryDto> = promptCategoryService.getAllPromptCategories()
+    fun getAllCategories(): List<PromptCategoryDto> = promptCategoryQueryService.getAllPromptCategories()
 
     @GetMapping("/{id}")
     fun getCategoryById(
         @PathVariable id: Long,
-    ): PromptCategoryDto = promptCategoryService.getPromptCategoryById(id)
+    ): PromptCategoryDto = promptCategoryQueryService.getPromptCategoryById(id)
 
     @GetMapping("/search")
     fun searchCategoriesByName(
         @RequestParam name: String,
-    ): List<PromptCategoryDto> = promptCategoryService.searchPromptCategoriesByName(name)
+    ): List<PromptCategoryDto> = promptCategoryQueryService.searchPromptCategoriesByName(name)
 
     @PostMapping
     fun createPromptCategory(
         @Valid @RequestBody createPromptCategoryRequest: CreatePromptCategoryRequest,
-    ): PromptCategoryDto = promptCategoryService.createPromptCategory(createPromptCategoryRequest)
+    ): PromptCategoryDto = promptCategoryFacade.createPromptCategory(createPromptCategoryRequest)
 
     @PutMapping("/{id}")
     fun updatePromptCategory(
         @PathVariable id: Long,
         @Valid @RequestBody updatePromptCategoryRequest: UpdatePromptCategoryRequest,
-    ): PromptCategoryDto = promptCategoryService.updatePromptCategory(id, updatePromptCategoryRequest)
+    ): PromptCategoryDto = promptCategoryFacade.updatePromptCategory(id, updatePromptCategoryRequest)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deletePromptCategory(
         @PathVariable id: Long,
     ) {
-        promptCategoryService.deletePromptCategory(id)
+        promptCategoryFacade.deletePromptCategory(id)
     }
 }

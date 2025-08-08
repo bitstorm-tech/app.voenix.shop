@@ -1,11 +1,12 @@
 package com.jotoai.voenix.shop.api.admin.prompts
 
-import com.jotoai.voenix.shop.domain.prompts.dto.AddSlotVariantsRequest
-import com.jotoai.voenix.shop.domain.prompts.dto.CreatePromptRequest
-import com.jotoai.voenix.shop.domain.prompts.dto.PromptDto
-import com.jotoai.voenix.shop.domain.prompts.dto.UpdatePromptRequest
-import com.jotoai.voenix.shop.domain.prompts.dto.UpdatePromptSlotVariantsRequest
-import com.jotoai.voenix.shop.domain.prompts.service.PromptService
+import com.jotoai.voenix.shop.prompt.api.PromptFacade
+import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.prompt.api.dto.prompts.CreatePromptRequest
+import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
+import com.jotoai.voenix.shop.prompt.api.dto.prompts.UpdatePromptRequest
+import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.AddSlotVariantsRequest
+import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantsRequest
 import jakarta.validation.Valid
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -22,48 +23,49 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/prompts")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminPromptController(
-    private val promptService: PromptService,
+    private val promptQueryService: PromptQueryService,
+    private val promptFacade: PromptFacade,
 ) {
     @GetMapping
-    fun getAllPrompts(): List<PromptDto> = promptService.getAllPrompts()
+    fun getAllPrompts(): List<PromptDto> = promptQueryService.getAllPrompts()
 
     @GetMapping("/{id}")
     fun getPromptById(
         @PathVariable id: Long,
-    ): PromptDto = promptService.getPromptById(id)
+    ): PromptDto = promptQueryService.getPromptById(id)
 
     @GetMapping("/search")
     fun searchPromptsByTitle(
         @RequestParam title: String,
-    ): List<PromptDto> = promptService.searchPromptsByTitle(title)
+    ): List<PromptDto> = promptQueryService.searchPromptsByTitle(title)
 
     @PostMapping
     fun createPrompt(
         @Valid @RequestBody createPromptRequest: CreatePromptRequest,
-    ): PromptDto = promptService.createPrompt(createPromptRequest)
+    ): PromptDto = promptFacade.createPrompt(createPromptRequest)
 
     @PutMapping("/{id}")
     fun updatePrompt(
         @PathVariable id: Long,
         @Valid @RequestBody updatePromptRequest: UpdatePromptRequest,
-    ): PromptDto = promptService.updatePrompt(id, updatePromptRequest)
+    ): PromptDto = promptFacade.updatePrompt(id, updatePromptRequest)
 
     @PutMapping("/{id}/slots")
     fun updatePromptSlotVariants(
         @PathVariable id: Long,
         @Valid @RequestBody updatePromptSlotVariantsRequest: UpdatePromptSlotVariantsRequest,
-    ): PromptDto = promptService.updatePromptSlotVariants(id, updatePromptSlotVariantsRequest)
+    ): PromptDto = promptFacade.updatePromptSlotVariants(id, updatePromptSlotVariantsRequest)
 
     @PostMapping("/{id}/slots")
     fun addSlotVariantsToPrompt(
         @PathVariable id: Long,
         @Valid @RequestBody addSlotVariantsRequest: AddSlotVariantsRequest,
-    ): PromptDto = promptService.addSlotVariantsToPrompt(id, addSlotVariantsRequest)
+    ): PromptDto = promptFacade.addSlotVariantsToPrompt(id, addSlotVariantsRequest)
 
     @DeleteMapping("/{id}")
     fun deletePrompt(
         @PathVariable id: Long,
     ) {
-        promptService.deletePrompt(id)
+        promptFacade.deletePrompt(id)
     }
 }

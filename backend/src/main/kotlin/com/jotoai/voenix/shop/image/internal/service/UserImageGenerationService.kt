@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
-import com.jotoai.voenix.shop.domain.prompts.service.PromptService
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,12 +14,12 @@ import org.springframework.web.multipart.MultipartFile
 @Transactional(readOnly = true)
 class UserImageGenerationService(
     openAIImageService: OpenAIImageService,
-    promptService: PromptService,
+    promptQueryService: PromptQueryService,
     generatedImageRepository: GeneratedImageRepository,
     private val userQueryService: UserQueryService,
     private val storagePathService: com.jotoai.voenix.shop.image.api.StoragePathService,
     private val userImageStorageService: UserImageStorageService,
-) : BaseImageGenerationService(openAIImageService, promptService, generatedImageRepository) {
+) : BaseImageGenerationService(openAIImageService, promptQueryService, generatedImageRepository) {
     companion object {
         private const val RATE_LIMIT_HOURS = 24
         private const val MAX_GENERATIONS_PER_DAY = 50

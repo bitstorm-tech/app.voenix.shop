@@ -7,8 +7,8 @@ import com.jotoai.voenix.shop.domain.openai.dto.ImageEditBytesResponse
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequestParams
 import com.jotoai.voenix.shop.domain.openai.dto.TestPromptResponse
-import com.jotoai.voenix.shop.domain.prompts.dto.PromptDto
-import com.jotoai.voenix.shop.domain.prompts.service.PromptService
+import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -43,7 +43,7 @@ import kotlin.io.encoding.Base64
 @ConditionalOnProperty(name = ["app.test-mode"], havingValue = "false", matchIfMissing = true)
 class OpenAIImageGenerationStrategy(
     @param:Value("\${OPENAI_API_KEY}") private val apiKey: String,
-    private val promptService: PromptService,
+    private val promptQueryService: PromptQueryService,
 ) : ImageGenerationStrategy {
     companion object {
         private val logger = LoggerFactory.getLogger(OpenAIImageGenerationStrategy::class.java)
@@ -176,7 +176,7 @@ class OpenAIImageGenerationStrategy(
         runBlocking {
             logger.info("Starting OpenAI image generation with prompt ID: ${request.promptId}")
 
-            val prompt = promptService.getPromptById(request.promptId)
+            val prompt = promptQueryService.getPromptById(request.promptId)
 
             try {
                 val response =
