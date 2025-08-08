@@ -2,7 +2,8 @@ package com.jotoai.voenix.shop.api.admin.articles
 
 import com.jotoai.voenix.shop.domain.articles.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.ShirtArticleVariantDto
-import com.jotoai.voenix.shop.domain.articles.service.ShirtVariantService
+import com.jotoai.voenix.shop.article.api.variants.ShirtVariantFacade
+import com.jotoai.voenix.shop.article.api.variants.ShirtVariantQueryService
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.CropArea
@@ -27,14 +28,15 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/admin/articles/shirts")
 @PreAuthorize("hasRole('ADMIN')")
 class ShirtVariantController(
-    private val shirtVariantService: ShirtVariantService,
+    private val shirtVariantQueryService: ShirtVariantQueryService,
+    private val shirtVariantFacade: ShirtVariantFacade,
     private val imageFacade: ImageFacade,
 ) {
     @GetMapping("/{articleId}/variants")
     fun findByArticleId(
         @PathVariable articleId: Long,
     ): ResponseEntity<List<ShirtArticleVariantDto>> {
-        val variants = shirtVariantService.findByArticleId(articleId)
+        val variants = shirtVariantQueryService.findByArticleId(articleId)
         return ResponseEntity.ok(variants)
     }
 
@@ -43,7 +45,7 @@ class ShirtVariantController(
         @PathVariable articleId: Long,
         @Valid @RequestBody request: CreateShirtArticleVariantRequest,
     ): ResponseEntity<ShirtArticleVariantDto> {
-        val variant = shirtVariantService.create(articleId, request)
+        val variant = shirtVariantFacade.create(articleId, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(variant)
     }
 
@@ -52,7 +54,7 @@ class ShirtVariantController(
         @PathVariable variantId: Long,
         @Valid @RequestBody request: CreateShirtArticleVariantRequest,
     ): ResponseEntity<ShirtArticleVariantDto> {
-        val variant = shirtVariantService.update(variantId, request)
+        val variant = shirtVariantFacade.update(variantId, request)
         return ResponseEntity.ok(variant)
     }
 
@@ -60,7 +62,7 @@ class ShirtVariantController(
     fun delete(
         @PathVariable variantId: Long,
     ): ResponseEntity<Void> {
-        shirtVariantService.delete(variantId)
+        shirtVariantFacade.delete(variantId)
         return ResponseEntity.noContent().build()
     }
 
@@ -87,7 +89,7 @@ class ShirtVariantController(
             )
 
         val imageDto = imageFacade.createImage(imageRequest)
-        val updatedVariant = shirtVariantService.updateExampleImage(variantId, imageDto.filename)
+        val updatedVariant = shirtVariantFacade.updateExampleImage(variantId, imageDto.filename)
 
         return ResponseEntity.ok(updatedVariant)
     }

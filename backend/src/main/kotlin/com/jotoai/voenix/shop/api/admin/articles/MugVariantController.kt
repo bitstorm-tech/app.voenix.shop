@@ -2,7 +2,8 @@ package com.jotoai.voenix.shop.api.admin.articles
 
 import com.jotoai.voenix.shop.domain.articles.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.domain.articles.dto.MugArticleVariantDto
-import com.jotoai.voenix.shop.domain.articles.service.MugVariantService
+import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
+import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.CropArea
@@ -28,7 +29,8 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/admin/articles/mugs")
 @PreAuthorize("hasRole('ADMIN')")
 class MugVariantController(
-    private val mugVariantService: MugVariantService,
+    private val mugVariantQueryService: MugVariantQueryService,
+    private val mugVariantFacade: MugVariantFacade,
     private val imageFacade: ImageFacade,
 ) {
     companion object {
@@ -39,7 +41,7 @@ class MugVariantController(
     fun findByArticleId(
         @PathVariable articleId: Long,
     ): ResponseEntity<List<MugArticleVariantDto>> {
-        val variants = mugVariantService.findByArticleId(articleId)
+        val variants = mugVariantQueryService.findByArticleId(articleId)
         return ResponseEntity.ok(variants)
     }
 
@@ -48,7 +50,7 @@ class MugVariantController(
         @PathVariable articleId: Long,
         @Valid @RequestBody request: CreateMugArticleVariantRequest,
     ): ResponseEntity<MugArticleVariantDto> {
-        val variant = mugVariantService.create(articleId, request)
+        val variant = mugVariantFacade.create(articleId, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(variant)
     }
 
@@ -57,7 +59,7 @@ class MugVariantController(
         @PathVariable variantId: Long,
         @Valid @RequestBody request: CreateMugArticleVariantRequest,
     ): ResponseEntity<MugArticleVariantDto> {
-        val variant = mugVariantService.update(variantId, request)
+        val variant = mugVariantFacade.update(variantId, request)
         return ResponseEntity.ok(variant)
     }
 
@@ -65,7 +67,7 @@ class MugVariantController(
     fun delete(
         @PathVariable variantId: Long,
     ): ResponseEntity<Void> {
-        mugVariantService.delete(variantId)
+        mugVariantFacade.delete(variantId)
         return ResponseEntity.noContent().build()
     }
 
@@ -97,7 +99,7 @@ class MugVariantController(
             )
 
         val imageDto = imageFacade.createImage(imageRequest)
-        val updatedVariant = mugVariantService.updateExampleImage(variantId, imageDto.filename)
+        val updatedVariant = mugVariantFacade.updateExampleImage(variantId, imageDto.filename)
 
         return ResponseEntity.ok(updatedVariant)
     }
@@ -107,7 +109,7 @@ class MugVariantController(
         @PathVariable variantId: Long,
     ): ResponseEntity<MugArticleVariantDto> {
         logger.info("Deleting image for variant $variantId")
-        val updatedVariant = mugVariantService.removeExampleImage(variantId)
+        val updatedVariant = mugVariantFacade.removeExampleImage(variantId)
         return ResponseEntity.ok(updatedVariant)
     }
 }
