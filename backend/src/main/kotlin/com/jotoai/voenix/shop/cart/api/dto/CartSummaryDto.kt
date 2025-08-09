@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.cart.dto
+package com.jotoai.voenix.shop.cart.api.dto
 
 data class CartSummaryDto(
     val itemCount: Int,

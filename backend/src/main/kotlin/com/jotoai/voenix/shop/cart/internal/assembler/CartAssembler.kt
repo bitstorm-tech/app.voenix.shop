@@ -1,11 +1,11 @@
-package com.jotoai.voenix.shop.domain.cart.assembler
+package com.jotoai.voenix.shop.cart.internal.assembler
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
-import com.jotoai.voenix.shop.domain.cart.dto.CartDto
-import com.jotoai.voenix.shop.domain.cart.dto.CartItemDto
-import com.jotoai.voenix.shop.domain.cart.dto.CartSummaryDto
-import com.jotoai.voenix.shop.domain.cart.entity.Cart
-import com.jotoai.voenix.shop.domain.cart.entity.CartItem
+import com.jotoai.voenix.shop.cart.api.dto.CartDto
+import com.jotoai.voenix.shop.cart.api.dto.CartItemDto
+import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
+import com.jotoai.voenix.shop.cart.internal.entity.Cart
+import com.jotoai.voenix.shop.cart.internal.entity.CartItem
 import org.springframework.stereotype.Component
 
 @Component

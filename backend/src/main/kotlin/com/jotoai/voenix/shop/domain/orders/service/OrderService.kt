@@ -4,9 +4,9 @@ import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.cart.entity.Cart
-import com.jotoai.voenix.shop.domain.cart.enums.CartStatus
-import com.jotoai.voenix.shop.domain.cart.repository.CartRepository
+import com.jotoai.voenix.shop.cart.internal.entity.Cart
+import com.jotoai.voenix.shop.cart.api.enums.CartStatus
+import com.jotoai.voenix.shop.cart.internal.service.CartQueryServiceImpl
 import com.jotoai.voenix.shop.domain.orders.assembler.OrderAssembler
 import com.jotoai.voenix.shop.domain.orders.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.domain.orders.dto.OrderDto
@@ -25,7 +25,7 @@ import java.util.UUID
 @Service
 class OrderService(
     private val orderRepository: OrderRepository,
-    private val cartRepository: CartRepository,
+    private val cartQueryService: CartQueryServiceImpl,
     private val userQueryService: UserQueryService,
     private val orderAssembler: OrderAssembler,
     private val entityManager: EntityManager,
@@ -43,7 +43,7 @@ class OrderService(
     ): OrderDto {
         // Validate user exists
         userQueryService.getUserById(userId)
-        val cart = findActiveCartByUserId(userId)
+        val cart = cartQueryService.getActiveCartEntityByUserId(userId)
 
         // Validate cart is not empty
         if (cart.isEmpty()) {
@@ -120,7 +120,7 @@ class OrderService(
 
         // Mark cart as converted
         cart.status = CartStatus.CONVERTED
-        cartRepository.save(cart)
+        cartQueryService.saveCartEntity(cart)
 
         logger.info(
             "Created order {} for user {} from cart {} with total amount {}",
@@ -271,10 +271,6 @@ class OrderService(
         }
     }
 
-    private fun findActiveCartByUserId(userId: Long): Cart =
-        cartRepository
-            .findActiveCartByUserId(userId)
-            .orElseThrow { BadRequestException("No active cart found for user: $userId") }
 
     companion object {
         private const val TAX_RATE = 0.08 // 8%

@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.domain.orders.entity
 
-import com.jotoai.voenix.shop.domain.cart.entity.Cart
+import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.domain.orders.enums.OrderStatus
 import jakarta.persistence.AttributeOverride
 import jakarta.persistence.AttributeOverrides

@@ -46,7 +46,9 @@
       "WebFetch(domain:www.baeldung.com)",
       "WebFetch(domain:dzone.com)",
       "Bash(rm:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(mkdir:*)",
+      "Bash(git mv:*)"
     ],
     "deny": []
   }

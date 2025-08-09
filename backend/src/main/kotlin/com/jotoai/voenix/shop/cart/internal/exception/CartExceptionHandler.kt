@@ -1,5 +1,8 @@
-package com.jotoai.voenix.shop.domain.cart.exception
+package com.jotoai.voenix.shop.cart.internal.exception
 
+import com.jotoai.voenix.shop.cart.api.exceptions.CartItemNotFoundException
+import com.jotoai.voenix.shop.cart.api.exceptions.CartNotFoundException
+import com.jotoai.voenix.shop.cart.api.exceptions.CartOperationException
 import com.jotoai.voenix.shop.common.dto.ErrorResponse
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

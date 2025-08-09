@@ -1,19 +1,17 @@
-package com.jotoai.voenix.shop.domain.cart.service
+package com.jotoai.voenix.shop.cart.internal.service
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.cart.api.CartFacade
+import com.jotoai.voenix.shop.cart.api.dto.AddToCartRequest
+import com.jotoai.voenix.shop.cart.api.dto.CartDto
+import com.jotoai.voenix.shop.cart.api.dto.UpdateCartItemRequest
+import com.jotoai.voenix.shop.cart.api.exceptions.CartItemNotFoundException
+import com.jotoai.voenix.shop.cart.api.exceptions.CartNotFoundException
+import com.jotoai.voenix.shop.cart.api.exceptions.CartOperationException
+import com.jotoai.voenix.shop.cart.internal.assembler.CartAssembler
+import com.jotoai.voenix.shop.cart.internal.entity.CartItem
+import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.cart.assembler.CartAssembler
-import com.jotoai.voenix.shop.domain.cart.dto.AddToCartRequest
-import com.jotoai.voenix.shop.domain.cart.dto.CartDto
-import com.jotoai.voenix.shop.domain.cart.dto.CartSummaryDto
-import com.jotoai.voenix.shop.domain.cart.dto.UpdateCartItemRequest
-import com.jotoai.voenix.shop.domain.cart.entity.Cart
-import com.jotoai.voenix.shop.domain.cart.entity.CartItem
-import com.jotoai.voenix.shop.domain.cart.enums.CartStatus
-import com.jotoai.voenix.shop.domain.cart.exception.CartItemNotFoundException
-import com.jotoai.voenix.shop.domain.cart.exception.CartNotFoundException
-import com.jotoai.voenix.shop.domain.cart.exception.CartOperationException
-import com.jotoai.voenix.shop.domain.cart.repository.CartRepository
 import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
 import com.jotoai.voenix.shop.user.api.UserQueryService
@@ -22,60 +20,24 @@ import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.OffsetDateTime
 
 @Service
-class CartService(
+class CartFacadeImpl(
     private val cartRepository: CartRepository,
     private val userQueryService: UserQueryService,
     private val imageQueryService: ImageQueryService,
     private val promptRepository: PromptRepository,
     private val cartAssembler: CartAssembler,
     private val articleQueryService: ArticleQueryService,
-) {
-    private val logger = LoggerFactory.getLogger(CartService::class.java)
-
-    /**
-     * Gets or creates an active cart for the user
-     */
-    @Transactional
-    fun getOrCreateActiveCart(userId: Long): CartDto {
-        // Validate user exists
-        userQueryService.getUserById(userId)
-
-        val cart =
-            cartRepository
-                .findActiveCartByUserId(userId)
-                .orElseGet {
-                    logger.debug("Creating new cart for user: {}", userId)
-                    createNewCart(userId)
-                }
-
-        return cartAssembler.toDto(cart)
-    }
-
-    /**
-     * Gets a cart summary (item count and total price)
-     */
-    @Transactional(readOnly = true)
-    fun getCartSummary(userId: Long): CartSummaryDto {
-        val cart =
-            cartRepository
-                .findActiveCartByUserId(userId)
-                .orElse(null)
-
-        return if (cart != null) {
-            cartAssembler.toSummaryDto(cart)
-        } else {
-            CartSummaryDto(itemCount = 0, totalPrice = 0L, hasItems = false)
-        }
-    }
+    private val cartQueryServiceImpl: CartQueryServiceImpl, // Internal dependency
+) : CartFacade {
+    private val logger = LoggerFactory.getLogger(CartFacadeImpl::class.java)
 
     /**
      * Adds an item to the cart
      */
     @Transactional
-    fun addToCart(
+    override fun addToCart(
         userId: Long,
         request: AddToCartRequest,
     ): CartDto {
@@ -98,10 +60,7 @@ class CartService(
             throw CartOperationException("Variant ${request.variantId} does not belong to article ${request.articleId}")
         }
 
-        val cart =
-            cartRepository
-                .findActiveCartByUserId(userId)
-                .orElseGet { createNewCart(userId) }
+        val cart = cartQueryServiceImpl.getOrCreateActiveCartEntity(userId)
 
         // Get current price from cost calculation
         val currentPrice = articleQueryService.getCurrentGrossPrice(request.articleId)
@@ -120,8 +79,6 @@ class CartService(
                     .orElseThrow { ResourceNotFoundException("Prompt not found with id: $promptId") }
             }
 
-        // Use custom data only for crop data and similar non-FK fields
-
         // Create new cart item
         val cartItem =
             CartItem(
@@ -139,14 +96,7 @@ class CartService(
         // Add or update item in cart
         cart.addOrUpdateItem(cartItem)
 
-        val savedCart =
-            try {
-                cartRepository.save(cart)
-            } catch (e: OptimisticLockingFailureException) {
-                throw CartOperationException("Cart was modified by another operation. Please try again.", e)
-            } catch (e: ObjectOptimisticLockingFailureException) {
-                throw CartOperationException("Cart was modified by another operation. Please try again.", e)
-            }
+        val savedCart = saveCartWithOptimisticLocking(cart)
 
         logger.debug(
             "Added item to cart: userId={}, articleId={}, variantId={}, quantity={}",
@@ -163,7 +113,7 @@ class CartService(
      * Updates a cart item quantity or custom data
      */
     @Transactional
-    fun updateCartItem(
+    override fun updateCartItem(
         userId: Long,
         itemId: Long,
         request: UpdateCartItemRequest,
@@ -201,14 +151,7 @@ class CartService(
             cartItem.prompt = prompt
         }
 
-        val savedCart =
-            try {
-                cartRepository.save(cart)
-            } catch (e: OptimisticLockingFailureException) {
-                throw CartOperationException("Cart was modified by another operation. Please try again.", e)
-            } catch (e: ObjectOptimisticLockingFailureException) {
-                throw CartOperationException("Cart was modified by another operation. Please try again.", e)
-            }
+        val savedCart = saveCartWithOptimisticLocking(cart)
 
         logger.debug("Updated cart item: userId={}, itemId={}, quantity={}", userId, itemId, request.quantity)
 
@@ -219,7 +162,7 @@ class CartService(
      * Removes an item from the cart
      */
     @Transactional
-    fun removeFromCart(
+    override fun removeFromCart(
         userId: Long,
         itemId: Long,
     ): CartDto {
@@ -232,14 +175,7 @@ class CartService(
             throw CartItemNotFoundException(cart.id!!, itemId)
         }
 
-        val savedCart =
-            try {
-                cartRepository.save(cart)
-            } catch (e: OptimisticLockingFailureException) {
-                throw CartOperationException("Cart was modified by another operation. Please try again.", e)
-            } catch (e: ObjectOptimisticLockingFailureException) {
-                throw CartOperationException("Cart was modified by another operation. Please try again.", e)
-            }
+        val savedCart = saveCartWithOptimisticLocking(cart)
 
         logger.debug("Removed item from cart: userId={}, itemId={}", userId, itemId)
 
@@ -250,7 +186,7 @@ class CartService(
      * Clears all items from the cart
      */
     @Transactional
-    fun clearCart(userId: Long): CartDto {
+    override fun clearCart(userId: Long): CartDto {
         val cart =
             cartRepository
                 .findActiveCartByUserId(userId)
@@ -258,14 +194,7 @@ class CartService(
 
         cart.clearItems()
 
-        val savedCart =
-            try {
-                cartRepository.save(cart)
-            } catch (e: OptimisticLockingFailureException) {
-                throw CartOperationException("Cart was modified by another operation. Please try again.", e)
-            } catch (e: ObjectOptimisticLockingFailureException) {
-                throw CartOperationException("Cart was modified by another operation. Please try again.", e)
-            }
+        val savedCart = saveCartWithOptimisticLocking(cart)
 
         logger.debug("Cleared cart for user: {}", userId)
 
@@ -276,7 +205,7 @@ class CartService(
      * Updates prices in active carts to current prices
      */
     @Transactional
-    fun refreshCartPrices(userId: Long): CartDto {
+    override fun refreshCartPrices(userId: Long): CartDto {
         val cart =
             cartRepository
                 .findActiveCartByUserId(userId)
@@ -294,13 +223,7 @@ class CartService(
 
         val savedCart =
             if (pricesUpdated) {
-                try {
-                    cartRepository.save(cart)
-                } catch (e: OptimisticLockingFailureException) {
-                    throw CartOperationException("Cart was modified by another operation. Please try again.", e)
-                } catch (e: ObjectOptimisticLockingFailureException) {
-                    throw CartOperationException("Cart was modified by another operation. Please try again.", e)
-                }
+                saveCartWithOptimisticLocking(cart)
             } else {
                 cart
             }
@@ -312,17 +235,12 @@ class CartService(
         return cartAssembler.toDto(savedCart)
     }
 
-    private fun createNewCart(userId: Long): Cart {
-        val cart =
-            Cart(
-                userId = userId,
-                status = CartStatus.ACTIVE,
-                expiresAt = OffsetDateTime.now().plusDays(DEFAULT_CART_EXPIRY_DAYS),
-            )
-        return cartRepository.save(cart)
-    }
-
-    companion object {
-        private const val DEFAULT_CART_EXPIRY_DAYS = 30L
-    }
+    private fun saveCartWithOptimisticLocking(cart: com.jotoai.voenix.shop.cart.internal.entity.Cart): com.jotoai.voenix.shop.cart.internal.entity.Cart =
+        try {
+            cartRepository.save(cart)
+        } catch (e: OptimisticLockingFailureException) {
+            throw CartOperationException("Cart was modified by another operation. Please try again.", e)
+        } catch (e: ObjectOptimisticLockingFailureException) {
+            throw CartOperationException("Cart was modified by another operation. Please try again.", e)
+        }
 }

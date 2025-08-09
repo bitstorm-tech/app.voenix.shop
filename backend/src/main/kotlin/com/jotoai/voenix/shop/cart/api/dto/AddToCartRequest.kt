@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.cart.dto
+package com.jotoai.voenix.shop.cart.api.dto
 
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotNull

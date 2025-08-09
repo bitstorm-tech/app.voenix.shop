@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.cart.exception
+package com.jotoai.voenix.shop.cart.api.exceptions
 
 class CartOperationException : RuntimeException {
     constructor(message: String) : super(message)
