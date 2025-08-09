@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.common.exception
+package com.jotoai.voenix.shop.pdf.api.exceptions
 
 /**
  * Exception thrown when PDF generation fails.

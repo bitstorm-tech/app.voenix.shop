@@ -4,13 +4,13 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
-import com.jotoai.voenix.shop.common.exception.PdfGenerationException
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.pdf.api.PdfFacade
 import com.jotoai.voenix.shop.pdf.api.PdfQueryService
 import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.pdf.api.dto.PdfResponse
 import com.jotoai.voenix.shop.pdf.api.dto.PdfSize
+import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
 import com.jotoai.voenix.shop.pdf.internal.config.PdfQrProperties
 import jakarta.annotation.PostConstruct
 import org.apache.pdfbox.pdmodel.PDDocument
