@@ -9,7 +9,6 @@ import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVarian
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSlotVariantNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -20,7 +19,6 @@ class PromptSlotVariantServiceImpl(
     private val promptSlotTypeRepository: PromptSlotTypeRepository,
     private val imageStorageService: ImageStorageService,
     private val promptSlotVariantAssembler: PromptSlotVariantAssembler,
-    private val eventPublisher: ApplicationEventPublisher,
 ) : PromptSlotVariantFacade,
     PromptSlotVariantQueryService {
     override fun getAllSlotVariants(): List<PromptSlotVariantDto> =

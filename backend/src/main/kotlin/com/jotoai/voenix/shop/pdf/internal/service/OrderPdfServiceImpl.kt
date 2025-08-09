@@ -8,9 +8,6 @@ import com.jotoai.voenix.shop.common.exception.PdfGenerationException
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.pdf.api.OrderPdfService
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
-import com.jotoai.voenix.shop.pdf.events.PdfGeneratedEvent
-import com.jotoai.voenix.shop.pdf.events.PdfGenerationFailedEvent
-import com.jotoai.voenix.shop.pdf.events.PdfGenerationType
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -21,7 +18,6 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.apache.pdfbox.util.Matrix
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
@@ -41,7 +37,6 @@ class OrderPdfServiceImpl(
     @param:Value("\${pdf.margin:1}") private val pdfMarginMm: Float,
     private val imageAccessService: ImageAccessService,
     private val articleQueryService: ArticleQueryService,
-    private val eventPublisher: ApplicationEventPublisher,
 ) : OrderPdfService {
     companion object {
         private val logger = LoggerFactory.getLogger(OrderPdfServiceImpl::class.java)
@@ -92,15 +87,6 @@ class OrderPdfServiceImpl(
         logger.info("Generating PDF for order ${orderData.orderNumber} with ${orderData.getTotalItemCount()} total items")
 
         try {
-            eventPublisher.publishEvent(
-                com.jotoai.voenix.shop.pdf.events.PdfGenerationRequestedEvent(
-                    articleId = null,
-                    orderId = orderData.id.toString(),
-                    generationType = PdfGenerationType.ORDER_PDF,
-                    requestedBy = "user_${orderData.userId}",
-                ),
-            )
-
             // Use try-with-resources for proper resource management
             PDDocument().use { document ->
                 var pageNumber = 1
@@ -119,31 +105,10 @@ class OrderPdfServiceImpl(
                 document.save(outputStream)
                 val pdfBytes = outputStream.toByteArray()
 
-                // Publish success event
-                eventPublisher.publishEvent(
-                    PdfGeneratedEvent(
-                        filename = getOrderPdfFilename(orderData.orderNumber ?: "unknown"),
-                        size = pdfBytes.size.toLong(),
-                        articleId = null,
-                        orderId = orderData.id.toString(),
-                        generationType = PdfGenerationType.ORDER_PDF,
-                    ),
-                )
-
                 return pdfBytes
             }
         } catch (e: Exception) {
             logger.error("Failed to generate PDF for order ${orderData.orderNumber}", e)
-
-            // Publish failure event
-            eventPublisher.publishEvent(
-                PdfGenerationFailedEvent(
-                    articleId = null,
-                    orderId = orderData.id.toString(),
-                    generationType = PdfGenerationType.ORDER_PDF,
-                    errorMessage = e.message ?: "Unknown error",
-                ),
-            )
 
             throw PdfGenerationException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
         }

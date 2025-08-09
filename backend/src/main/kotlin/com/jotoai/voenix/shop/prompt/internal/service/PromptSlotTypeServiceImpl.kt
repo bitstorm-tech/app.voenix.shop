@@ -6,12 +6,8 @@ import com.jotoai.voenix.shop.prompt.api.dto.slottypes.CreatePromptSlotTypeReque
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.PromptSlotTypeDto
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.UpdatePromptSlotTypeRequest
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSlotTypeNotFoundException
-import com.jotoai.voenix.shop.prompt.events.PromptSlotTypeCreatedEvent
-import com.jotoai.voenix.shop.prompt.events.PromptSlotTypeDeletedEvent
-import com.jotoai.voenix.shop.prompt.events.PromptSlotTypeUpdatedEvent
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -19,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class PromptSlotTypeServiceImpl(
     private val promptSlotTypeRepository: PromptSlotTypeRepository,
-    private val eventPublisher: ApplicationEventPublisher,
 ) : PromptSlotTypeFacade,
     PromptSlotTypeQueryService {
     override fun getAllPromptSlotTypes(): List<PromptSlotTypeDto> = promptSlotTypeRepository.findAll().map { it.toDto() }
@@ -46,7 +41,6 @@ class PromptSlotTypeServiceImpl(
         val saved = promptSlotTypeRepository.save(promptSlotType)
         val result = saved.toDto()
 
-        eventPublisher.publishEvent(PromptSlotTypeCreatedEvent(result))
         return result
     }
 
@@ -78,7 +72,6 @@ class PromptSlotTypeServiceImpl(
         val saved = promptSlotTypeRepository.save(promptSlotType)
         val result = saved.toDto()
 
-        eventPublisher.publishEvent(PromptSlotTypeUpdatedEvent(oldDto, result))
         return result
     }
 
@@ -91,8 +84,6 @@ class PromptSlotTypeServiceImpl(
 
         val dto = promptSlotType.toDto()
         promptSlotTypeRepository.deleteById(id)
-
-        eventPublisher.publishEvent(PromptSlotTypeDeletedEvent(dto))
     }
 
     private fun PromptSlotType.toDto(): PromptSlotTypeDto =

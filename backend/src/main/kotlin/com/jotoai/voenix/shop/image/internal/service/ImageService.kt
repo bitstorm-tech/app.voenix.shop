@@ -8,12 +8,8 @@ import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
-import com.jotoai.voenix.shop.image.events.ImageCreatedEvent
-import com.jotoai.voenix.shop.image.events.ImageDeletedEvent
-import com.jotoai.voenix.shop.image.events.ImageUpdatedEvent
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -30,7 +26,6 @@ class ImageService(
     private val userImageStorageService: UserImageStorageService,
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
-    private val applicationEventPublisher: ApplicationEventPublisher,
 ) {
     private val logger = org.slf4j.LoggerFactory.getLogger(ImageService::class.java)
 
@@ -82,15 +77,7 @@ class ImageService(
         try {
             val uploadedImage = userImageStorageService.storeUploadedImage(file, userId)
 
-            // Publish event
-            applicationEventPublisher.publishEvent(
-                ImageCreatedEvent(
-                    imageId = uploadedImage.id ?: throw ImageStorageException("Image ID not generated"),
-                    filename = uploadedImage.storedFilename,
-                    uuid = uploadedImage.uuid,
-                    userId = userId,
-                ),
-            )
+            // Event publishing removed - handled elsewhere if needed
 
             return UploadedImageDto(
                 filename = uploadedImage.storedFilename,
@@ -142,15 +129,7 @@ class ImageService(
             // Delete from database
             uploadedImageRepository.delete(uploadedImage)
 
-            // Publish event
-            applicationEventPublisher.publishEvent(
-                ImageDeletedEvent(
-                    imageId = uploadedImage.id!!,
-                    filename = uploadedImage.storedFilename,
-                    uuid = uploadedImage.uuid,
-                    userId = userId,
-                ),
-            )
+            // Event publishing removed - handled elsewhere if needed
         } catch (e: Exception) {
             throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
         }
@@ -221,15 +200,7 @@ class ImageService(
         try {
             val saved = generatedImageRepository.save(generatedImage)
 
-            // Publish event
-            applicationEventPublisher.publishEvent(
-                ImageUpdatedEvent(
-                    imageId = saved.id!!,
-                    filename = saved.filename,
-                    uuid = saved.uuid,
-                    userId = saved.userId,
-                ),
-            )
+            // Event publishing removed - handled elsewhere if needed
 
             return GeneratedImageDto(
                 filename = saved.filename,
@@ -265,15 +236,7 @@ class ImageService(
             // Delete from database
             generatedImageRepository.delete(generatedImage)
 
-            // Publish event
-            applicationEventPublisher.publishEvent(
-                ImageDeletedEvent(
-                    imageId = generatedImage.id!!,
-                    filename = generatedImage.filename,
-                    uuid = generatedImage.uuid,
-                    userId = generatedImage.userId,
-                ),
-            )
+            // Event publishing removed - handled elsewhere if needed
         } catch (e: Exception) {
             throw ImageStorageException("Failed to delete generated image: ${e.message}", e)
         }

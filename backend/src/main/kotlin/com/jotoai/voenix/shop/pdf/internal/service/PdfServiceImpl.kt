@@ -11,9 +11,6 @@ import com.jotoai.voenix.shop.pdf.api.PdfQueryService
 import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.pdf.api.dto.PdfResponse
 import com.jotoai.voenix.shop.pdf.api.dto.PdfSize
-import com.jotoai.voenix.shop.pdf.events.PdfGeneratedEvent
-import com.jotoai.voenix.shop.pdf.events.PdfGenerationFailedEvent
-import com.jotoai.voenix.shop.pdf.events.PdfGenerationType
 import com.jotoai.voenix.shop.pdf.internal.config.PdfQrProperties
 import jakarta.annotation.PostConstruct
 import org.apache.pdfbox.pdmodel.PDDocument
@@ -23,7 +20,6 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
 import javax.imageio.ImageIO
@@ -43,7 +39,6 @@ class PdfServiceImpl(
     private val articleQueryService: ArticleQueryService,
     private val storagePathService: StoragePathService,
     private val pdfQrProperties: PdfQrProperties,
-    private val eventPublisher: ApplicationEventPublisher,
 ) : PdfFacade,
     PdfQueryService {
     companion object {
@@ -78,15 +73,6 @@ class PdfServiceImpl(
 
     override fun generatePdf(request: GeneratePdfRequest): ByteArray {
         try {
-            eventPublisher.publishEvent(
-                com.jotoai.voenix.shop.pdf.events.PdfGenerationRequestedEvent(
-                    articleId = request.articleId,
-                    orderId = null,
-                    generationType = PdfGenerationType.ARTICLE_PDF,
-                    requestedBy = "system",
-                ),
-            )
-
             val article = articleQueryService.findById(request.articleId)
 
             val mugDetails =
@@ -128,45 +114,14 @@ class PdfServiceImpl(
                 document.save(outputStream)
                 val pdfBytes = outputStream.toByteArray()
 
-                // Publish success event
-                eventPublisher.publishEvent(
-                    PdfGeneratedEvent(
-                        filename = "article_${request.articleId}_${System.currentTimeMillis()}.pdf",
-                        size = pdfBytes.size.toLong(),
-                        articleId = request.articleId,
-                        orderId = null,
-                        generationType = PdfGenerationType.ARTICLE_PDF,
-                    ),
-                )
-
                 return pdfBytes
             }
         } catch (e: PdfGenerationException) {
             logger.error("Failed to generate PDF for article ${request.articleId}", e)
 
-            // Publish failure event
-            eventPublisher.publishEvent(
-                PdfGenerationFailedEvent(
-                    articleId = request.articleId,
-                    orderId = null,
-                    generationType = PdfGenerationType.ARTICLE_PDF,
-                    errorMessage = e.message ?: "PDF generation failed",
-                ),
-            )
-
             throw e
         } catch (e: Exception) {
             logger.error("Unexpected error during PDF generation for article ${request.articleId}", e)
-
-            // Publish failure event
-            eventPublisher.publishEvent(
-                PdfGenerationFailedEvent(
-                    articleId = request.articleId,
-                    orderId = null,
-                    generationType = PdfGenerationType.ARTICLE_PDF,
-                    errorMessage = e.message ?: "Unexpected error",
-                ),
-            )
 
             throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
         }

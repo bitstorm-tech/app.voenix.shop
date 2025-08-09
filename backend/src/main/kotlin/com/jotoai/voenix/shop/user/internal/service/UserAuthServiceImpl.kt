@@ -4,9 +4,7 @@ import com.jotoai.voenix.shop.user.api.UserAuthenticationService
 import com.jotoai.voenix.shop.user.api.dto.UserAuthenticationDto
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import com.jotoai.voenix.shop.user.api.exceptions.createUserNotFoundException
-import com.jotoai.voenix.shop.user.events.UserUpdatedEvent
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.OffsetDateTime
@@ -19,7 +17,7 @@ import java.time.OffsetDateTime
 @Transactional(readOnly = true)
 class UserAuthServiceImpl(
     private val userRepository: UserRepository,
-    private val eventPublisher: ApplicationEventPublisher,
+    // Event publishing removed - handled elsewhere if needed
 ) : UserAuthenticationService {
     override fun loadUserByEmail(email: String): UserAuthenticationDto? {
         val user = userRepository.findActiveByEmail(email).orElse(null) ?: return null
@@ -61,8 +59,7 @@ class UserAuthServiceImpl(
             val savedUser = userRepository.save(user)
             val result = savedUser.toDto()
 
-            // Publish event for authentication-related updates
-            eventPublisher.publishEvent(UserUpdatedEvent(result))
+            // Event publishing removed - handled elsewhere if needed
 
             return result
         }

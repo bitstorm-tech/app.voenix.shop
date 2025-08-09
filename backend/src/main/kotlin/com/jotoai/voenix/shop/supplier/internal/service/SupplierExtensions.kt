@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.supplier.internal.service
 
+import com.jotoai.voenix.shop.country.api.dto.CountryDto
 import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
 import com.jotoai.voenix.shop.supplier.api.dto.UpdateSupplierRequest
-import com.jotoai.voenix.shop.supplier.internal.country.CountryData
 import com.jotoai.voenix.shop.supplier.internal.entity.Supplier
 
 /**
@@ -46,9 +46,9 @@ fun Supplier.updateFrom(request: UpdateSupplierRequest) {
     request.countryId?.let { this.countryId = it }
 }
 
-fun Supplier.toDtoWithCountry(countryData: CountryData?): SupplierDto {
+fun Supplier.toDtoWithCountry(countryDto: CountryDto?): SupplierDto {
     val baseDto = this.toDto()
     return baseDto.copy(
-        countryName = countryData?.name,
+        countryName = countryDto?.name,
     )
 }

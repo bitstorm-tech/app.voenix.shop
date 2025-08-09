@@ -6,13 +6,9 @@ import com.jotoai.voenix.shop.prompt.api.dto.subcategories.CreatePromptSubCatego
 import com.jotoai.voenix.shop.prompt.api.dto.subcategories.PromptSubCategoryDto
 import com.jotoai.voenix.shop.prompt.api.dto.subcategories.UpdatePromptSubCategoryRequest
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSubCategoryNotFoundException
-import com.jotoai.voenix.shop.prompt.events.PromptSubCategoryCreatedEvent
-import com.jotoai.voenix.shop.prompt.events.PromptSubCategoryDeletedEvent
-import com.jotoai.voenix.shop.prompt.events.PromptSubCategoryUpdatedEvent
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSubCategory
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptCategoryRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSubCategoryRepository
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -22,7 +18,6 @@ class PromptSubCategoryServiceImpl(
     private val promptSubCategoryRepository: PromptSubCategoryRepository,
     private val promptCategoryRepository: PromptCategoryRepository,
     private val promptSubCategoryAssembler: PromptSubCategoryAssembler,
-    private val eventPublisher: ApplicationEventPublisher,
 ) : PromptSubCategoryFacade,
     PromptSubCategoryQueryService {
     override fun getAllPromptSubCategories(): List<PromptSubCategoryDto> =
@@ -61,7 +56,6 @@ class PromptSubCategoryServiceImpl(
         val saved = promptSubCategoryRepository.save(promptSubCategory)
         val result = promptSubCategoryAssembler.toDto(saved)
 
-        eventPublisher.publishEvent(PromptSubCategoryCreatedEvent(result))
         return result
     }
 
@@ -90,7 +84,6 @@ class PromptSubCategoryServiceImpl(
         val saved = promptSubCategoryRepository.save(promptSubCategory)
         val result = promptSubCategoryAssembler.toDto(saved)
 
-        eventPublisher.publishEvent(PromptSubCategoryUpdatedEvent(oldDto, result))
         return result
     }
 
@@ -103,7 +96,5 @@ class PromptSubCategoryServiceImpl(
 
         val dto = promptSubCategoryAssembler.toDto(promptSubCategory)
         promptSubCategoryRepository.deleteById(id)
-
-        eventPublisher.publishEvent(PromptSubCategoryDeletedEvent(dto))
     }
 }

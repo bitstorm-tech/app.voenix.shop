@@ -32,7 +32,6 @@ dependencies {
 
     // Spring Modulith
     implementation("org.springframework.modulith:spring-modulith-starter-core:1.4.2")
-    implementation("org.springframework.modulith:spring-modulith-starter-jpa:1.4.2")
 
     // Database
     implementation("org.flywaydb:flyway-core:11.10.5")

@@ -4,9 +4,7 @@ import com.jotoai.voenix.shop.user.api.PasswordValidationResult
 import com.jotoai.voenix.shop.user.api.UserPasswordService
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import com.jotoai.voenix.shop.user.api.exceptions.createUserNotFoundException
-import com.jotoai.voenix.shop.user.events.UserUpdatedEvent
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,7 +18,7 @@ import org.springframework.transaction.annotation.Transactional
 class UserPasswordServiceImpl(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
-    private val eventPublisher: ApplicationEventPublisher,
+    // Event publishing removed - handled elsewhere if needed
 ) : UserPasswordService {
     @Transactional
     override fun setEncodedPassword(
@@ -36,7 +34,7 @@ class UserPasswordServiceImpl(
         val savedUser = userRepository.save(user)
         val result = savedUser.toDto()
 
-        eventPublisher.publishEvent(UserUpdatedEvent(result))
+        // Event publishing removed - handled elsewhere if needed
         return result
     }
 
@@ -122,7 +120,7 @@ class UserPasswordServiceImpl(
         val savedUser = userRepository.save(user)
         val result = savedUser.toDto()
 
-        eventPublisher.publishEvent(UserUpdatedEvent(result))
+        // Event publishing removed - handled elsewhere if needed
         return result
     }
 
@@ -147,7 +145,7 @@ class UserPasswordServiceImpl(
         val savedUser = userRepository.save(user)
         val result = savedUser.toDto()
 
-        eventPublisher.publishEvent(UserUpdatedEvent(result))
+        // Event publishing removed - handled elsewhere if needed
         return result
     }
 

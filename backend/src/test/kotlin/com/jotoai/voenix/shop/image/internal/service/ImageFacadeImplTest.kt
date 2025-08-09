@@ -15,7 +15,6 @@ import org.mockito.kotlin.doThrow
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDateTime
@@ -24,7 +23,8 @@ import java.util.UUID
 class ImageFacadeImplTest {
     private lateinit var imageService: ImageService
     private lateinit var userImageStorageService: UserImageStorageService
-    private lateinit var applicationEventPublisher: ApplicationEventPublisher
+
+    // Event publishing removed - no longer needed
     private lateinit var imageFacade: ImageFacadeImpl
 
     private lateinit var mockFile: MultipartFile
@@ -33,13 +33,12 @@ class ImageFacadeImplTest {
     fun setUp() {
         imageService = mock()
         userImageStorageService = mock()
-        applicationEventPublisher = mock()
+        // Event publishing removed - no longer needed
 
         imageFacade =
             ImageFacadeImpl(
                 imageService = imageService,
                 userImageStorageService = userImageStorageService,
-                applicationEventPublisher = applicationEventPublisher,
             )
 
         mockFile =

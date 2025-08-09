@@ -6,12 +6,8 @@ import com.jotoai.voenix.shop.prompt.api.dto.categories.CreatePromptCategoryRequ
 import com.jotoai.voenix.shop.prompt.api.dto.categories.PromptCategoryDto
 import com.jotoai.voenix.shop.prompt.api.dto.categories.UpdatePromptCategoryRequest
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptCategoryNotFoundException
-import com.jotoai.voenix.shop.prompt.events.PromptCategoryCreatedEvent
-import com.jotoai.voenix.shop.prompt.events.PromptCategoryDeletedEvent
-import com.jotoai.voenix.shop.prompt.events.PromptCategoryUpdatedEvent
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptCategory
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptCategoryRepository
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -20,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional
 class PromptCategoryServiceImpl(
     private val promptCategoryRepository: PromptCategoryRepository,
     private val promptCategoryAssembler: PromptCategoryAssembler,
-    private val eventPublisher: ApplicationEventPublisher,
 ) : PromptCategoryFacade,
     PromptCategoryQueryService {
     override fun getAllPromptCategories(): List<PromptCategoryDto> =
@@ -52,9 +47,6 @@ class PromptCategoryServiceImpl(
         val savedPromptCategory = promptCategoryRepository.save(promptCategory)
         val result = promptCategoryAssembler.toDto(savedPromptCategory)
 
-        // Publish event
-        eventPublisher.publishEvent(PromptCategoryCreatedEvent(result))
-
         return result
     }
 
@@ -75,9 +67,6 @@ class PromptCategoryServiceImpl(
         val updatedPromptCategory = promptCategoryRepository.save(promptCategory)
         val result = promptCategoryAssembler.toDto(updatedPromptCategory)
 
-        // Publish event
-        eventPublisher.publishEvent(PromptCategoryUpdatedEvent(oldDto, result))
-
         return result
     }
 
@@ -90,8 +79,5 @@ class PromptCategoryServiceImpl(
         val categoryDto = getPromptCategoryById(id)
 
         promptCategoryRepository.deleteById(id)
-
-        // Publish event
-        eventPublisher.publishEvent(PromptCategoryDeletedEvent(categoryDto))
     }
 }

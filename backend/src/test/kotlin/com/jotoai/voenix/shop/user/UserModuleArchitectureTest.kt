@@ -67,15 +67,7 @@ class UserModuleArchitectureTest {
         println("✓ User DTOs verified")
     }
 
-    @Test
-    fun `verify user events exist`() {
-        // Verify that user events exist for Spring Modulith integration
-        assertClassExists("com.jotoai.voenix.shop.user.events.UserCreatedEvent")
-        assertClassExists("com.jotoai.voenix.shop.user.events.UserUpdatedEvent")
-        assertClassExists("com.jotoai.voenix.shop.user.events.UserDeletedEvent")
-
-        println("✓ User events verified")
-    }
+    // Event classes removed - handled elsewhere if needed
 
     @Test
     fun `verify user entity and repositories exist`() {

@@ -11,15 +11,10 @@ import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import com.jotoai.voenix.shop.user.api.exceptions.createUserNotFoundException
-import com.jotoai.voenix.shop.user.events.UserCreatedEvent
-import com.jotoai.voenix.shop.user.events.UserDeletedEvent
-import com.jotoai.voenix.shop.user.events.UserUpdatedEvent
 import com.jotoai.voenix.shop.user.internal.entity.User
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.OffsetDateTime
 
 /**
  * Implementation of UserFacade for command operations (create, update, delete).
@@ -29,7 +24,7 @@ import java.time.OffsetDateTime
 @Transactional(readOnly = true)
 class UserCommandService(
     private val userRepository: UserRepository,
-    private val eventPublisher: ApplicationEventPublisher,
+    // Event publishing removed - handled elsewhere if needed
 ) : UserFacade {
     @Transactional
     override fun createUser(request: CreateUserRequest): UserDto {
@@ -54,7 +49,7 @@ class UserCommandService(
         val savedUser = userRepository.save(user)
         val result = savedUser.toDto()
 
-        eventPublisher.publishEvent(UserCreatedEvent(result))
+        // Event publishing removed - handled elsewhere if needed
         return result
     }
 
@@ -85,7 +80,7 @@ class UserCommandService(
         val updatedUser = userRepository.save(user)
         val result = updatedUser.toDto()
 
-        eventPublisher.publishEvent(UserUpdatedEvent(result))
+        // Event publishing removed - handled elsewhere if needed
         return result
     }
 
@@ -99,14 +94,7 @@ class UserCommandService(
         user.markAsDeleted()
         val deletedUser = userRepository.save(user)
 
-        eventPublisher.publishEvent(
-            UserDeletedEvent(
-                userId = id,
-                userEmail = deletedUser.email,
-                deletedAt = deletedUser.deletedAt ?: OffsetDateTime.now(),
-                isHardDelete = false,
-            ),
-        )
+        // Event publishing removed - handled elsewhere if needed
     }
 
     @Transactional
@@ -119,14 +107,7 @@ class UserCommandService(
         val userEmail = user.email
         userRepository.deleteById(id)
 
-        eventPublisher.publishEvent(
-            UserDeletedEvent(
-                userId = id,
-                userEmail = userEmail,
-                deletedAt = OffsetDateTime.now(),
-                isHardDelete = true,
-            ),
-        )
+        // Event publishing removed - handled elsewhere if needed
     }
 
     @Transactional
@@ -144,7 +125,7 @@ class UserCommandService(
         val restoredUser = userRepository.save(user)
         val result = restoredUser.toDto()
 
-        eventPublisher.publishEvent(UserUpdatedEvent(result))
+        // Event publishing removed - handled elsewhere if needed
         return result
     }
 
@@ -194,7 +175,7 @@ class UserCommandService(
             savedUsers.forEach { user ->
                 val dto = user.toDto()
                 successful.add(dto)
-                eventPublisher.publishEvent(UserCreatedEvent(dto))
+                // Event publishing removed - handled elsewhere if needed
             }
         }
 

@@ -8,7 +8,6 @@ import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -21,7 +20,6 @@ import java.util.UUID
 class ImageFacadeImpl(
     private val imageService: ImageService,
     private val userImageStorageService: UserImageStorageService,
-    private val applicationEventPublisher: ApplicationEventPublisher,
 ) : ImageFacade {
     @Transactional
     override fun createUploadedImage(

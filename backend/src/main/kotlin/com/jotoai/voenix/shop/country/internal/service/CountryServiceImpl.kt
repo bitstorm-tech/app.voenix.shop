@@ -6,12 +6,8 @@ import com.jotoai.voenix.shop.country.api.dto.CountryDto
 import com.jotoai.voenix.shop.country.api.dto.CreateCountryRequest
 import com.jotoai.voenix.shop.country.api.dto.UpdateCountryRequest
 import com.jotoai.voenix.shop.country.api.exceptions.CountryNotFoundException
-import com.jotoai.voenix.shop.country.events.CountryCreatedEvent
-import com.jotoai.voenix.shop.country.events.CountryDeletedEvent
-import com.jotoai.voenix.shop.country.events.CountryUpdatedEvent
 import com.jotoai.voenix.shop.country.internal.entity.Country
 import com.jotoai.voenix.shop.country.internal.repository.CountryRepository
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -19,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class CountryServiceImpl(
     private val countryRepository: CountryRepository,
-    private val eventPublisher: ApplicationEventPublisher,
 ) : CountryFacade,
     CountryQueryService {
     override fun getAllCountries(): List<CountryDto> = countryRepository.findAll().map { it.toDto() }
@@ -44,12 +39,7 @@ class CountryServiceImpl(
             )
 
         val savedCountry = countryRepository.save(country)
-        val result = savedCountry.toDto()
-
-        // Publish event
-        eventPublisher.publishEvent(CountryCreatedEvent(result))
-
-        return result
+        return savedCountry.toDto()
     }
 
     @Transactional
@@ -62,8 +52,6 @@ class CountryServiceImpl(
                 .findById(id)
                 .orElseThrow { CountryNotFoundException("Country", "id", id) }
 
-        val oldDto = country.toDto()
-
         request.name?.let { newName ->
             if (countryRepository.existsByNameAndIdNot(newName, id)) {
                 throw IllegalArgumentException("Country with name '$newName' already exists")
@@ -72,26 +60,15 @@ class CountryServiceImpl(
         }
 
         val updatedCountry = countryRepository.save(country)
-        val result = updatedCountry.toDto()
-
-        // Publish event
-        eventPublisher.publishEvent(CountryUpdatedEvent(oldDto, result))
-
-        return result
+        return updatedCountry.toDto()
     }
 
     @Transactional
     override fun deleteCountry(id: Long) {
-        val country =
-            countryRepository
-                .findById(id)
-                .orElseThrow { CountryNotFoundException("Country", "id", id) }
-
-        val countryDto = country.toDto()
+        if (!countryRepository.existsById(id)) {
+            throw CountryNotFoundException("Country", "id", id)
+        }
 
         countryRepository.deleteById(id)
-
-        // Publish event
-        eventPublisher.publishEvent(CountryDeletedEvent(countryDto))
     }
 }

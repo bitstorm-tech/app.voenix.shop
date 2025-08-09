@@ -11,14 +11,10 @@ import com.jotoai.voenix.shop.prompt.api.dto.public.PublicPromptDto
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.AddSlotVariantsRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantsRequest
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptNotFoundException
-import com.jotoai.voenix.shop.prompt.events.PromptCreatedEvent
-import com.jotoai.voenix.shop.prompt.events.PromptDeletedEvent
-import com.jotoai.voenix.shop.prompt.events.PromptUpdatedEvent
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
 import org.slf4j.LoggerFactory
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -30,7 +26,6 @@ class PromptServiceImpl(
     private val imageStorageService: ImageStorageService,
     private val promptAssembler: PromptAssembler,
     private val promptValidator: PromptValidator,
-    private val eventPublisher: ApplicationEventPublisher,
 ) : PromptFacade,
     PromptQueryService {
     companion object {
@@ -90,9 +85,6 @@ class PromptServiceImpl(
         val savedPrompt = promptRepository.save(prompt)
         val result = getPromptById(savedPrompt.id!!)
 
-        // Publish event
-        eventPublisher.publishEvent(PromptCreatedEvent(result))
-
         return result
     }
 
@@ -151,9 +143,6 @@ class PromptServiceImpl(
         val updatedPrompt = promptRepository.save(prompt)
         val result = getPromptById(updatedPrompt.id!!)
 
-        // Publish event
-        eventPublisher.publishEvent(PromptUpdatedEvent(oldDto, result))
-
         return result
     }
 
@@ -176,9 +165,6 @@ class PromptServiceImpl(
         }
 
         promptRepository.deleteById(id)
-
-        // Publish event
-        eventPublisher.publishEvent(PromptDeletedEvent(promptDto))
     }
 
     @Transactional

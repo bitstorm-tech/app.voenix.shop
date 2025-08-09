@@ -3,10 +3,8 @@ package com.jotoai.voenix.shop.user.internal.service
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.user.api.UserRoleManagementService
 import com.jotoai.voenix.shop.user.api.exceptions.createUserNotFoundException
-import com.jotoai.voenix.shop.user.events.UserUpdatedEvent
 import com.jotoai.voenix.shop.user.internal.repository.RoleRepository
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -19,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional
 class UserRoleServiceImpl(
     private val userRepository: UserRepository,
     private val roleRepository: RoleRepository,
-    private val eventPublisher: ApplicationEventPublisher,
+    // Event publishing removed - handled elsewhere if needed
 ) : UserRoleManagementService {
     @Transactional
     override fun assignRoles(
@@ -44,7 +42,7 @@ class UserRoleServiceImpl(
         user.roles.addAll(rolesToAssign)
 
         val savedUser = userRepository.save(user)
-        eventPublisher.publishEvent(UserUpdatedEvent(savedUser.toDto()))
+        // Event publishing removed - handled elsewhere if needed
     }
 
     @Transactional
@@ -61,7 +59,7 @@ class UserRoleServiceImpl(
         user.roles.removeAll { it.name in roleNames }
 
         val savedUser = userRepository.save(user)
-        eventPublisher.publishEvent(UserUpdatedEvent(savedUser.toDto()))
+        // Event publishing removed - handled elsewhere if needed
     }
 
     override fun getUserRoles(userId: Long): Set<String> {
@@ -105,7 +103,7 @@ class UserRoleServiceImpl(
         user.roles.addAll(rolesToSet)
 
         val savedUser = userRepository.save(user)
-        eventPublisher.publishEvent(UserUpdatedEvent(savedUser.toDto()))
+        // Event publishing removed - handled elsewhere if needed
     }
 
     override fun userHasRole(

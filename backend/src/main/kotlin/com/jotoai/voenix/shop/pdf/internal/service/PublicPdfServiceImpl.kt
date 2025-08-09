@@ -7,10 +7,7 @@ import com.jotoai.voenix.shop.pdf.api.PdfFacade
 import com.jotoai.voenix.shop.pdf.api.PublicPdfService
 import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
-import com.jotoai.voenix.shop.pdf.events.PdfGenerationFailedEvent
-import com.jotoai.voenix.shop.pdf.events.PdfGenerationType
 import org.slf4j.LoggerFactory
-import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -25,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional
 class PublicPdfServiceImpl(
     private val pdfFacade: PdfFacade,
     private val articleQueryService: ArticleQueryService,
-    private val eventPublisher: ApplicationEventPublisher,
 ) : PublicPdfService {
     companion object {
         private val logger = LoggerFactory.getLogger(PublicPdfServiceImpl::class.java)
@@ -33,15 +29,6 @@ class PublicPdfServiceImpl(
 
     override fun generatePublicPdf(request: PublicPdfGenerationRequest): ByteArray {
         try {
-            eventPublisher.publishEvent(
-                com.jotoai.voenix.shop.pdf.events.PdfGenerationRequestedEvent(
-                    articleId = request.mugId,
-                    orderId = null,
-                    generationType = PdfGenerationType.PUBLIC_PDF,
-                    requestedBy = "public_user",
-                ),
-            )
-
             val article =
                 try {
                     articleQueryService.findById(request.mugId)
@@ -70,16 +57,6 @@ class PublicPdfServiceImpl(
             return pdfFacade.generatePdf(pdfRequest)
         } catch (e: Exception) {
             logger.error("Error generating PDF for public user", e)
-
-            // Publish failure event
-            eventPublisher.publishEvent(
-                PdfGenerationFailedEvent(
-                    articleId = request.mugId,
-                    orderId = null,
-                    generationType = PdfGenerationType.PUBLIC_PDF,
-                    errorMessage = e.message ?: "Unknown error",
-                ),
-            )
 
             when (e) {
                 is BadRequestException -> throw e

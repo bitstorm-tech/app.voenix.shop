@@ -75,7 +75,7 @@ backend/src/main/kotlin/com/jotoai/voenix/shop/
 ## Database Configuration
 
 - PostgreSQL on localhost:5432
-- Database name: `voenix_java`
+- Database name: `voenix`
 - Migrations in `resources/db/changelog/`
 - Write SQL statements in lowercase
 - JPA Hibernate with automatic schema validation

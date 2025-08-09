@@ -3,11 +3,7 @@ package com.jotoai.voenix.shop.vat
 import com.jotoai.voenix.shop.vat.api.VatFacade
 import com.jotoai.voenix.shop.vat.api.VatQueryService
 import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest
-import com.jotoai.voenix.shop.vat.events.DefaultVatChangedEvent
-import com.jotoai.voenix.shop.vat.events.VatCreatedEvent
-import com.jotoai.voenix.shop.vat.events.VatDeletedEvent
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -21,14 +17,6 @@ class VatModuleIntegrationTest {
 
     @Autowired
     private lateinit var vatQueryService: VatQueryService
-
-    @Autowired
-    private lateinit var eventCapture: TestEventCapture
-
-    @BeforeEach
-    fun setUp() {
-        eventCapture.clear()
-    }
 
     @Test
     fun `should expose correct public interfaces`() {
@@ -73,47 +61,5 @@ class VatModuleIntegrationTest {
         val finalVats = vatQueryService.getAllVats()
         assertThat(finalVats).hasSize(initialVats.size)
         assertThat(vatQueryService.existsById(createdVat.id)).isFalse()
-    }
-
-    @Test
-    fun `should publish domain events correctly`() {
-        // Given - clear captured events
-        eventCapture.clear()
-
-        // When - creating a VAT
-        val createRequest =
-            CreateValueAddedTaxRequest(
-                name = "Event Test VAT",
-                percent = 15,
-                description = "Test VAT for event testing",
-                isDefault = true,
-            )
-
-        val createdVat = vatFacade.createVat(createRequest)
-
-        // Then - verify VatCreatedEvent was published
-        val createdEvents = eventCapture.capturedEvents.filterIsInstance<VatCreatedEvent>()
-        assertThat(createdEvents).hasSize(1)
-        assertThat(createdEvents.first().vat.id).isEqualTo(createdVat.id)
-
-        // And - verify DefaultVatChangedEvent was published
-        val defaultChangedEvents = eventCapture.capturedEvents.filterIsInstance<DefaultVatChangedEvent>()
-        assertThat(defaultChangedEvents).hasSize(1)
-        assertThat(defaultChangedEvents.first().newDefaultId).isEqualTo(createdVat.id)
-
-        // When - deleting the VAT
-        eventCapture.clear()
-        vatFacade.deleteVat(createdVat.id)
-
-        // Then - verify VatDeletedEvent was published
-        val deletedEvents = eventCapture.capturedEvents.filterIsInstance<VatDeletedEvent>()
-        assertThat(deletedEvents).hasSize(1)
-        assertThat(deletedEvents.first().vat.id).isEqualTo(createdVat.id)
-
-        // And - verify DefaultVatChangedEvent was published for deletion
-        val deletedDefaultChangedEvents = eventCapture.capturedEvents.filterIsInstance<DefaultVatChangedEvent>()
-        assertThat(deletedDefaultChangedEvents).hasSize(1)
-        assertThat(deletedDefaultChangedEvents.first().previousDefaultId).isEqualTo(createdVat.id)
-        assertThat(deletedDefaultChangedEvents.first().newDefaultId).isNull()
     }
 }
