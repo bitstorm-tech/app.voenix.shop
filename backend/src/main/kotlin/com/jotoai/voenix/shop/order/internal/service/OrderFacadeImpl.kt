@@ -1,29 +1,29 @@
-package com.jotoai.voenix.shop.domain.orders.service
+package com.jotoai.voenix.shop.order.internal.service
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.CartQueryService
 import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
-import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import com.jotoai.voenix.shop.common.exception.BadRequestException
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.orders.assembler.OrderAssembler
-import com.jotoai.voenix.shop.domain.orders.dto.CreateOrderRequest
-import com.jotoai.voenix.shop.domain.orders.dto.OrderDto
-import com.jotoai.voenix.shop.domain.orders.entity.Order
-import com.jotoai.voenix.shop.domain.orders.entity.OrderItem
-import com.jotoai.voenix.shop.domain.orders.enums.OrderStatus
-import com.jotoai.voenix.shop.domain.orders.repository.OrderRepository
+import com.jotoai.voenix.shop.order.api.OrderFacade
+import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
+import com.jotoai.voenix.shop.order.api.dto.OrderDto
+import com.jotoai.voenix.shop.order.api.enums.OrderStatus
+import com.jotoai.voenix.shop.order.api.exception.OrderAlreadyExistsException
+import com.jotoai.voenix.shop.order.api.exception.OrderCannotBeCancelledException
+import com.jotoai.voenix.shop.order.api.exception.OrderNotFoundException
+import com.jotoai.voenix.shop.order.internal.entity.Order
+import com.jotoai.voenix.shop.order.internal.entity.OrderItem
+import com.jotoai.voenix.shop.order.internal.repository.OrderRepository
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import jakarta.persistence.EntityManager
 import org.slf4j.LoggerFactory
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.UUID
 
 @Service
-class OrderService(
+class OrderFacadeImpl(
     private val orderRepository: OrderRepository,
     private val cartQueryService: CartQueryService,
     private val cartFacade: CartFacade,
@@ -31,14 +31,14 @@ class OrderService(
     private val orderAssembler: OrderAssembler,
     private val entityManager: EntityManager,
     private val articleQueryService: ArticleQueryService,
-) {
-    private val logger = LoggerFactory.getLogger(OrderService::class.java)
+) : OrderFacade {
+    private val logger = LoggerFactory.getLogger(OrderFacadeImpl::class.java)
 
     /**
      * Creates an order from the user's active cart
      */
     @Transactional
-    fun createOrderFromCart(
+    override fun createOrderFromCart(
         userId: Long,
         request: CreateOrderRequest,
     ): OrderDto {
@@ -57,7 +57,7 @@ class OrderService(
 
         // Check if order already exists for this cart
         if (orderRepository.existsByCartId(cartInfo.id)) {
-            throw BadRequestException("Order already exists for this cart")
+            throw OrderAlreadyExistsException(cartInfo.id)
         }
 
         // Refresh cart prices to ensure accuracy
@@ -139,102 +139,20 @@ class OrderService(
     }
 
     /**
-     * Gets an order by ID, ensuring it belongs to the user
-     */
-    @Transactional(readOnly = true)
-    fun getOrder(
-        userId: Long,
-        orderId: UUID,
-    ): OrderDto {
-        val order = getOrderEntity(userId, orderId)
-        return orderAssembler.toDto(order)
-    }
-
-    /**
-     * Gets an order entity by ID, ensuring it belongs to the user
-     */
-    @Transactional(readOnly = true)
-    fun getOrderEntity(
-        userId: Long,
-        orderId: UUID,
-    ): Order =
-        orderRepository
-            .findByIdAndUserId(orderId, userId)
-            .orElseThrow { ResourceNotFoundException("Order not found: $orderId") }
-
-    /**
-     * Gets all orders for a user
-     */
-    @Transactional(readOnly = true)
-    fun getUserOrders(
-        userId: Long,
-        pageable: Pageable,
-    ): PaginatedResponse<OrderDto> {
-        val ordersPage = orderRepository.findByUserId(userId, pageable)
-        return PaginatedResponse(
-            content = ordersPage.content.map { orderAssembler.toDto(it) },
-            currentPage = ordersPage.number,
-            totalPages = ordersPage.totalPages,
-            totalElements = ordersPage.totalElements,
-            size = ordersPage.size,
-        )
-    }
-
-    /**
-     * Gets orders for a user with specific status
-     */
-    @Transactional(readOnly = true)
-    fun getUserOrdersByStatus(
-        userId: Long,
-        status: OrderStatus,
-        pageable: Pageable,
-    ): PaginatedResponse<OrderDto> {
-        val ordersPage = orderRepository.findByUserIdAndStatus(userId, status, pageable)
-        return PaginatedResponse(
-            content = ordersPage.content.map { orderAssembler.toDto(it) },
-            currentPage = ordersPage.number,
-            totalPages = ordersPage.totalPages,
-            totalElements = ordersPage.totalElements,
-            size = ordersPage.size,
-        )
-    }
-
-    /**
-     * Updates an order status
-     */
-    @Transactional
-    fun updateOrderStatus(
-        orderId: UUID,
-        status: OrderStatus,
-    ): OrderDto {
-        val order =
-            orderRepository
-                .findById(orderId)
-                .orElseThrow { ResourceNotFoundException("Order not found: $orderId") }
-
-        order.status = status
-        val savedOrder = orderRepository.save(order)
-
-        logger.info("Updated order {} status to {}", orderId, status)
-
-        return orderAssembler.toDto(savedOrder)
-    }
-
-    /**
      * Cancels an order (if allowed)
      */
     @Transactional
-    fun cancelOrder(
+    override fun cancelOrder(
         userId: Long,
         orderId: UUID,
     ): OrderDto {
         val order =
             orderRepository
                 .findByIdAndUserId(orderId, userId)
-                .orElseThrow { ResourceNotFoundException("Order not found: $orderId") }
+                .orElseThrow { OrderNotFoundException("Order", "id", orderId) }
 
         if (!order.canBeCancelled()) {
-            throw BadRequestException("Order cannot be cancelled in current status: ${order.status}")
+            throw OrderCannotBeCancelledException(orderId.toString(), order.status)
         }
 
         order.status = OrderStatus.CANCELLED

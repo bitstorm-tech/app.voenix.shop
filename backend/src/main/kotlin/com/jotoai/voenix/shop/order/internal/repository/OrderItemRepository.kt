@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.domain.orders.repository
+package com.jotoai.voenix.shop.order.internal.repository
 
-import com.jotoai.voenix.shop.domain.orders.entity.OrderItem
+import com.jotoai.voenix.shop.order.internal.entity.OrderItem
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param

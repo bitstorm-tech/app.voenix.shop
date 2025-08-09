@@ -1,7 +1,7 @@
-package com.jotoai.voenix.shop.domain.orders.repository
+package com.jotoai.voenix.shop.order.internal.repository
 
-import com.jotoai.voenix.shop.domain.orders.entity.Order
-import com.jotoai.voenix.shop.domain.orders.enums.OrderStatus
+import com.jotoai.voenix.shop.order.api.enums.OrderStatus
+import com.jotoai.voenix.shop.order.internal.entity.Order
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository

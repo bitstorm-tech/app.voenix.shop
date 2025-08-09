@@ -1,29 +1,29 @@
 package com.jotoai.voenix.shop.pdf.internal.service
 
-import com.jotoai.voenix.shop.domain.orders.entity.Order
-import com.jotoai.voenix.shop.domain.orders.entity.OrderItem
+import com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto
+import com.jotoai.voenix.shop.order.api.dto.OrderItemForPdfDto
 import com.jotoai.voenix.shop.pdf.api.dto.ArticlePdfData
 import com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
 import org.springframework.stereotype.Component
 
 /**
- * Internal converter service for transforming Order entities to PDF DTOs.
- * This keeps the entity dependencies isolated within the PDF module.
+ * Internal converter service for transforming Order DTOs to PDF DTOs.
+ * This eliminates dependencies on internal Order entities from the PDF module.
  */
 @Component
 class OrderDataConverter {
-    fun convertToOrderPdfData(order: Order): OrderPdfData =
+    fun convertToOrderPdfData(orderForPdf: OrderForPdfDto): OrderPdfData =
         OrderPdfData(
-            id = requireNotNull(order.id) { "Order ID cannot be null for order ${order.orderNumber}" },
-            orderNumber = order.orderNumber,
-            userId = order.userId,
-            items = order.items.map { convertToOrderItemPdfData(it) },
+            id = orderForPdf.id,
+            orderNumber = orderForPdf.orderNumber,
+            userId = orderForPdf.userId,
+            items = orderForPdf.items.map { convertToOrderItemPdfData(it) },
         )
 
-    private fun convertToOrderItemPdfData(orderItem: OrderItem): OrderItemPdfData =
+    private fun convertToOrderItemPdfData(orderItem: OrderItemForPdfDto): OrderItemPdfData =
         OrderItemPdfData(
-            id = requireNotNull(orderItem.id) { "OrderItem ID cannot be null" },
+            id = orderItem.id,
             quantity = orderItem.quantity,
             generatedImageFilename = orderItem.generatedImageFilename,
             article =

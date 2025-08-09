@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.domain.orders.dto
+package com.jotoai.voenix.shop.order.api.dto
 
-import com.jotoai.voenix.shop.domain.orders.entity.Address
+import com.jotoai.voenix.shop.order.internal.entity.Address
 import jakarta.validation.constraints.NotBlank
 
 data class AddressDto(

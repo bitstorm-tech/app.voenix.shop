@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.orders.enums
+package com.jotoai.voenix.shop.order.api.enums
 
 enum class OrderStatus {
     PENDING,

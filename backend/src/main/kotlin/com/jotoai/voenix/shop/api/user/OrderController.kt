@@ -1,10 +1,11 @@
 package com.jotoai.voenix.shop.api.user
 
 import com.jotoai.voenix.shop.common.dto.PaginatedResponse
-import com.jotoai.voenix.shop.domain.orders.dto.CreateOrderRequest
-import com.jotoai.voenix.shop.domain.orders.dto.OrderDto
-import com.jotoai.voenix.shop.domain.orders.enums.OrderStatus
-import com.jotoai.voenix.shop.domain.orders.service.OrderService
+import com.jotoai.voenix.shop.order.api.OrderFacade
+import com.jotoai.voenix.shop.order.api.OrderQueryService
+import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
+import com.jotoai.voenix.shop.order.api.dto.OrderDto
+import com.jotoai.voenix.shop.order.api.enums.OrderStatus
 import com.jotoai.voenix.shop.pdf.api.OrderPdfService
 import com.jotoai.voenix.shop.pdf.internal.service.OrderDataConverter
 import com.jotoai.voenix.shop.user.api.UserQueryService
@@ -31,7 +32,8 @@ import java.util.UUID
 @RequestMapping("/api/user")
 @PreAuthorize("hasRole('USER')")
 class OrderController(
-    private val orderService: OrderService,
+    private val orderFacade: OrderFacade,
+    private val orderQueryService: OrderQueryService,
     private val userQueryService: UserQueryService,
     private val orderPdfService: OrderPdfService,
     private val orderDataConverter: OrderDataConverter,
@@ -46,7 +48,7 @@ class OrderController(
         @Valid @RequestBody request: CreateOrderRequest,
     ): OrderDto {
         val userId = getCurrentUserId(userDetails)
-        return orderService.createOrderFromCart(userId, request)
+        return orderFacade.createOrderFromCart(userId, request)
     }
 
     /**
@@ -61,9 +63,9 @@ class OrderController(
         val userId = getCurrentUserId(userDetails)
 
         return if (status != null) {
-            orderService.getUserOrdersByStatus(userId, status, pageable)
+            orderQueryService.getUserOrdersByStatus(userId, status, pageable)
         } else {
-            orderService.getUserOrders(userId, pageable)
+            orderQueryService.getUserOrders(userId, pageable)
         }
     }
 
@@ -76,7 +78,7 @@ class OrderController(
         @PathVariable orderId: UUID,
     ): OrderDto {
         val userId = getCurrentUserId(userDetails)
-        return orderService.getOrder(userId, orderId)
+        return orderQueryService.getOrder(userId, orderId)
     }
 
     /**
@@ -88,7 +90,7 @@ class OrderController(
         @PathVariable orderId: UUID,
     ): OrderDto {
         val userId = getCurrentUserId(userDetails)
-        return orderService.cancelOrder(userId, orderId)
+        return orderFacade.cancelOrder(userId, orderId)
     }
 
     /**
@@ -102,15 +104,15 @@ class OrderController(
     ) {
         val userId = getCurrentUserId(userDetails)
 
-        // Get order and validate ownership
-        val order = orderService.getOrderEntity(userId, orderId)
+        // Get order data for PDF and validate ownership
+        val orderForPdf = orderQueryService.getOrderForPdf(userId, orderId)
 
         // Convert order to PDF data DTO
-        val orderPdfData = orderDataConverter.convertToOrderPdfData(order)
+        val orderPdfData = orderDataConverter.convertToOrderPdfData(orderForPdf)
 
         // Generate PDF
         val pdfBytes = orderPdfService.generateOrderPdf(orderPdfData)
-        val filename = orderPdfService.getOrderPdfFilename(order.orderNumber ?: "unknown")
+        val filename = orderPdfService.getOrderPdfFilename(orderForPdf.orderNumber ?: "unknown")
 
         // Set response headers
         response.contentType = MediaType.APPLICATION_PDF_VALUE

@@ -1,11 +1,11 @@
-package com.jotoai.voenix.shop.domain.orders.assembler
+package com.jotoai.voenix.shop.order.internal.service
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
-import com.jotoai.voenix.shop.domain.orders.dto.AddressDto
-import com.jotoai.voenix.shop.domain.orders.dto.OrderDto
-import com.jotoai.voenix.shop.domain.orders.dto.OrderItemDto
-import com.jotoai.voenix.shop.domain.orders.entity.Order
-import com.jotoai.voenix.shop.domain.orders.entity.OrderItem
+import com.jotoai.voenix.shop.order.api.dto.AddressDto
+import com.jotoai.voenix.shop.order.api.dto.OrderDto
+import com.jotoai.voenix.shop.order.api.dto.OrderItemDto
+import com.jotoai.voenix.shop.order.internal.entity.Order
+import com.jotoai.voenix.shop.order.internal.entity.OrderItem
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
