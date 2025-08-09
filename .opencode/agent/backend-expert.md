@@ -1,5 +1,5 @@
 ---
-description: |
+description: >-
   Use this agent when you need deep, authoritative guidance or execution on the Kotlin/Spring Boot API of Voenix Shop—whether designing or evolving entities, DTOs, services, controllers, database migrations, REST endpoints, security, validation, error handling, observability, or automated tests for core flows (orders, pricing/VAT, AI prompts). It’s also your go-to for dependency updates, performance optimizations, backend PR reviews, and high-level architecture decisions that keep the system scalable, reliable, and easy to change.
 
   Examples:
