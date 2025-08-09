@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.image.internal.service
 
-import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.springframework.stereotype.Service
@@ -13,13 +13,13 @@ import org.springframework.web.multipart.MultipartFile
 @Service
 @Transactional(readOnly = true)
 class UserImageGenerationService(
-    openAIImageService: OpenAIImageService,
+    openAIImageFacade: OpenAIImageFacade,
     promptQueryService: PromptQueryService,
     generatedImageRepository: GeneratedImageRepository,
     private val userQueryService: UserQueryService,
     private val storagePathService: com.jotoai.voenix.shop.image.api.StoragePathService,
     private val userImageStorageService: UserImageStorageService,
-) : BaseImageGenerationService(openAIImageService, promptQueryService, generatedImageRepository) {
+) : BaseImageGenerationService(openAIImageFacade, promptQueryService, generatedImageRepository) {
     companion object {
         private const val RATE_LIMIT_HOURS = 24
         private const val MAX_GENERATIONS_PER_DAY = 50
@@ -76,7 +76,7 @@ class UserImageGenerationService(
         logger.debug("Generated OpenAI request: {}", openAIRequest)
 
         // Generate images using OpenAI service (get raw bytes)
-        val imageEditResponse = openAIImageService.editImageBytes(imageFile, openAIRequest)
+        val imageEditResponse = openAIImageFacade.editImageBytes(imageFile, openAIRequest)
 
         // Store each generated image using the user storage service (which handles both file and DB operations)
         val generatedImages =

@@ -1,11 +1,11 @@
 package com.jotoai.voenix.shop.image.internal.service
 
-import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.internal.domain.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.stereotype.Service
@@ -17,13 +17,13 @@ import java.util.UUID
 @Service
 @Transactional(readOnly = true)
 class PublicImageGenerationService(
-    openAIImageService: OpenAIImageService,
+    openAIImageFacade: OpenAIImageFacade,
     promptQueryService: PromptQueryService,
     generatedImageRepository: GeneratedImageRepository,
     private val request: HttpServletRequest,
     private val storagePathService: com.jotoai.voenix.shop.image.api.StoragePathService,
     private val imageStorageService: ImageStorageService,
-) : BaseImageGenerationService(openAIImageService, promptQueryService, generatedImageRepository) {
+) : BaseImageGenerationService(openAIImageFacade, promptQueryService, generatedImageRepository) {
     companion object {
         private const val RATE_LIMIT_HOURS = 1
         private const val MAX_GENERATIONS_PER_IP_PER_HOUR = 10
@@ -73,7 +73,7 @@ class PublicImageGenerationService(
         logger.debug("Generated OpenAI request: {}", openAIRequest)
 
         // Generate images using OpenAI service (get raw bytes)
-        val imageEditResponse = openAIImageService.editImageBytes(imageFile, openAIRequest)
+        val imageEditResponse = openAIImageFacade.editImageBytes(imageFile, openAIRequest)
 
         // Store each generated image and create database records
         val generatedImages =

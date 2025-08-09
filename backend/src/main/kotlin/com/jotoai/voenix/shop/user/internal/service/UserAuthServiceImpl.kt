@@ -5,9 +5,9 @@ import com.jotoai.voenix.shop.user.api.dto.UserAuthenticationDto
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import com.jotoai.voenix.shop.user.api.exceptions.createUserNotFoundException
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository
-import java.time.OffsetDateTime
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.OffsetDateTime
 
 /**
  * Implementation of UserAuthenticationService for authentication-related user operations.

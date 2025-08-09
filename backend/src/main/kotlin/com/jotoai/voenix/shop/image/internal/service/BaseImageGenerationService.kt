@@ -2,11 +2,11 @@ package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
-import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
+import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import org.slf4j.LoggerFactory
 import org.springframework.web.multipart.MultipartFile
@@ -17,7 +17,7 @@ import java.time.LocalDateTime
  * like file validation, rate limiting patterns, and error handling.
  */
 abstract class BaseImageGenerationService(
-    protected val openAIImageService: OpenAIImageService,
+    protected val openAIImageFacade: OpenAIImageFacade,
     protected val promptQueryService: PromptQueryService,
     protected val generatedImageRepository: GeneratedImageRepository,
 ) {

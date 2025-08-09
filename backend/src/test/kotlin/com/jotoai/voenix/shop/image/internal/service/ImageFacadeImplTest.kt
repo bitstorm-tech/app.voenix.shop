@@ -6,8 +6,6 @@ import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.image.internal.domain.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.domain.UploadedImage
-import java.time.LocalDateTime
-import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -19,6 +17,8 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDateTime
+import java.util.UUID
 
 class ImageFacadeImplTest {
     private lateinit var imageService: ImageService

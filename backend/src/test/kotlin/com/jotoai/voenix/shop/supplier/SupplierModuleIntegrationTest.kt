@@ -73,6 +73,7 @@ class SupplierModuleIntegrationTest {
         assertThat(finalSuppliers).hasSize(initialSuppliers.size)
         assertThat(supplierQueryService.existsById(createdSupplier.id)).isFalse()
     }
+
     @Test
     fun `should validate unique constraints`() {
         // Given - a supplier

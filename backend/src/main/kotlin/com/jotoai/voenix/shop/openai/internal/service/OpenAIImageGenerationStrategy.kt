@@ -1,12 +1,13 @@
-package com.jotoai.voenix.shop.domain.openai.service
+package com.jotoai.voenix.shop.openai.internal.service
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
-import com.jotoai.voenix.shop.domain.openai.dto.ImageEditBytesResponse
-import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
-import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequestParams
-import com.jotoai.voenix.shop.domain.openai.dto.TestPromptResponse
+import com.jotoai.voenix.shop.openai.api.ImageGenerationStrategy
+import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
+import com.jotoai.voenix.shop.openai.api.dto.ImageEditBytesResponse
+import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
+import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequestParams
+import com.jotoai.voenix.shop.openai.api.dto.TestPromptResponse
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import io.ktor.client.HttpClient

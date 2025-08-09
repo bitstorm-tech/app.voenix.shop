@@ -1,13 +1,13 @@
 package com.jotoai.voenix.shop.api.admin.services
 
-import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
-import com.jotoai.voenix.shop.domain.openai.dto.ImageEditResponse
-import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
-import com.jotoai.voenix.shop.domain.openai.dto.TestPromptResponse
-import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
 import com.jotoai.voenix.shop.image.api.enums.ImageBackground
 import com.jotoai.voenix.shop.image.api.enums.ImageQuality
 import com.jotoai.voenix.shop.image.api.enums.ImageSize
+import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
+import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
+import com.jotoai.voenix.shop.openai.api.dto.ImageEditResponse
+import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
+import com.jotoai.voenix.shop.openai.api.dto.TestPromptResponse
 import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
@@ -22,13 +22,13 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/admin/openai")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminOpenAIImageController(
-    private val openAIImageService: OpenAIImageService,
+    private val openAIImageFacade: OpenAIImageFacade,
 ) {
     @PostMapping("/image-edit", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createImageEdit(
         @RequestParam("image") imageFile: MultipartFile,
         @RequestPart("request") @Valid request: CreateImageEditRequest,
-    ): ImageEditResponse = openAIImageService.editImage(imageFile, request)
+    ): ImageEditResponse = openAIImageFacade.editImage(imageFile, request)
 
     @PostMapping("/test-prompt", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun testPrompt(
@@ -39,7 +39,7 @@ class AdminOpenAIImageController(
         @RequestParam("quality") quality: String,
         @RequestParam("size") size: String,
     ): TestPromptResponse =
-        openAIImageService.testPrompt(
+        openAIImageFacade.testPrompt(
             imageFile,
             TestPromptRequest(
                 masterPrompt = masterPrompt,

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.domain.openai.dto
+package com.jotoai.voenix.shop.openai.api.dto
 
 import com.jotoai.voenix.shop.image.api.enums.ImageBackground
 import com.jotoai.voenix.shop.image.api.enums.ImageQuality

@@ -1,14 +1,12 @@
-package com.jotoai.voenix.shop.domain.openai.service
+package com.jotoai.voenix.shop.openai.internal.service
 
-import com.jotoai.voenix.shop.domain.openai.dto.CreateImageEditRequest
-import com.jotoai.voenix.shop.domain.openai.dto.ImageEditBytesResponse
-import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequest
-import com.jotoai.voenix.shop.domain.openai.dto.TestPromptRequestParams
-import com.jotoai.voenix.shop.domain.openai.dto.TestPromptResponse
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.enums.ImageBackground
 import com.jotoai.voenix.shop.image.api.enums.ImageQuality
 import com.jotoai.voenix.shop.image.api.enums.ImageSize
+import com.jotoai.voenix.shop.openai.api.ImageGenerationStrategy
+import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
+import com.jotoai.voenix.shop.openai.api.dto.ImageEditBytesResponse
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -22,17 +20,19 @@ import org.mockito.kotlin.anyOrNull
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
 
-class OpenAIImageServiceTest {
+class OpenAIImageFacadeImplTest {
     private lateinit var imageStorageService: ImageStorageService
     private lateinit var imageGenerationStrategy: ImageGenerationStrategy
-    private lateinit var openAIImageService: OpenAIImageService
+    private lateinit var openAIImageFacade: OpenAIImageFacadeImpl
+    private lateinit var openAIImageQueryService: OpenAIImageQueryServiceImpl
     private lateinit var mockImageFile: MultipartFile
 
     @BeforeEach
     fun setUp() {
         imageStorageService = mock(ImageStorageService::class.java)
         imageGenerationStrategy = mock(ImageGenerationStrategy::class.java)
-        openAIImageService = OpenAIImageService(imageStorageService, imageGenerationStrategy)
+        openAIImageFacade = OpenAIImageFacadeImpl(imageStorageService, imageGenerationStrategy)
+        openAIImageQueryService = OpenAIImageQueryServiceImpl()
 
         mockImageFile =
             MockMultipartFile(
@@ -66,7 +66,7 @@ class OpenAIImageServiceTest {
         `when`(imageGenerationStrategy.generateImages(mockImageFile, request)).thenReturn(expectedResponse)
 
         // When
-        val result = openAIImageService.editImageBytes(mockImageFile, request)
+        val result = openAIImageFacade.editImageBytes(mockImageFile, request)
 
         // Then
         assertNotNull(result)
@@ -106,7 +106,7 @@ class OpenAIImageServiceTest {
             .thenReturn(savedFilename1, savedFilename2)
 
         // When
-        val result = openAIImageService.editImage(mockImageFile, request)
+        val result = openAIImageFacade.editImage(mockImageFile, request)
 
         // Then
         assertNotNull(result)
@@ -142,7 +142,7 @@ class OpenAIImageServiceTest {
             .thenReturn(savedFilename)
 
         // When
-        val result = openAIImageService.editImage(mockImageFile, request)
+        val result = openAIImageFacade.editImage(mockImageFile, request)
 
         // Then
         assertEquals(1, result.imageFilenames.size)
@@ -169,7 +169,7 @@ class OpenAIImageServiceTest {
 
         // When/Then
         assertThrows<RuntimeException> {
-            openAIImageService.editImage(mockImageFile, request)
+            openAIImageFacade.editImage(mockImageFile, request)
         }
 
         // Exception is thrown as expected
@@ -197,108 +197,11 @@ class OpenAIImageServiceTest {
 
         // When/Then
         assertThrows<RuntimeException> {
-            openAIImageService.editImage(mockImageFile, request)
+            openAIImageFacade.editImage(mockImageFile, request)
         }
 
         // Exception is thrown as expected
         verify(imageGenerationStrategy).generateImages(mockImageFile, request)
         verify(imageStorageService).storeFile(anyOrNull(), anyOrNull())
-    }
-
-    @Test
-    fun `testPrompt should delegate to strategy`() {
-        // Given
-        val request =
-            TestPromptRequest(
-                masterPrompt = "Master prompt",
-                specificPrompt = "Specific prompt",
-                size = ImageSize.LANDSCAPE_1536X1024,
-                quality = ImageQuality.HIGH,
-                background = ImageBackground.AUTO,
-            )
-
-        val expectedResponse =
-            TestPromptResponse(
-                imageUrl = "https://test.example.com/image.png",
-                requestParams =
-                    TestPromptRequestParams(
-                        model = "test-model",
-                        size = request.size.apiValue,
-                        n = 1,
-                        responseFormat = "url",
-                        masterPrompt = request.masterPrompt,
-                        specificPrompt = request.specificPrompt,
-                        combinedPrompt = "${request.masterPrompt} ${request.specificPrompt}",
-                        quality = request.quality.name.lowercase(),
-                        background = request.background.name.lowercase(),
-                    ),
-            )
-
-        `when`(imageGenerationStrategy.testPrompt(mockImageFile, request)).thenReturn(expectedResponse)
-
-        // When
-        val result = openAIImageService.testPrompt(mockImageFile, request)
-
-        // Then
-        assertNotNull(result)
-        assertEquals(expectedResponse.imageUrl, result.imageUrl)
-        assertEquals(expectedResponse.requestParams, result.requestParams)
-
-        verify(imageGenerationStrategy).testPrompt(mockImageFile, request)
-    }
-
-    @Test
-    fun `testPrompt should handle strategy failure`() {
-        // Given
-        val request =
-            TestPromptRequest(
-                masterPrompt = "Master prompt",
-                specificPrompt = "Specific prompt",
-                size = ImageSize.SQUARE_1024X1024,
-                quality = ImageQuality.LOW,
-                background = ImageBackground.OPAQUE,
-            )
-
-        `when`(imageGenerationStrategy.testPrompt(mockImageFile, request))
-            .thenThrow(RuntimeException("Test prompt failed"))
-
-        // When/Then
-        assertThrows<RuntimeException> {
-            openAIImageService.testPrompt(mockImageFile, request)
-        }
-
-        verify(imageGenerationStrategy).testPrompt(mockImageFile, request)
-    }
-
-    @Test
-    fun `SimpleMultipartFile should work correctly`() {
-        // Given
-        val fileName = "test.png"
-        val contentType = "image/png"
-        val content = "test content".toByteArray()
-
-        // Use reflection to access the private class (for testing purposes)
-        val simpleMultipartFileClass =
-            OpenAIImageService::class.java.declaredClasses
-                .first { it.simpleName == "SimpleMultipartFile" }
-
-        // The constructor signature is: (String fileName, String contentType, ByteArray content)
-        val constructor =
-            simpleMultipartFileClass.getDeclaredConstructor(
-                String::class.java,
-                String::class.java,
-                ByteArray::class.java,
-            )
-        constructor.isAccessible = true
-
-        val instance = constructor.newInstance(fileName, contentType, content) as MultipartFile
-
-        // Then
-        assertEquals("file", instance.name)
-        assertEquals(fileName, instance.originalFilename)
-        assertEquals(contentType, instance.contentType)
-        assertEquals(content.size.toLong(), instance.size)
-        assertEquals(content.isEmpty(), instance.isEmpty)
-        assertEquals(content, instance.bytes)
     }
 }

@@ -2,13 +2,13 @@ package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.domain.openai.service.OpenAIImageService
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.enums.ImageBackground
 import com.jotoai.voenix.shop.image.api.enums.ImageQuality
 import com.jotoai.voenix.shop.image.api.enums.ImageSize
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -23,7 +23,7 @@ import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDateTime
 
 class BaseImageGenerationServiceTest {
-    private lateinit var openAIImageService: OpenAIImageService
+    private lateinit var openAIImageFacade: OpenAIImageFacade
     private lateinit var promptQueryService: PromptQueryService
     private lateinit var generatedImageRepository: GeneratedImageRepository
     private lateinit var baseImageGenerationService: TestableBaseImageGenerationService
@@ -34,13 +34,13 @@ class BaseImageGenerationServiceTest {
 
     @BeforeEach
     fun setUp() {
-        openAIImageService = mock()
+        openAIImageFacade = mock()
         promptQueryService = mock()
         generatedImageRepository = mock()
 
         baseImageGenerationService =
             TestableBaseImageGenerationService(
-                openAIImageService = openAIImageService,
+                openAIImageFacade = openAIImageFacade,
                 promptService = promptQueryService,
                 generatedImageRepository = generatedImageRepository,
             )
@@ -429,10 +429,10 @@ class BaseImageGenerationServiceTest {
      * Exposes protected methods as public methods with 'test' prefix.
      */
     private class TestableBaseImageGenerationService(
-        openAIImageService: OpenAIImageService,
+        openAIImageFacade: OpenAIImageFacade,
         promptService: PromptQueryService,
         generatedImageRepository: GeneratedImageRepository,
-    ) : BaseImageGenerationService(openAIImageService, promptService, generatedImageRepository) {
+    ) : BaseImageGenerationService(openAIImageFacade, promptService, generatedImageRepository) {
         fun testValidateImageFile(file: MultipartFile) = validateImageFile(file)
 
         fun testValidatePrompt(promptId: Long) = validatePrompt(promptId)
