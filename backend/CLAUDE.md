@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with th
 
 ## Backend Overview
 
-The backend is a Kotlin Spring Boot REST API that provides e-commerce functionality for the Voenix Shop application.
+The backend is a Kotlin Spring Boot REST API that provides e-commerce functionality for the Voenix Shop application. The codebase is currently migrating to Spring Modulith architecture for better modularity and maintainability.
 
 ## Development Commands
 
@@ -31,46 +31,87 @@ cd backend
 
 ## Architecture
 
-The backend follows Domain-Driven Design with clear separation between API layer and domain layer:
+The backend follows Spring Modulith architecture with Domain-Driven Design principles, providing clear module boundaries and managed dependencies:
+
+### Spring Modulith Structure
+
+The application is organized into self-contained modules with explicit boundaries:
 
 ```
 backend/src/main/kotlin/com/jotoai/voenix/shop/
-├── api/                 # API Controllers
+├── api/                 # REST API Module (@ApplicationModule)
 │   ├── admin/          # Admin-only endpoints
-│   │   ├── articles/   # Article management controllers
-│   │   ├── images/     # Image handling controllers
-│   │   ├── prompts/    # Prompt management controllers
-│   │   ├── services/   # OpenAI and PDF controllers
-│   │   └── users/      # User management controllers
-│   ├── auth/           # Authentication endpoints
+│   ├── public/         # Public endpoints  
 │   └── user/           # User-specific endpoints
-├── auth/               # Authentication domain
+├── article/            # Article Module (in migration to Modulith)
+│   ├── api/            # Public interfaces and DTOs
+│   └── internal/       # Private implementation
+├── auth/               # Authentication Module (@ApplicationModule)
 │   ├── config/         # Security configuration
-│   ├── dto/            # Auth DTOs (login, register, tokens)
-│   ├── entity/         # User and Role entities
+│   ├── dto/            # Auth DTOs
 │   └── service/        # Auth services
-├── common/             # Shared utilities
-│   ├── config/         # App-wide configuration
+├── common/             # Common Utilities Module (@ApplicationModule, OPEN)
+│   ├── config/         # Shared configuration
 │   ├── dto/            # Common DTOs
 │   └── exception/      # Global exception handling
-└── domain/             # Core business domains
-    ├── articles/       # Article management
-    │   ├── categories/ # Categories and subcategories
-    │   └── mugs/       # Mug-specific logic
-    ├── images/         # Image processing services
-    ├── openai/         # OpenAI integration (DALL-E)
-    ├── pdf/            # PDF generation services
-    ├── prompts/        # Prompt management
-    └── users/          # User domain logic
+├── country/            # Country Module (@ApplicationModule)
+│   ├── api/            # Public interfaces
+│   └── internal/       # Private implementation
+├── domain/             # Domain Module (@ApplicationModule, OPEN)
+│   ├── cart/           # Shopping cart logic
+│   ├── openai/         # OpenAI integration
+│   └── orders/         # Order management
+├── image/              # Image Module (@ApplicationModule)
+│   ├── api/            # Public interfaces
+│   └── internal/       # Private implementation
+├── pdf/                # PDF Module (@ApplicationModule)
+│   ├── api/            # Public interfaces
+│   └── internal/       # Private implementation
+├── prompt/             # Prompt Module (@ApplicationModule)
+│   ├── api/            # Public interfaces
+│   └── internal/       # Private implementation
+├── supplier/           # Supplier Module (@ApplicationModule)
+│   ├── api/            # Public interfaces
+│   └── internal/       # Private implementation
+├── user/               # User Module (@ApplicationModule)
+│   ├── api/            # Public interfaces
+│   └── internal/       # Private implementation
+└── vat/                # VAT Module (@ApplicationModule)
+    ├── api/            # Public interfaces
+    └── internal/       # Private implementation
 ```
 
-**Key patterns:**
-- RESTful APIs with role-based access control
-- Layered architecture: Controller → Service → Repository
-- DTOs for API contracts, entities for persistence
-- Builder pattern for complex entities
-- Spring Data JPA with custom queries
-- Flyway for database migrations
+### Module Architecture Principles
+
+1. **Module Boundaries**:
+   - Each module is annotated with `@ApplicationModule` in its `package-info.java`
+   - Modules expose public APIs through the `api` package
+   - Internal implementation details are in the `internal` package
+   - Cross-module communication only through public APIs
+
+2. **Module Types**:
+   - **Standard Modules**: Encapsulated with strict boundaries (e.g., user, vat, supplier)
+   - **Open Modules**: Can be accessed by all modules (common, domain)
+   - **API Module**: Special module containing REST controllers
+
+3. **Dependency Rules**:
+   - Modules declare allowed dependencies explicitly
+   - Only depend on other modules' `api` packages
+   - Common module has no dependencies
+   - Domain module can depend on other modules' APIs
+
+4. **Module Communication Patterns**:
+   - **Direct API calls**: Through Facade and QueryService interfaces
+   - **Shared DTOs**: Located in module's `api.dto` packages
+
+### Key Architectural Patterns
+
+- **Spring Modulith**: Modular monolith with module verification
+- **Hexagonal Architecture**: Within each module (api/internal separation)
+- **CQRS Pattern**: Separate Facade (commands) and QueryService (queries)
+- **Repository Pattern**: Data access through Spring Data JPA
+- **DTO Pattern**: Separate DTOs for API contracts
+- **Service Layer Pattern**: Business logic in service implementations
 
 ## Database Configuration
 
@@ -83,7 +124,8 @@ backend/src/main/kotlin/com/jotoai/voenix/shop/
 ## Key Technologies
 
 - **Kotlin 2.2.0** with JDK 21
-- **Spring Boot 3.5.3** framework
+- **Spring Boot 3.5.4** framework
+- **Spring Modulith 1.4.2** for modular architecture
 - **Spring Security** for authentication
 - **Spring Data JPA** for data access
 - **PostgreSQL 42.7** database
@@ -205,13 +247,73 @@ backend/src/main/kotlin/com/jotoai/voenix/shop/
 - **Logout functionality** that invalidates tokens
 - **Request validation** and input sanitization
 
+## Spring Modulith Development Guidelines
+
+### Creating a New Module
+
+1. **Create module package structure**:
+   ```
+   shop/newmodule/
+   ├── api/              # Public interfaces
+   │   ├── dto/          # Data transfer objects
+   │   └── exceptions/   # Module-specific exceptions
+   ├── internal/         # Private implementation
+   │   ├── entity/       # JPA entities
+   │   ├── repository/   # Spring Data repositories
+   │   └── service/      # Service implementations
+   └── package-info.java # Module definition with @ApplicationModule
+   ```
+
+2. **Define module boundaries** in `package-info.java`:
+   ```java
+   @org.springframework.modulith.ApplicationModule(
+       displayName = "Module Name",
+       allowedDependencies = {"common", "othermodule::api"}
+   )
+   package com.jotoai.voenix.shop.newmodule;
+   ```
+
+3. **Create public API interfaces**:
+   - `ModuleFacade` for write operations (commands)
+   - `ModuleQueryService` for read operations (queries)
+   - DTOs in `api.dto` package
+
+4. **Implement internal services** that implement the public interfaces
+
+### Module Testing
+
+Run module verification tests:
+```bash
+./gradlew test --tests "*ModulithTest"
+```
+
+Module tests verify:
+- Module boundaries and dependencies
+- No cyclic dependencies
+- API exposure rules
+- Internal package protection
+
+### Module Communication
+
+1. **Direct API Calls**:
+   ```kotlin
+   @Service
+   class MyService(
+       private val userQueryService: UserQueryService  // Inject other module's API
+   )
+   ```
+2. **Shared Types**:
+   - Use common module for shared exceptions and utilities
+   - Module-specific DTOs in `api.dto` packages
+
 ## Development Notes
 
 1. **Kotlin/Java Version**: Backend requires JDK 21+ with Kotlin 2.2.0
 2. **Database**: Ensure PostgreSQL is running before starting backend
 3. **Testing**: Run tests with `./gradlew test`
-4. **Linting**: Backend uses Ktlint - always fix linting errors
-5. **Environment**: Use `.env` files for configuration (supported by spring-dotenv)
+4. **Module Tests**: Run `./gradlew test --tests "*ModulithTest"` to verify module boundaries
+5. **Linting**: Backend uses Ktlint - always fix linting errors
+6. **Environment**: Use `.env` files for configuration (supported by spring-dotenv)
 
 ## Database Migrations
 

@@ -6,12 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Voenix Shop is a full-stack e-commerce application for creating custom mugs with AI-generated images. The codebase is split into two main applications:
 
-- **Backend**: Kotlin Spring Boot REST API (`/backend`) - See `backend/CLAUDE.md` for backend-specific guidance
+- **Backend**: Kotlin Spring Boot REST API with Spring Modulith architecture (`/backend`) - See `backend/CLAUDE.md` for backend-specific guidance
 - **Frontend**: React TypeScript SPA with Vite (`/frontend`) - See `frontend/CLAUDE.md` for frontend-specific guidance
+
+### Architecture Migration Status
+The backend is currently undergoing a migration to Spring Modulith architecture, transitioning from a traditional layered architecture to a modular monolith. This enables better separation of concerns, clearer boundaries between business modules, and prepares the codebase for potential future microservices extraction. For detailed information about the module structure and migration approach, see `backend/CLAUDE.md`.
 
 ## Common Development Commands
 
-The test credentials to login into the admin site are `a@a` / `test`.
+The test credentials to login into the admin site are `a@a.com` / `test`.
 
 **Note**: For development tasks that involve both frontend and backend changes, consider using specialized subagents (backend-expert and frontend-expert) to work in parallel for maximum efficiency.
 
@@ -26,6 +29,8 @@ The test credentials to login into the admin site are `a@a` / `test`.
    - Database migrations and repository changes
    - Spring Boot configuration and security updates
    - Backend testing and API endpoint implementation
+   - Spring Modulith module creation and migration
+   - Inter-module communication and module boundaries
 
 2. **frontend-expert**: Use for all frontend-only tasks
    - React component creation and updates
