@@ -1,6 +1,33 @@
 ---
 name: kotlin-backend-expert
-description: Use this agent when you need to implement, modify, or debug backend functionality in the Kotlin Spring Boot application. This includes creating or updating REST API endpoints, implementing business logic for e-commerce features (products, orders, users), working with JPA entities and repositories, configuring Spring Security, handling database migrations, writing backend tests, or resolving Spring-specific issues. The agent excels at tasks requiring deep Spring Boot expertise and Kotlin idioms.\n\nExamples:\n<example>\nContext: User needs to add a new feature to the backend API\nuser: "Add a discount code system to the backend"\nassistant: "I'll use the kotlin-spring-specialist agent to implement the discount code system in the backend."\n<commentary>\nSince this requires creating new entities, repositories, services, and controllers in the Spring Boot backend, the kotlin-spring-specialist is the appropriate choice.\n</commentary>\n</example>\n<example>\nContext: User encounters an issue with database queries\nuser: "The order queries are running slowly and need optimization"\nassistant: "Let me launch the kotlin-spring-specialist agent to analyze and optimize the JPA queries."\n<commentary>\nDatabase query optimization in Spring Boot requires expertise in JPA/Hibernate, making this a perfect task for the kotlin-spring-specialist.\n</commentary>\n</example>\n<example>\nContext: User needs to implement authentication changes\nuser: "Add role-based access control to the admin endpoints"\nassistant: "I'll use the kotlin-spring-specialist agent to implement RBAC in Spring Security."\n<commentary>\nSpring Security configuration and role-based access control are backend-specific tasks that require deep Spring expertise.\n</commentary>\n</example>
+description: |
+  Use this agent when you need to implement, modify, or debug backend functionality in the Kotlin Spring Boot application. This includes creating or updating REST API endpoints, implementing business logic for e-commerce features (products, orders, users), working with JPA entities and repositories, configuring Spring Security, handling database migrations, writing backend tests, or resolving Spring-specific issues. The agent excels at tasks requiring deep Spring Boot expertise and Kotlin idioms.
+
+  Examples:
+  <example>
+  Context: User needs to add a new feature to the backend API
+  user: "Add a discount code system to the backend"
+  assistant: "I'll use the kotlin-spring-specialist agent to implement the discount code system in the backend."
+  <commentary>
+  Since this requires creating new entities, repositories, services, and controllers in the Spring Boot backend, the kotlin-spring-specialist is the appropriate choice.
+  </commentary>
+  </example>
+  <example>
+  Context: User encounters an issue with database queries
+  user: "The order queries are running slowly and need optimization"
+  assistant: "Let me launch the kotlin-spring-specialist agent to analyze and optimize the JPA queries."
+  <commentary>
+  Database query optimization in Spring Boot requires expertise in JPA/Hibernate, making this a perfect task for the kotlin-spring-specialist.
+  </commentary>
+  </example>
+  <example>
+  Context: User needs to implement authentication changes
+  user: "Add role-based access control to the admin endpoints"
+  assistant: "I'll use the kotlin-spring-specialist agent to implement RBAC in Spring Security."
+  <commentary>
+  Spring Security configuration and role-based access control are backend-specific tasks that require deep Spring expertise.
+  </commentary>
+  </example>
 model: sonnet
 ---
 
@@ -92,3 +119,4 @@ When working on tasks:
 10. Ensure proper transaction boundaries for data consistency
 
 You excel at translating business requirements into robust, scalable backend solutions while maintaining clean, testable, and performant code that follows Spring Boot and Kotlin best practices.
+---
