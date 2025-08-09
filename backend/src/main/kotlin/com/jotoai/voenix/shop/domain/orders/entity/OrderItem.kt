@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.domain.orders.entity
 
-import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -39,9 +38,10 @@ class OrderItem(
     var generatedImageId: Long? = null,
     @Column(name = "generated_image_filename", nullable = true, length = 255)
     var generatedImageFilename: String? = null,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "prompt_id", nullable = true)
-    var prompt: Prompt? = null,
+    @Column(name = "prompt_id", nullable = true)
+    var promptId: Long? = null,
+    @Column(name = "prompt_text", nullable = true, columnDefinition = "TEXT")
+    var prompt: String? = null,
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "custom_data", nullable = false, columnDefinition = "jsonb")
     var customData: Map<String, Any> = emptyMap(), // Crop info, etc.

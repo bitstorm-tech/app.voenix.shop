@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.cart.internal.entity
 
-import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -40,9 +39,10 @@ class CartItem(
     var customData: Map<String, Any> = emptyMap(), // Only for crop data and similar non-FK fields
     @Column(name = "generated_image_id", nullable = true)
     var generatedImageId: Long? = null,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "prompt_id", nullable = true)
-    var prompt: Prompt? = null,
+    @Column(name = "prompt_id", nullable = true)
+    var promptId: Long? = null,
+    @Column(name = "prompt_text", nullable = true, columnDefinition = "TEXT")
+    var prompt: String? = null,
     @Column(name = "position", nullable = false)
     var position: Int = 0,
     @CreationTimestamp

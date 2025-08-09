@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.cart.api
 
 import com.jotoai.voenix.shop.cart.api.dto.CartDto
+import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
 import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
 
 /**
@@ -35,4 +36,16 @@ interface CartQueryService {
      * Checks if an active cart exists for the user.
      */
     fun existsActiveCartForUser(userId: Long): Boolean
+
+    /**
+     * Gets active cart internal ID for order creation.
+     * Returns cart's internal ID and status for order module integration.
+     */
+    fun getActiveCartForOrder(userId: Long): CartOrderInfo?
+
+    /**
+     * Marks a cart as converted after order creation.
+     * Internal method for order module integration.
+     */
+    fun markCartAsConverted(cartId: Long)
 }

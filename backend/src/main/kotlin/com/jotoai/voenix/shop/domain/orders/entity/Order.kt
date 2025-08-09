@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.domain.orders.entity
 
-import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.domain.orders.enums.OrderStatus
 import jakarta.persistence.AttributeOverride
 import jakarta.persistence.AttributeOverrides
@@ -14,8 +13,6 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
@@ -74,9 +71,8 @@ class Order(
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false, length = 20)
     var status: OrderStatus = OrderStatus.PENDING,
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", nullable = false)
-    var cart: Cart,
+    @Column(name = "cart_id", nullable = false)
+    var cartId: Long,
     @Column(name = "notes", nullable = true, columnDefinition = "TEXT")
     var notes: String? = null,
     @OneToMany(mappedBy = "order", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)

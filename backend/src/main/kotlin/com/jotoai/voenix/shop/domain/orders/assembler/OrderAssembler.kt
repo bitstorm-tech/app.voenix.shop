@@ -29,7 +29,7 @@ class OrderAssembler(
             shippingAmount = entity.shippingAmount,
             totalAmount = entity.totalAmount,
             status = entity.status,
-            cartId = entity.cart.id!!,
+            cartId = entity.cartId,
             notes = entity.notes,
             items =
                 run {
@@ -62,7 +62,7 @@ class OrderAssembler(
             totalPrice = entity.totalPrice,
             generatedImageId = entity.generatedImageId,
             generatedImageFilename = entity.generatedImageFilename,
-            promptId = entity.prompt?.id,
+            promptId = entity.promptId,
             customData = entity.customData,
             createdAt = requireNotNull(entity.createdAt) { "OrderItem createdAt cannot be null when converting to DTO" },
         )

@@ -1,12 +1,12 @@
 package com.jotoai.voenix.shop.domain.orders.service
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.cart.api.CartFacade
+import com.jotoai.voenix.shop.cart.api.CartQueryService
+import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
 import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.cart.internal.entity.Cart
-import com.jotoai.voenix.shop.cart.api.enums.CartStatus
-import com.jotoai.voenix.shop.cart.internal.service.CartQueryServiceImpl
 import com.jotoai.voenix.shop.domain.orders.assembler.OrderAssembler
 import com.jotoai.voenix.shop.domain.orders.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.domain.orders.dto.OrderDto
@@ -25,7 +25,8 @@ import java.util.UUID
 @Service
 class OrderService(
     private val orderRepository: OrderRepository,
-    private val cartQueryService: CartQueryServiceImpl,
+    private val cartQueryService: CartQueryService,
+    private val cartFacade: CartFacade,
     private val userQueryService: UserQueryService,
     private val orderAssembler: OrderAssembler,
     private val entityManager: EntityManager,
@@ -43,25 +44,29 @@ class OrderService(
     ): OrderDto {
         // Validate user exists
         userQueryService.getUserById(userId)
-        val cart = cartQueryService.getActiveCartEntityByUserId(userId)
+
+        // Get cart information for order
+        val cartInfo =
+            cartQueryService.getActiveCartForOrder(userId)
+                ?: throw BadRequestException("No active cart found for user: $userId")
 
         // Validate cart is not empty
-        if (cart.isEmpty()) {
+        if (cartInfo.isEmpty) {
             throw BadRequestException("Cannot create order from empty cart")
         }
 
         // Check if order already exists for this cart
-        if (orderRepository.existsByCartId(cart.id!!)) {
+        if (orderRepository.existsByCartId(cartInfo.id)) {
             throw BadRequestException("Order already exists for this cart")
         }
 
         // Refresh cart prices to ensure accuracy
-        refreshCartPrices(cart)
+        val refreshedCart = cartFacade.refreshCartPricesForOrder(cartInfo.id)
 
         // Calculate totals
-        val subtotal = cart.getTotalPrice()
+        val subtotal = refreshedCart.totalPrice
         val taxAmount = calculateTax(subtotal)
-        val shippingAmount = calculateShipping(cart)
+        val shippingAmount = calculateShipping(refreshedCart)
         val totalAmount = subtotal + taxAmount + shippingAmount
 
         // Determine billing address
@@ -87,24 +92,25 @@ class OrderService(
                 shippingAmount = shippingAmount,
                 totalAmount = totalAmount,
                 status = OrderStatus.PENDING,
-                cart = cart,
+                cartId = refreshedCart.id,
                 notes = request.notes,
             )
 
         // Convert cart items to order items
-        cart.items.forEach { cartItem ->
+        refreshedCart.items.forEach { cartItem ->
             val orderItem =
                 OrderItem(
                     order = order,
                     articleId = cartItem.articleId,
-                    variantId = cartItem.variantId,
+                    variantId = cartItem.variantId ?: 0L,
                     quantity = cartItem.quantity,
                     pricePerItem = cartItem.priceAtTime,
-                    totalPrice = cartItem.getTotalPrice(),
+                    totalPrice = cartItem.totalPrice,
                     generatedImageId = cartItem.generatedImageId,
                     generatedImageFilename = null, // TODO: Get from image service if needed
-                    prompt = cartItem.prompt,
-                    customData = cartItem.customData,
+                    promptId = cartItem.promptId,
+                    prompt = cartItem.promptText,
+                    customData = cartItem.customData ?: emptyMap(),
                 )
             order.addItem(orderItem)
         }
@@ -119,14 +125,13 @@ class OrderService(
         entityManager.refresh(savedOrder)
 
         // Mark cart as converted
-        cart.status = CartStatus.CONVERTED
-        cartQueryService.saveCartEntity(cart)
+        cartQueryService.markCartAsConverted(refreshedCart.id)
 
         logger.info(
             "Created order {} for user {} from cart {} with total amount {}",
             savedOrder.orderNumber,
             userId,
-            cart.id,
+            refreshedCart.id,
             totalAmount,
         )
 
@@ -248,29 +253,10 @@ class OrderService(
     /**
      * Calculates shipping amount ($4.99 flat rate for now)
      */
-    private fun calculateShipping(cart: Cart): Long {
+    private fun calculateShipping(cart: CartOrderInfo): Long {
         // Simple flat rate shipping for now
-        return if (cart.isEmpty()) 0L else SHIPPING_RATE_CENTS
+        return if (cart.isEmpty) 0L else SHIPPING_RATE_CENTS
     }
-
-    /**
-     * Refreshes cart prices to current prices
-     */
-    private fun refreshCartPrices(cart: Cart) {
-        cart.items.forEach { item ->
-            val currentPrice = articleQueryService.getCurrentGrossPrice(item.articleId)
-            if (item.priceAtTime != currentPrice) {
-                logger.warn(
-                    "Price changed for cart item {}: {} -> {}",
-                    item.id,
-                    item.priceAtTime,
-                    currentPrice,
-                )
-                item.priceAtTime = currentPrice
-            }
-        }
-    }
-
 
     companion object {
         private const val TAX_RATE = 0.08 // 8%

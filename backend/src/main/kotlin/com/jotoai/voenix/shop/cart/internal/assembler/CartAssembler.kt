@@ -42,7 +42,7 @@ class CartAssembler(
         // Use FK fields directly
         val generatedImageId = entity.generatedImageId
         val generatedImageFilename: String? = null // TODO: Get from image service if needed
-        val promptId = entity.prompt?.id
+        val promptId = entity.promptId
 
         return CartItemDto(
             id = requireNotNull(entity.id) { "CartItem ID cannot be null when converting to DTO" },

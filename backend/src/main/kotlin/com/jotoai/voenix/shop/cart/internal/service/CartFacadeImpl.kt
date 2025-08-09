@@ -4,6 +4,8 @@ import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.dto.AddToCartRequest
 import com.jotoai.voenix.shop.cart.api.dto.CartDto
+import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
+import com.jotoai.voenix.shop.cart.api.dto.CartOrderItemInfo
 import com.jotoai.voenix.shop.cart.api.dto.UpdateCartItemRequest
 import com.jotoai.voenix.shop.cart.api.exceptions.CartItemNotFoundException
 import com.jotoai.voenix.shop.cart.api.exceptions.CartNotFoundException
@@ -13,7 +15,7 @@ import com.jotoai.voenix.shop.cart.internal.entity.CartItem
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageQueryService
-import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
+import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
 import org.springframework.dao.OptimisticLockingFailureException
@@ -26,10 +28,10 @@ class CartFacadeImpl(
     private val cartRepository: CartRepository,
     private val userQueryService: UserQueryService,
     private val imageQueryService: ImageQueryService,
-    private val promptRepository: PromptRepository,
+    private val promptQueryService: PromptQueryService,
     private val cartAssembler: CartAssembler,
     private val articleQueryService: ArticleQueryService,
-    private val cartQueryServiceImpl: CartQueryServiceImpl, // Internal dependency
+    private val cartInternalService: CartInternalService,
 ) : CartFacade {
     private val logger = LoggerFactory.getLogger(CartFacadeImpl::class.java)
 
@@ -60,7 +62,7 @@ class CartFacadeImpl(
             throw CartOperationException("Variant ${request.variantId} does not belong to article ${request.articleId}")
         }
 
-        val cart = cartQueryServiceImpl.getOrCreateActiveCartEntity(userId)
+        val cart = cartInternalService.getOrCreateActiveCartEntity(userId)
 
         // Get current price from cost calculation
         val currentPrice = articleQueryService.getCurrentGrossPrice(request.articleId)
@@ -72,11 +74,12 @@ class CartFacadeImpl(
             }
         }
 
-        val prompt =
+        val promptText =
             request.promptId?.let { promptId ->
-                promptRepository
-                    .findById(promptId)
-                    .orElseThrow { ResourceNotFoundException("Prompt not found with id: $promptId") }
+                if (!promptQueryService.existsById(promptId)) {
+                    throw ResourceNotFoundException("Prompt not found with id: $promptId")
+                }
+                promptQueryService.getPromptById(promptId).promptText
             }
 
         // Create new cart item
@@ -90,7 +93,8 @@ class CartFacadeImpl(
                 originalPrice = currentPrice,
                 customData = request.customData,
                 generatedImageId = request.generatedImageId,
-                prompt = prompt,
+                promptId = request.promptId,
+                prompt = promptText,
             )
 
         // Add or update item in cart
@@ -144,11 +148,11 @@ class CartFacadeImpl(
         }
 
         request.promptId?.let { promptId ->
-            val prompt =
-                promptRepository
-                    .findById(promptId)
-                    .orElseThrow { ResourceNotFoundException("Prompt not found with id: $promptId") }
-            cartItem.prompt = prompt
+            if (!promptQueryService.existsById(promptId)) {
+                throw ResourceNotFoundException("Prompt not found with id: $promptId")
+            }
+            cartItem.promptId = promptId
+            cartItem.prompt = promptQueryService.getPromptById(promptId).promptText
         }
 
         val savedCart = saveCartWithOptimisticLocking(cart)
@@ -235,7 +239,61 @@ class CartFacadeImpl(
         return cartAssembler.toDto(savedCart)
     }
 
-    private fun saveCartWithOptimisticLocking(cart: com.jotoai.voenix.shop.cart.internal.entity.Cart): com.jotoai.voenix.shop.cart.internal.entity.Cart =
+    /**
+     * Refreshes cart prices for order creation.
+     * Updates all item prices to current prices and returns cart order info.
+     */
+    @Transactional
+    override fun refreshCartPricesForOrder(cartId: Long): CartOrderInfo {
+        val cart =
+            cartRepository
+                .findById(cartId)
+                .orElseThrow { CartNotFoundException(userId = 0, isActiveCart = false) }
+
+        // Update prices to current
+        cart.items.forEach { item ->
+            val currentPrice = articleQueryService.getCurrentGrossPrice(item.articleId)
+            if (item.priceAtTime != currentPrice) {
+                logger.warn(
+                    "Price changed for cart item {}: {} -> {}",
+                    item.id,
+                    item.priceAtTime,
+                    currentPrice,
+                )
+                item.priceAtTime = currentPrice
+            }
+        }
+
+        val savedCart = saveCartWithOptimisticLocking(cart)
+
+        // Return cart order info
+        return CartOrderInfo(
+            id = savedCart.id!!,
+            userId = savedCart.userId,
+            status = savedCart.status,
+            items =
+                savedCart.items.map { item ->
+                    CartOrderItemInfo(
+                        id = item.id!!,
+                        articleId = item.articleId,
+                        variantId = item.variantId,
+                        quantity = item.quantity,
+                        priceAtTime = item.priceAtTime,
+                        totalPrice = item.getTotalPrice(),
+                        generatedImageId = item.generatedImageId,
+                        promptId = item.promptId,
+                        promptText = item.prompt,
+                        customData = item.customData,
+                    )
+                },
+            totalPrice = savedCart.getTotalPrice(),
+            isEmpty = savedCart.isEmpty(),
+        )
+    }
+
+    private fun saveCartWithOptimisticLocking(
+        cart: com.jotoai.voenix.shop.cart.internal.entity.Cart,
+    ): com.jotoai.voenix.shop.cart.internal.entity.Cart =
         try {
             cartRepository.save(cart)
         } catch (e: OptimisticLockingFailureException) {

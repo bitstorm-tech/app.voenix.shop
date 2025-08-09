@@ -2,6 +2,7 @@ package com.jotoai.voenix.shop.cart.api
 
 import com.jotoai.voenix.shop.cart.api.dto.AddToCartRequest
 import com.jotoai.voenix.shop.cart.api.dto.CartDto
+import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
 import com.jotoai.voenix.shop.cart.api.dto.UpdateCartItemRequest
 
 /**
@@ -43,4 +44,10 @@ interface CartFacade {
      * Updates prices in active carts to current prices.
      */
     fun refreshCartPrices(userId: Long): CartDto
+
+    /**
+     * Refreshes cart prices for order creation.
+     * Returns updated cart information with current prices.
+     */
+    fun refreshCartPricesForOrder(cartId: Long): CartOrderInfo
 }
