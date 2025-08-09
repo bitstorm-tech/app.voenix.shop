@@ -1,10 +1,11 @@
 package com.jotoai.voenix.shop.api.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.jotoai.voenix.shop.auth.dto.LoginResponse
-import com.jotoai.voenix.shop.auth.dto.RegisterRequest
-import com.jotoai.voenix.shop.auth.service.AuthService
-import com.jotoai.voenix.shop.auth.service.UserRegistrationService
+import com.jotoai.voenix.shop.auth.api.AuthFacade
+import com.jotoai.voenix.shop.auth.api.AuthQueryService
+import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
+import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
+import com.jotoai.voenix.shop.auth.internal.service.UserRegistrationService
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
@@ -41,7 +42,10 @@ class AuthControllerTest {
     private lateinit var objectMapper: ObjectMapper
 
     @MockBean
-    private lateinit var authService: AuthService
+    private lateinit var authFacade: AuthFacade
+
+    @MockBean
+    private lateinit var authQueryService: AuthQueryService
 
     @MockBean
     private lateinit var userRegistrationService: UserRegistrationService
@@ -94,7 +98,7 @@ class AuthControllerTest {
                 roles = listOf("USER"),
             )
 
-        whenever(authService.register(eq(registerRequest), any(), any())).thenReturn(loginResponse)
+        whenever(authFacade.register(eq(registerRequest), any(), any())).thenReturn(loginResponse)
 
         // When & Then
         mockMvc
@@ -117,7 +121,7 @@ class AuthControllerTest {
                 password = "Test123!@&",
             )
 
-        whenever(authService.register(eq(registerRequest), any(), any()))
+        whenever(authFacade.register(eq(registerRequest), any(), any()))
             .thenThrow(ResourceAlreadyExistsException("User", "email", "existing@example.com"))
 
         // When & Then

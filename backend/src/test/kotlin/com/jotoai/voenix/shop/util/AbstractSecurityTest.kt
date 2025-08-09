@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.util
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.jotoai.voenix.shop.auth.dto.LoginRequest
+import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
 import com.jotoai.voenix.shop.config.TestDataConfig
 import com.jotoai.voenix.shop.config.TestSecurityConfig
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository

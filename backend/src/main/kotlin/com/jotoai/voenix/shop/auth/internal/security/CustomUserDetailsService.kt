@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.auth.service
+package com.jotoai.voenix.shop.auth.internal.security
 
-import com.jotoai.voenix.shop.auth.dto.CustomUserDetails
+import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.user.api.UserAuthenticationService
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService

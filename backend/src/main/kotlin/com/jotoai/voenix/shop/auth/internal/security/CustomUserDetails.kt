@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.auth.dto
+package com.jotoai.voenix.shop.auth.internal.security
 
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.SimpleGrantedAuthority

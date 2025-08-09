@@ -1,11 +1,12 @@
 package com.jotoai.voenix.shop.api.auth
 
-import com.jotoai.voenix.shop.auth.dto.LoginRequest
-import com.jotoai.voenix.shop.auth.dto.LoginResponse
-import com.jotoai.voenix.shop.auth.dto.RegisterGuestRequest
-import com.jotoai.voenix.shop.auth.dto.RegisterRequest
-import com.jotoai.voenix.shop.auth.dto.SessionInfo
-import com.jotoai.voenix.shop.auth.service.AuthService
+import com.jotoai.voenix.shop.auth.api.AuthFacade
+import com.jotoai.voenix.shop.auth.api.AuthQueryService
+import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
+import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
+import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
+import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
+import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
@@ -18,34 +19,35 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/auth")
 class AuthController(
-    private val authService: AuthService,
+    private val authFacade: AuthFacade,
+    private val authQueryService: AuthQueryService,
 ) {
     @PostMapping("/login")
     fun login(
         @Valid @RequestBody loginRequest: LoginRequest,
         request: HttpServletRequest,
         response: HttpServletResponse,
-    ): LoginResponse = authService.login(loginRequest, request, response)
+    ): LoginResponse = authFacade.login(loginRequest, request, response)
 
     @PostMapping("/logout")
     fun logout(request: HttpServletRequest) {
-        authService.logout(request)
+        authFacade.logout(request)
     }
 
     @GetMapping("/session")
-    fun getSessionInfo(): SessionInfo = authService.getCurrentSession()
+    fun getSessionInfo(): SessionInfo = authQueryService.getCurrentSession()
 
     @PostMapping("/register")
     fun register(
         @Valid @RequestBody registerRequest: RegisterRequest,
         request: HttpServletRequest,
         response: HttpServletResponse,
-    ): LoginResponse = authService.register(registerRequest, request, response)
+    ): LoginResponse = authFacade.register(registerRequest, request, response)
 
     @PostMapping("/register-guest")
     fun registerGuest(
         @Valid @RequestBody registerGuestRequest: RegisterGuestRequest,
         request: HttpServletRequest,
         response: HttpServletResponse,
-    ): LoginResponse = authService.registerGuest(registerGuestRequest, request, response)
+    ): LoginResponse = authFacade.registerGuest(registerGuestRequest, request, response)
 }

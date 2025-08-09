@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.auth.dto
+package com.jotoai.voenix.shop.auth.api.dto
 
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.NotBlank

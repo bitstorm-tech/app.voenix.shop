@@ -6,17 +6,26 @@
  * for user management operations.
  * </p>
  * 
- * <h2>Module Boundaries</h2>
+ * <h2>Module Structure</h2>
  * <ul>
- *   <li><b>Services:</b> {@code com.jotoai.voenix.shop.auth.service} - Auth services</li>
- *   <li><b>DTOs:</b> {@code com.jotoai.voenix.shop.auth.dto} - Auth data transfer objects</li>
+ *   <li><b>API:</b> {@link com.jotoai.voenix.shop.auth.api.AuthFacade} - Main authentication operations</li>
+ *   <li><b>API:</b> {@link com.jotoai.voenix.shop.auth.api.AuthQueryService} - Read operations and session info</li>
+ *   <li><b>API:</b> {@link com.jotoai.voenix.shop.auth.api.AuthRegistrationService} - User registration operations</li>
+ *   <li><b>Internal:</b> Internal services and security implementations</li>
  *   <li><b>Config:</b> {@code com.jotoai.voenix.shop.auth.config} - Security configuration</li>
  * </ul>
+ * 
+ * <h2>Named Interfaces</h2>
+ * <ul>
+ *   <li>{@code api} - Public API for authentication operations and queries</li>
+ * </ul>
+ * 
+ * <p>Other modules should explicitly depend on {@code auth::api} to access authentication functionality.</p>
  * 
  * @since 1.0.0
  */
 @org.springframework.modulith.ApplicationModule(
         displayName = "Authentication",
-        allowedDependencies = {"common", "user::api", "user::api.dto"}
+        allowedDependencies = {"common", "user::api"}
 )
 package com.jotoai.voenix.shop.auth;

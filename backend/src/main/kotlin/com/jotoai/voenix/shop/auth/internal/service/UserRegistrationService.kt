@@ -1,7 +1,7 @@
-package com.jotoai.voenix.shop.auth.service
+package com.jotoai.voenix.shop.auth.internal.service
 
-import com.jotoai.voenix.shop.auth.dto.CustomUserDetails
-import com.jotoai.voenix.shop.auth.dto.LoginResponse
+import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
+import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.user.api.UserFacade
 import com.jotoai.voenix.shop.user.api.UserPasswordService
 import com.jotoai.voenix.shop.user.api.UserQueryService

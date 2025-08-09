@@ -1,11 +1,11 @@
-package com.jotoai.voenix.shop.auth.service
+package com.jotoai.voenix.shop.auth.internal.service
 
-import com.jotoai.voenix.shop.auth.dto.CustomUserDetails
-import com.jotoai.voenix.shop.auth.dto.LoginRequest
-import com.jotoai.voenix.shop.auth.dto.LoginResponse
-import com.jotoai.voenix.shop.auth.dto.RegisterGuestRequest
-import com.jotoai.voenix.shop.auth.dto.RegisterRequest
-import com.jotoai.voenix.shop.auth.dto.SessionInfo
+import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
+import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
+import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
+import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
+import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
+import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.user.api.UserAuthenticationService
 import com.jotoai.voenix.shop.user.api.UserQueryService
