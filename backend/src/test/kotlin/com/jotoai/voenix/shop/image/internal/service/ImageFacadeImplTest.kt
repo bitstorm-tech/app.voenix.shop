@@ -6,6 +6,8 @@ import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.image.internal.domain.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.domain.UploadedImage
+import java.time.LocalDateTime
+import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.BeforeEach
@@ -17,14 +19,11 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
-import java.time.LocalDateTime
-import java.util.UUID
 
 class ImageFacadeImplTest {
     private lateinit var imageService: ImageService
     private lateinit var userImageStorageService: UserImageStorageService
 
-    // Event publishing removed - no longer needed
     private lateinit var imageFacade: ImageFacadeImpl
 
     private lateinit var mockFile: MultipartFile
@@ -33,7 +32,6 @@ class ImageFacadeImplTest {
     fun setUp() {
         imageService = mock()
         userImageStorageService = mock()
-        // Event publishing removed - no longer needed
 
         imageFacade =
             ImageFacadeImpl(
@@ -53,7 +51,7 @@ class ImageFacadeImplTest {
     // UPLOADED IMAGE TESTS
 
     @Test
-    fun `createUploadedImage should store image and publish event`() {
+    fun `createUploadedImage should store image`() {
         // Given
         val userId = 1L
         val uuid = UUID.randomUUID()
@@ -336,7 +334,7 @@ class ImageFacadeImplTest {
     }
 
     @Test
-    fun `updateGeneratedImage should update and publish event`() {
+    fun `updateGeneratedImage should update image`() {
         // Given
         val userId = 1L
         val uuid = UUID.randomUUID()

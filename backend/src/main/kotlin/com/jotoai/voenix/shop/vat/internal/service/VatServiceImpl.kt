@@ -61,7 +61,6 @@ class VatServiceImpl(
                 .findById(id)
                 .orElseThrow { VatNotFoundException("ValueAddedTax", "id", id) }
 
-
         request.name?.let { newName ->
             if (valueAddedTaxRepository.existsByNameAndIdNot(newName, id)) {
                 throw IllegalArgumentException("VAT with name '$newName' already exists")

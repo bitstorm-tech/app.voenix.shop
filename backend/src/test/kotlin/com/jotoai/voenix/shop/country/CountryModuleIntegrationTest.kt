@@ -26,7 +26,7 @@ class CountryModuleIntegrationTest {
     private lateinit var countryFacade: CountryFacade
 
     @Test
-    fun `should create country and publish event`() {
+    fun `should create country`() {
         // Given
         val request =
             CreateCountryRequest(
@@ -45,7 +45,7 @@ class CountryModuleIntegrationTest {
     }
 
     @Test
-    fun `should update country and publish event`() {
+    fun `should update country`() {
         // Given - create a country first
         val initialCountry =
             countryFacade.createCountry(
@@ -69,7 +69,7 @@ class CountryModuleIntegrationTest {
     }
 
     @Test
-    fun `should delete country and publish event`() {
+    fun `should delete country`() {
         // Given - create a country first
         val country =
             countryFacade.createCountry(

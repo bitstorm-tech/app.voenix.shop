@@ -10,14 +10,14 @@ import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
+import java.util.*
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.util.UUID
 
 /**
  * Main service for image operations that coordinates business logic and delegates to specialized services.
- * This service handles entity persistence, event publishing, and business rules while delegating
+ * This service handles entity persistence and business rules while delegating
  * storage operations to ImageStorageService and generation operations to generation services.
  */
 @Service
@@ -77,8 +77,6 @@ class ImageService(
         try {
             val uploadedImage = userImageStorageService.storeUploadedImage(file, userId)
 
-            // Event publishing removed - handled elsewhere if needed
-
             return UploadedImageDto(
                 filename = uploadedImage.storedFilename,
                 imageType = ImageType.PRIVATE,
@@ -128,8 +126,6 @@ class ImageService(
 
             // Delete from database
             uploadedImageRepository.delete(uploadedImage)
-
-            // Event publishing removed - handled elsewhere if needed
         } catch (e: Exception) {
             throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
         }
@@ -200,8 +196,6 @@ class ImageService(
         try {
             val saved = generatedImageRepository.save(generatedImage)
 
-            // Event publishing removed - handled elsewhere if needed
-
             return GeneratedImageDto(
                 filename = saved.filename,
                 imageType = ImageType.GENERATED,
@@ -235,8 +229,6 @@ class ImageService(
 
             // Delete from database
             generatedImageRepository.delete(generatedImage)
-
-            // Event publishing removed - handled elsewhere if needed
         } catch (e: Exception) {
             throw ImageStorageException("Failed to delete generated image: ${e.message}", e)
         }

@@ -73,19 +73,6 @@ class SupplierModuleIntegrationTest {
         assertThat(finalSuppliers).hasSize(initialSuppliers.size)
         assertThat(supplierQueryService.existsById(createdSupplier.id)).isFalse()
     }
-
-    // TODO: Event testing is currently disabled due to framework-level issues
-    // Both VAT and Supplier module integration tests fail on event capturing
-    // This needs to be investigated and fixed at the application event publishing level
-
-    /*
-    @Test
-    fun `should publish domain events correctly`() {
-        // Test disabled - events not being captured properly in test context
-        // This is a known issue affecting multiple modules
-    }
-     */
-
     @Test
     fun `should validate unique constraints`() {
         // Given - a supplier
@@ -134,7 +121,4 @@ class SupplierModuleIntegrationTest {
         // Cleanup
         supplierFacade.deleteSupplier(createdSupplier.id)
     }
-
-    // Event listeners removed - event testing is disabled due to framework issues
-    // See TODO comment above for details
 }

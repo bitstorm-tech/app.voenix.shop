@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional
 class UserPasswordServiceImpl(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
-    // Event publishing removed - handled elsewhere if needed
 ) : UserPasswordService {
     @Transactional
     override fun setEncodedPassword(
@@ -34,7 +33,6 @@ class UserPasswordServiceImpl(
         val savedUser = userRepository.save(user)
         val result = savedUser.toDto()
 
-        // Event publishing removed - handled elsewhere if needed
         return result
     }
 
@@ -120,7 +118,6 @@ class UserPasswordServiceImpl(
         val savedUser = userRepository.save(user)
         val result = savedUser.toDto()
 
-        // Event publishing removed - handled elsewhere if needed
         return result
     }
 
@@ -145,7 +142,6 @@ class UserPasswordServiceImpl(
         val savedUser = userRepository.save(user)
         val result = savedUser.toDto()
 
-        // Event publishing removed - handled elsewhere if needed
         return result
     }
 

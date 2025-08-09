@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional
 class UserRoleServiceImpl(
     private val userRepository: UserRepository,
     private val roleRepository: RoleRepository,
-    // Event publishing removed - handled elsewhere if needed
 ) : UserRoleManagementService {
     @Transactional
     override fun assignRoles(
@@ -42,7 +41,6 @@ class UserRoleServiceImpl(
         user.roles.addAll(rolesToAssign)
 
         val savedUser = userRepository.save(user)
-        // Event publishing removed - handled elsewhere if needed
     }
 
     @Transactional
@@ -57,9 +55,6 @@ class UserRoleServiceImpl(
 
         // Remove roles by name
         user.roles.removeAll { it.name in roleNames }
-
-        val savedUser = userRepository.save(user)
-        // Event publishing removed - handled elsewhere if needed
     }
 
     override fun getUserRoles(userId: Long): Set<String> {
@@ -101,9 +96,6 @@ class UserRoleServiceImpl(
         // This avoids issues with Hibernate's managed collections
         user.roles.clear()
         user.roles.addAll(rolesToSet)
-
-        val savedUser = userRepository.save(user)
-        // Event publishing removed - handled elsewhere if needed
     }
 
     override fun userHasRole(

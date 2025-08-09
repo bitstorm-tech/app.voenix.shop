@@ -4,7 +4,6 @@
  * This module provides country management functionality including:
  * - Country creation, updating, and deletion
  * - Country querying services
- * - Event publishing for country lifecycle changes
  * 
  * <p>The module follows Spring Modulith architecture principles with clear
  * separation between public API (exposed through the api package) and
@@ -14,7 +13,6 @@
  * <ul>
  *   <li>{@link com.jotoai.voenix.shop.country.api.CountryFacade} - Main administrative operations</li>
  *   <li>{@link com.jotoai.voenix.shop.country.api.CountryQueryService} - Query operations</li>
- *   <li>Events published from {@link com.jotoai.voenix.shop.country.events} package</li>
  * </ul>
  * </p>
  */

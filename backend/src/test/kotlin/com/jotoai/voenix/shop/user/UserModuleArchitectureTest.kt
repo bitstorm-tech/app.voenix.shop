@@ -67,8 +67,6 @@ class UserModuleArchitectureTest {
         println("✓ User DTOs verified")
     }
 
-    // Event classes removed - handled elsewhere if needed
-
     @Test
     fun `verify user entity and repositories exist`() {
         // Verify internal implementation exists

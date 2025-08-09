@@ -7,17 +7,15 @@
  *   <li>PDF query operations and metadata access through {@link com.jotoai.voenix.shop.pdf.api.PdfQueryService}</li>
  *   <li>Order-specific PDF generation through {@link com.jotoai.voenix.shop.pdf.api.OrderPdfService}</li>
  *   <li>Public PDF generation through {@link com.jotoai.voenix.shop.pdf.api.PublicPdfService}</li>
- *   <li>Domain events for PDF lifecycle changes in the {@code events} package</li>
  * </ul>
  * <p>
  * Named interfaces:
  * <ul>
  *   <li>{@code api} - Public API for PDF operations and queries</li>
- *   <li>{@code events} - Domain events published by the PDF module</li>
  * </ul>
  * <p>
  * Other modules should explicitly depend on {@code pdf::api} to access PDF functionality
- * and can listen to events from {@code pdf::events} for reactive integration.
+.
  */
 @org.springframework.modulith.ApplicationModule(
     displayName = "PDF Generation"

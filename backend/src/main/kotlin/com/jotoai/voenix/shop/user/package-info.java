@@ -9,7 +9,6 @@
  * <h2>Module Boundaries</h2>
  * <ul>
  *   <li><b>Public API:</b> {@code com.jotoai.voenix.shop.user.api} - Service interfaces and DTOs</li>
- *   <li><b>Events:</b> {@code com.jotoai.voenix.shop.user.events} - Domain events for user lifecycle</li>
  *   <li><b>Internal:</b> {@code com.jotoai.voenix.shop.user.internal} - Private implementation details</li>
  * </ul>
  * 
@@ -22,14 +21,6 @@
  *   <li>{@link com.jotoai.voenix.shop.user.api.UserRoleManagementService} - Role assignment and management</li>
  * </ul>
  * 
- * <h2>Events Published</h2>
- * <ul>
- *   <li>{@code UserCreatedEvent} - When a new user is created</li>
- *   <li>{@code UserUpdatedEvent} - When user data is modified</li>
- *   <li>{@code UserDeletedEvent} - When a user is deleted (soft or hard)</li>
- *   <li>{@code RoleAssignedEvent} - When roles are assigned to a user</li>
- *   <li>{@code RoleRevokedEvent} - When roles are removed from a user</li>
- * </ul>
  * 
  * <h2>Module Dependencies</h2>
  * <ul>

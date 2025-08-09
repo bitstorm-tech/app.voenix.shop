@@ -15,8 +15,7 @@ import org.springframework.transaction.annotation.Transactional
  * Implementation of SupplierFacade for write operations.
  *
  * This service handles all write operations for suppliers, including
- * creation, updates, and deletion. It publishes events for these operations
- * and uses direct service calls for country data.
+ * creation, updates, and deletion. It uses direct service calls for country data.
  */
 @Service
 @Transactional(readOnly = true)

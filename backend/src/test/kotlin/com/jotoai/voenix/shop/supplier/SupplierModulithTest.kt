@@ -12,7 +12,6 @@ import org.springframework.modulith.docs.Documenter
  * - Module boundaries are respected
  * - No direct dependencies on internal classes of other modules
  * - Only API classes are exposed publicly
- * - Event-driven communication is used for cross-module interactions
  */
 class SupplierModulithTest {
     private val modules = ApplicationModules.of(VoenixShopApplication::class.java)

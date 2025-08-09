@@ -24,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class UserCommandService(
     private val userRepository: UserRepository,
-    // Event publishing removed - handled elsewhere if needed
 ) : UserFacade {
     @Transactional
     override fun createUser(request: CreateUserRequest): UserDto {
@@ -49,7 +48,6 @@ class UserCommandService(
         val savedUser = userRepository.save(user)
         val result = savedUser.toDto()
 
-        // Event publishing removed - handled elsewhere if needed
         return result
     }
 
@@ -80,7 +78,6 @@ class UserCommandService(
         val updatedUser = userRepository.save(user)
         val result = updatedUser.toDto()
 
-        // Event publishing removed - handled elsewhere if needed
         return result
     }
 
@@ -92,9 +89,6 @@ class UserCommandService(
                 .orElseThrow { createUserNotFoundException("id", id) }
 
         user.markAsDeleted()
-        val deletedUser = userRepository.save(user)
-
-        // Event publishing removed - handled elsewhere if needed
     }
 
     @Transactional
@@ -106,8 +100,6 @@ class UserCommandService(
 
         val userEmail = user.email
         userRepository.deleteById(id)
-
-        // Event publishing removed - handled elsewhere if needed
     }
 
     @Transactional
@@ -124,8 +116,6 @@ class UserCommandService(
         user.restore()
         val restoredUser = userRepository.save(user)
         val result = restoredUser.toDto()
-
-        // Event publishing removed - handled elsewhere if needed
         return result
     }
 
@@ -175,7 +165,6 @@ class UserCommandService(
             savedUsers.forEach { user ->
                 val dto = user.toDto()
                 successful.add(dto)
-                // Event publishing removed - handled elsewhere if needed
             }
         }
 
