@@ -8,6 +8,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("org.flywaydb.flyway") version "11.10.5"
     id("org.jlleitschuh.gradle.ktlint") version "13.0.0"
+    id("io.gitlab.arturbosch.detekt") version("1.23.8")
 }
 
 group = "com.jotoai.voenix"
@@ -90,3 +91,15 @@ flyway {
     schemas = arrayOf("public")
     locations = arrayOf("classpath:db/migration")
 }
+
+// Detekt configuration to handle Kotlin version mismatch
+configurations.matching { it.name.contains("detekt") }.all {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.jetbrains.kotlin") {
+            useVersion("2.0.21")
+        }
+    }
+}
+
+// Apply code analysis tasks
+apply(from = "code-analysis.gradle.kts")
