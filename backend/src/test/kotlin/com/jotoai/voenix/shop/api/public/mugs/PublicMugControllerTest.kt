@@ -27,9 +27,6 @@ class PublicMugControllerTest {
     @MockitoBean
     private lateinit var articleQueryService: ArticleQueryService
 
-    @MockitoBean
-    private lateinit var articleFacade: ArticleFacade
-
     @Test
     fun `should return list of public mugs without authentication`() {
         // Given

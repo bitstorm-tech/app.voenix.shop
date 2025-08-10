@@ -62,7 +62,6 @@ class OrderPdfServiceImpl(
 
         // Math constants
         private const val DEGREES_90 = 90.0
-        private const val HALF_DIVISOR = 2f
 
         // Text positioning
         private const val FALLBACK_TEXT_OFFSET = 10f

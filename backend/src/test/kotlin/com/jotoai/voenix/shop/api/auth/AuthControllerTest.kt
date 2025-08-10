@@ -38,9 +38,6 @@ class AuthControllerTest {
     @MockitoBean
     private lateinit var authFacade: AuthFacade
 
-    @MockitoBean
-    private lateinit var authQueryService: AuthQueryService
-
     @Test
     fun `register should create new user and return login response`() {
         // Given

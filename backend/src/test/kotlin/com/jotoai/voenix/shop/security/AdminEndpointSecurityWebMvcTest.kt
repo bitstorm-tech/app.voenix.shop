@@ -35,19 +35,10 @@ class AdminEndpointSecurityWebMvcTest {
     private lateinit var userQueryService: UserQueryService
 
     @MockitoBean
-    private lateinit var userFacade: UserFacade
-
-    @MockitoBean
     private lateinit var promptQueryService: PromptQueryService
 
     @MockitoBean
-    private lateinit var promptFacade: PromptFacade
-
-    @MockitoBean
     private lateinit var articleQueryService: ArticleQueryService
-
-    @MockitoBean
-    private lateinit var articleFacade: ArticleFacade
 
     @Test
     fun testAdminEndpointsRequireAuthentication() {
