@@ -49,7 +49,9 @@
       "Bash(cp:*)",
       "Bash(mkdir:*)",
       "Bash(git mv:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(chmod:*)",
+      "Bash(idea inspect:*)"
     ],
     "deny": []
   }

@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.prompt.api
 
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
-import com.jotoai.voenix.shop.prompt.api.dto.public.PublicPromptDto
+import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptDto
 
 /**
  * Query service for Prompt module read operations.

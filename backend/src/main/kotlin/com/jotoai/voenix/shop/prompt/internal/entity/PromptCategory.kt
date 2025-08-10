@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.prompt.internal.entity
 
 import com.jotoai.voenix.shop.prompt.api.dto.categories.PromptCategoryDto
-import com.jotoai.voenix.shop.prompt.api.dto.public.PublicPromptCategoryDto
+import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptCategoryDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType

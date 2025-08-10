@@ -7,7 +7,7 @@ import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.CreatePromptRequest
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.UpdatePromptRequest
-import com.jotoai.voenix.shop.prompt.api.dto.public.PublicPromptDto
+import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptDto
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.AddSlotVariantsRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantsRequest
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptNotFoundException
