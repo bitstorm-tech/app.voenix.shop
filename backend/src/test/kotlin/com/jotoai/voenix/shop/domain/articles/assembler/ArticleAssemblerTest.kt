@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.article.internal.assembler
+package com.jotoai.voenix.shop.domain.articles.assembler
 
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
