@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
+import com.jotoai.voenix.shop.image.api.dto.ImageType
 import jakarta.validation.Valid
 import org.springframework.core.io.Resource
 import org.springframework.http.MediaType
@@ -14,10 +15,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/admin/images")
@@ -28,17 +26,16 @@ class AdminImageController(
 ) {
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadImage(
-        @RequestParam("file") file: MultipartFile,
-        @RequestPart("request") @Valid request: CreateImageRequest,
+        @Valid request: CreateImageRequest,
     ): ImageDto = imageFacade.createImage(request)
 
     @GetMapping("/{filename}/download")
     fun downloadImage(
         @PathVariable filename: String,
-    ): ResponseEntity<Resource> = imageAccessService.serveImage(filename, com.jotoai.voenix.shop.image.api.dto.ImageType.PUBLIC)
+    ): ResponseEntity<Resource> = imageAccessService.serveImage(filename, ImageType.PUBLIC)
 
     @DeleteMapping("/{filename}")
     fun deleteImage(
-        @PathVariable filename: String,
+        @PathVariable("filename") filename: String,
     ): Unit = throw UnsupportedOperationException("Delete via ImageFacade not implemented yet")
 }

@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.prompt.internal.service
 
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.prompt.api.dto.public.PublicPromptSlotDto
+import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptSlotDto
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.PromptSlotVariantDto
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptCategory

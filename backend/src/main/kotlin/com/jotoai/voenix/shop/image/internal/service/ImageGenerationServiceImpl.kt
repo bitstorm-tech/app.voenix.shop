@@ -41,7 +41,6 @@ class ImageGenerationServiceImpl(
             val response =
                 imageGenerationOrchestrator.generateUserImageFromUpload(
                     promptId = promptId,
-                    uploadedImageUuid = uploadedImageUuid,
                     userId = userId,
                 )
 

@@ -52,7 +52,6 @@ class ImageGenerationOrchestrator(
     @Transactional
     fun generateUserImageFromUpload(
         promptId: Long,
-        uploadedImageUuid: UUID,
         userId: Long,
     ): PublicImageGenerationResponse {
         logger.info("Orchestrating user image generation from upload for user $userId with prompt ID: $promptId")

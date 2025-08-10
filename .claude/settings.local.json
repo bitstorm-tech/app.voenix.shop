@@ -51,7 +51,8 @@
       "Bash(git mv:*)",
       "Bash(find:*)",
       "Bash(chmod:*)",
-      "Bash(idea inspect:*)"
+      "Bash(idea inspect:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

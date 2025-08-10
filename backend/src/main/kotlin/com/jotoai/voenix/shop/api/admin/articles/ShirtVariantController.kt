@@ -69,7 +69,6 @@ class ShirtVariantController(
     @PostMapping("/variants/{variantId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadVariantImage(
         @PathVariable variantId: Long,
-        @RequestParam("image") file: MultipartFile,
         @RequestParam("cropX", required = false) cropX: Double?,
         @RequestParam("cropY", required = false) cropY: Double?,
         @RequestParam("cropWidth", required = false) cropWidth: Double?,

@@ -30,9 +30,7 @@ class AdminPdfController(
     private val pdfFacade: PdfFacade,
 ) {
     @PostMapping("/generate")
-    fun generatePdf(
-        @Valid @RequestBody request: GeneratePdfRequest,
-    ): ResponseEntity<Map<String, String>> =
+    fun generatePdf(): ResponseEntity<Map<String, String>> =
         ResponseEntity
             .status(HttpStatus.SERVICE_UNAVAILABLE)
             .body(mapOf("message" to "PDF generation is temporarily unavailable. This feature will be reintroduced in a future update."))
