@@ -23,7 +23,10 @@ interface UploadedImageRepository : JpaRepository<UploadedImage, Long> {
     /**
      * Find all uploaded images by user ID with generated images to avoid N+1 queries
      */
-    @Query("SELECT u FROM UploadedImage u LEFT JOIN FETCH u.generatedImages WHERE u.userId = :userId ORDER BY u.uploadedAt DESC")
+    @Query(
+        "SELECT u FROM UploadedImage u LEFT JOIN FETCH u.generatedImages " +
+                "WHERE u.userId = :userId ORDER BY u.uploadedAt DESC"
+    )
     fun findAllByUserIdWithGeneratedImages(
         @Param("userId") userId: Long,
     ): List<UploadedImage>

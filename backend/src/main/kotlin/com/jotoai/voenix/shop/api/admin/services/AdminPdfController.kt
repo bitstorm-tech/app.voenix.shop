@@ -27,7 +27,12 @@ class AdminPdfController {
     fun generatePdf(): ResponseEntity<Map<String, String>> =
         ResponseEntity
             .status(HttpStatus.SERVICE_UNAVAILABLE)
-            .body(mapOf("message" to "PDF generation is temporarily unavailable. This feature will be reintroduced in a future update."))
+            .body(
+                mapOf(
+                    "message" to "PDF generation is temporarily unavailable. " +
+                            "This feature will be reintroduced in a future update."
+                )
+            )
 
     /*
      * Original implementation preserved for future reactivation:

@@ -64,7 +64,10 @@ class OrderAssembler(
             generatedImageFilename = entity.generatedImageFilename,
             promptId = entity.promptId,
             customData = entity.customData,
-            createdAt = requireNotNull(entity.createdAt) { "OrderItem createdAt cannot be null when converting to DTO" },
+            createdAt =
+                requireNotNull(entity.createdAt) {
+                    "OrderItem createdAt cannot be null when converting to DTO"
+                },
         )
 
     private fun generatePdfUrl(orderId: java.util.UUID): String = "$appBaseUrl/api/user/orders/$orderId/pdf"

@@ -17,7 +17,8 @@ class ArticleSubCategoryServiceImpl(
     private val articleCategoryRepository: ArticleCategoryRepository,
 ) : com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryQueryService,
     com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryFacade {
-    override fun getAllSubCategories(): List<ArticleSubCategoryDto> = articleSubCategoryRepository.findAll().map { it.toDto() }
+    override fun getAllSubCategories(): List<ArticleSubCategoryDto> = 
+        articleSubCategoryRepository.findAll().map { it.toDto() }
 
     override fun getSubCategoryById(id: Long): ArticleSubCategoryDto =
         articleSubCategoryRepository
@@ -35,16 +36,25 @@ class ArticleSubCategoryServiceImpl(
         categoryId: Long,
         name: String,
     ): List<ArticleSubCategoryDto> =
-        articleSubCategoryRepository.findByArticleCategoryIdAndNameContainingIgnoreCase(categoryId, name).map { it.toDto() }
+        articleSubCategoryRepository
+            .findByArticleCategoryIdAndNameContainingIgnoreCase(categoryId, name)
+            .map { it.toDto() }
 
     @Transactional
     override fun createSubCategory(request: CreateArticleSubCategoryRequest): ArticleSubCategoryDto {
         val articleCategory =
             articleCategoryRepository
                 .findById(request.articleCategoryId)
-                .orElseThrow { ArticleNotFoundException("ArticleCategory not found with id: ${request.articleCategoryId}") }
+                .orElseThrow { 
+                    ArticleNotFoundException(
+                        "ArticleCategory not found with id: ${request.articleCategoryId}"
+                    ) 
+                }
 
-        if (articleSubCategoryRepository.existsByArticleCategoryIdAndNameIgnoreCase(request.articleCategoryId, request.name)) {
+        if (articleSubCategoryRepository.existsByArticleCategoryIdAndNameIgnoreCase(
+                request.articleCategoryId, 
+                request.name
+            )) {
             throw IllegalArgumentException("Subcategory with name '${request.name}' already exists in this category")
         }
 

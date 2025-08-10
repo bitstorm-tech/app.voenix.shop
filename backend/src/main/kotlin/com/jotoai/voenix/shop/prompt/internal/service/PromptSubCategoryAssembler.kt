@@ -22,8 +22,12 @@ class PromptSubCategoryAssembler(
      */
     fun toDto(entity: PromptSubCategory): PromptSubCategoryDto =
         PromptSubCategoryDto(
-            id = requireNotNull(entity.id) { "PromptSubCategory ID cannot be null when converting to DTO" },
-            promptCategoryId = requireNotNull(entity.promptCategory.id) { "PromptCategory ID cannot be null when converting to DTO" },
+            id = requireNotNull(entity.id) { 
+                "PromptSubCategory ID cannot be null when converting to DTO" 
+            },
+            promptCategoryId = requireNotNull(entity.promptCategory.id) { 
+                "PromptCategory ID cannot be null when converting to DTO" 
+            },
             name = entity.name,
             description = entity.description,
             promptsCount = promptRepository.countBySubcategoryId(entity.id),
@@ -40,7 +44,9 @@ class PromptSubCategoryAssembler(
      */
     fun toPublicDto(entity: PromptSubCategory): PublicPromptSubCategoryDto =
         PublicPromptSubCategoryDto(
-            id = requireNotNull(entity.id) { "PromptSubCategory ID cannot be null when converting to DTO" },
+            id = requireNotNull(entity.id) { 
+                "PromptSubCategory ID cannot be null when converting to DTO" 
+            },
             name = entity.name,
             description = entity.description,
         )

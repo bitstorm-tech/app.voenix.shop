@@ -33,7 +33,11 @@ class ImageStorageService(
         file: MultipartFile,
         request: CreateImageRequest,
     ): ImageDto {
-        logger.debug("Starting file storage - Type: {}, Original filename: {}", request.imageType, file.originalFilename)
+        logger.debug(
+            "Starting file storage - Type: {}, Original filename: {}", 
+            request.imageType, 
+            file.originalFilename
+        )
 
         // Use ImageType configuration for validation
         validateFile(file, request.imageType.maxFileSize, request.imageType.allowedContentTypes.toSet())

@@ -81,7 +81,10 @@ class OrderPdfServiceImpl(
      * @return PDF as byte array
      */
     override fun generateOrderPdf(orderData: OrderPdfData): ByteArray {
-        logger.info("Generating PDF for order ${orderData.orderNumber} with ${orderData.getTotalItemCount()} total items")
+        logger.info(
+            "Generating PDF for order ${orderData.orderNumber} with " +
+                "${orderData.getTotalItemCount()} total items"
+        )
 
         try {
             // Use try-with-resources for proper resource management
@@ -203,7 +206,8 @@ class OrderPdfServiceImpl(
                             imageAccessService.getImageData(orderItem.generatedImageFilename!!, orderData.userId).first
                         } catch (e: Exception) {
                             logger.warn(
-                                "Could not load generated image ${orderItem.generatedImageFilename} for order ${orderData.orderNumber}, using placeholder",
+                                "Could not load generated image ${orderItem.generatedImageFilename} " +
+                                    "for order ${orderData.orderNumber}, using placeholder",
                                 e,
                             )
                             createPlaceholderImage()
@@ -224,7 +228,8 @@ class OrderPdfServiceImpl(
             // Use exact print template dimensions from MugArticleDetails
             // Never scale or correct the image size - use exact dimensions from database
             val imageWidthMm = mugDetails?.printTemplateWidthMm?.toFloat() ?: (pdfWidthMm - (2 * pdfMarginMm))
-            val imageHeightMm = mugDetails?.printTemplateHeightMm?.toFloat() ?: (pdfHeightMm - (2 * pdfMarginMm) - DEFAULT_IMAGE_MARGIN_MM)
+            val imageHeightMm = mugDetails?.printTemplateHeightMm?.toFloat()
+                ?: (pdfHeightMm - (2 * pdfMarginMm) - DEFAULT_IMAGE_MARGIN_MM)
 
             // Convert exact dimensions to points (no scaling or aspect ratio correction)
             val imageWidthPt = imageWidthMm * MM_TO_POINTS
@@ -238,9 +243,13 @@ class OrderPdfServiceImpl(
             contentStream.drawImage(pdfImage, xPosition, yPosition, imageWidthPt, imageHeightPt)
 
             logger.debug(
-                "Added product image with exact dimensions ${imageWidthPt}x$imageHeightPt points at position ($xPosition, $yPosition)",
+                "Added product image with exact dimensions ${imageWidthPt}x$imageHeightPt points " +
+                    "at position ($xPosition, $yPosition)",
             )
-            logger.debug("Using exact print template dimensions: ${imageWidthMm}mm x ${imageHeightMm}mm from MugArticleDetails")
+            logger.debug(
+                "Using exact print template dimensions: " +
+                    "${imageWidthMm}mm x ${imageHeightMm}mm from MugArticleDetails"
+            )
         } catch (e: Exception) {
             logger.error("Failed to add product image for order item ${orderItem.id}", e)
             try {
@@ -248,7 +257,10 @@ class OrderPdfServiceImpl(
                 addPlaceholderText(contentStream, "Image not available")
             } catch (placeholderException: Exception) {
                 logger.error("Failed to add placeholder text for order item ${orderItem.id}", placeholderException)
-                throw PdfGenerationException("Failed to add product image and placeholder for order item ${orderItem.id}", e)
+                throw PdfGenerationException(
+                    "Failed to add product image and placeholder for order item ${orderItem.id}",
+                    e
+                )
             }
         }
     }

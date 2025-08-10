@@ -127,7 +127,10 @@ abstract class BaseStorageService {
         try {
             Files.probeContentType(filePath) ?: defaultContentType
         } catch (e: IOException) {
-            logger.warn("Failed to probe content type for ${filePath.toAbsolutePath()}, using default: $defaultContentType")
+            logger.warn(
+                "Failed to probe content type for ${filePath.toAbsolutePath()}, " +
+                        "using default: $defaultContentType"
+            )
             defaultContentType
         }
 

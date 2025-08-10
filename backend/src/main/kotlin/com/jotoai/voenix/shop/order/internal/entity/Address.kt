@@ -40,5 +40,11 @@ class Address(
     }
 
     override fun toString(): String =
-        "Address(streetAddress1='$streetAddress1', streetAddress2=$streetAddress2, city='$city', state='$state', postalCode='$postalCode', country='$country')"
+        "Address(" +
+            "streetAddress1='$streetAddress1', " +
+            "streetAddress2=$streetAddress2, " +
+            "city='$city', " +
+            "state='$state', " +
+            "postalCode='$postalCode', " +
+            "country='$country')"
 }

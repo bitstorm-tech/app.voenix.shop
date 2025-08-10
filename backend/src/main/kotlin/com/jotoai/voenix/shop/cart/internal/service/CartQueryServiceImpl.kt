@@ -91,7 +91,8 @@ class CartQueryServiceImpl(
      * Checks if an active cart exists for the user
      */
     @Transactional(readOnly = true)
-    override fun existsActiveCartForUser(userId: Long): Boolean = cartRepository.findActiveCartByUserId(userId).isPresent
+    override fun existsActiveCartForUser(userId: Long): Boolean = 
+        cartRepository.findActiveCartByUserId(userId).isPresent
 
     /**
      * Gets active cart information for order creation.

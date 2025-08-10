@@ -84,7 +84,9 @@ class PdfServiceImpl(
                 try {
                     val imageType =
                         storagePathService.findImageTypeByFilename(request.imageFilename)
-                            ?: throw PdfGenerationException("Could not determine image type for filename: ${request.imageFilename}")
+                            ?: throw PdfGenerationException(
+                                "Could not determine image type for filename: ${request.imageFilename}"
+                            )
                     val imagePath = storagePathService.getPhysicalFilePath(imageType, request.imageFilename)
                     imagePath.toFile().readBytes()
                 } catch (e: Exception) {
@@ -150,7 +152,12 @@ class PdfServiceImpl(
     ) {
         try {
             val qrCodeWriter = QRCodeWriter()
-            val bitMatrix = qrCodeWriter.encode(qrContent, BarcodeFormat.QR_CODE, QR_CODE_SIZE_PIXELS, QR_CODE_SIZE_PIXELS)
+            val bitMatrix = qrCodeWriter.encode(
+                qrContent,
+                BarcodeFormat.QR_CODE,
+                QR_CODE_SIZE_PIXELS,
+                QR_CODE_SIZE_PIXELS
+            )
 
             val bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix)
             val qrByteArray = ByteArrayOutputStream()
@@ -185,7 +192,10 @@ class PdfServiceImpl(
             val y = (pdfSize.height - imageHeightPoints) / 2
 
             contentStream.drawImage(image, x, y, imageWidthPoints, imageHeightPoints)
-            logger.debug("Image placed at position ({}, {}) with size {}x{} points", x, y, imageWidthPoints, imageHeightPoints)
+            logger.debug(
+                "Image placed at position ({}, {}) with size {}x{} points",
+                x, y, imageWidthPoints, imageHeightPoints
+            )
         } catch (e: Exception) {
             throw PdfGenerationException("Failed to add centered image to PDF", e)
         }

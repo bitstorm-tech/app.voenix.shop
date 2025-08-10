@@ -51,7 +51,8 @@ class ImageFacadeImpl(
 
     @Cacheable("userUploadedImages", key = "#userId")
     @Transactional(readOnly = true)
-    override fun getUserUploadedImages(userId: Long): List<UploadedImageDto> = imageService.getUserUploadedImages(userId)
+    override fun getUserUploadedImages(userId: Long): List<UploadedImageDto> = 
+        imageService.getUserUploadedImages(userId)
 
     // Generated Images Implementation
 
@@ -79,5 +80,6 @@ class ImageFacadeImpl(
 
     @Cacheable("userGeneratedImages", key = "#userId")
     @Transactional(readOnly = true)
-    override fun getUserGeneratedImages(userId: Long): List<GeneratedImageDto> = imageService.getUserGeneratedImages(userId)
+    override fun getUserGeneratedImages(userId: Long): List<GeneratedImageDto> = 
+        imageService.getUserGeneratedImages(userId)
 }

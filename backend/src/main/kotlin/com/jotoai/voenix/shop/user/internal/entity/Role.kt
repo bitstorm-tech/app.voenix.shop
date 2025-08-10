@@ -31,7 +31,8 @@ class Role(
     @Column(name = "updated_at", columnDefinition = "timestamptz")
     var updatedAt: OffsetDateTime? = null,
 ) {
-    override fun toString(): String = "Role(id=$id, name='$name', description=$description, createdAt=$createdAt, updatedAt=$updatedAt)"
+    override fun toString(): String = 
+        "Role(id=$id, name='$name', description=$description, createdAt=$createdAt, updatedAt=$updatedAt)"
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

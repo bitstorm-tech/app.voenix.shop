@@ -34,7 +34,10 @@ class UserImageGenerationService(
         checkRateLimit(userId.toString())
         validatePrompt(request.promptId)
 
-        logger.info("Processing authenticated image generation request for user $userId with prompt ID: ${request.promptId}")
+        logger.info(
+            "Processing authenticated image generation request for user $userId " +
+                    "with prompt ID: ${request.promptId}"
+        )
 
         return executeWithErrorHandling(
             operation = { processImageGeneration(imageFile, request, userId.toString()) },

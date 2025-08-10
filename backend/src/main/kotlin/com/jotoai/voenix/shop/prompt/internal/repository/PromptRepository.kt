@@ -23,6 +23,9 @@ interface PromptRepository : JpaRepository<Prompt, Long> {
 
     fun countBySubcategoryId(subcategoryId: Long): Int
 
-    @Query("SELECT p FROM Prompt p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.subcategory WHERE p.active = true ORDER BY p.id DESC")
+    @Query(
+        "SELECT p FROM Prompt p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.subcategory " +
+                "WHERE p.active = true ORDER BY p.id DESC"
+    )
     fun findAllActiveWithRelations(): List<Prompt>
 }

@@ -40,8 +40,12 @@ class PromptSubCategory(
 ) {
     fun toDto() =
         PromptSubCategoryDto(
-            id = requireNotNull(this.id) { "PromptSubCategory ID cannot be null when converting to DTO" },
-            promptCategoryId = requireNotNull(this.promptCategory.id) { "PromptCategory ID cannot be null when converting to DTO" },
+            id = requireNotNull(this.id) { 
+                "PromptSubCategory ID cannot be null when converting to DTO" 
+            },
+            promptCategoryId = requireNotNull(this.promptCategory.id) { 
+                "PromptCategory ID cannot be null when converting to DTO" 
+            },
             name = this.name,
             description = this.description,
             promptsCount = this.prompts.size,
@@ -51,7 +55,9 @@ class PromptSubCategory(
 
     fun toPublicDto() =
         PublicPromptSubCategoryDto(
-            id = requireNotNull(this.id) { "PromptSubCategory ID cannot be null when converting to DTO" },
+            id = requireNotNull(this.id) { 
+                "PromptSubCategory ID cannot be null when converting to DTO" 
+            },
             name = this.name,
             description = this.description,
         )

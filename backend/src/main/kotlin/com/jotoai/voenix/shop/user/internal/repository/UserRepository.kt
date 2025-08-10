@@ -63,13 +63,17 @@ interface UserRepository :
     ): Page<User>
 
     // Existence checks with active constraint
-    @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.email = :email AND u.deletedAt IS NULL")
+    @Query(
+        "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
+            "FROM User u WHERE u.email = :email AND u.deletedAt IS NULL"
+    )
     fun existsActiveByEmail(
         @Param("email") email: String,
     ): Boolean
 
     @Query(
-        "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM User u WHERE u.email = :email AND u.id != :excludeId AND u.deletedAt IS NULL",
+        "SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
+            "FROM User u WHERE u.email = :email AND u.id != :excludeId AND u.deletedAt IS NULL",
     )
     fun existsActiveByEmailAndIdNot(
         @Param("email") email: String,

@@ -108,7 +108,10 @@ class OpenAIImageGenerationStrategy(
                     imageFile.bytes,
                     Headers.build {
                         append(HttpHeaders.ContentType, getContentType(imageFile.originalFilename ?: "image.png"))
-                        append(HttpHeaders.ContentDisposition, "filename=\"${imageFile.originalFilename ?: "image.png"}\"")
+                        append(
+                            HttpHeaders.ContentDisposition, 
+                            "filename=\"${imageFile.originalFilename ?: "image.png"}\""
+                        )
                     },
                 )
 

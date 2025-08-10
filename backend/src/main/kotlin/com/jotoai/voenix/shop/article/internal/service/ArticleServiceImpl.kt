@@ -586,7 +586,9 @@ class ArticleServiceImpl(
         }
     }
 
-    override fun getMugVariantsByIds(ids: Collection<Long>): Map<Long, com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto> {
+    override fun getMugVariantsByIds(
+        ids: Collection<Long>
+    ): Map<Long, com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto> {
         if (ids.isEmpty()) return emptyMap()
         val variants = articleMugVariantRepository.findAllById(ids)
         return variants.associate { v ->
@@ -608,6 +610,8 @@ class ArticleServiceImpl(
         return variantOpt.map { it.article.id == articleId }.orElse(false)
     }
 
-    override fun getMugDetailsByArticleId(articleId: Long): com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto? =
+    override fun getMugDetailsByArticleId(
+        articleId: Long
+    ): com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto? =
         mugDetailsService.findByArticleId(articleId)
 }
