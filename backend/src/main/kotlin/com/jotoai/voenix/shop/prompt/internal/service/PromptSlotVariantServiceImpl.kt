@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.prompt.api.PromptSlotVariantFacade
 import com.jotoai.voenix.shop.prompt.api.PromptSlotVariantQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVariantRequest
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional
 class PromptSlotVariantServiceImpl(
     private val promptSlotVariantRepository: PromptSlotVariantRepository,
     private val promptSlotTypeRepository: PromptSlotTypeRepository,
-    private val imageStorageService: ImageStorageService,
     private val promptSlotVariantAssembler: PromptSlotVariantAssembler,
 ) : PromptSlotVariantFacade,
     PromptSlotVariantQueryService {

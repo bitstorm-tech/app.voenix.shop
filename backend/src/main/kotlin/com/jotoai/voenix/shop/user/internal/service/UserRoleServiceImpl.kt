@@ -40,7 +40,7 @@ class UserRoleServiceImpl(
         // Add new roles to existing ones
         user.roles.addAll(rolesToAssign)
 
-        val savedUser = userRepository.save(user)
+        userRepository.save(user)
     }
 
     @Transactional

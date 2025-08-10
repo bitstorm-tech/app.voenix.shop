@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.api.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
-import com.jotoai.voenix.shop.user.internal.repository.RoleRepository
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -42,9 +41,6 @@ class AuthRegistrationIntegrationTest {
 
     @Autowired
     private lateinit var userRepository: UserRepository
-
-    @Autowired
-    private lateinit var roleRepository: RoleRepository
 
     @BeforeEach
     fun setup() {

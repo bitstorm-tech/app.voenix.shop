@@ -31,7 +31,6 @@ import javax.imageio.ImageIO
  */
 @Service
 class OrderPdfServiceImpl(
-    @param:Value("\${app.base-url:http://localhost:8080}") private val appBaseUrl: String,
     @param:Value("\${pdf.size.width:239}") private val pdfWidthMm: Float,
     @param:Value("\${pdf.size.height:99}") private val pdfHeightMm: Float,
     @param:Value("\${pdf.margin:1}") private val pdfMarginMm: Float,
@@ -45,9 +44,7 @@ class OrderPdfServiceImpl(
         private const val MM_TO_POINTS = 2.834645669f
 
         // Layout constants
-        private const val HEADER_HEIGHT_POINTS = 30f
         private const val QR_CODE_SIZE_POINTS = 40f
-        private const val QR_CODE_MARGIN_POINTS = 20f
         private const val HEADER_MARGIN_FROM_EDGE = 15f
 
         // QR code generation settings

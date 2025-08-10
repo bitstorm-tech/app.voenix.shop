@@ -26,8 +26,6 @@ import java.time.OffsetDateTime
 
 class PromptAssemblerTest {
     private lateinit var promptSlotVariantAssembler: PromptSlotVariantAssembler
-    private lateinit var promptCategoryAssembler: PromptCategoryAssembler
-    private lateinit var promptSubCategoryAssembler: PromptSubCategoryAssembler
     private lateinit var storagePathService: StoragePathService
     private lateinit var assembler: PromptAssembler
 
@@ -39,10 +37,8 @@ class PromptAssemblerTest {
     @BeforeEach
     fun setUp() {
         promptSlotVariantAssembler = mock(PromptSlotVariantAssembler::class.java)
-        promptCategoryAssembler = mock(PromptCategoryAssembler::class.java)
-        promptSubCategoryAssembler = mock(PromptSubCategoryAssembler::class.java)
         storagePathService = mock(StoragePathService::class.java)
-        assembler = PromptAssembler(promptSlotVariantAssembler, promptCategoryAssembler, promptSubCategoryAssembler, storagePathService)
+        assembler = PromptAssembler(promptSlotVariantAssembler, storagePathService)
 
         // Setup test data
         testCategory =

@@ -3,13 +3,9 @@ package com.jotoai.voenix.shop.security
 import com.jotoai.voenix.shop.api.admin.articles.ArticleController
 import com.jotoai.voenix.shop.api.admin.prompts.AdminPromptController
 import com.jotoai.voenix.shop.api.admin.users.AdminUserController
-import com.jotoai.voenix.shop.article.api.ArticleFacade
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.auth.config.SecurityConfig
-import com.jotoai.voenix.shop.image.api.StoragePathService
-import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
-import com.jotoai.voenix.shop.user.api.UserFacade
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
@@ -37,9 +33,6 @@ class AdminEndpointSecurityWebMvcTest {
     private lateinit var mockMvc: MockMvc
 
     @MockitoBean
-    private lateinit var userFacade: UserFacade
-
-    @MockitoBean
     private lateinit var userQueryService: UserQueryService
 
     @MockitoBean
@@ -47,15 +40,6 @@ class AdminEndpointSecurityWebMvcTest {
 
     @MockitoBean
     private lateinit var articleQueryService: ArticleQueryService
-
-    @MockitoBean
-    private lateinit var articleFacade: ArticleFacade
-
-    @MockitoBean
-    private lateinit var storagePathService: StoragePathService
-
-    @MockitoBean
-    private lateinit var storagePathConfiguration: StoragePathConfiguration
 
     @Test
     fun testAdminEndpointsRequireAuthentication() {

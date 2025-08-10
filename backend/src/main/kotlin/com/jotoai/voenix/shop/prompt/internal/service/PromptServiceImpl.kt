@@ -98,8 +98,6 @@ class PromptServiceImpl(
                 .findById(id)
                 .orElseThrow { PromptNotFoundException("Prompt", "id", id) }
 
-        val oldDto = promptAssembler.toDto(prompt)
-
         // Validate category and subcategory if provided
         promptValidator.validateCategoryExists(request.categoryId)
         promptValidator.validateSubcategoryExists(request.subcategoryId)
@@ -152,8 +150,6 @@ class PromptServiceImpl(
             promptRepository
                 .findById(id)
                 .orElseThrow { PromptNotFoundException("Prompt", "id", id) }
-
-        val promptDto = promptAssembler.toDto(prompt)
 
         // Delete associated image if exists
         prompt.exampleImageFilename?.let { filename ->

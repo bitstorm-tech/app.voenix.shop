@@ -22,7 +22,6 @@ import java.util.UUID
 
 class ImageFacadeImplTest {
     private lateinit var imageService: ImageService
-    private lateinit var userImageStorageService: UserImageStorageService
 
     private lateinit var imageFacade: ImageFacadeImpl
 
@@ -31,12 +30,10 @@ class ImageFacadeImplTest {
     @BeforeEach
     fun setUp() {
         imageService = mock()
-        userImageStorageService = mock()
 
         imageFacade =
             ImageFacadeImpl(
                 imageService = imageService,
-                userImageStorageService = userImageStorageService,
             )
 
         mockFile =

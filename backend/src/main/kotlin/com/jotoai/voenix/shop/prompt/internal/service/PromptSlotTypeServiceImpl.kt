@@ -54,8 +54,6 @@ class PromptSlotTypeServiceImpl(
                 .findById(id)
                 .orElseThrow { PromptSlotTypeNotFoundException("PromptSlotType", "id", id) }
 
-        val oldDto = promptSlotType.toDto()
-
         request.name?.let {
             if (promptSlotTypeRepository.existsByNameAndIdNot(it, id)) {
                 throw IllegalArgumentException("PromptSlotType with name '$it' already exists")
@@ -82,7 +80,6 @@ class PromptSlotTypeServiceImpl(
                 .findById(id)
                 .orElseThrow { PromptSlotTypeNotFoundException("PromptSlotType", "id", id) }
 
-        val dto = promptSlotType.toDto()
         promptSlotTypeRepository.deleteById(id)
     }
 

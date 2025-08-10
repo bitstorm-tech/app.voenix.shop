@@ -5,10 +5,6 @@
  */
 
 package com.jotoai.voenix.shop.api.public.pdf
-
-import com.jotoai.voenix.shop.pdf.api.PublicPdfService
-import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
-import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PostMapping
@@ -24,9 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 @Deprecated("PDF generation is temporarily disabled due to performance issues")
 @RestController
 @RequestMapping("/api/public/pdf")
-class PublicPdfController(
-    private val publicPdfService: PublicPdfService,
-) {
+class PublicPdfController {
     @PostMapping("/generate")
     fun generatePdf(): ResponseEntity<Map<String, String>> =
         ResponseEntity

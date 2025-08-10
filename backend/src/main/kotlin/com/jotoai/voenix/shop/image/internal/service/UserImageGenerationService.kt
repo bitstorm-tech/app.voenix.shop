@@ -17,7 +17,6 @@ class UserImageGenerationService(
     promptQueryService: PromptQueryService,
     generatedImageRepository: GeneratedImageRepository,
     private val userQueryService: UserQueryService,
-    private val storagePathService: com.jotoai.voenix.shop.image.api.StoragePathService,
     private val userImageStorageService: UserImageStorageService,
 ) : BaseImageGenerationService(openAIImageFacade, promptQueryService, generatedImageRepository) {
     companion object {

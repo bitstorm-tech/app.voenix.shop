@@ -60,17 +60,6 @@ class SupplierFacadeImpl(
                 .findById(id)
                 .orElseThrow { SupplierNotFoundException("Supplier", "id", id) }
 
-        val oldDto =
-            supplier.toDtoWithCountry(
-                supplier.countryId?.let { countryId ->
-                    try {
-                        countryQueryService.getCountryById(countryId)
-                    } catch (e: CountryNotFoundException) {
-                        null
-                    }
-                },
-            )
-
         // Validate unique constraints
         validation.validateUniqueField(request.name, request.email, id)
 
@@ -102,16 +91,6 @@ class SupplierFacadeImpl(
             supplierRepository
                 .findById(id)
                 .orElseThrow { SupplierNotFoundException("Supplier", "id", id) }
-
-        val countryDto =
-            supplier.countryId?.let { countryId ->
-                try {
-                    countryQueryService.getCountryById(countryId)
-                } catch (e: CountryNotFoundException) {
-                    null
-                }
-            }
-        val supplierDto = supplier.toDtoWithCountry(countryDto)
 
         supplierRepository.deleteById(id)
     }

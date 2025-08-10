@@ -5,10 +5,6 @@
  */
 
 package com.jotoai.voenix.shop.api.admin.services
-
-import com.jotoai.voenix.shop.pdf.api.PdfFacade
-import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
-import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -26,9 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/admin/pdf")
 @PreAuthorize("hasRole('ADMIN')")
-class AdminPdfController(
-    private val pdfFacade: PdfFacade,
-) {
+class AdminPdfController {
     @PostMapping("/generate")
     fun generatePdf(): ResponseEntity<Map<String, String>> =
         ResponseEntity

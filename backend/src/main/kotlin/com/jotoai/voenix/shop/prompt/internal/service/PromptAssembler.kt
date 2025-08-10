@@ -18,8 +18,6 @@ import org.springframework.stereotype.Component
 @Component
 class PromptAssembler(
     private val promptSlotVariantAssembler: PromptSlotVariantAssembler,
-    private val promptCategoryAssembler: PromptCategoryAssembler,
-    private val promptSubCategoryAssembler: PromptSubCategoryAssembler,
     private val storagePathService: StoragePathService,
 ) {
     /**

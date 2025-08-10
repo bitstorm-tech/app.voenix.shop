@@ -19,7 +19,6 @@ import java.util.UUID
 @Service
 class ImageFacadeImpl(
     private val imageService: ImageService,
-    private val userImageStorageService: UserImageStorageService,
 ) : ImageFacade {
     @Transactional
     override fun createUploadedImage(

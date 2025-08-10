@@ -56,13 +56,6 @@ class ImageGenerationOrchestrator(
     ): PublicImageGenerationResponse {
         logger.info("Orchestrating user image generation from upload for user $userId with prompt ID: $promptId")
 
-        // Create a default generation request
-        val generationRequest =
-            PublicImageGenerationRequest(
-                promptId = promptId,
-                n = 4, // Default to 4 images
-            )
-
         // This is a simplified approach - in practice, you might want to retrieve the uploaded image
         // and create a MultipartFile wrapper, or extend the generation services to handle UUID-based generation
         throw UnsupportedOperationException(

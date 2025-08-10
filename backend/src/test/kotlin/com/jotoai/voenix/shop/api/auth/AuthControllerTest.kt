@@ -2,16 +2,10 @@ package com.jotoai.voenix.shop.api.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.auth.api.AuthFacade
-import com.jotoai.voenix.shop.auth.api.AuthQueryService
 import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
-import com.jotoai.voenix.shop.auth.internal.service.UserRegistrationService
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.image.api.StoragePathService
-import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.user.api.dto.UserDto
-import com.jotoai.voenix.shop.user.internal.repository.RoleRepository
-import com.jotoai.voenix.shop.user.internal.repository.UserRepository
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -21,9 +15,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.http.MediaType
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.web.context.SecurityContextRepository
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
@@ -43,33 +34,6 @@ class AuthControllerTest {
 
     @MockBean
     private lateinit var authFacade: AuthFacade
-
-    @MockBean
-    private lateinit var authQueryService: AuthQueryService
-
-    @MockBean
-    private lateinit var userRegistrationService: UserRegistrationService
-
-    @MockBean
-    private lateinit var userRepository: UserRepository
-
-    @MockBean
-    private lateinit var roleRepository: RoleRepository
-
-    @MockBean
-    private lateinit var passwordEncoder: PasswordEncoder
-
-    @MockBean
-    private lateinit var authenticationManager: AuthenticationManager
-
-    @MockBean
-    private lateinit var securityContextRepository: SecurityContextRepository
-
-    @MockBean
-    private lateinit var storagePathService: StoragePathService
-
-    @MockBean
-    private lateinit var storagePathConfiguration: StoragePathConfiguration
 
     @Test
     fun `register should create new user and return login response`() {

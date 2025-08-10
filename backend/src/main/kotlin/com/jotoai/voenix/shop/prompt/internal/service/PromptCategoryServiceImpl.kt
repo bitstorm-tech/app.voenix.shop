@@ -60,8 +60,6 @@ class PromptCategoryServiceImpl(
                 .findById(id)
                 .orElseThrow { PromptCategoryNotFoundException("PromptCategory", "id", id) }
 
-        val oldDto = getPromptCategoryById(id)
-
         request.name?.let { promptCategory.name = it }
 
         val updatedPromptCategory = promptCategoryRepository.save(promptCategory)
@@ -75,8 +73,6 @@ class PromptCategoryServiceImpl(
         if (!promptCategoryRepository.existsById(id)) {
             throw PromptCategoryNotFoundException("PromptCategory", "id", id)
         }
-
-        val categoryDto = getPromptCategoryById(id)
 
         promptCategoryRepository.deleteById(id)
     }

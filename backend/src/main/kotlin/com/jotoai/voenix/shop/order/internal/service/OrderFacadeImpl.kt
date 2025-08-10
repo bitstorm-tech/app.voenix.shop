@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.order.internal.service
 
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.CartQueryService
 import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
@@ -30,7 +29,6 @@ class OrderFacadeImpl(
     private val userQueryService: UserQueryService,
     private val orderAssembler: OrderAssembler,
     private val entityManager: EntityManager,
-    private val articleQueryService: ArticleQueryService,
 ) : OrderFacade {
     private val logger = LoggerFactory.getLogger(OrderFacadeImpl::class.java)
 

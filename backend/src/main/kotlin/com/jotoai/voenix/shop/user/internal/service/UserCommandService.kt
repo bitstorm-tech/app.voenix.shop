@@ -98,7 +98,6 @@ class UserCommandService(
                 .findById(id) // Use findById to include soft-deleted users for hard delete
                 .orElseThrow { createUserNotFoundException("id", id) }
 
-        val userEmail = user.email
         userRepository.deleteById(id)
     }
 

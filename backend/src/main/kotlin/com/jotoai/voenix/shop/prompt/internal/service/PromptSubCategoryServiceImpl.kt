@@ -69,8 +69,6 @@ class PromptSubCategoryServiceImpl(
                 .findById(id)
                 .orElseThrow { PromptSubCategoryNotFoundException("PromptSubCategory", "id", id) }
 
-        val oldDto = promptSubCategoryAssembler.toDto(promptSubCategory)
-
         request.name?.let { promptSubCategory.name = it }
         request.description?.let { promptSubCategory.description = it }
         request.promptCategoryId?.let { categoryId ->
@@ -94,7 +92,6 @@ class PromptSubCategoryServiceImpl(
                 .findById(id)
                 .orElseThrow { PromptSubCategoryNotFoundException("PromptSubCategory", "id", id) }
 
-        val dto = promptSubCategoryAssembler.toDto(promptSubCategory)
         promptSubCategoryRepository.deleteById(id)
     }
 }

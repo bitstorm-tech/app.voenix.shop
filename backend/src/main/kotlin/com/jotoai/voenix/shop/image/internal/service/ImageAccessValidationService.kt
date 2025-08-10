@@ -46,9 +46,8 @@ class ImageAccessValidationService(
             isOriginalImage -> {
                 // Extract UUID from filename (format: {uuid}_original.{ext})
                 val uuid = extractUuidFromOriginalFilename(filename)
-                val uploadedImage =
-                    uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
-                        ?: throw ResourceNotFoundException("Uploaded image not found or access denied")
+                uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
+                    ?: throw ResourceNotFoundException("Uploaded image not found or access denied")
 
                 logger.debug("Access granted to original image $filename for user $userId")
             }
