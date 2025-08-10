@@ -34,9 +34,9 @@ class ImageStorageService(
         request: CreateImageRequest,
     ): ImageDto {
         logger.debug(
-            "Starting file storage - Type: {}, Original filename: {}", 
-            request.imageType, 
-            file.originalFilename
+            "Starting file storage - Type: {}, Original filename: {}",
+            request.imageType,
+            file.originalFilename,
         )
 
         // Use ImageType configuration for validation

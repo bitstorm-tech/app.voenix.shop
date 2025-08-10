@@ -25,7 +25,7 @@ interface PromptRepository : JpaRepository<Prompt, Long> {
 
     @Query(
         "SELECT p FROM Prompt p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.subcategory " +
-                "WHERE p.active = true ORDER BY p.id DESC"
+            "WHERE p.active = true ORDER BY p.id DESC",
     )
     fun findAllActiveWithRelations(): List<Prompt>
 }

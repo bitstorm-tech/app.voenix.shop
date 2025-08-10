@@ -19,6 +19,11 @@ class UserPasswordServiceImpl(
     private val userRepository: UserRepository,
     private val passwordEncoder: PasswordEncoder,
 ) : UserPasswordService {
+    companion object {
+        private const val MIN_PASSWORD_LENGTH = 8
+        private const val MAX_PASSWORD_LENGTH = 128
+    }
+
     @Transactional
     override fun setEncodedPassword(
         userId: Long,
@@ -40,13 +45,13 @@ class UserPasswordServiceImpl(
         val violations = mutableListOf<String>()
 
         // Minimum length check
-        if (password.length < 8) {
-            violations.add("Password must be at least 8 characters long")
+        if (password.length < MIN_PASSWORD_LENGTH) {
+            violations.add("Password must be at least $MIN_PASSWORD_LENGTH characters long")
         }
 
         // Maximum length check
-        if (password.length > 128) {
-            violations.add("Password must not exceed 128 characters")
+        if (password.length > MAX_PASSWORD_LENGTH) {
+            violations.add("Password must not exceed $MAX_PASSWORD_LENGTH characters")
         }
 
         // Character type requirements

@@ -15,6 +15,11 @@ class WebConfig(
     @param:Value("\${spring.profiles.active:default}") private val activeProfile: String,
     private val storagePathService: StoragePathService,
 ) : WebMvcConfigurer {
+    companion object {
+        private const val CORS_MAX_AGE_SECONDS = 3600L
+        private const val CACHE_PERIOD_SECONDS = 3600
+    }
+
     override fun addCorsMappings(registry: CorsRegistry) {
         // Only enable CORS in development
         if (activeProfile != "prod") {
@@ -24,7 +29,7 @@ class WebConfig(
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)
-                .maxAge(3600)
+                .maxAge(CORS_MAX_AGE_SECONDS)
         }
     }
 
@@ -40,7 +45,7 @@ class WebConfig(
                 registry
                     .addResourceHandler("$urlPath/**")
                     .addResourceLocations("file:${physicalPath.toAbsolutePath()}/")
-                    .setCachePeriod(3600)
+                    .setCachePeriod(CACHE_PERIOD_SECONDS)
             }
 
         // Serve static resources

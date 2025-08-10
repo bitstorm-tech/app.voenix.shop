@@ -3,31 +3,30 @@ package com.jotoai.voenix.shop.security
 import com.jotoai.voenix.shop.api.admin.articles.ArticleController
 import com.jotoai.voenix.shop.api.admin.prompts.AdminPromptController
 import com.jotoai.voenix.shop.api.admin.users.AdminUserController
+import com.jotoai.voenix.shop.article.api.ArticleFacade
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.auth.config.SecurityConfig
+import com.jotoai.voenix.shop.prompt.api.PromptFacade
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.user.api.UserFacade
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
-import org.springframework.context.annotation.Import
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.transaction.annotation.Transactional
 
-@WebMvcTest(
-    controllers = [
-        AdminUserController::class,
-        AdminPromptController::class,
-        ArticleController::class,
-    ],
-)
-@Import(SecurityConfig::class)
+@SpringBootTest
+@AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Transactional
 class AdminEndpointSecurityWebMvcTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
@@ -36,10 +35,19 @@ class AdminEndpointSecurityWebMvcTest {
     private lateinit var userQueryService: UserQueryService
 
     @MockitoBean
+    private lateinit var userFacade: UserFacade
+
+    @MockitoBean
     private lateinit var promptQueryService: PromptQueryService
 
     @MockitoBean
+    private lateinit var promptFacade: PromptFacade
+
+    @MockitoBean
     private lateinit var articleQueryService: ArticleQueryService
+
+    @MockitoBean
+    private lateinit var articleFacade: ArticleFacade
 
     @Test
     fun testAdminEndpointsRequireAuthentication() {

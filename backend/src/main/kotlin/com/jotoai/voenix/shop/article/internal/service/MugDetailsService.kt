@@ -14,8 +14,7 @@ class MugDetailsService(
     private val mugDetailsRepository: MugArticleDetailsRepository,
 ) {
     @Transactional(readOnly = true)
-    fun findByArticleId(articleId: Long): MugArticleDetailsDto? = 
-        mugDetailsRepository.findByArticleId(articleId)?.toDto()
+    fun findByArticleId(articleId: Long): MugArticleDetailsDto? = mugDetailsRepository.findByArticleId(articleId)?.toDto()
 
     @Transactional
     fun create(

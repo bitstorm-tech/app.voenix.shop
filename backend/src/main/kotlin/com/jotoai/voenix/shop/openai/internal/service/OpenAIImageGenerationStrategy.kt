@@ -49,6 +49,7 @@ class OpenAIImageGenerationStrategy(
     companion object {
         private val logger = LoggerFactory.getLogger(OpenAIImageGenerationStrategy::class.java)
         private const val OPENAI_API_URL = "https://api.openai.com/v1/images/edits"
+        private const val REQUEST_TIMEOUT_MS = 300000L // 5 minutes in milliseconds
     }
 
     init {
@@ -65,7 +66,7 @@ class OpenAIImageGenerationStrategy(
                 level = LogLevel.INFO
             }
             engine {
-                requestTimeout = 300000 // 5 minutes
+                requestTimeout = REQUEST_TIMEOUT_MS
             }
         }
 
@@ -109,8 +110,8 @@ class OpenAIImageGenerationStrategy(
                     Headers.build {
                         append(HttpHeaders.ContentType, getContentType(imageFile.originalFilename ?: "image.png"))
                         append(
-                            HttpHeaders.ContentDisposition, 
-                            "filename=\"${imageFile.originalFilename ?: "image.png"}\""
+                            HttpHeaders.ContentDisposition,
+                            "filename=\"${imageFile.originalFilename ?: "image.png"}\"",
                         )
                     },
                 )

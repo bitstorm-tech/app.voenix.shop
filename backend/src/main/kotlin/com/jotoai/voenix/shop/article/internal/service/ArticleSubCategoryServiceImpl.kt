@@ -17,8 +17,7 @@ class ArticleSubCategoryServiceImpl(
     private val articleCategoryRepository: ArticleCategoryRepository,
 ) : com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryQueryService,
     com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryFacade {
-    override fun getAllSubCategories(): List<ArticleSubCategoryDto> = 
-        articleSubCategoryRepository.findAll().map { it.toDto() }
+    override fun getAllSubCategories(): List<ArticleSubCategoryDto> = articleSubCategoryRepository.findAll().map { it.toDto() }
 
     override fun getSubCategoryById(id: Long): ArticleSubCategoryDto =
         articleSubCategoryRepository
@@ -45,16 +44,17 @@ class ArticleSubCategoryServiceImpl(
         val articleCategory =
             articleCategoryRepository
                 .findById(request.articleCategoryId)
-                .orElseThrow { 
+                .orElseThrow {
                     ArticleNotFoundException(
-                        "ArticleCategory not found with id: ${request.articleCategoryId}"
-                    ) 
+                        "ArticleCategory not found with id: ${request.articleCategoryId}",
+                    )
                 }
 
         if (articleSubCategoryRepository.existsByArticleCategoryIdAndNameIgnoreCase(
-                request.articleCategoryId, 
-                request.name
-            )) {
+                request.articleCategoryId,
+                request.name,
+            )
+        ) {
             throw IllegalArgumentException("Subcategory with name '${request.name}' already exists in this category")
         }
 

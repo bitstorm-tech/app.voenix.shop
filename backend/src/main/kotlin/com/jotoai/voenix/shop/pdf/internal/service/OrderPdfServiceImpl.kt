@@ -53,11 +53,19 @@ class OrderPdfServiceImpl(
         // Font settings
         private const val HEADER_FONT_SIZE = 14f
         private const val PLACEHOLDER_FONT_SIZE = 12f
+        private const val FONT_WIDTH_DIVISOR = 1000f
 
         // Image settings
         private const val PLACEHOLDER_IMAGE_WIDTH = 400
         private const val PLACEHOLDER_IMAGE_HEIGHT = 300
         private const val PLACEHOLDER_FONT_SIZE_PIXELS = 24
+
+        // Math constants
+        private const val DEGREES_90 = 90.0
+        private const val HALF_DIVISOR = 2f
+
+        // Text positioning
+        private const val FALLBACK_TEXT_OFFSET = 10f
 
         // Image format constants
         private const val IMAGE_FORMAT_PNG = "PNG"
@@ -83,7 +91,7 @@ class OrderPdfServiceImpl(
     override fun generateOrderPdf(orderData: OrderPdfData): ByteArray {
         logger.info(
             "Generating PDF for order ${orderData.orderNumber} with " +
-                "${orderData.getTotalItemCount()} total items"
+                "${orderData.getTotalItemCount()} total items",
         )
 
         try {
@@ -160,7 +168,7 @@ class OrderPdfServiceImpl(
 
         // Create the combined text on one line
         val headerText = "$orderNumber ($pageNumber/$totalPages)"
-        val textWidth = boldFont.getStringWidth(headerText) / 1000 * fontSize
+        val textWidth = boldFont.getStringWidth(headerText) / FONT_WIDTH_DIVISOR * fontSize
 
         // Save the current graphics state
         contentStream.saveGraphicsState()
@@ -174,7 +182,7 @@ class OrderPdfServiceImpl(
         contentStream.transform(Matrix.getTranslateInstance(xPosition, yPositionBase))
 
         // Rotate 90 degrees clockwise around the current position
-        contentStream.transform(Matrix.getRotateInstance(Math.toRadians(90.0), 0f, 0f))
+        contentStream.transform(Matrix.getRotateInstance(Math.toRadians(DEGREES_90), 0f, 0f))
 
         // Draw the combined text in one line
         contentStream.beginText()
@@ -228,8 +236,9 @@ class OrderPdfServiceImpl(
             // Use exact print template dimensions from MugArticleDetails
             // Never scale or correct the image size - use exact dimensions from database
             val imageWidthMm = mugDetails?.printTemplateWidthMm?.toFloat() ?: (pdfWidthMm - (2 * pdfMarginMm))
-            val imageHeightMm = mugDetails?.printTemplateHeightMm?.toFloat()
-                ?: (pdfHeightMm - (2 * pdfMarginMm) - DEFAULT_IMAGE_MARGIN_MM)
+            val imageHeightMm =
+                mugDetails?.printTemplateHeightMm?.toFloat()
+                    ?: (pdfHeightMm - (2 * pdfMarginMm) - DEFAULT_IMAGE_MARGIN_MM)
 
             // Convert exact dimensions to points (no scaling or aspect ratio correction)
             val imageWidthPt = imageWidthMm * MM_TO_POINTS
@@ -248,7 +257,7 @@ class OrderPdfServiceImpl(
             )
             logger.debug(
                 "Using exact print template dimensions: " +
-                    "${imageWidthMm}mm x ${imageHeightMm}mm from MugArticleDetails"
+                    "${imageWidthMm}mm x ${imageHeightMm}mm from MugArticleDetails",
             )
         } catch (e: Exception) {
             logger.error("Failed to add product image for order item ${orderItem.id}", e)
@@ -259,7 +268,7 @@ class OrderPdfServiceImpl(
                 logger.error("Failed to add placeholder text for order item ${orderItem.id}", placeholderException)
                 throw PdfGenerationException(
                     "Failed to add product image and placeholder for order item ${orderItem.id}",
-                    e
+                    e,
                 )
             }
         }
@@ -295,7 +304,7 @@ class OrderPdfServiceImpl(
             logger.error("Failed to generate QR code for order ID $orderId", e)
             try {
                 // Add fallback text
-                addPlaceholderText(contentStream, "Order ID: $orderId", margin, margin + 10f)
+                addPlaceholderText(contentStream, "Order ID: $orderId", margin, margin + FALLBACK_TEXT_OFFSET)
             } catch (placeholderException: Exception) {
                 logger.error("Failed to add QR code fallback text for order ID $orderId", placeholderException)
                 throw PdfGenerationException("Failed to add QR code and fallback text for order ID $orderId", e)
@@ -360,7 +369,7 @@ class OrderPdfServiceImpl(
 
             if (x == pageWidth / 2) {
                 // Center the text
-                val textWidth = regularFont.getStringWidth(text) / 1000 * PLACEHOLDER_FONT_SIZE
+                val textWidth = regularFont.getStringWidth(text) / FONT_WIDTH_DIVISOR * PLACEHOLDER_FONT_SIZE
                 contentStream.newLineAtOffset((pageWidth - textWidth) / 2, y)
             } else {
                 contentStream.newLineAtOffset(x, y)

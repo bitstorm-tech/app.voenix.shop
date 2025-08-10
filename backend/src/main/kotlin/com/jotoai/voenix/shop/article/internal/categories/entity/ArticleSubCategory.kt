@@ -36,12 +36,14 @@ class ArticleSubCategory(
 ) {
     fun toDto() =
         ArticleSubCategoryDto(
-            id = requireNotNull(this.id) { 
-                "ArticleSubCategory ID cannot be null when converting to DTO" 
-            },
-            articleCategoryId = requireNotNull(this.articleCategory.id) { 
-                "ArticleCategory ID cannot be null when converting to DTO" 
-            },
+            id =
+                requireNotNull(this.id) {
+                    "ArticleSubCategory ID cannot be null when converting to DTO"
+                },
+            articleCategoryId =
+                requireNotNull(this.articleCategory.id) {
+                    "ArticleCategory ID cannot be null when converting to DTO"
+                },
             name = this.name,
             description = this.description,
             createdAt = this.createdAt,

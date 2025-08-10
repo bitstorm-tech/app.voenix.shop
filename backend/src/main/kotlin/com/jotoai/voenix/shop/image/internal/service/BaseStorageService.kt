@@ -13,6 +13,11 @@ import java.nio.file.Path
 abstract class BaseStorageService {
     protected val logger = LoggerFactory.getLogger(this::class.java)
 
+    companion object {
+        private const val BYTES_PER_KB = 1024
+        private const val BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB
+    }
+
     /**
      * Validates a MultipartFile for basic requirements.
      * @param file The file to validate
@@ -30,7 +35,7 @@ abstract class BaseStorageService {
         }
 
         if (file.size > maxFileSize) {
-            val maxSizeMB = maxFileSize / (1024 * 1024)
+            val maxSizeMB = maxFileSize / BYTES_PER_MB
             throw IllegalArgumentException("File size exceeds maximum allowed size of ${maxSizeMB}MB")
         }
 
@@ -129,7 +134,7 @@ abstract class BaseStorageService {
         } catch (e: IOException) {
             logger.warn(
                 "Failed to probe content type for ${filePath.toAbsolutePath()}, " +
-                        "using default: $defaultContentType"
+                    "using default: $defaultContentType",
             )
             defaultContentType
         }

@@ -25,7 +25,7 @@ interface UploadedImageRepository : JpaRepository<UploadedImage, Long> {
      */
     @Query(
         "SELECT u FROM UploadedImage u LEFT JOIN FETCH u.generatedImages " +
-                "WHERE u.userId = :userId ORDER BY u.uploadedAt DESC"
+            "WHERE u.userId = :userId ORDER BY u.uploadedAt DESC",
     )
     fun findAllByUserIdWithGeneratedImages(
         @Param("userId") userId: Long,

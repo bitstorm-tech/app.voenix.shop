@@ -10,12 +10,16 @@ import java.awt.Rectangle
 
 @Service
 class ImageConversionService {
+    companion object {
+        private const val WEBP_QUALITY = 90 // Quality setting (0-100, high quality)
+    }
+
     fun convertToWebP(imageBytes: ByteArray): ByteArray {
         val image = ImmutableImage.loader().fromBytes(imageBytes)
 
         val writer =
             WebpWriter()
-                .withQ(90) // Quality setting (0-100, 90 is high quality)
+                .withQ(WEBP_QUALITY)
 
         return image.bytes(writer)
     }

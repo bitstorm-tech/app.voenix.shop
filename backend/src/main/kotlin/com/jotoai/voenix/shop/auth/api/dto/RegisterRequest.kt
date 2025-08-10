@@ -13,8 +13,9 @@ data class RegisterRequest(
     @field:Size(min = 8, message = "Password must be at least 8 characters long")
     @field:Pattern(
         regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]+$",
-        message = "Password must contain at least one uppercase letter, " +
-            "one lowercase letter, one digit, and one special character",
+        message =
+            "Password must contain at least one uppercase letter, " +
+                "one lowercase letter, one digit, and one special character",
     )
     val password: String,
 )

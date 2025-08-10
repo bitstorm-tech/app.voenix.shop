@@ -38,9 +38,9 @@ class ImageService(
         request: CreateImageRequest,
     ): ImageDto {
         logger.debug(
-            "Delegating image storage - Type: {}, Original filename: {}", 
-            request.imageType, 
-            file.originalFilename
+            "Delegating image storage - Type: {}, Original filename: {}",
+            request.imageType,
+            file.originalFilename,
         )
         return imageStorageService.storeImage(file, request)
     }

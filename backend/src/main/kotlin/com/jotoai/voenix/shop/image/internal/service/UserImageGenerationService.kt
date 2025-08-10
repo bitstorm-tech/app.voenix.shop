@@ -36,7 +36,7 @@ class UserImageGenerationService(
 
         logger.info(
             "Processing authenticated image generation request for user $userId " +
-                    "with prompt ID: ${request.promptId}"
+                "with prompt ID: ${request.promptId}",
         )
 
         return executeWithErrorHandling(
