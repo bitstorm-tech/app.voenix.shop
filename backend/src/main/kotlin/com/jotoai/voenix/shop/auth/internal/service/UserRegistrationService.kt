@@ -3,7 +3,6 @@ package com.jotoai.voenix.shop.auth.internal.service
 import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.user.api.UserFacade
-import com.jotoai.voenix.shop.user.api.UserPasswordService
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import com.jotoai.voenix.shop.user.api.UserRoleManagementService
 import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
@@ -24,7 +23,6 @@ class UserRegistrationService(
     private val userFacade: UserFacade,
     private val userQueryService: UserQueryService,
     private val userRoleManagementService: UserRoleManagementService,
-    private val userPasswordService: UserPasswordService,
     private val passwordEncoder: PasswordEncoder,
     private val authenticationManager: AuthenticationManager,
     private val securityContextRepository: SecurityContextRepository,
