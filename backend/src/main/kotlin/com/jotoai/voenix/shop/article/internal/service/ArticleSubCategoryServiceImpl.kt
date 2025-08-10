@@ -17,7 +17,8 @@ class ArticleSubCategoryServiceImpl(
     private val articleCategoryRepository: ArticleCategoryRepository,
 ) : com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryQueryService,
     com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryFacade {
-    override fun getAllSubCategories(): List<ArticleSubCategoryDto> = articleSubCategoryRepository.findAll().map { it.toDto() }
+    override fun getAllSubCategories(): List<ArticleSubCategoryDto> =
+        articleSubCategoryRepository.findAll().map { it.toDto() }
 
     override fun getSubCategoryById(id: Long): ArticleSubCategoryDto =
         articleSubCategoryRepository

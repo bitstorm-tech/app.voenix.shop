@@ -30,7 +30,9 @@ class SupplierModuleArchitectureTest {
         val supplierModule =
             modules
                 .getModuleByName("supplier")
-                .orElseThrow { AssertionError("Supplier module not found. Available modules: ${modules.map { it.name }}") }
+                .orElseThrow {
+                    AssertionError("Supplier module not found. Available modules: ${modules.map { it.name }}")
+                }
 
         // Verify that the module exists and has the correct name
         assert(supplierModule.name == "supplier") {

@@ -142,7 +142,10 @@ class AuthControllerTest {
             .andExpect(
                 jsonPath(
                     "$.validationErrors.password",
-                ).value("Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character"),
+                ).value(
+                    "Password must contain at least one uppercase letter, " +
+                        "one lowercase letter, one digit, and one special character",
+                ),
             )
     }
 

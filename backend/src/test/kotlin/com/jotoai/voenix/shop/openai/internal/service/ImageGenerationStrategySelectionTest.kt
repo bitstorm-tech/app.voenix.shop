@@ -35,7 +35,8 @@ class ImageGenerationStrategySelectionTest {
         @Test
         fun `should not have OpenAIImageGenerationStrategy bean when testmode is true`() {
             // When
-            val hasOpenAIStrategy = applicationContext.getBeanNamesForType(OpenAIImageGenerationStrategy::class.java).isNotEmpty()
+            val hasOpenAIStrategy =
+                applicationContext.getBeanNamesForType(OpenAIImageGenerationStrategy::class.java).isNotEmpty()
 
             // Then
             assertTrue(!hasOpenAIStrategy) {
@@ -46,7 +47,8 @@ class ImageGenerationStrategySelectionTest {
         @Test
         fun `should have TestModeImageGenerationStrategy bean when testmode is true`() {
             // When
-            val hasTestModeStrategy = applicationContext.getBeanNamesForType(TestModeImageGenerationStrategy::class.java).isNotEmpty()
+            val hasTestModeStrategy =
+                applicationContext.getBeanNamesForType(TestModeImageGenerationStrategy::class.java).isNotEmpty()
 
             // Then
             assertTrue(hasTestModeStrategy) {
@@ -76,7 +78,8 @@ class ImageGenerationStrategySelectionTest {
         @Test
         fun `should have OpenAIImageGenerationStrategy bean when testmode is false`() {
             // When
-            val hasOpenAIStrategy = applicationContext.getBeanNamesForType(OpenAIImageGenerationStrategy::class.java).isNotEmpty()
+            val hasOpenAIStrategy =
+                applicationContext.getBeanNamesForType(OpenAIImageGenerationStrategy::class.java).isNotEmpty()
 
             // Then
             assertTrue(hasOpenAIStrategy) {
@@ -87,11 +90,13 @@ class ImageGenerationStrategySelectionTest {
         @Test
         fun `should not have TestModeImageGenerationStrategy bean when testmode is false`() {
             // When
-            val hasTestModeStrategy = applicationContext.getBeanNamesForType(TestModeImageGenerationStrategy::class.java).isNotEmpty()
+            val hasTestModeStrategy =
+                applicationContext.getBeanNamesForType(TestModeImageGenerationStrategy::class.java).isNotEmpty()
 
             // Then
             assertTrue(!hasTestModeStrategy) {
-                "TestModeImageGenerationStrategy should not be available when test-mode is false"
+                "TestModeImageGenerationStrategy should not be available when " +
+                    "test-mode is false"
             }
         }
     }
@@ -118,7 +123,8 @@ class ImageGenerationStrategySelectionTest {
         @Test
         fun `should have OpenAIImageGenerationStrategy bean for production-like behavior`() {
             // When
-            val hasOpenAIStrategy = applicationContext.getBeanNamesForType(OpenAIImageGenerationStrategy::class.java).isNotEmpty()
+            val hasOpenAIStrategy =
+                applicationContext.getBeanNamesForType(OpenAIImageGenerationStrategy::class.java).isNotEmpty()
 
             // Then
             assertTrue(hasOpenAIStrategy) {
@@ -129,7 +135,8 @@ class ImageGenerationStrategySelectionTest {
         @Test
         fun `should not have TestModeImageGenerationStrategy bean for production-like behavior`() {
             // When
-            val hasTestModeStrategy = applicationContext.getBeanNamesForType(TestModeImageGenerationStrategy::class.java).isNotEmpty()
+            val hasTestModeStrategy =
+                applicationContext.getBeanNamesForType(TestModeImageGenerationStrategy::class.java).isNotEmpty()
 
             // Then
             assertTrue(!hasTestModeStrategy) {
@@ -152,7 +159,8 @@ class ImageGenerationStrategySelectionTest {
 
             // Then
             assertTrue(strategy is OpenAIImageGenerationStrategy) {
-                "Expected OpenAIImageGenerationStrategy (default for invalid value) but got ${strategy::class.simpleName}"
+                "Expected OpenAIImageGenerationStrategy (default for invalid value) " +
+                    "but got ${strategy::class.simpleName}"
             }
         }
     }

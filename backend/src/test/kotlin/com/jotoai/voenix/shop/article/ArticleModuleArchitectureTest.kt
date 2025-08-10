@@ -33,7 +33,9 @@ class ArticleModuleArchitectureTest {
         val articleModule =
             modules
                 .getModuleByName("article")
-                .orElseThrow { AssertionError("Article module not found. Available modules: ${modules.map { it.name }}") }
+                .orElseThrow {
+                    AssertionError("Article module not found. Available modules: ${modules.map { it.name }}")
+                }
 
         // Verify that the module exists and has the correct name
         assert(articleModule.name == "article") {

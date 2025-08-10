@@ -276,7 +276,8 @@ class MugVariantServiceTest {
         mugVariantService.update(1L, request)
 
         // Then
-        verify(mugVariantRepository, times(2)).save(any(MugArticleVariant::class.java)) // Save both the updated variant and the new default
+        verify(mugVariantRepository, times(2)).save(any(MugArticleVariant::class.java))
+        // Save both the updated variant and the new default
     }
 
     @Test

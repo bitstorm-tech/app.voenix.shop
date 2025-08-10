@@ -97,7 +97,8 @@ class ImageFacadeImplTest {
         val userId = 1L
         val uploadedImage = createUploadedImage(id = null, userId = userId)
 
-        whenever(imageService.createUploadedImage(mockFile, userId)).thenThrow(ImageStorageException("Image ID not generated"))
+        whenever(imageService.createUploadedImage(mockFile, userId))
+            .thenThrow(ImageStorageException("Image ID not generated"))
 
         // When & Then
         assertThrows<ImageStorageException> {
@@ -322,7 +323,8 @@ class ImageFacadeImplTest {
         val userId = 1L
         val uuid = UUID.randomUUID()
 
-        whenever(imageService.getGeneratedImageByUuid(uuid, userId)).thenThrow(ImageNotFoundException("Image not found"))
+        whenever(imageService.getGeneratedImageByUuid(uuid, userId))
+            .thenThrow(ImageNotFoundException("Image not found"))
 
         // When & Then
         assertThrows<ImageNotFoundException> {

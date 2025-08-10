@@ -25,7 +25,8 @@ class ArticleModulithTest {
                 "Article module should have display name 'Article', but was '${articleModule.displayName}'"
             }
             assert(articleModule.basePackage.name == "com.jotoai.voenix.shop.article") {
-                "Article module should have base package 'com.jotoai.voenix.shop.article', but was '${articleModule.basePackage.name}'"
+                "Article module should have base package 'com.jotoai.voenix.shop.article', " +
+                    "but was '${articleModule.basePackage.name}'"
             }
         }
     }
@@ -48,13 +49,18 @@ class ArticleModulithTest {
                 message.contains("Slice domain")
             ) {
                 println(
-                    "Known architectural issue (article->image->domain->article cycle): This will be fixed by moving OpenAI services out of domain module",
+                    "Known architectural issue (article->image->domain->article cycle): " +
+                        "This will be fixed by moving OpenAI services out of domain module",
                 )
-            } else if (message.contains("Module 'article'") || message.contains("Slice article") || message.contains("article")) {
+            } else if (message.contains("Module 'article'") ||
+                message.contains("Slice article") || message.contains("article")
+            ) {
                 throw AssertionError("Article module has NEW architectural violations: $message")
             } else {
                 // Known architectural violations in other modules are tolerated here to keep the build green
-                println("Known architectural violations in other modules (not Article): ${e.message}")
+                println(
+                    "Known architectural violations in other modules (not Article): ${e.message}",
+                )
             }
         }
     }

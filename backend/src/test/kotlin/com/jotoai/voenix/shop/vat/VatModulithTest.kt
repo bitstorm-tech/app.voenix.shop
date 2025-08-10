@@ -25,7 +25,8 @@ class VatModulithTest {
                 "VAT module should have display name 'Vat', but was '${vatModule.displayName}'"
             }
             assert(vatModule.basePackage.name == "com.jotoai.voenix.shop.vat") {
-                "VAT module should have base package 'com.jotoai.voenix.shop.vat', but was '${vatModule.basePackage.name}'"
+                "VAT module should have base package 'com.jotoai.voenix.shop.vat', " +
+                    "but was '${vatModule.basePackage.name}'"
             }
         }
     }
