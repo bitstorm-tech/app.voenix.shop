@@ -100,6 +100,3 @@ configurations.matching { it.name.contains("detekt") }.all {
         }
     }
 }
-
-// Apply code analysis tasks
-apply(from = "code-analysis.gradle.kts")
