@@ -35,7 +35,5 @@ class AdminImageController(
     ): ResponseEntity<Resource> = imageAccessService.serveImage(filename, ImageType.PUBLIC)
 
     @DeleteMapping("/{filename}")
-    fun deleteImage(
-        @PathVariable("filename") filename: String,
-    ): Unit = throw UnsupportedOperationException("Delete via ImageFacade not implemented yet")
+    fun deleteImage(): Unit = throw UnsupportedOperationException("Delete via ImageFacade not implemented yet")
 }
