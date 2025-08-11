@@ -32,8 +32,8 @@ class VatServiceImpl(
 
     @Transactional
     override fun createVat(request: CreateValueAddedTaxRequest): ValueAddedTaxDto {
-        if (valueAddedTaxRepository.existsByName(request.name)) {
-            throw IllegalArgumentException("VAT with name '${request.name}' already exists")
+        require(!valueAddedTaxRepository.existsByName(request.name)) {
+            "VAT with name '${request.name}' already exists"
         }
 
         if (request.isDefault == true) {
@@ -63,8 +63,8 @@ class VatServiceImpl(
                 .orElseThrow { VatNotFoundException("ValueAddedTax", "id", id) }
 
         request.name?.let { newName ->
-            if (valueAddedTaxRepository.existsByNameAndIdNot(newName, id)) {
-                throw IllegalArgumentException("VAT with name '$newName' already exists")
+            require(!valueAddedTaxRepository.existsByNameAndIdNot(newName, id)) {
+                "VAT with name '$newName' already exists"
             }
             vat.name = newName
         }

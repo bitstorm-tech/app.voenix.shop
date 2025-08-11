@@ -108,14 +108,14 @@ class UserPasswordServiceImpl(
                 .orElseThrow { createUserNotFoundException("id", userId) }
 
         // Verify current password
-        if (user.password == null || !passwordEncoder.matches(currentPassword, user.password)) {
-            throw IllegalArgumentException("Current password is incorrect")
+        require(user.password != null && passwordEncoder.matches(currentPassword, user.password)) {
+            "Current password is incorrect"
         }
 
         // Validate new password
         val validation = validatePasswordComplexity(newPassword)
-        if (!validation.isValid) {
-            throw IllegalArgumentException("Password validation failed: ${validation.violations.joinToString(", ")}")
+        require(validation.isValid) {
+            "Password validation failed: ${validation.violations.joinToString(", ")}"
         }
 
         // Encode and set new password
@@ -138,8 +138,8 @@ class UserPasswordServiceImpl(
 
         // Validate new password
         val validation = validatePasswordComplexity(newPassword)
-        if (!validation.isValid) {
-            throw IllegalArgumentException("Password validation failed: ${validation.violations.joinToString(", ")}")
+        require(validation.isValid) {
+            "Password validation failed: ${validation.violations.joinToString(", ")}"
         }
 
         // Encode and set new password

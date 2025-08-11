@@ -30,12 +30,12 @@ class PromptSlotTypeServiceImpl(
 
     @Transactional
     override fun createPromptSlotType(request: CreatePromptSlotTypeRequest): PromptSlotTypeDto {
-        if (promptSlotTypeRepository.existsByName(request.name)) {
-            throw IllegalArgumentException("PromptSlotType with name '${request.name}' already exists")
+        require(!promptSlotTypeRepository.existsByName(request.name)) {
+            "PromptSlotType with name '${request.name}' already exists"
         }
 
-        if (promptSlotTypeRepository.existsByPosition(request.position)) {
-            throw IllegalArgumentException("PromptSlotType with position '${request.position}' already exists")
+        require(!promptSlotTypeRepository.existsByPosition(request.position)) {
+            "PromptSlotType with position '${request.position}' already exists"
         }
 
         val promptSlotType = PromptSlotType(name = request.name, position = request.position)
@@ -56,14 +56,14 @@ class PromptSlotTypeServiceImpl(
                 .orElseThrow { PromptSlotTypeNotFoundException("PromptSlotType", "id", id) }
 
         request.name?.let {
-            if (promptSlotTypeRepository.existsByNameAndIdNot(it, id)) {
-                throw IllegalArgumentException("PromptSlotType with name '$it' already exists")
+            require(!promptSlotTypeRepository.existsByNameAndIdNot(it, id)) {
+                "PromptSlotType with name '$it' already exists"
             }
             promptSlotType.name = it
         }
         request.position?.let {
-            if (promptSlotTypeRepository.existsByPositionAndIdNot(it, id)) {
-                throw IllegalArgumentException("PromptSlotType with position '$it' already exists")
+            require(!promptSlotTypeRepository.existsByPositionAndIdNot(it, id)) {
+                "PromptSlotType with position '$it' already exists"
             }
             promptSlotType.position = it
         }

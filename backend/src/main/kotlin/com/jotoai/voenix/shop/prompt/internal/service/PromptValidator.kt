@@ -62,10 +62,8 @@ class PromptValidator(
                     .findById(subcategoryId)
                     .orElseThrow { PromptSubCategoryNotFoundException("PromptSubCategory", "id", subcategoryId) }
 
-            if (subcategory.promptCategory.id != categoryId) {
-                throw IllegalArgumentException(
-                    "Subcategory with id $subcategoryId does not belong to category with id $categoryId",
-                )
+            require(subcategory.promptCategory.id == categoryId) {
+                "Subcategory with id $subcategoryId does not belong to category with id $categoryId"
             }
         }
     }

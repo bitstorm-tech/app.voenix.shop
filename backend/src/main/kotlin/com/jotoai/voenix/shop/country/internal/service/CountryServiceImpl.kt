@@ -29,8 +29,8 @@ class CountryServiceImpl(
 
     @Transactional
     override fun createCountry(request: CreateCountryRequest): CountryDto {
-        if (countryRepository.existsByName(request.name)) {
-            throw IllegalArgumentException("Country with name '${request.name}' already exists")
+        require(!countryRepository.existsByName(request.name)) {
+            "Country with name '${request.name}' already exists"
         }
 
         val country =
@@ -53,8 +53,8 @@ class CountryServiceImpl(
                 .orElseThrow { CountryNotFoundException("Country", "id", id) }
 
         request.name?.let { newName ->
-            if (countryRepository.existsByNameAndIdNot(newName, id)) {
-                throw IllegalArgumentException("Country with name '$newName' already exists")
+            require(!countryRepository.existsByNameAndIdNot(newName, id)) {
+                "Country with name '$newName' already exists"
             }
             country.name = newName
         }

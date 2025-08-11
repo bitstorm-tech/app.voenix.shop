@@ -30,19 +30,19 @@ abstract class BaseStorageService {
         maxFileSize: Long,
         allowedContentTypes: Set<String>,
     ) {
-        if (file.isEmpty) {
-            throw IllegalArgumentException("Cannot upload empty file")
+        require(!file.isEmpty) {
+            "Cannot upload empty file"
         }
 
-        if (file.size > maxFileSize) {
+        require(file.size <= maxFileSize) {
             val maxSizeMB = maxFileSize / BYTES_PER_MB
-            throw IllegalArgumentException("File size exceeds maximum allowed size of ${maxSizeMB}MB")
+            "File size exceeds maximum allowed size of ${maxSizeMB}MB"
         }
 
         val contentType = file.contentType?.lowercase()
-        if (contentType == null || contentType !in allowedContentTypes) {
+        require(contentType != null && contentType in allowedContentTypes) {
             val allowedFormats = allowedContentTypes.joinToString(", ")
-            throw IllegalArgumentException("Invalid file format. Allowed formats: $allowedFormats")
+            "Invalid file format. Allowed formats: $allowedFormats"
         }
     }
 

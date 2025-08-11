@@ -28,8 +28,8 @@ class ArticleCategoryServiceImpl(
 
     @Transactional
     override fun createCategory(request: CreateArticleCategoryRequest): ArticleCategoryDto {
-        if (articleCategoryRepository.existsByNameIgnoreCase(request.name)) {
-            throw IllegalArgumentException("Category with name '${request.name}' already exists")
+        require(!articleCategoryRepository.existsByNameIgnoreCase(request.name)) {
+            "Category with name '${request.name}' already exists"
         }
 
         val category =
@@ -53,8 +53,8 @@ class ArticleCategoryServiceImpl(
                 .orElseThrow { ArticleNotFoundException("ArticleCategory not found with id: $id") }
 
         request.name?.let { newName ->
-            if (newName != category.name && articleCategoryRepository.existsByNameIgnoreCase(newName)) {
-                throw IllegalArgumentException("Category with name '$newName' already exists")
+            require(newName == category.name || !articleCategoryRepository.existsByNameIgnoreCase(newName)) {
+                "Category with name '$newName' already exists"
             }
             category.name = newName
         }

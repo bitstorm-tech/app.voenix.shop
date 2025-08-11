@@ -51,12 +51,12 @@ class ArticleSubCategoryServiceImpl(
                     )
                 }
 
-        if (articleSubCategoryRepository.existsByArticleCategoryIdAndNameIgnoreCase(
+        require(!articleSubCategoryRepository.existsByArticleCategoryIdAndNameIgnoreCase(
                 request.articleCategoryId,
                 request.name,
             )
         ) {
-            throw IllegalArgumentException("Subcategory with name '${request.name}' already exists in this category")
+            "Subcategory with name '${request.name}' already exists in this category"
         }
 
         val subCategory =
@@ -90,10 +90,10 @@ class ArticleSubCategoryServiceImpl(
 
         request.name?.let { newName ->
             val categoryId = subCategory.articleCategory.id!!
-            if (newName != subCategory.name &&
-                articleSubCategoryRepository.existsByArticleCategoryIdAndNameIgnoreCase(categoryId, newName)
+            require(newName == subCategory.name ||
+                !articleSubCategoryRepository.existsByArticleCategoryIdAndNameIgnoreCase(categoryId, newName)
             ) {
-                throw IllegalArgumentException("Subcategory with name '$newName' already exists in this category")
+                "Subcategory with name '$newName' already exists in this category"
             }
             subCategory.name = newName
         }

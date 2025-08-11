@@ -28,8 +28,8 @@ class UserCommandService(
     @Transactional
     override fun createUser(request: CreateUserRequest): UserDto {
         // Validate email format
-        if (!isValidEmail(request.email)) {
-            throw IllegalArgumentException("Invalid email format: ${request.email}")
+        require(isValidEmail(request.email)) {
+            "Invalid email format: ${request.email}"
         }
 
         if (userRepository.existsActiveByEmail(request.email)) {
@@ -108,8 +108,8 @@ class UserCommandService(
                 .findById(id) // Find even soft-deleted users
                 .orElseThrow { createUserNotFoundException("id", id) }
 
-        if (user.isActive()) {
-            throw IllegalArgumentException("User with ID $id is not deleted and cannot be restored")
+        require(!user.isActive()) {
+            "User with ID $id is not deleted and cannot be restored"
         }
 
         user.restore()
@@ -130,8 +130,8 @@ class UserCommandService(
         request.users.forEachIndexed { index, userRequest ->
             try {
                 // Validate email format
-                if (!isValidEmail(userRequest.email)) {
-                    throw IllegalArgumentException("Invalid email format: ${userRequest.email}")
+                require(isValidEmail(userRequest.email)) {
+                    "Invalid email format: ${userRequest.email}"
                 }
 
                 if (userRepository.existsActiveByEmail(userRequest.email)) {
