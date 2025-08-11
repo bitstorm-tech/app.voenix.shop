@@ -4,7 +4,6 @@ import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.common.config.WebConfig
-import com.jotoai.voenix.shop.image.api.StoragePathService
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
@@ -26,9 +25,6 @@ class PublicMugControllerTest {
 
     @MockitoBean
     private lateinit var articleQueryService: ArticleQueryService
-
-    @MockitoBean
-    private lateinit var storagePathService: StoragePathService
 
     @Test
     fun `should return list of public mugs without authentication`() {
