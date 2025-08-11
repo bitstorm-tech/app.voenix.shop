@@ -15,9 +15,7 @@ object UserSpecifications {
     /**
      * Creates a specification based on search criteria.
      */
-    fun fromCriteria(
-        criteria: UserSearchCriteria,
-    ): Specification<User> =
+    fun fromCriteria(criteria: UserSearchCriteria): Specification<User> =
         Specification { root, query, criteriaBuilder ->
             val predicates = mutableListOf<Predicate>()
 

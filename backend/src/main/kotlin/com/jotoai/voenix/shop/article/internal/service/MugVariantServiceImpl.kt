@@ -12,6 +12,7 @@ import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.IOException
 
 @Service
 class MugVariantServiceImpl(
@@ -119,7 +120,7 @@ class MugVariantServiceImpl(
         variant.exampleImageFilename?.let { filename ->
             try {
                 imageStorageService.deleteFile(filename, ImageType.MUG_VARIANT_EXAMPLE)
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 logger.warn("Failed to delete mug variant example image during variant deletion: $filename", e)
             }
         }
@@ -164,7 +165,7 @@ class MugVariantServiceImpl(
         variant.exampleImageFilename?.let { filename ->
             try {
                 imageStorageService.deleteFile(filename, ImageType.MUG_VARIANT_EXAMPLE)
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 logger.warn("Failed to delete mug variant example image: $filename", e)
             }
         }

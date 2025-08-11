@@ -1,6 +1,8 @@
 package com.jotoai.voenix.shop.user.internal.service
 
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import org.springframework.dao.DataIntegrityViolationException
 import com.jotoai.voenix.shop.user.api.UserFacade
 import com.jotoai.voenix.shop.user.api.dto.BulkCreateUsersRequest
 import com.jotoai.voenix.shop.user.api.dto.BulkDeleteUsersRequest
@@ -147,12 +149,28 @@ class UserCommandService(
                         password = userRequest.password,
                     )
                 usersToCreate.add(user)
-            } catch (e: Exception) {
+            } catch (e: ResourceAlreadyExistsException) {
                 failed.add(
                     BulkOperationError(
                         index = index,
                         identifier = userRequest.email,
-                        error = e.message ?: "Unknown error",
+                        error = e.message ?: "Resource already exists",
+                    ),
+                )
+            } catch (e: DataIntegrityViolationException) {
+                failed.add(
+                    BulkOperationError(
+                        index = index,
+                        identifier = userRequest.email,
+                        error = "Data integrity violation: ${e.message}",
+                    ),
+                )
+            } catch (e: IllegalArgumentException) {
+                failed.add(
+                    BulkOperationError(
+                        index = index,
+                        identifier = userRequest.email,
+                        error = e.message ?: "Invalid input",
                     ),
                 )
             }
@@ -179,12 +197,28 @@ class UserCommandService(
             try {
                 val updatedUser = updateUser(updateOperation.id, updateOperation.request)
                 successful.add(updatedUser)
-            } catch (e: Exception) {
+            } catch (e: ResourceNotFoundException) {
                 failed.add(
                     BulkOperationError(
                         index = index,
                         identifier = updateOperation.id.toString(),
-                        error = e.message ?: "Unknown error",
+                        error = e.message ?: "Resource not found",
+                    ),
+                )
+            } catch (e: DataIntegrityViolationException) {
+                failed.add(
+                    BulkOperationError(
+                        index = index,
+                        identifier = updateOperation.id.toString(),
+                        error = "Data integrity violation: ${e.message}",
+                    ),
+                )
+            } catch (e: IllegalArgumentException) {
+                failed.add(
+                    BulkOperationError(
+                        index = index,
+                        identifier = updateOperation.id.toString(),
+                        error = e.message ?: "Invalid input",
                     ),
                 )
             }
@@ -202,12 +236,20 @@ class UserCommandService(
             try {
                 softDeleteUser(userId)
                 successful.add(userId)
-            } catch (e: Exception) {
+            } catch (e: ResourceNotFoundException) {
                 failed.add(
                     BulkOperationError(
                         index = index,
                         identifier = userId.toString(),
-                        error = e.message ?: "Unknown error",
+                        error = e.message ?: "Resource not found",
+                    ),
+                )
+            } catch (e: DataIntegrityViolationException) {
+                failed.add(
+                    BulkOperationError(
+                        index = index,
+                        identifier = userId.toString(),
+                        error = "Data integrity violation: ${e.message}",
                     ),
                 )
             }

@@ -10,10 +10,12 @@ import com.jotoai.voenix.shop.openai.api.dto.ImageEditResponse
 import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
 import com.jotoai.voenix.shop.openai.api.dto.TestPromptResponse
 import com.jotoai.voenix.shop.openai.api.exception.ImageGenerationException
+import kotlinx.coroutines.CancellationException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.ByteArrayInputStream
+import java.io.IOException
 import java.io.InputStream
 
 /**
@@ -40,9 +42,12 @@ class OpenAIImageFacadeImpl(
         logger.info("Starting image edit request (bytes mode) with prompt ID: ${request.promptId}")
         try {
             return imageGenerationStrategy.generateImages(imageFile, request)
-        } catch (e: Exception) {
-            logger.error("Error during image generation (bytes mode)", e)
-            throw ImageGenerationException("Failed to generate image bytes: ${e.message}", e)
+        } catch (e: CancellationException) {
+            logger.info("Image generation was cancelled")
+            throw e // Re-throw cancellation exceptions
+        } catch (e: IOException) {
+            logger.error("IO error during image generation (bytes mode)", e)
+            throw ImageGenerationException("Failed to generate image bytes due to IO error: ${e.message}", e)
         }
     }
 
@@ -74,9 +79,12 @@ class OpenAIImageFacadeImpl(
                 }
 
             return ImageEditResponse(imageFilenames = savedImageFilenames)
-        } catch (e: Exception) {
-            logger.error("Error during image generation and storage", e)
-            throw ImageGenerationException("Failed to edit image: ${e.message}", e)
+        } catch (e: CancellationException) {
+            logger.info("Image generation and storage was cancelled")
+            throw e // Re-throw cancellation exceptions
+        } catch (e: IOException) {
+            logger.error("IO error during image generation and storage", e)
+            throw ImageGenerationException("Failed to edit image due to IO error: ${e.message}", e)
         }
     }
 
@@ -90,9 +98,12 @@ class OpenAIImageFacadeImpl(
         logger.info("Starting prompt test with master prompt: ${request.masterPrompt}")
         try {
             return imageGenerationStrategy.testPrompt(imageFile, request)
-        } catch (e: Exception) {
-            logger.error("Error during prompt testing", e)
-            throw ImageGenerationException("Failed to test prompt: ${e.message}", e)
+        } catch (e: CancellationException) {
+            logger.info("Prompt testing was cancelled")
+            throw e // Re-throw cancellation exceptions
+        } catch (e: IOException) {
+            logger.error("IO error during prompt testing", e)
+            throw ImageGenerationException("Failed to test prompt due to IO error: ${e.message}", e)
         }
     }
 

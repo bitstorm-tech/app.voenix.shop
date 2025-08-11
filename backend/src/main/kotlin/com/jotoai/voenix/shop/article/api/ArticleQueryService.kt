@@ -13,9 +13,7 @@ import com.jotoai.voenix.shop.article.api.enums.ArticleType
 interface ArticleQueryService {
     fun getArticlesByIds(ids: Collection<Long>): Map<Long, ArticleDto>
 
-    fun getMugVariantsByIds(
-        ids: Collection<Long>,
-    ): Map<Long, com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto>
+    fun getMugVariantsByIds(ids: Collection<Long>): Map<Long, com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto>
 
     fun getCurrentGrossPrice(articleId: Long): Long
 

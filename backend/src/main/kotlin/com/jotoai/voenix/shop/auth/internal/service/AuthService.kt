@@ -7,6 +7,7 @@ import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.user.api.UserAuthenticationService
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import com.jotoai.voenix.shop.user.api.UserRoleManagementService
@@ -92,7 +93,7 @@ class AuthService(
                         user = userDto,
                         roles = userRoles.toList(),
                     )
-                } catch (e: Exception) {
+                } catch (e: ResourceNotFoundException) {
                     SessionInfo(authenticated = false)
                 }
             }
@@ -154,7 +155,9 @@ class AuthService(
                     // User exists with password, cannot register as guest
                     throw ResourceAlreadyExistsException("User", "email", registerGuestRequest.email)
                 }
-            } catch (e: Exception) {
+            } catch (e: ResourceNotFoundException) {
+                // User does not exist, proceed to create guest user
+            } catch (e: BadCredentialsException) {
                 // User exists with password, cannot register as guest
                 throw ResourceAlreadyExistsException("User", "email", registerGuestRequest.email)
             }

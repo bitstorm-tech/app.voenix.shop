@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.pdf.internal.service
 
 import com.google.zxing.BarcodeFormat
+import com.google.zxing.WriterException
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
@@ -22,6 +23,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import javax.imageio.ImageIO
 
 /*
@@ -89,8 +91,10 @@ class PdfServiceImpl(
                             )
                     val imagePath = storagePathService.getPhysicalFilePath(imageType, request.imageFilename)
                     imagePath.toFile().readBytes()
-                } catch (e: Exception) {
+                } catch (e: IOException) {
                     throw PdfGenerationException("Failed to load image data for filename: ${request.imageFilename}", e)
+                } catch (e: IllegalArgumentException) {
+                    throw PdfGenerationException("Invalid image filename: ${request.imageFilename}", e)
                 }
 
             // Use try-with-resources for proper resource management
@@ -122,9 +126,14 @@ class PdfServiceImpl(
             logger.error("Failed to generate PDF for article ${request.articleId}", e)
 
             throw e
-        } catch (e: Exception) {
-            logger.error("Unexpected error during PDF generation for article ${request.articleId}", e)
-
+        } catch (e: IOException) {
+            logger.error("I/O error during PDF generation for article ${request.articleId}", e)
+            throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
+        } catch (e: WriterException) {
+            logger.error("QR code generation error during PDF generation for article ${request.articleId}", e)
+            throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
+        } catch (e: IllegalArgumentException) {
+            logger.error("Invalid argument during PDF generation for article ${request.articleId}", e)
             throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
         }
     }
@@ -171,8 +180,10 @@ class PdfServiceImpl(
 
             contentStream.drawImage(qrImage, qrX, qrY, QR_CODE_SIZE_POINTS, QR_CODE_SIZE_POINTS)
             logger.debug("QR code placed at position ({}, {})", qrX, qrY)
-        } catch (e: Exception) {
+        } catch (e: WriterException) {
             throw PdfGenerationException("Failed to generate QR code for content: $qrContent", e)
+        } catch (e: IOException) {
+            throw PdfGenerationException("I/O error generating QR code for content: $qrContent", e)
         }
     }
 
@@ -200,8 +211,10 @@ class PdfServiceImpl(
                 imageWidthPoints,
                 imageHeightPoints,
             )
-        } catch (e: Exception) {
-            throw PdfGenerationException("Failed to add centered image to PDF", e)
+        } catch (e: IOException) {
+            throw PdfGenerationException("I/O error adding centered image to PDF", e)
+        } catch (e: IllegalArgumentException) {
+            throw PdfGenerationException("Invalid image data for centered image", e)
         }
     }
 }

@@ -52,7 +52,10 @@
       "Bash(find:*)",
       "Bash(chmod:*)",
       "Bash(idea inspect:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "Bash(echo:*)"
     ],
     "deny": []
   }

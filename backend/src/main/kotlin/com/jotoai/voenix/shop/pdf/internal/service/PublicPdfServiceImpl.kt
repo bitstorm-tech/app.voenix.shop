@@ -7,6 +7,7 @@ import com.jotoai.voenix.shop.pdf.api.PdfFacade
 import com.jotoai.voenix.shop.pdf.api.PublicPdfService
 import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
+import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -55,14 +56,21 @@ class PublicPdfServiceImpl(
                 )
 
             return pdfFacade.generatePdf(pdfRequest)
-        } catch (e: Exception) {
-            logger.error("Error generating PDF for public user", e)
-
-            when (e) {
-                is BadRequestException -> throw e
-                is ResourceNotFoundException -> throw e
-                else -> throw RuntimeException("Failed to generate PDF. Please try again later.")
-            }
+        } catch (e: BadRequestException) {
+            logger.error("Bad request error generating PDF for public user", e)
+            throw e
+        } catch (e: ResourceNotFoundException) {
+            logger.error("Resource not found error generating PDF for public user", e)
+            throw e
+        } catch (e: PdfGenerationException) {
+            logger.error("PDF generation error for public user", e)
+            throw RuntimeException("Failed to generate PDF. Please try again later.", e)
+        } catch (e: IllegalArgumentException) {
+            logger.error("Invalid argument error generating PDF for public user", e)
+            throw BadRequestException("Invalid request parameters")
+        } catch (e: IllegalStateException) {
+            logger.error("Invalid state error generating PDF for public user", e)
+            throw RuntimeException("Service temporarily unavailable. Please try again later.", e)
         }
     }
 }

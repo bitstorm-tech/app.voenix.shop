@@ -49,7 +49,7 @@ class SupplierModuleArchitectureTest {
 
         try {
             modules.verify()
-        } catch (e: Exception) {
+        } catch (e: AssertionError) {
             // Check if this is the expected domain dependency issue
             val message = e.message ?: ""
             val isDomainDependencyIssue =

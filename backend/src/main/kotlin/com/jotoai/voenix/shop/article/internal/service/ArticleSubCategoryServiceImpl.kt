@@ -17,8 +17,7 @@ class ArticleSubCategoryServiceImpl(
     private val articleCategoryRepository: ArticleCategoryRepository,
 ) : com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryQueryService,
     com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryFacade {
-    override fun getAllSubCategories(): List<ArticleSubCategoryDto> =
-        articleSubCategoryRepository.findAll().map { it.toDto() }
+    override fun getAllSubCategories(): List<ArticleSubCategoryDto> = articleSubCategoryRepository.findAll().map { it.toDto() }
 
     override fun getSubCategoryById(id: Long): ArticleSubCategoryDto =
         articleSubCategoryRepository
@@ -51,10 +50,11 @@ class ArticleSubCategoryServiceImpl(
                     )
                 }
 
-        require(!articleSubCategoryRepository.existsByArticleCategoryIdAndNameIgnoreCase(
+        require(
+            !articleSubCategoryRepository.existsByArticleCategoryIdAndNameIgnoreCase(
                 request.articleCategoryId,
                 request.name,
-            )
+            ),
         ) {
             "Subcategory with name '${request.name}' already exists in this category"
         }
@@ -90,8 +90,9 @@ class ArticleSubCategoryServiceImpl(
 
         request.name?.let { newName ->
             val categoryId = subCategory.articleCategory.id!!
-            require(newName == subCategory.name ||
-                !articleSubCategoryRepository.existsByArticleCategoryIdAndNameIgnoreCase(categoryId, newName)
+            require(
+                newName == subCategory.name ||
+                    !articleSubCategoryRepository.existsByArticleCategoryIdAndNameIgnoreCase(categoryId, newName),
             ) {
                 "Subcategory with name '$newName' already exists in this category"
             }

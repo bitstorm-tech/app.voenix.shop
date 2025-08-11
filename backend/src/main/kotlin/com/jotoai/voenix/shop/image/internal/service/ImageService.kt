@@ -10,9 +10,11 @@ import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
+import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
 import java.util.UUID
 
 /**
@@ -90,7 +92,13 @@ class ImageService(
                 fileSize = uploadedImage.fileSize,
                 uploadedAt = uploadedImage.uploadedAt,
             )
-        } catch (e: Exception) {
+        } catch (e: DataAccessException) {
+            throw ImageStorageException("Failed to create uploaded image: ${e.message}", e)
+        } catch (e: IOException) {
+            throw ImageStorageException("Failed to create uploaded image: ${e.message}", e)
+        } catch (e: IllegalStateException) {
+            throw ImageStorageException("Failed to create uploaded image: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
             throw ImageStorageException("Failed to create uploaded image: ${e.message}", e)
         }
     }
@@ -130,7 +138,13 @@ class ImageService(
 
             // Delete from database
             uploadedImageRepository.delete(uploadedImage)
-        } catch (e: Exception) {
+        } catch (e: DataAccessException) {
+            throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
+        } catch (e: IOException) {
+            throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
+        } catch (e: IllegalStateException) {
+            throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
             throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
         }
     }
@@ -208,7 +222,11 @@ class ImageService(
                 generatedAt = saved.generatedAt,
                 ipAddress = saved.ipAddress,
             )
-        } catch (e: Exception) {
+        } catch (e: DataAccessException) {
+            throw ImageStorageException("Failed to update generated image: ${e.message}", e)
+        } catch (e: IllegalStateException) {
+            throw ImageStorageException("Failed to update generated image: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
             throw ImageStorageException("Failed to update generated image: ${e.message}", e)
         }
     }
@@ -233,7 +251,13 @@ class ImageService(
 
             // Delete from database
             generatedImageRepository.delete(generatedImage)
-        } catch (e: Exception) {
+        } catch (e: DataAccessException) {
+            throw ImageStorageException("Failed to delete generated image: ${e.message}", e)
+        } catch (e: IOException) {
+            throw ImageStorageException("Failed to delete generated image: ${e.message}", e)
+        } catch (e: IllegalStateException) {
+            throw ImageStorageException("Failed to delete generated image: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
             throw ImageStorageException("Failed to delete generated image: ${e.message}", e)
         }
     }

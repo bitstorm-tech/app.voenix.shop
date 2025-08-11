@@ -17,6 +17,7 @@ import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantReposi
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.IOException
 
 @Service
 @Transactional(readOnly = true)
@@ -116,7 +117,7 @@ class PromptServiceImpl(
                 // Delete old image if filename changed
                 try {
                     imageStorageService.deleteFile(oldFilename, ImageType.PROMPT_EXAMPLE)
-                } catch (e: Exception) {
+                } catch (e: IOException) {
                     logger.warn("Failed to delete old prompt example image: $oldFilename", e)
                 }
             }
@@ -155,7 +156,7 @@ class PromptServiceImpl(
         prompt.exampleImageFilename?.let { filename ->
             try {
                 imageStorageService.deleteFile(filename, ImageType.PROMPT_EXAMPLE)
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 logger.warn("Failed to delete prompt example image during prompt deletion: $filename", e)
             }
         }

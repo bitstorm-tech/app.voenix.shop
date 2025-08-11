@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.pdf.internal.service
 
 import com.google.zxing.BarcodeFormat
+import com.google.zxing.WriterException
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.imageio.ImageIO
@@ -114,9 +116,14 @@ class OrderPdfServiceImpl(
 
                 return pdfBytes
             }
-        } catch (e: Exception) {
-            logger.error("Failed to generate PDF for order ${orderData.orderNumber}", e)
-
+        } catch (e: IOException) {
+            logger.error("I/O error while generating PDF for order ${orderData.orderNumber}", e)
+            throw PdfGenerationException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
+        } catch (e: WriterException) {
+            logger.error("QR code generation error while generating PDF for order ${orderData.orderNumber}", e)
+            throw PdfGenerationException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
+            logger.error("Invalid argument while generating PDF for order ${orderData.orderNumber}", e)
             throw PdfGenerationException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
         }
     }
@@ -145,8 +152,18 @@ class OrderPdfServiceImpl(
                 // Add QR code in bottom left
                 addQrCode(document, contentStream, orderData.id.toString())
             }
-        } catch (e: Exception) {
-            throw PdfGenerationException("Failed to create page $pageNumber for order ${orderData.orderNumber}", e)
+        } catch (e: IOException) {
+            throw PdfGenerationException("I/O error creating page $pageNumber for order ${orderData.orderNumber}", e)
+        } catch (e: WriterException) {
+            throw PdfGenerationException(
+                "QR code generation error creating page $pageNumber for order ${orderData.orderNumber}",
+                e,
+            )
+        } catch (e: IllegalArgumentException) {
+            throw PdfGenerationException(
+                "Invalid argument creating page $pageNumber for order ${orderData.orderNumber}",
+                e,
+            )
         }
 
         logger.debug("Created page $pageNumber/$totalPages for order ${orderData.orderNumber}")
@@ -211,9 +228,16 @@ class OrderPdfServiceImpl(
                     orderItem.generatedImageFilename != null -> {
                         try {
                             imageAccessService.getImageData(orderItem.generatedImageFilename!!, orderData.userId).first
-                        } catch (e: Exception) {
+                        } catch (e: IOException) {
                             logger.warn(
                                 "Could not load generated image ${orderItem.generatedImageFilename} " +
+                                    "for order ${orderData.orderNumber}, using placeholder",
+                                e,
+                            )
+                            createPlaceholderImage()
+                        } catch (e: IllegalArgumentException) {
+                            logger.warn(
+                                "Invalid image filename ${orderItem.generatedImageFilename} " +
                                     "for order ${orderData.orderNumber}, using placeholder",
                                 e,
                             )
@@ -258,12 +282,24 @@ class OrderPdfServiceImpl(
                 "Using exact print template dimensions: " +
                     "${imageWidthMm}mm x ${imageHeightMm}mm from MugArticleDetails",
             )
-        } catch (e: Exception) {
-            logger.error("Failed to add product image for order item ${orderItem.id}", e)
+        } catch (e: IOException) {
+            logger.error("I/O error adding product image for order item ${orderItem.id}", e)
             try {
                 // Add placeholder text instead
                 addPlaceholderText(contentStream, "Image not available")
-            } catch (placeholderException: Exception) {
+            } catch (placeholderException: IOException) {
+                logger.error("Failed to add placeholder text for order item ${orderItem.id}", placeholderException)
+                throw PdfGenerationException(
+                    "Failed to add product image and placeholder for order item ${orderItem.id}",
+                    e,
+                )
+            }
+        } catch (e: IllegalArgumentException) {
+            logger.error("Invalid image data for order item ${orderItem.id}", e)
+            try {
+                // Add placeholder text instead
+                addPlaceholderText(contentStream, "Image not available")
+            } catch (placeholderException: IOException) {
                 logger.error("Failed to add placeholder text for order item ${orderItem.id}", placeholderException)
                 throw PdfGenerationException(
                     "Failed to add product image and placeholder for order item ${orderItem.id}",
@@ -299,12 +335,21 @@ class OrderPdfServiceImpl(
             contentStream.drawImage(qrImage, xPosition, yPosition, QR_CODE_SIZE_POINTS, QR_CODE_SIZE_POINTS)
 
             logger.debug("Added QR code for order ID $orderId at position ($xPosition, $yPosition)")
-        } catch (e: Exception) {
-            logger.error("Failed to generate QR code for order ID $orderId", e)
+        } catch (e: WriterException) {
+            logger.error("QR code generation error for order ID $orderId", e)
             try {
                 // Add fallback text
                 addPlaceholderText(contentStream, "Order ID: $orderId", margin, margin + FALLBACK_TEXT_OFFSET)
-            } catch (placeholderException: Exception) {
+            } catch (placeholderException: IOException) {
+                logger.error("Failed to add QR code fallback text for order ID $orderId", placeholderException)
+                throw PdfGenerationException("Failed to add QR code and fallback text for order ID $orderId", e)
+            }
+        } catch (e: IOException) {
+            logger.error("I/O error generating QR code for order ID $orderId", e)
+            try {
+                // Add fallback text
+                addPlaceholderText(contentStream, "Order ID: $orderId", margin, margin + FALLBACK_TEXT_OFFSET)
+            } catch (placeholderException: IOException) {
                 logger.error("Failed to add QR code fallback text for order ID $orderId", placeholderException)
                 throw PdfGenerationException("Failed to add QR code and fallback text for order ID $orderId", e)
             }
@@ -347,7 +392,7 @@ class OrderPdfServiceImpl(
         try {
             ImageIO.write(image, IMAGE_FORMAT_PNG, outputStream)
             return outputStream.toByteArray()
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             throw PdfGenerationException("Failed to create placeholder image", e)
         }
     }
@@ -376,7 +421,7 @@ class OrderPdfServiceImpl(
 
             contentStream.showText(text)
             contentStream.endText()
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             logger.error("Failed to add placeholder text: $text", e)
         }
     }

@@ -3,8 +3,10 @@ package com.jotoai.voenix.shop.image.internal.service
 import com.jotoai.voenix.shop.image.api.ImageGenerationService
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
+import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
 import java.util.UUID
 
 /**
@@ -48,7 +50,13 @@ class ImageGenerationServiceImpl(
             // Note: This is a design limitation - we can only return one filename
             return response.imageUrls.firstOrNull()?.substringAfterLast("/")
                 ?: throw RuntimeException("No images were generated")
-        } catch (e: Exception) {
+        } catch (e: DataAccessException) {
+            throw RuntimeException("Failed to generate user image: ${e.message}", e)
+        } catch (e: IOException) {
+            throw RuntimeException("Failed to generate user image: ${e.message}", e)
+        } catch (e: IllegalStateException) {
+            throw RuntimeException("Failed to generate user image: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
             throw RuntimeException("Failed to generate user image: ${e.message}", e)
         }
     }

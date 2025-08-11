@@ -9,7 +9,9 @@ import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
 import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import org.slf4j.LoggerFactory
+import org.springframework.dao.DataAccessException
 import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
 import java.time.LocalDateTime
 
 /**
@@ -106,13 +108,22 @@ abstract class BaseImageGenerationService(
     ): T =
         try {
             operation()
-        } catch (e: Exception) {
-            logger.error("Error $contextMessage", e)
-            when (e) {
-                is BadRequestException -> throw e
-                is ResourceNotFoundException -> throw e
-                else -> throw RuntimeException("Failed to generate image. Please try again later.")
-            }
+        } catch (e: BadRequestException) {
+            throw e
+        } catch (e: ResourceNotFoundException) {
+            throw e
+        } catch (e: DataAccessException) {
+            logger.error("Database error $contextMessage", e)
+            throw RuntimeException("Failed to generate image. Please try again later.")
+        } catch (e: IOException) {
+            logger.error("I/O error $contextMessage", e)
+            throw RuntimeException("Failed to generate image. Please try again later.")
+        } catch (e: IllegalStateException) {
+            logger.error("State error $contextMessage", e)
+            throw RuntimeException("Failed to generate image. Please try again later.")
+        } catch (e: IllegalArgumentException) {
+            logger.error("Argument error $contextMessage", e)
+            throw RuntimeException("Failed to generate image. Please try again later.")
         }
 
     /**
