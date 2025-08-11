@@ -53,7 +53,8 @@ class ArticleModulithTest {
                         "This will be fixed by moving OpenAI services out of domain module",
                 )
             } else if (message.contains("Module 'article'") ||
-                message.contains("Slice article") || message.contains("article")
+                message.contains("Slice article") ||
+                message.contains("article")
             ) {
                 throw AssertionError("Article module has NEW architectural violations: $message")
             } else {

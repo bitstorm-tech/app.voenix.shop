@@ -60,10 +60,11 @@ class GlobalExceptionHandler {
     fun handleValidationExceptions(ex: MethodArgumentNotValidException): ResponseEntity<ErrorResponse> {
         val errors = mutableMapOf<String, String>()
         ex.bindingResult.allErrors.forEach { error ->
-            val fieldName = when (error) {
-                is FieldError -> error.field
-                else -> error.objectName
-            }
+            val fieldName =
+                when (error) {
+                    is FieldError -> error.field
+                    else -> error.objectName
+                }
             val errorMessage = error.defaultMessage ?: "Invalid value"
             errors[fieldName] = errorMessage
         }

@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.repository
 
-import com.jotoai.voenix.shop.image.internal.domain.UploadedImage
+import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param

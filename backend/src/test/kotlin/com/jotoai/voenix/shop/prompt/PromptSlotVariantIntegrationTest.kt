@@ -7,76 +7,76 @@ import com.jotoai.voenix.shop.prompt.api.dto.slottypes.CreatePromptSlotTypeReque
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSlotVariantNotFoundException
+import jakarta.persistence.EntityManager
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.transaction.annotation.Transactional
-import jakarta.persistence.EntityManager
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
 @DisplayName("PromptSlotVariant Integration Tests")
 class PromptSlotVariantIntegrationTest {
-    
     @Autowired
     private lateinit var promptSlotVariantFacade: PromptSlotVariantFacade
-    
+
     @Autowired
     private lateinit var promptSlotVariantQueryService: PromptSlotVariantQueryService
-    
+
     @Autowired
     private lateinit var promptSlotTypeFacade: PromptSlotTypeFacade
-    
+
     @Autowired
     private lateinit var entityManager: EntityManager
-    
+
     private var testSlotTypeId: Long = 0L
-    
+
     @BeforeEach
     fun setUp() {
         // Create a test slot type for use in tests
-        val slotType = promptSlotTypeFacade.createPromptSlotType(
-            CreatePromptSlotTypeRequest(
-                name = "Test Background Type",
-                position = 1
+        val slotType =
+            promptSlotTypeFacade.createPromptSlotType(
+                CreatePromptSlotTypeRequest(
+                    name = "Test Background Type",
+                    position = 1,
+                ),
             )
-        )
         testSlotTypeId = slotType.id!!
-        
+
         // Clear entity manager cache to ensure fresh reads
         entityManager.flush()
         entityManager.clear()
     }
-    
+
     @Nested
     @DisplayName("Create Operations")
     inner class CreateOperations {
-        
         @Test
         fun `should create slot variant with all fields`() {
             // Given
-            val request = CreatePromptSlotVariantRequest(
-                promptSlotTypeId = testSlotTypeId,
-                name = "Nature Background",
-                prompt = "A beautiful natural landscape with mountains",
-                description = "Perfect for nature-themed designs",
-                exampleImageFilename = "nature-bg.jpg"
-            )
-            
+            val request =
+                CreatePromptSlotVariantRequest(
+                    promptSlotTypeId = testSlotTypeId,
+                    name = "Nature Background",
+                    prompt = "A beautiful natural landscape with mountains",
+                    description = "Perfect for nature-themed designs",
+                    exampleImageFilename = "nature-bg.jpg",
+                )
+
             // When
             val created = promptSlotVariantFacade.createSlotVariant(request)
-            
+
             // Then
             assertNotNull(created)
             assertNotNull(created.id)
@@ -87,24 +87,25 @@ class PromptSlotVariantIntegrationTest {
             assertNull(created.exampleImageUrl) // No actual storage service in test
             assertNotNull(created.createdAt)
             assertNotNull(created.updatedAt)
-            
+
             // Verify it can be retrieved
             val retrieved = promptSlotVariantQueryService.getSlotVariantById(created.id!!)
             assertEquals(created.id, retrieved.id)
             assertEquals(created.name, retrieved.name)
         }
-        
+
         @Test
         fun `should create slot variant with minimal fields`() {
             // Given
-            val request = CreatePromptSlotVariantRequest(
-                promptSlotTypeId = testSlotTypeId,
-                name = "Minimal Variant"
-            )
-            
+            val request =
+                CreatePromptSlotVariantRequest(
+                    promptSlotTypeId = testSlotTypeId,
+                    name = "Minimal Variant",
+                )
+
             // When
             val created = promptSlotVariantFacade.createSlotVariant(request)
-            
+
             // Then
             assertNotNull(created)
             assertEquals("Minimal Variant", created.name)
@@ -112,58 +113,63 @@ class PromptSlotVariantIntegrationTest {
             assertNull(created.description)
             assertNull(created.exampleImageUrl)
         }
-        
+
         @Test
         fun `should fail to create with non-existent slot type`() {
             // Given
-            val request = CreatePromptSlotVariantRequest(
-                promptSlotTypeId = 99999L,
-                name = "Invalid Type Variant"
-            )
-            
+            val request =
+                CreatePromptSlotVariantRequest(
+                    promptSlotTypeId = 99999L,
+                    name = "Invalid Type Variant",
+                )
+
             // When/Then
             assertThrows<IllegalArgumentException> {
                 promptSlotVariantFacade.createSlotVariant(request)
             }
         }
-        
+
         @Test
         fun `should fail to create with duplicate name`() {
             // Given
-            val firstRequest = CreatePromptSlotVariantRequest(
-                promptSlotTypeId = testSlotTypeId,
-                name = "Duplicate Name Test"
-            )
+            val firstRequest =
+                CreatePromptSlotVariantRequest(
+                    promptSlotTypeId = testSlotTypeId,
+                    name = "Duplicate Name Test",
+                )
             promptSlotVariantFacade.createSlotVariant(firstRequest)
-            
-            val secondRequest = CreatePromptSlotVariantRequest(
-                promptSlotTypeId = testSlotTypeId,
-                name = "Duplicate Name Test"
-            )
-            
+
+            val secondRequest =
+                CreatePromptSlotVariantRequest(
+                    promptSlotTypeId = testSlotTypeId,
+                    name = "Duplicate Name Test",
+                )
+
             // When/Then
             assertThrows<IllegalArgumentException> {
                 promptSlotVariantFacade.createSlotVariant(secondRequest)
             }
         }
-        
+
         @Test
         fun `should create multiple variants for same slot type`() {
             // Given/When
-            val variant1 = promptSlotVariantFacade.createSlotVariant(
-                CreatePromptSlotVariantRequest(
-                    promptSlotTypeId = testSlotTypeId,
-                    name = "Variant 1"
+            val variant1 =
+                promptSlotVariantFacade.createSlotVariant(
+                    CreatePromptSlotVariantRequest(
+                        promptSlotTypeId = testSlotTypeId,
+                        name = "Variant 1",
+                    ),
                 )
-            )
-            
-            val variant2 = promptSlotVariantFacade.createSlotVariant(
-                CreatePromptSlotVariantRequest(
-                    promptSlotTypeId = testSlotTypeId,
-                    name = "Variant 2"
+
+            val variant2 =
+                promptSlotVariantFacade.createSlotVariant(
+                    CreatePromptSlotVariantRequest(
+                        promptSlotTypeId = testSlotTypeId,
+                        name = "Variant 2",
+                    ),
                 )
-            )
-            
+
             // Then
             val variants = promptSlotVariantQueryService.getSlotVariantsBySlotType(testSlotTypeId)
             assertEquals(2, variants.size)
@@ -171,43 +177,45 @@ class PromptSlotVariantIntegrationTest {
             assertTrue(variants.any { it.id == variant2.id })
         }
     }
-    
+
     @Nested
     @DisplayName("Update Operations")
     inner class UpdateOperations {
-        
         @Test
         fun `should update all fields of slot variant`() {
             // Given
-            val created = promptSlotVariantFacade.createSlotVariant(
-                CreatePromptSlotVariantRequest(
-                    promptSlotTypeId = testSlotTypeId,
-                    name = "Original Name",
-                    prompt = "Original prompt",
-                    description = "Original description",
-                    exampleImageFilename = "original.jpg"
+            val created =
+                promptSlotVariantFacade.createSlotVariant(
+                    CreatePromptSlotVariantRequest(
+                        promptSlotTypeId = testSlotTypeId,
+                        name = "Original Name",
+                        prompt = "Original prompt",
+                        description = "Original description",
+                        exampleImageFilename = "original.jpg",
+                    ),
                 )
-            )
-            
+
             // Create another slot type for testing type change
-            val newSlotType = promptSlotTypeFacade.createPromptSlotType(
-                CreatePromptSlotTypeRequest(
-                    name = "New Type",
-                    position = 2
+            val newSlotType =
+                promptSlotTypeFacade.createPromptSlotType(
+                    CreatePromptSlotTypeRequest(
+                        name = "New Type",
+                        position = 2,
+                    ),
                 )
-            )
-            
-            val updateRequest = UpdatePromptSlotVariantRequest(
-                promptSlotTypeId = newSlotType.id,
-                name = "Updated Name",
-                prompt = "Updated prompt",
-                description = "Updated description",
-                exampleImageFilename = "updated.jpg"
-            )
-            
+
+            val updateRequest =
+                UpdatePromptSlotVariantRequest(
+                    promptSlotTypeId = newSlotType.id,
+                    name = "Updated Name",
+                    prompt = "Updated prompt",
+                    description = "Updated description",
+                    exampleImageFilename = "updated.jpg",
+                )
+
             // When
             val updated = promptSlotVariantFacade.updateSlotVariant(created.id!!, updateRequest)
-            
+
             // Then
             assertEquals(created.id, updated.id)
             assertEquals(newSlotType.id, updated.promptSlotTypeId)
@@ -217,123 +225,131 @@ class PromptSlotVariantIntegrationTest {
             assertEquals(created.createdAt, updated.createdAt)
             assertTrue(updated.updatedAt!! >= created.updatedAt!!)
         }
-        
+
         @Test
         fun `should update only specified fields`() {
             // Given
-            val created = promptSlotVariantFacade.createSlotVariant(
-                CreatePromptSlotVariantRequest(
-                    promptSlotTypeId = testSlotTypeId,
-                    name = "Original",
-                    prompt = "Keep this",
-                    description = "Keep this too"
+            val created =
+                promptSlotVariantFacade.createSlotVariant(
+                    CreatePromptSlotVariantRequest(
+                        promptSlotTypeId = testSlotTypeId,
+                        name = "Original",
+                        prompt = "Keep this",
+                        description = "Keep this too",
+                    ),
                 )
-            )
-            
-            val updateRequest = UpdatePromptSlotVariantRequest(
-                name = "Only Update Name"
-            )
-            
+
+            val updateRequest =
+                UpdatePromptSlotVariantRequest(
+                    name = "Only Update Name",
+                )
+
             // When
             val updated = promptSlotVariantFacade.updateSlotVariant(created.id!!, updateRequest)
-            
+
             // Then
             assertEquals("Only Update Name", updated.name)
             assertEquals("Keep this", updated.prompt)
             assertEquals("Keep this too", updated.description)
             assertEquals(testSlotTypeId, updated.promptSlotTypeId)
         }
-        
+
         @Test
         fun `should fail to update to duplicate name`() {
             // Given
-            val variant1 = promptSlotVariantFacade.createSlotVariant(
-                CreatePromptSlotVariantRequest(
-                    promptSlotTypeId = testSlotTypeId,
-                    name = "Existing Name"
+            val variant1 =
+                promptSlotVariantFacade.createSlotVariant(
+                    CreatePromptSlotVariantRequest(
+                        promptSlotTypeId = testSlotTypeId,
+                        name = "Existing Name",
+                    ),
                 )
-            )
-            
-            val variant2 = promptSlotVariantFacade.createSlotVariant(
-                CreatePromptSlotVariantRequest(
-                    promptSlotTypeId = testSlotTypeId,
-                    name = "To Be Updated"
+
+            val variant2 =
+                promptSlotVariantFacade.createSlotVariant(
+                    CreatePromptSlotVariantRequest(
+                        promptSlotTypeId = testSlotTypeId,
+                        name = "To Be Updated",
+                    ),
                 )
-            )
-            
-            val updateRequest = UpdatePromptSlotVariantRequest(
-                name = "Existing Name"
-            )
-            
+
+            val updateRequest =
+                UpdatePromptSlotVariantRequest(
+                    name = "Existing Name",
+                )
+
             // When/Then
             assertThrows<IllegalArgumentException> {
                 promptSlotVariantFacade.updateSlotVariant(variant2.id!!, updateRequest)
             }
         }
-        
+
         @Test
         fun `should fail to update non-existent variant`() {
             // Given
-            val updateRequest = UpdatePromptSlotVariantRequest(
-                name = "New Name"
-            )
-            
+            val updateRequest =
+                UpdatePromptSlotVariantRequest(
+                    name = "New Name",
+                )
+
             // When/Then
             assertThrows<PromptSlotVariantNotFoundException> {
                 promptSlotVariantFacade.updateSlotVariant(99999L, updateRequest)
             }
         }
-        
+
         @Test
         fun `should allow updating variant to same name`() {
             // Given
-            val created = promptSlotVariantFacade.createSlotVariant(
-                CreatePromptSlotVariantRequest(
-                    promptSlotTypeId = testSlotTypeId,
-                    name = "Same Name",
-                    prompt = "Old prompt"
+            val created =
+                promptSlotVariantFacade.createSlotVariant(
+                    CreatePromptSlotVariantRequest(
+                        promptSlotTypeId = testSlotTypeId,
+                        name = "Same Name",
+                        prompt = "Old prompt",
+                    ),
                 )
-            )
-            
-            val updateRequest = UpdatePromptSlotVariantRequest(
-                name = "Same Name",
-                prompt = "New prompt"
-            )
-            
+
+            val updateRequest =
+                UpdatePromptSlotVariantRequest(
+                    name = "Same Name",
+                    prompt = "New prompt",
+                )
+
             // When
             val updated = promptSlotVariantFacade.updateSlotVariant(created.id!!, updateRequest)
-            
+
             // Then
             assertEquals("Same Name", updated.name)
             assertEquals("New prompt", updated.prompt)
         }
     }
-    
+
     @Nested
     @DisplayName("Delete Operations")
     inner class DeleteOperations {
-        
         @Test
         fun `should delete existing slot variant`() {
             // Given
-            val created = promptSlotVariantFacade.createSlotVariant(
-                CreatePromptSlotVariantRequest(
-                    promptSlotTypeId = testSlotTypeId,
-                    name = "To Be Deleted"
+            val created =
+                promptSlotVariantFacade.createSlotVariant(
+                    CreatePromptSlotVariantRequest(
+                        promptSlotTypeId = testSlotTypeId,
+                        name = "To Be Deleted",
+                    ),
                 )
-            )
             val variantId = created.id!!
-            
+
             // When
             promptSlotVariantFacade.deleteSlotVariant(variantId)
-            
+
             // Then
             assertThrows<PromptSlotVariantNotFoundException> {
                 promptSlotVariantQueryService.getSlotVariantById(variantId)
             }
             assertFalse(promptSlotVariantQueryService.existsById(variantId))
         }
-        
+
         @Test
         fun `should fail to delete non-existent variant`() {
             // When/Then
@@ -341,105 +357,107 @@ class PromptSlotVariantIntegrationTest {
                 promptSlotVariantFacade.deleteSlotVariant(99999L)
             }
         }
-        
+
         @Test
         fun `should delete variant without affecting others`() {
             // Given
-            val variant1 = promptSlotVariantFacade.createSlotVariant(
-                CreatePromptSlotVariantRequest(
-                    promptSlotTypeId = testSlotTypeId,
-                    name = "Keep This One"
+            val variant1 =
+                promptSlotVariantFacade.createSlotVariant(
+                    CreatePromptSlotVariantRequest(
+                        promptSlotTypeId = testSlotTypeId,
+                        name = "Keep This One",
+                    ),
                 )
-            )
-            
-            val variant2 = promptSlotVariantFacade.createSlotVariant(
-                CreatePromptSlotVariantRequest(
-                    promptSlotTypeId = testSlotTypeId,
-                    name = "Delete This One"
+
+            val variant2 =
+                promptSlotVariantFacade.createSlotVariant(
+                    CreatePromptSlotVariantRequest(
+                        promptSlotTypeId = testSlotTypeId,
+                        name = "Delete This One",
+                    ),
                 )
-            )
-            
+
             // When
             promptSlotVariantFacade.deleteSlotVariant(variant2.id!!)
-            
+
             // Then
             assertTrue(promptSlotVariantQueryService.existsById(variant1.id!!))
             assertFalse(promptSlotVariantQueryService.existsById(variant2.id!!))
-            
+
             val remaining = promptSlotVariantQueryService.getSlotVariantsBySlotType(testSlotTypeId)
             assertEquals(1, remaining.size)
             assertEquals(variant1.id, remaining[0].id)
         }
     }
-    
+
     @Nested
     @DisplayName("Query Operations")
     inner class QueryOperations {
-        
         @Test
         fun `should retrieve all slot variants`() {
             // Given
             val initialCount = promptSlotVariantQueryService.getAllSlotVariants().size
-            
+
             promptSlotVariantFacade.createSlotVariant(
                 CreatePromptSlotVariantRequest(
                     promptSlotTypeId = testSlotTypeId,
-                    name = "Variant A"
-                )
+                    name = "Variant A",
+                ),
             )
-            
+
             promptSlotVariantFacade.createSlotVariant(
                 CreatePromptSlotVariantRequest(
                     promptSlotTypeId = testSlotTypeId,
-                    name = "Variant B"
-                )
+                    name = "Variant B",
+                ),
             )
-            
+
             // When
             val allVariants = promptSlotVariantQueryService.getAllSlotVariants()
-            
+
             // Then
             assertEquals(initialCount + 2, allVariants.size)
             assertTrue(allVariants.any { it.name == "Variant A" })
             assertTrue(allVariants.any { it.name == "Variant B" })
         }
-        
+
         @Test
         fun `should retrieve variants by slot type`() {
             // Given
-            val anotherSlotType = promptSlotTypeFacade.createPromptSlotType(
-                CreatePromptSlotTypeRequest(
-                    name = "Another Type",
-                    position = 3
+            val anotherSlotType =
+                promptSlotTypeFacade.createPromptSlotType(
+                    CreatePromptSlotTypeRequest(
+                        name = "Another Type",
+                        position = 3,
+                    ),
                 )
-            )
-            
+
             promptSlotVariantFacade.createSlotVariant(
                 CreatePromptSlotVariantRequest(
                     promptSlotTypeId = testSlotTypeId,
-                    name = "Type 1 Variant"
-                )
+                    name = "Type 1 Variant",
+                ),
             )
-            
+
             promptSlotVariantFacade.createSlotVariant(
                 CreatePromptSlotVariantRequest(
                     promptSlotTypeId = anotherSlotType.id!!,
-                    name = "Type 2 Variant"
-                )
+                    name = "Type 2 Variant",
+                ),
             )
-            
+
             // When
             val type1Variants = promptSlotVariantQueryService.getSlotVariantsBySlotType(testSlotTypeId)
             val type2Variants = promptSlotVariantQueryService.getSlotVariantsBySlotType(anotherSlotType.id!!)
-            
+
             // Then
             assertEquals(1, type1Variants.size)
             assertEquals("Type 1 Variant", type1Variants[0].name)
-            
+
             assertEquals(1, type2Variants.size)
             assertEquals("Type 2 Variant", type2Variants[0].name)
         }
-        
+
         @Test
         fun `should throw exception when querying variants for non-existent slot type`() {
             // When/Then
@@ -447,138 +465,141 @@ class PromptSlotVariantIntegrationTest {
                 promptSlotVariantQueryService.getSlotVariantsBySlotType(99999L)
             }
         }
-        
+
         @Test
         fun `should correctly check variant existence`() {
             // Given
-            val created = promptSlotVariantFacade.createSlotVariant(
-                CreatePromptSlotVariantRequest(
-                    promptSlotTypeId = testSlotTypeId,
-                    name = "Exists Check"
+            val created =
+                promptSlotVariantFacade.createSlotVariant(
+                    CreatePromptSlotVariantRequest(
+                        promptSlotTypeId = testSlotTypeId,
+                        name = "Exists Check",
+                    ),
                 )
-            )
-            
+
             // When/Then
             assertTrue(promptSlotVariantQueryService.existsById(created.id!!))
             assertFalse(promptSlotVariantQueryService.existsById(99999L))
         }
     }
-    
+
     @Nested
     @DisplayName("Transaction and Rollback Scenarios")
     inner class TransactionScenarios {
-        
         @Test
         fun `should rollback creation on exception`() {
             // Given
             val initialCount = promptSlotVariantQueryService.getAllSlotVariants().size
-            
+
             // When/Then
             assertThrows<IllegalArgumentException> {
                 promptSlotVariantFacade.createSlotVariant(
                     CreatePromptSlotVariantRequest(
                         promptSlotTypeId = 99999L, // Non-existent
-                        name = "Should Not Be Created"
-                    )
+                        name = "Should Not Be Created",
+                    ),
                 )
             }
-            
+
             // Verify no variant was created
             val finalCount = promptSlotVariantQueryService.getAllSlotVariants().size
             assertEquals(initialCount, finalCount)
-            
+
             val allVariants = promptSlotVariantQueryService.getAllSlotVariants()
             assertFalse(allVariants.any { it.name == "Should Not Be Created" })
         }
-        
+
         @Test
         fun `should maintain data consistency across operations`() {
             // Given
-            val variant = promptSlotVariantFacade.createSlotVariant(
-                CreatePromptSlotVariantRequest(
-                    promptSlotTypeId = testSlotTypeId,
-                    name = "Consistency Test",
-                    prompt = "Original"
+            val variant =
+                promptSlotVariantFacade.createSlotVariant(
+                    CreatePromptSlotVariantRequest(
+                        promptSlotTypeId = testSlotTypeId,
+                        name = "Consistency Test",
+                        prompt = "Original",
+                    ),
                 )
-            )
-            
+
             // When - Update
             promptSlotVariantFacade.updateSlotVariant(
                 variant.id!!,
-                UpdatePromptSlotVariantRequest(prompt = "Updated")
+                UpdatePromptSlotVariantRequest(prompt = "Updated"),
             )
-            
+
             // Then - Verify consistency
             val retrieved = promptSlotVariantQueryService.getSlotVariantById(variant.id!!)
             assertEquals("Updated", retrieved.prompt)
             assertEquals("Consistency Test", retrieved.name) // Unchanged field
-            
+
             // When - Delete
             promptSlotVariantFacade.deleteSlotVariant(variant.id!!)
-            
+
             // Then - Verify deletion
             assertFalse(promptSlotVariantQueryService.existsById(variant.id!!))
         }
     }
-    
+
     @Nested
     @DisplayName("Edge Cases and Boundary Tests")
     inner class EdgeCases {
-        
         @Test
         fun `should handle very long text fields`() {
             // Given
             val longText = "A".repeat(5000)
-            val request = CreatePromptSlotVariantRequest(
-                promptSlotTypeId = testSlotTypeId,
-                name = "Long Text Test",
-                prompt = longText,
-                description = longText
-            )
-            
+            val request =
+                CreatePromptSlotVariantRequest(
+                    promptSlotTypeId = testSlotTypeId,
+                    name = "Long Text Test",
+                    prompt = longText,
+                    description = longText,
+                )
+
             // When
             val created = promptSlotVariantFacade.createSlotVariant(request)
-            
+
             // Then
             val retrieved = promptSlotVariantQueryService.getSlotVariantById(created.id!!)
             assertEquals(longText, retrieved.prompt)
             assertEquals(longText, retrieved.description)
         }
-        
+
         @Test
         fun `should handle special characters in names and text`() {
             // Given
             val specialName = "Test & Special #123 @Characters!"
             val specialPrompt = "Prompt with 'quotes' and \"double quotes\" and \n newlines"
-            
-            val request = CreatePromptSlotVariantRequest(
-                promptSlotTypeId = testSlotTypeId,
-                name = specialName,
-                prompt = specialPrompt
-            )
-            
+
+            val request =
+                CreatePromptSlotVariantRequest(
+                    promptSlotTypeId = testSlotTypeId,
+                    name = specialName,
+                    prompt = specialPrompt,
+                )
+
             // When
             val created = promptSlotVariantFacade.createSlotVariant(request)
-            
+
             // Then
             val retrieved = promptSlotVariantQueryService.getSlotVariantById(created.id!!)
             assertEquals(specialName, retrieved.name)
             assertEquals(specialPrompt, retrieved.prompt)
         }
-        
+
         @Test
         fun `should handle maximum length filename`() {
             // Given
             val maxFilename = "f".repeat(500) // Max length is 500
-            val request = CreatePromptSlotVariantRequest(
-                promptSlotTypeId = testSlotTypeId,
-                name = "Max Filename Test",
-                exampleImageFilename = maxFilename
-            )
-            
+            val request =
+                CreatePromptSlotVariantRequest(
+                    promptSlotTypeId = testSlotTypeId,
+                    name = "Max Filename Test",
+                    exampleImageFilename = maxFilename,
+                )
+
             // When
             val created = promptSlotVariantFacade.createSlotVariant(request)
-            
+
             // Then
             val retrieved = promptSlotVariantQueryService.getSlotVariantById(created.id!!)
             // Note: exampleImageFilename is not exposed in DTO, only the URL

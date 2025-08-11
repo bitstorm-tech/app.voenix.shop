@@ -1,0 +1,440 @@
+package com.jotoai.voenix.shop.image.internal.service
+
+import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.image.api.ImageFacade
+import com.jotoai.voenix.shop.image.api.ImageStorageService
+import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
+import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
+import com.jotoai.voenix.shop.image.api.dto.ImageDto
+import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
+import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
+import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
+import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
+import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
+import org.slf4j.LoggerFactory
+import org.springframework.cache.annotation.CacheEvict
+import org.springframework.cache.annotation.Cacheable
+import org.springframework.dao.DataAccessException
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
+import java.util.UUID
+
+/**
+ * Consolidated image management service that handles all image operations.
+ * This service combines the functionality of ImageService, ImageFacadeImpl, and ImageAccessValidationService
+ * to provide a unified interface for image management with access validation.
+ *
+ * Features:
+ * - Implements ImageFacade interface directly
+ * - Handles uploaded and generated images
+ * - Includes access validation logic
+ * - Manages image metadata and database operations
+ * - Coordinates with storage services
+ * - Provides caching for performance
+ */
+@Service
+class ImageManagementService(
+    private val imageStorageService: ImageStorageService,
+    private val uploadedImageRepository: UploadedImageRepository,
+    private val generatedImageRepository: GeneratedImageRepository,
+) : ImageFacade {
+    companion object {
+        private val logger = LoggerFactory.getLogger(ImageManagementService::class.java)
+        private const val ORIGINAL_SUFFIX = "_original"
+        private const val GENERATED_PREFIX = "_generated_"
+    }
+
+    // Implementation of ImageFacade interface
+
+    @Transactional
+    override fun createUploadedImage(
+        file: MultipartFile,
+        userId: Long,
+    ): UploadedImageDto {
+        try {
+            logger.debug("Creating uploaded image for user $userId")
+            val storageImpl = imageStorageService as ImageStorageServiceImpl
+            val uploadedImage = storageImpl.storeUploadedImage(file, userId)
+
+            return UploadedImageDto(
+                filename = uploadedImage.storedFilename,
+                imageType = ImageType.PRIVATE,
+                uuid = uploadedImage.uuid,
+                originalFilename = uploadedImage.originalFilename,
+                contentType = uploadedImage.contentType,
+                fileSize = uploadedImage.fileSize,
+                uploadedAt = uploadedImage.uploadedAt,
+            )
+        } catch (e: DataAccessException) {
+            throw ImageStorageException("Failed to create uploaded image: ${e.message}", e)
+        } catch (e: IOException) {
+            throw ImageStorageException("Failed to create uploaded image: ${e.message}", e)
+        } catch (e: IllegalStateException) {
+            throw ImageStorageException("Failed to create uploaded image: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
+            throw ImageStorageException("Failed to create uploaded image: ${e.message}", e)
+        }
+    }
+
+    override fun createImage(request: CreateImageRequest): ImageDto {
+        // This method is not implemented as it's superseded by createUploadedImage which works with MultipartFile
+        // The CreateImageRequest doesn't contain the actual image data needed for implementation
+        throw UnsupportedOperationException(
+            "This method is not supported. Use createUploadedImage() with MultipartFile for uploading images, " +
+                "or use the appropriate generation methods for creating generated images.",
+        )
+    }
+
+    @Cacheable("uploadedImages", key = "#uuid + '_' + #userId")
+    @Transactional(readOnly = true)
+    override fun getUploadedImageByUuid(
+        uuid: UUID,
+        userId: Long,
+    ): UploadedImageDto {
+        val uploadedImage =
+            uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
+                ?: throw ImageNotFoundException("Uploaded image with UUID $uuid not found for user $userId")
+
+        return UploadedImageDto(
+            filename = uploadedImage.storedFilename,
+            imageType = ImageType.PRIVATE,
+            uuid = uploadedImage.uuid,
+            originalFilename = uploadedImage.originalFilename,
+            contentType = uploadedImage.contentType,
+            fileSize = uploadedImage.fileSize,
+            uploadedAt = uploadedImage.uploadedAt,
+        )
+    }
+
+    @CacheEvict("uploadedImages", key = "#uuid + '_' + #userId")
+    @Transactional
+    override fun deleteUploadedImage(
+        uuid: UUID,
+        userId: Long,
+    ) {
+        val uploadedImage =
+            uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
+                ?: throw ImageNotFoundException("Uploaded image with UUID $uuid not found for user $userId")
+
+        try {
+            // Delete file from storage
+            val storageImpl = imageStorageService as ImageStorageServiceImpl
+            storageImpl.deleteImage(uploadedImage.storedFilename)
+
+            // Delete from database
+            uploadedImageRepository.delete(uploadedImage)
+            logger.debug("Deleted uploaded image $uuid for user $userId")
+        } catch (e: DataAccessException) {
+            throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
+        } catch (e: IOException) {
+            throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
+        } catch (e: IllegalStateException) {
+            throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
+            throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
+        }
+    }
+
+    @Cacheable("userUploadedImages", key = "#userId")
+    @Transactional(readOnly = true)
+    override fun getUserUploadedImages(userId: Long): List<UploadedImageDto> =
+        uploadedImageRepository
+            .findAllByUserIdWithGeneratedImages(userId)
+            .map { uploadedImage ->
+                UploadedImageDto(
+                    filename = uploadedImage.storedFilename,
+                    imageType = ImageType.PRIVATE,
+                    uuid = uploadedImage.uuid,
+                    originalFilename = uploadedImage.originalFilename,
+                    contentType = uploadedImage.contentType,
+                    fileSize = uploadedImage.fileSize,
+                    uploadedAt = uploadedImage.uploadedAt,
+                )
+            }
+
+    // Generated Images Implementation
+
+    @Cacheable("generatedImages", key = "#uuid + '_' + (#userId ?: 'null')")
+    @Transactional(readOnly = true)
+    override fun getGeneratedImageByUuid(
+        uuid: UUID,
+        userId: Long?,
+    ): GeneratedImageDto {
+        val generatedImage =
+            if (userId != null) {
+                generatedImageRepository.findByUuidAndUserId(uuid, userId)
+                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found for user $userId")
+            } else {
+                generatedImageRepository.findByUuid(uuid)
+                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found")
+            }
+
+        return GeneratedImageDto(
+            filename = generatedImage.filename,
+            imageType = ImageType.GENERATED,
+            promptId = generatedImage.promptId,
+            userId = generatedImage.userId,
+            generatedAt = generatedImage.generatedAt,
+            ipAddress = generatedImage.ipAddress,
+        )
+    }
+
+    @CacheEvict("generatedImages", key = "#uuid + '_' + (#userId ?: 'null')")
+    @Transactional
+    override fun updateGeneratedImage(
+        uuid: UUID,
+        updateRequest: UpdateGeneratedImageRequest,
+        userId: Long?,
+    ): GeneratedImageDto {
+        val generatedImage =
+            if (userId != null) {
+                generatedImageRepository.findByUuidAndUserId(uuid, userId)
+                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found for user $userId")
+            } else {
+                generatedImageRepository.findByUuid(uuid)
+                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found")
+            }
+
+        // Update allowed fields if provided
+        updateRequest.promptId?.let { generatedImage.promptId = it }
+        updateRequest.userId?.let { generatedImage.userId = it }
+        updateRequest.ipAddress?.let { generatedImage.ipAddress = it }
+
+        try {
+            val saved = generatedImageRepository.save(generatedImage)
+
+            return GeneratedImageDto(
+                filename = saved.filename,
+                imageType = ImageType.GENERATED,
+                promptId = saved.promptId,
+                userId = saved.userId,
+                generatedAt = saved.generatedAt,
+                ipAddress = saved.ipAddress,
+            )
+        } catch (e: DataAccessException) {
+            throw ImageStorageException("Failed to update generated image: ${e.message}", e)
+        } catch (e: IllegalStateException) {
+            throw ImageStorageException("Failed to update generated image: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
+            throw ImageStorageException("Failed to update generated image: ${e.message}", e)
+        }
+    }
+
+    @CacheEvict("generatedImages", key = "#uuid + '_' + (#userId ?: 'null')")
+    @Transactional
+    override fun deleteGeneratedImage(
+        uuid: UUID,
+        userId: Long?,
+    ) {
+        val generatedImage =
+            if (userId != null) {
+                generatedImageRepository.findByUuidAndUserId(uuid, userId)
+                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found for user $userId")
+            } else {
+                generatedImageRepository.findByUuid(uuid)
+                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found")
+            }
+
+        try {
+            // Delete file from storage
+            val storageImpl = imageStorageService as ImageStorageServiceImpl
+            storageImpl.deleteImage(generatedImage.filename)
+
+            // Delete from database
+            generatedImageRepository.delete(generatedImage)
+            logger.debug("Deleted generated image $uuid${userId?.let { " for user $it" } ?: ""}")
+        } catch (e: DataAccessException) {
+            throw ImageStorageException("Failed to delete generated image: ${e.message}", e)
+        } catch (e: IOException) {
+            throw ImageStorageException("Failed to delete generated image: ${e.message}", e)
+        } catch (e: IllegalStateException) {
+            throw ImageStorageException("Failed to delete generated image: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
+            throw ImageStorageException("Failed to delete generated image: ${e.message}", e)
+        }
+    }
+
+    @Cacheable("userGeneratedImages", key = "#userId")
+    @Transactional(readOnly = true)
+    override fun getUserGeneratedImages(userId: Long): List<GeneratedImageDto> =
+        generatedImageRepository
+            .findAllByUserIdWithUploadedImage(userId)
+            .map { generatedImage ->
+                GeneratedImageDto(
+                    filename = generatedImage.filename,
+                    imageType = ImageType.GENERATED,
+                    promptId = generatedImage.promptId,
+                    userId = generatedImage.userId,
+                    generatedAt = generatedImage.generatedAt,
+                    ipAddress = generatedImage.ipAddress,
+                )
+            }
+
+    // Additional methods for access validation (from ImageAccessValidationService)
+
+    /**
+     * Validates that a user has access to a specific image file and returns the image data.
+     * @param filename The image filename
+     * @param userId The user ID requesting access
+     * @return Pair of image bytes and content type
+     * @throws ResourceNotFoundException if image not found or access denied
+     */
+    fun validateAccessAndGetImageData(
+        filename: String,
+        userId: Long,
+    ): Pair<ByteArray, String> {
+        logger.debug("Validating access to image $filename for user $userId")
+
+        // Check if this is an original image or generated image based on filename pattern
+        val isOriginalImage = filename.contains(ORIGINAL_SUFFIX)
+        val isGeneratedImage = filename.contains(GENERATED_PREFIX)
+
+        when {
+            isOriginalImage -> {
+                // Extract UUID from filename (format: {uuid}_original.{ext})
+                val uuid = extractUuidFromOriginalFilename(filename)
+                uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
+                    ?: throw ResourceNotFoundException("Uploaded image not found or access denied")
+
+                logger.debug("Access granted to original image $filename for user $userId")
+            }
+            isGeneratedImage -> {
+                // For generated images, check ownership through the generated_images table
+                val generatedImage =
+                    generatedImageRepository.findByFilename(filename)
+                        ?: throw ResourceNotFoundException("Generated image not found")
+
+                if (generatedImage.userId != userId) {
+                    throw ResourceNotFoundException("Generated image not found or access denied")
+                }
+
+                logger.debug("Access granted to generated image $filename for user $userId")
+            }
+            else -> {
+                throw ResourceNotFoundException("Invalid image filename format")
+            }
+        }
+
+        // If validation passes, get the image data through the storage service
+        val storageImpl = imageStorageService as ImageStorageServiceImpl
+        return storageImpl.getUserImageData(filename, userId)
+    }
+
+    /**
+     * Validates that a user owns an uploaded image by UUID.
+     * @param uuid The image UUID
+     * @param userId The user ID
+     * @return true if user owns the image, false otherwise
+     */
+    fun validateUploadedImageOwnership(
+        uuid: UUID,
+        userId: Long,
+    ): Boolean = uploadedImageRepository.findByUserIdAndUuid(userId, uuid) != null
+
+    /**
+     * Validates that a user owns a generated image by filename.
+     * @param filename The generated image filename
+     * @param userId The user ID
+     * @return true if user owns the image, false otherwise
+     */
+    fun validateGeneratedImageOwnership(
+        filename: String,
+        userId: Long,
+    ): Boolean {
+        val generatedImage = generatedImageRepository.findByFilename(filename)
+        return generatedImage?.userId == userId
+    }
+
+    /**
+     * Returns raw image data for internal use or public access.
+     */
+    fun getImageData(
+        filename: String,
+        userId: Long? = null,
+    ): Pair<ByteArray, String> =
+        when {
+            userId != null -> validateAccessAndGetImageData(filename, userId)
+            else -> {
+                val storageImpl = imageStorageService as ImageStorageServiceImpl
+                storageImpl.getImageData(filename)
+            }
+        }
+
+    /**
+     * Returns raw image data by filename and image type.
+     */
+    fun getImageData(
+        filename: String,
+        imageType: ImageType,
+    ): Pair<ByteArray, String> {
+        val storageImpl = imageStorageService as ImageStorageServiceImpl
+        return storageImpl.getImageData(filename, imageType)
+    }
+
+    // Legacy compatibility methods (from original ImageService)
+
+    /**
+     * Stores an image file using the storage service. This is primarily for compatibility.
+     * For user uploads, use createUploadedImage instead.
+     */
+    fun store(
+        file: MultipartFile,
+        request: CreateImageRequest,
+    ): ImageDto {
+        logger.debug(
+            "Delegating image storage - Type: {}, Original filename: {}",
+            request.imageType,
+            file.originalFilename,
+        )
+        val filename =
+            if (request.cropArea != null) {
+                // Cast to implementation to access extended methods
+                val storageImpl = imageStorageService as ImageStorageServiceImpl
+                storageImpl.storeImageWithCropping(file, request.imageType, request.cropArea)
+            } else {
+                imageStorageService.storeFile(file, request.imageType)
+            }
+
+        return com.jotoai.voenix.shop.image.api.dto.SimpleImageDto(
+            filename = filename,
+            imageType = request.imageType,
+        )
+    }
+
+    /**
+     * Deletes an image by delegating to the storage service.
+     */
+    fun delete(
+        filename: String,
+        imageType: ImageType,
+    ) {
+        val storageImpl = imageStorageService as ImageStorageServiceImpl
+        storageImpl.deleteImage(filename, imageType)
+    }
+
+    /**
+     * Deletes an image by filename only (searches across image types).
+     */
+    fun delete(filename: String) {
+        val storageImpl = imageStorageService as ImageStorageServiceImpl
+        storageImpl.deleteImage(filename)
+    }
+
+    /**
+     * Extracts UUID from original image filename.
+     * Expected format: {uuid}_original.{ext}
+     */
+    private fun extractUuidFromOriginalFilename(filename: String): UUID {
+        try {
+            val uuidString = filename.substringBefore(ORIGINAL_SUFFIX)
+            return UUID.fromString(uuidString)
+        } catch (e: IllegalArgumentException) {
+            logger.error("Invalid UUID format in filename: $filename", e)
+            throw ResourceNotFoundException("Invalid image filename format")
+        }
+    }
+}

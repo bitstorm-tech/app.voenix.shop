@@ -79,7 +79,7 @@ class ShirtVariantController(
     ): ResponseEntity<ShirtArticleVariantDto> {
         // Get the actual admin user ID from security context
         val adminUser = userQueryService.getUserByEmail(userDetails.username)
-        
+
         // Upload the image using the facade's multipart method
         val uploadedImage = imageFacade.createUploadedImage(file, adminUser.id)
         val updatedVariant = shirtVariantFacade.updateExampleImage(variantId, uploadedImage.filename)

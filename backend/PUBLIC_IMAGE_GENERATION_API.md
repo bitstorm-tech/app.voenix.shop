@@ -41,7 +41,7 @@ A public API endpoint has been created to allow users to generate AI images.
    - `PublicImageGenerationResponse.kt` - Response DTO
 
 2. **Services**:
-   - `PublicImageGenerationService.kt` - Public image generation logic
+   - `ImageGenerationServiceImpl.kt` - Consolidated image generation service that handles both public and user image generation
 
 3. **Controller**:
    - `PublicImageController.kt` - REST endpoints

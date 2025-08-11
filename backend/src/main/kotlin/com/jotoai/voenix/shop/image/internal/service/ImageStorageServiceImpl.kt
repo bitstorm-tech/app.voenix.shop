@@ -1,37 +1,117 @@
 package com.jotoai.voenix.shop.image.internal.service
 
+import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageStorageService
+import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
+import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
+import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
+import org.slf4j.LoggerFactory
+import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.time.LocalDateTime
+import java.util.UUID
 
 /**
- * Implementation of ImageStorageService that delegates to existing storage services.
+ * Consolidated implementation of ImageStorageService that handles all storage functionality.
+ * This service combines the functionality of BaseStorageService, UserImageStorageService,
+ * and StoragePathService logic into a single cohesive service.
  */
 @Service
 class ImageStorageServiceImpl(
     private val storagePathService: com.jotoai.voenix.shop.image.api.StoragePathService,
-    private val imageService: ImageService,
+    private val imageConversionService: ImageConversionService,
+    private val uploadedImageRepository: UploadedImageRepository,
+    private val generatedImageRepository: GeneratedImageRepository,
 ) : ImageStorageService {
+    private val logger = LoggerFactory.getLogger(ImageStorageServiceImpl::class.java)
+
+    companion object {
+        private const val MAX_FILE_SIZE = 10 * 1024 * 1024L // 10MB
+        private val ALLOWED_CONTENT_TYPES = setOf("image/jpeg", "image/jpg", "image/png", "image/webp")
+        private const val ORIGINAL_SUFFIX = "_original"
+        private const val GENERATED_PREFIX = "_generated_"
+        private const val BYTES_PER_KB = 1024
+        private const val BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB
+    }
+
+    // Public API Interface Methods
+
     override fun storeFile(
         file: MultipartFile,
         imageType: ImageType,
     ): String {
-        // Delegate to the existing ImageService which handles storage
-        throw UnsupportedOperationException("Use ImageFacade.createImage instead")
+        logger.debug("Starting file storage - Type: {}, Original filename: {}", imageType, file.originalFilename)
+
+        validateFile(file, MAX_FILE_SIZE, ALLOWED_CONTENT_TYPES)
+
+        val originalFilename = file.originalFilename ?: "unknown"
+        val fileExtension = imageType.getFileExtension(originalFilename)
+        val storedFilename = "${UUID.randomUUID()}$fileExtension"
+
+        val targetPath = storagePathService.getPhysicalPath(imageType)
+        val filePath = targetPath.resolve(storedFilename)
+
+        logger.info("Storing file - Target path: ${filePath.toAbsolutePath()}")
+
+        try {
+            var imageBytes = file.bytes
+
+            // Apply format conversion if needed
+            if (imageType.requiresWebPConversion) {
+                logger.debug("Converting image to WebP format")
+                imageBytes = imageConversionService.convertToWebP(imageBytes)
+            }
+
+            writeFile(filePath, imageBytes)
+            logger.info("Successfully stored image: ${filePath.toAbsolutePath()}")
+
+            return storedFilename
+        } catch (e: Exception) {
+            logger.error("Failed to store file: ${e.message}", e)
+            throw RuntimeException("Failed to store file: ${e.message}", e)
+        }
     }
 
     override fun storeFile(
         bytes: ByteArray,
         originalFilename: String,
         imageType: ImageType,
-    ): String = throw UnsupportedOperationException("Not yet implemented")
+    ): String {
+        val fileExtension = getFileExtension(originalFilename)
+        val storedFilename = "${UUID.randomUUID()}$fileExtension"
+
+        val targetPath = storagePathService.getPhysicalPath(imageType)
+        val filePath = targetPath.resolve(storedFilename)
+
+        logger.info("Storing image bytes - Target path: ${filePath.toAbsolutePath()}")
+
+        writeFile(filePath, bytes)
+        logger.info("Successfully stored image bytes: ${filePath.toAbsolutePath()}")
+
+        return storedFilename
+    }
 
     override fun loadFileAsResource(
         filename: String,
         imageType: ImageType,
-    ): Resource = throw UnsupportedOperationException("Use ImageAccessService instead")
+    ): Resource {
+        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+
+        if (!Files.exists(filePath)) {
+            throw ResourceNotFoundException("Image with filename $filename not found")
+        }
+
+        return FileSystemResource(filePath)
+    }
 
     override fun generateImageUrl(
         filename: String,
@@ -42,12 +122,350 @@ class ImageStorageServiceImpl(
         filename: String,
         imageType: ImageType,
     ): Boolean {
-        imageService.delete(filename)
-        return true
+        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+        return deleteFile(filePath)
     }
 
     override fun fileExists(
         filename: String,
         imageType: ImageType,
-    ): Boolean = throw UnsupportedOperationException("Not yet implemented")
+    ): Boolean {
+        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+        return Files.exists(filePath)
+    }
+
+    // Extended Storage Operations (formerly in internal ImageStorageService)
+
+    /**
+     * Stores an image file with optional cropping and format conversion.
+     */
+    fun storeImageWithCropping(
+        file: MultipartFile,
+        imageType: ImageType,
+        cropArea: CropArea? = null,
+    ): String {
+        logger.debug("Starting file storage with cropping - Type: {}, Original filename: {}", imageType, file.originalFilename)
+
+        validateFile(file, imageType.maxFileSize, imageType.allowedContentTypes.toSet())
+
+        val originalFilename = file.originalFilename ?: "unknown"
+        val fileExtension = imageType.getFileExtension(originalFilename)
+        val storedFilename = "${UUID.randomUUID()}$fileExtension"
+
+        val targetPath = storagePathService.getPhysicalPath(imageType)
+        val filePath = targetPath.resolve(storedFilename)
+
+        logger.info("Storing file with cropping - Target path: ${filePath.toAbsolutePath()}")
+
+        try {
+            var imageBytes = file.bytes
+
+            // Apply cropping if requested
+            if (cropArea != null) {
+                imageBytes = applyCropping(imageBytes, cropArea)
+            }
+
+            // Apply format conversion if needed
+            if (imageType.requiresWebPConversion) {
+                logger.debug("Converting image to WebP format")
+                imageBytes = imageConversionService.convertToWebP(imageBytes)
+            }
+
+            writeFile(filePath, imageBytes)
+            logger.info("Successfully stored image: ${filePath.toAbsolutePath()}")
+
+            return storedFilename
+        } catch (e: IllegalArgumentException) {
+            logger.error("Invalid image processing parameters: ${e.message}", e)
+            throw IllegalArgumentException("Invalid image processing parameters: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Retrieves image data from storage.
+     */
+    fun getImageData(
+        filename: String,
+        imageType: ImageType,
+    ): Pair<ByteArray, String> {
+        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+
+        if (!Files.exists(filePath)) {
+            throw ResourceNotFoundException("Image with filename $filename not found")
+        }
+
+        val bytes = readFile(filePath)
+        val contentType = probeContentType(filePath, "application/octet-stream")
+        return Pair(bytes, contentType)
+    }
+
+    /**
+     * Retrieves image data by filename only (searches across image types).
+     */
+    fun getImageData(filename: String): Pair<ByteArray, String> {
+        val imageType =
+            storagePathService.findImageTypeByFilename(filename)
+                ?: throw ResourceNotFoundException("Image with filename $filename not found")
+        return getImageData(filename, imageType)
+    }
+
+    /**
+     * Deletes an image from storage.
+     */
+    fun deleteImage(
+        filename: String,
+        imageType: ImageType,
+    ) {
+        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+
+        if (!deleteFile(filePath)) {
+            throw ResourceNotFoundException("Image with filename $filename not found")
+        }
+    }
+
+    /**
+     * Deletes an image by filename only (searches across image types).
+     */
+    fun deleteImage(filename: String) {
+        val imageType =
+            storagePathService.findImageTypeByFilename(filename)
+                ?: throw ResourceNotFoundException("Image with filename $filename not found")
+        deleteImage(filename, imageType)
+    }
+
+    // User-specific Storage Operations (formerly in UserImageStorageService)
+
+    /**
+     * Stores an uploaded image file using the user-specific storage pattern.
+     */
+    @Transactional
+    fun storeUploadedImage(
+        imageFile: MultipartFile,
+        userId: Long,
+    ): UploadedImage {
+        validateFile(imageFile, MAX_FILE_SIZE, ALLOWED_CONTENT_TYPES)
+
+        val uuid = UUID.randomUUID()
+        val originalFilename = imageFile.originalFilename ?: "unknown"
+        val userStorageDir = getUserStorageDirectory(userId)
+
+        // Determine file extension - convert to PNG if not already PNG
+        val contentType = imageFile.contentType?.lowercase() ?: ""
+        val isPng = contentType == "image/png"
+        val fileExtension = ".png" // Always store as PNG for consistency
+
+        val storedFilename = "$uuid$ORIGINAL_SUFFIX$fileExtension"
+        val filePath = userStorageDir.resolve(storedFilename)
+
+        logger.info("Storing uploaded image for user $userId: $storedFilename")
+
+        // Create user directory if it doesn't exist
+        ensureDirectoryExists(userStorageDir)
+
+        var imageBytes = imageFile.bytes
+
+        // Convert to PNG if necessary
+        if (!isPng) {
+            logger.debug("Converting image from $contentType to PNG")
+            imageBytes = imageConversionService.convertToPng(imageBytes)
+        }
+
+        writeFile(filePath, imageBytes)
+        logger.info("Successfully stored uploaded image: ${filePath.toAbsolutePath()}")
+
+        // Save to database
+        val uploadedImage =
+            UploadedImage(
+                uuid = uuid,
+                originalFilename = originalFilename,
+                storedFilename = storedFilename,
+                contentType = "image/png", // Always PNG after conversion
+                fileSize = imageBytes.size.toLong(),
+                userId = userId,
+                uploadedAt = LocalDateTime.now(),
+            )
+
+        return uploadedImageRepository.save(uploadedImage)
+    }
+
+    /**
+     * Stores a generated image using the user-specific storage pattern.
+     */
+    @Transactional
+    fun storeGeneratedImage(
+        imageBytes: ByteArray,
+        uploadedImage: UploadedImage,
+        promptId: Long,
+        generationNumber: Int,
+    ): GeneratedImage {
+        val userStorageDir = getUserStorageDirectory(uploadedImage.userId)
+        val storedFilename = "${uploadedImage.uuid}$GENERATED_PREFIX$generationNumber.png"
+        val filePath = userStorageDir.resolve(storedFilename)
+
+        logger.info("Storing generated image for user ${uploadedImage.userId}: $storedFilename")
+
+        writeFile(filePath, imageBytes)
+        logger.info("Successfully stored generated image: ${filePath.toAbsolutePath()}")
+
+        // Save to database
+        val generatedImage =
+            GeneratedImage(
+                filename = storedFilename,
+                promptId = promptId,
+                userId = uploadedImage.userId,
+                uploadedImage = uploadedImage,
+                generatedAt = LocalDateTime.now(),
+            )
+
+        return generatedImageRepository.save(generatedImage)
+    }
+
+    /**
+     * Retrieves image data for a user's image file.
+     */
+    fun getUserImageData(
+        filename: String,
+        userId: Long,
+    ): Pair<ByteArray, String> {
+        val userStorageDir = getUserStorageDirectory(userId)
+        val filePath = userStorageDir.resolve(filename)
+
+        if (!Files.exists(filePath)) {
+            throw ResourceNotFoundException("Image $filename not found for user $userId")
+        }
+
+        // Validate that this file belongs to the user by checking the directory structure
+        val actualUserDir = filePath.parent
+        if (actualUserDir != userStorageDir) {
+            throw ResourceNotFoundException("Image $filename not found for user $userId")
+        }
+
+        val bytes = readFile(filePath)
+        val contentType = probeContentType(filePath, "image/png")
+        return Pair(bytes, contentType)
+    }
+
+    /**
+     * Gets the uploaded image entity by UUID and validates user ownership.
+     */
+    fun getUploadedImageByUuid(
+        uuid: UUID,
+        userId: Long,
+    ): UploadedImage =
+        uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
+            ?: throw ResourceNotFoundException("Uploaded image with UUID $uuid not found for user $userId")
+
+    /**
+     * Gets all uploaded images for a user.
+     */
+    fun getUserUploadedImages(userId: Long): List<UploadedImage> = uploadedImageRepository.findAllByUserId(userId)
+
+    // Private Helper Methods (consolidated from BaseStorageService and other utilities)
+
+    private fun validateFile(
+        file: MultipartFile,
+        maxFileSize: Long,
+        allowedContentTypes: Set<String>,
+    ) {
+        require(!file.isEmpty) {
+            "Cannot upload empty file"
+        }
+
+        require(file.size <= maxFileSize) {
+            val maxSizeMB = maxFileSize / BYTES_PER_MB
+            "File size exceeds maximum allowed size of ${maxSizeMB}MB"
+        }
+
+        val contentType = file.contentType?.lowercase()
+        require(contentType != null && contentType in allowedContentTypes) {
+            val allowedFormats = allowedContentTypes.joinToString(", ")
+            "Invalid file format. Allowed formats: $allowedFormats"
+        }
+    }
+
+    private fun ensureDirectoryExists(directoryPath: Path) {
+        try {
+            if (!Files.exists(directoryPath)) {
+                Files.createDirectories(directoryPath)
+                logger.debug("Created directory: ${directoryPath.toAbsolutePath()}")
+            }
+        } catch (e: IOException) {
+            logger.error("Failed to create directory ${directoryPath.toAbsolutePath()}: ${e.message}", e)
+            throw RuntimeException("Failed to create directory: ${e.message}", e)
+        }
+    }
+
+    private fun writeFile(
+        filePath: Path,
+        bytes: ByteArray,
+    ) {
+        try {
+            Files.write(filePath, bytes)
+            logger.debug("Successfully wrote file: ${filePath.toAbsolutePath()}")
+        } catch (e: IOException) {
+            logger.error("Failed to write file at ${filePath.toAbsolutePath()}: ${e.message}", e)
+            throw RuntimeException("Failed to write file: ${e.message}", e)
+        }
+    }
+
+    private fun readFile(filePath: Path): ByteArray {
+        try {
+            return Files.readAllBytes(filePath)
+        } catch (e: IOException) {
+            logger.error("Failed to read file ${filePath.toAbsolutePath()}: ${e.message}", e)
+            throw RuntimeException("Failed to read file: ${e.message}", e)
+        }
+    }
+
+    private fun deleteFile(filePath: Path): Boolean {
+        try {
+            return Files.deleteIfExists(filePath)
+        } catch (e: IOException) {
+            logger.error("Failed to delete file ${filePath.toAbsolutePath()}: ${e.message}", e)
+            throw RuntimeException("Failed to delete file: ${e.message}", e)
+        }
+    }
+
+    private fun probeContentType(
+        filePath: Path,
+        defaultContentType: String = "application/octet-stream",
+    ): String =
+        try {
+            Files.probeContentType(filePath) ?: defaultContentType
+        } catch (e: IOException) {
+            logger.warn(
+                "Failed to probe content type for ${filePath.toAbsolutePath()}, " +
+                    "using default: $defaultContentType",
+            )
+            defaultContentType
+        }
+
+    private fun getFileExtension(filename: String): String {
+        val lastDotIndex = filename.lastIndexOf('.')
+        return if (lastDotIndex > 0) filename.substring(lastDotIndex) else ""
+    }
+
+    private fun applyCropping(
+        imageBytes: ByteArray,
+        cropArea: CropArea,
+    ): ByteArray {
+        // Get original image dimensions for logging
+        val originalImage = imageConversionService.getImageDimensions(imageBytes)
+        logger.info(
+            "Applying crop - Original image: ${originalImage.width}x${originalImage.height}, " +
+                "Crop area: x=${cropArea.x}, y=${cropArea.y}, " +
+                "width=${cropArea.width}, height=${cropArea.height}",
+        )
+
+        val croppedBytes = imageConversionService.cropImage(imageBytes, cropArea)
+        val croppedImage = imageConversionService.getImageDimensions(croppedBytes)
+        logger.info("Crop result - New dimensions: ${croppedImage.width}x${croppedImage.height}")
+
+        return croppedBytes
+    }
+
+    private fun getUserStorageDirectory(userId: Long): Path {
+        val storageRoot = storagePathService.getStorageRoot()
+        return storageRoot.resolve("private").resolve("images").resolve(userId.toString())
+    }
 }

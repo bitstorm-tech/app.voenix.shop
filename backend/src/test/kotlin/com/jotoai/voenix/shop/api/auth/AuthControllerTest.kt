@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.api.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.auth.api.AuthFacade
-import com.jotoai.voenix.shop.auth.api.AuthQueryService
 import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
@@ -14,9 +13,9 @@ import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath

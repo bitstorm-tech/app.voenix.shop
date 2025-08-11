@@ -40,17 +40,17 @@ class AdminImageController(
     ): ImageDto {
         // Parse the request part from JSON
         val createImageRequest = objectMapper.readValue(requestPart, CreateImageRequest::class.java)
-        
+
         // Get the actual admin user ID from security context
         val adminUser = userQueryService.getUserByEmail(userDetails.username)
-        
+
         // Upload the image using the facade's multipart method
         val uploadedImage = imageFacade.createUploadedImage(file, adminUser.id)
-        
+
         // Convert to the expected return type
         return SimpleImageDto(
             filename = uploadedImage.filename,
-            imageType = createImageRequest.imageType
+            imageType = createImageRequest.imageType,
         )
     }
 

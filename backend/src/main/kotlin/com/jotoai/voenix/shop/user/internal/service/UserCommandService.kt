@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.user.internal.service
 
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import org.springframework.dao.DataIntegrityViolationException
 import com.jotoai.voenix.shop.user.api.UserFacade
 import com.jotoai.voenix.shop.user.api.dto.BulkCreateUsersRequest
 import com.jotoai.voenix.shop.user.api.dto.BulkDeleteUsersRequest
@@ -15,6 +14,7 @@ import com.jotoai.voenix.shop.user.api.dto.UserDto
 import com.jotoai.voenix.shop.user.api.exceptions.createUserNotFoundException
 import com.jotoai.voenix.shop.user.internal.entity.User
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

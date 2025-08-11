@@ -15,24 +15,19 @@ import org.springframework.stereotype.Service
  */
 @Service
 class ImageAccessServiceImpl(
-    private val imageService: ImageService,
-    private val imageAccessValidationService: ImageAccessValidationService,
+    private val imageManagementService: ImageManagementService,
 ) : ImageAccessService {
     override fun getImageData(
         filename: String,
         userId: Long?,
-    ): Pair<ByteArray, String> =
-        when {
-            userId != null -> imageAccessValidationService.validateAccessAndGetImageData(filename, userId)
-            else -> imageService.getImageData(filename)
-        }
+    ): Pair<ByteArray, String> = imageManagementService.getImageData(filename, userId)
 
     override fun serveImage(
         filename: String,
         imageType: ImageType,
         format: ImageFormat?,
     ): ResponseEntity<Resource> {
-        val (imageData, contentType) = imageService.getImageData(filename)
+        val (imageData, contentType) = imageManagementService.getImageData(filename, imageType)
         return createImageResponse(imageData, contentType, filename)
     }
 
@@ -41,7 +36,7 @@ class ImageAccessServiceImpl(
         userId: Long,
         format: ImageFormat?,
     ): ResponseEntity<Resource> {
-        val (imageData, contentType) = imageAccessValidationService.validateAccessAndGetImageData(filename, userId)
+        val (imageData, contentType) = imageManagementService.validateAccessAndGetImageData(filename, userId)
         return createImageResponse(imageData, contentType, filename)
     }
 
@@ -49,7 +44,7 @@ class ImageAccessServiceImpl(
         filename: String,
         format: ImageFormat?,
     ): ResponseEntity<Resource> {
-        val (imageData, contentType) = imageService.getImageData(filename)
+        val (imageData, contentType) = imageManagementService.getImageData(filename)
         return createImageResponse(imageData, contentType, filename)
     }
 

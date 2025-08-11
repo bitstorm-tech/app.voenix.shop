@@ -46,21 +46,22 @@ class PromptSlotVariantServiceImpl(
         require(promptSlotTypeRepository.existsById(request.promptSlotTypeId)) {
             "PromptSlotType with id '${request.promptSlotTypeId}' does not exist"
         }
-        
+
         // Check name uniqueness
         require(!promptSlotVariantRepository.existsByName(request.name)) {
             "PromptSlotVariant with name '${request.name}' already exists"
         }
-        
+
         // Create new PromptSlotVariant entity
-        val promptSlotVariant = PromptSlotVariant(
-            promptSlotTypeId = request.promptSlotTypeId,
-            name = request.name,
-            prompt = request.prompt,
-            description = request.description,
-            exampleImageFilename = request.exampleImageFilename
-        )
-        
+        val promptSlotVariant =
+            PromptSlotVariant(
+                promptSlotTypeId = request.promptSlotTypeId,
+                name = request.name,
+                prompt = request.prompt,
+                description = request.description,
+                exampleImageFilename = request.exampleImageFilename,
+            )
+
         // Save to repository and return DTO
         val savedEntity = promptSlotVariantRepository.save(promptSlotVariant)
         return promptSlotVariantAssembler.toDto(savedEntity)
@@ -72,10 +73,11 @@ class PromptSlotVariantServiceImpl(
         request: UpdatePromptSlotVariantRequest,
     ): PromptSlotVariantDto {
         // Find existing entity or throw exception
-        val promptSlotVariant = promptSlotVariantRepository
-            .findById(id)
-            .orElseThrow { PromptSlotVariantNotFoundException("PromptSlotVariant", "id", id) }
-        
+        val promptSlotVariant =
+            promptSlotVariantRepository
+                .findById(id)
+                .orElseThrow { PromptSlotVariantNotFoundException("PromptSlotVariant", "id", id) }
+
         // If promptSlotTypeId is provided, validate it exists
         request.promptSlotTypeId?.let { newPromptSlotTypeId ->
             require(promptSlotTypeRepository.existsById(newPromptSlotTypeId)) {
@@ -83,7 +85,7 @@ class PromptSlotVariantServiceImpl(
             }
             promptSlotVariant.promptSlotTypeId = newPromptSlotTypeId
         }
-        
+
         // If name is changed, validate uniqueness (excluding current entity)
         request.name?.let { newName ->
             require(!promptSlotVariantRepository.existsByNameAndIdNot(newName, id)) {
@@ -91,12 +93,12 @@ class PromptSlotVariantServiceImpl(
             }
             promptSlotVariant.name = newName
         }
-        
+
         // Update all other provided fields
         request.prompt?.let { promptSlotVariant.prompt = it }
         request.description?.let { promptSlotVariant.description = it }
         request.exampleImageFilename?.let { promptSlotVariant.exampleImageFilename = it }
-        
+
         // Save and return DTO
         val savedEntity = promptSlotVariantRepository.save(promptSlotVariant)
         return promptSlotVariantAssembler.toDto(savedEntity)
@@ -108,7 +110,7 @@ class PromptSlotVariantServiceImpl(
         if (!promptSlotVariantRepository.existsById(id)) {
             throw PromptSlotVariantNotFoundException("PromptSlotVariant", "id", id)
         }
-        
+
         // Delete by ID
         promptSlotVariantRepository.deleteById(id)
     }

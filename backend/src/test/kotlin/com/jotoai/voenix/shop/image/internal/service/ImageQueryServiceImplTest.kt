@@ -2,8 +2,8 @@ package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
-import com.jotoai.voenix.shop.image.internal.domain.GeneratedImage
-import com.jotoai.voenix.shop.image.internal.domain.UploadedImage
+import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
+import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import org.junit.jupiter.api.Assertions.assertEquals
