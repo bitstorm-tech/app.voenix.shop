@@ -6,6 +6,7 @@ import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVarian
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.PromptSlotVariantDto
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSlotVariantNotFoundException
+import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
 import org.springframework.stereotype.Service
@@ -41,8 +42,28 @@ class PromptSlotVariantServiceImpl(
 
     @Transactional
     override fun createSlotVariant(request: CreatePromptSlotVariantRequest): PromptSlotVariantDto {
-        // Basic implementation - in reality would need the full entity creation logic
-        throw NotImplementedError("createSlotVariant not fully implemented - would need entity creation logic")
+        // Validate that promptSlotTypeId exists
+        require(promptSlotTypeRepository.existsById(request.promptSlotTypeId)) {
+            "PromptSlotType with id '${request.promptSlotTypeId}' does not exist"
+        }
+        
+        // Check name uniqueness
+        require(!promptSlotVariantRepository.existsByName(request.name)) {
+            "PromptSlotVariant with name '${request.name}' already exists"
+        }
+        
+        // Create new PromptSlotVariant entity
+        val promptSlotVariant = PromptSlotVariant(
+            promptSlotTypeId = request.promptSlotTypeId,
+            name = request.name,
+            prompt = request.prompt,
+            description = request.description,
+            exampleImageFilename = request.exampleImageFilename
+        )
+        
+        // Save to repository and return DTO
+        val savedEntity = promptSlotVariantRepository.save(promptSlotVariant)
+        return promptSlotVariantAssembler.toDto(savedEntity)
     }
 
     @Transactional
@@ -50,13 +71,45 @@ class PromptSlotVariantServiceImpl(
         id: Long,
         request: UpdatePromptSlotVariantRequest,
     ): PromptSlotVariantDto {
-        // Basic implementation - in reality would need the full entity update logic
-        throw NotImplementedError("updateSlotVariant not fully implemented - would need entity update logic")
+        // Find existing entity or throw exception
+        val promptSlotVariant = promptSlotVariantRepository
+            .findById(id)
+            .orElseThrow { PromptSlotVariantNotFoundException("PromptSlotVariant", "id", id) }
+        
+        // If promptSlotTypeId is provided, validate it exists
+        request.promptSlotTypeId?.let { newPromptSlotTypeId ->
+            require(promptSlotTypeRepository.existsById(newPromptSlotTypeId)) {
+                "PromptSlotType with id '$newPromptSlotTypeId' does not exist"
+            }
+            promptSlotVariant.promptSlotTypeId = newPromptSlotTypeId
+        }
+        
+        // If name is changed, validate uniqueness (excluding current entity)
+        request.name?.let { newName ->
+            require(!promptSlotVariantRepository.existsByNameAndIdNot(newName, id)) {
+                "PromptSlotVariant with name '$newName' already exists"
+            }
+            promptSlotVariant.name = newName
+        }
+        
+        // Update all other provided fields
+        request.prompt?.let { promptSlotVariant.prompt = it }
+        request.description?.let { promptSlotVariant.description = it }
+        request.exampleImageFilename?.let { promptSlotVariant.exampleImageFilename = it }
+        
+        // Save and return DTO
+        val savedEntity = promptSlotVariantRepository.save(promptSlotVariant)
+        return promptSlotVariantAssembler.toDto(savedEntity)
     }
 
     @Transactional
     override fun deleteSlotVariant(id: Long) {
-        // Basic implementation - in reality would need the full entity deletion logic
-        throw NotImplementedError("deleteSlotVariant not fully implemented - would need entity deletion logic")
+        // Check entity exists before deletion
+        if (!promptSlotVariantRepository.existsById(id)) {
+            throw PromptSlotVariantNotFoundException("PromptSlotVariant", "id", id)
+        }
+        
+        // Delete by ID
+        promptSlotVariantRepository.deleteById(id)
     }
 }
