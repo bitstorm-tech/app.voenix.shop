@@ -412,7 +412,7 @@ class PromptSlotVariantServiceImplTest {
             assertEquals("Keep prompt", existingEntity.prompt)
             assertEquals("Keep description", existingEntity.description)
             assertEquals(null, existingEntity.exampleImageFilename) // Should be cleared
-            
+
             // Verify the old image was deleted
             verify(imageStorageService).deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
         }
@@ -446,7 +446,7 @@ class PromptSlotVariantServiceImplTest {
             assertEquals("Same Name", existingEntity.name)
             assertEquals("Updated prompt", existingEntity.prompt)
         }
-        
+
         @Test
         fun `should delete old image when replacing with new image`() {
             // Given
@@ -475,11 +475,11 @@ class PromptSlotVariantServiceImplTest {
             // Then
             assertNotNull(result)
             assertEquals("new-image.jpg", existingEntity.exampleImageFilename)
-            
+
             // Verify the old image was deleted
             verify(imageStorageService).deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
         }
-        
+
         @Test
         fun `should not delete image when filename stays the same`() {
             // Given
@@ -509,7 +509,7 @@ class PromptSlotVariantServiceImplTest {
             // Then
             assertNotNull(result)
             assertEquals("same-image.jpg", existingEntity.exampleImageFilename)
-            
+
             // Verify the image was NOT deleted since it's the same
             verify(imageStorageService, never()).deleteFile(any(), any())
         }
@@ -529,7 +529,7 @@ class PromptSlotVariantServiceImplTest {
                     prompt = "Will be deleted",
                     exampleImageFilename = "image-to-delete.jpg",
                 )
-            
+
             whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
             whenever(imageStorageService.deleteFile("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)).thenReturn(true)
 
@@ -541,7 +541,7 @@ class PromptSlotVariantServiceImplTest {
             verify(imageStorageService).deleteFile("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
             verify(promptSlotVariantRepository).deleteById(1L)
         }
-        
+
         @Test
         fun `should successfully delete slot variant without image`() {
             // Given
@@ -553,7 +553,7 @@ class PromptSlotVariantServiceImplTest {
                     prompt = "Will be deleted",
                     exampleImageFilename = null,
                 )
-            
+
             whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
 
             // When
@@ -592,7 +592,7 @@ class PromptSlotVariantServiceImplTest {
                     prompt = "Referenced prompt",
                     exampleImageFilename = null,
                 )
-            
+
             whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
 
             // When

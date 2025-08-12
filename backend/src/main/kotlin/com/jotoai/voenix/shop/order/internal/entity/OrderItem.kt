@@ -40,8 +40,6 @@ class OrderItem(
     var generatedImageFilename: String? = null,
     @Column(name = "prompt_id", nullable = true)
     var promptId: Long? = null,
-    @Column(name = "prompt_text", nullable = true, columnDefinition = "TEXT")
-    var prompt: String? = null,
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "custom_data", nullable = false, columnDefinition = "jsonb")
     var customData: Map<String, Any> = emptyMap(), // Crop info, etc.

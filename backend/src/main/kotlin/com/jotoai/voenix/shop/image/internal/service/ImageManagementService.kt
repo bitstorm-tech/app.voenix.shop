@@ -13,8 +13,6 @@ import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
-import java.io.IOException
-import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -22,6 +20,8 @@ import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
+import java.util.*
 
 /**
  * Consolidated image management service that handles all image operations.
@@ -67,26 +67,27 @@ class ImageManagementService(
     ): UploadedImageDto {
         try {
             logger.debug("Creating uploaded image for user $userId with type $imageType")
-            
+
             val uuid = UUID.randomUUID()
             val originalFilename = file.originalFilename ?: "unknown"
             val contentType = file.contentType ?: "application/octet-stream"
             val fileSize = file.size
             val uploadedAt = java.time.LocalDateTime.now()
-            
+
             // Route to appropriate storage based on imageType
-            val storedFilename = when (imageType) {
-                ImageType.PRIVATE -> {
-                    // For private images, use the existing user-specific storage
-                    val storageImpl = imageStorageService as ImageStorageServiceImpl
-                    val uploadedImage = storageImpl.storeUploadedImage(file, userId)
-                    uploadedImage.storedFilename
+            val storedFilename =
+                when (imageType) {
+                    ImageType.PRIVATE -> {
+                        // For private images, use the existing user-specific storage
+                        val storageImpl = imageStorageService as ImageStorageServiceImpl
+                        val uploadedImage = storageImpl.storeUploadedImage(file, userId)
+                        uploadedImage.storedFilename
+                    }
+                    else -> {
+                        // For all other types, use the standard storage with correct path
+                        imageStorageService.storeFile(file, imageType)
+                    }
                 }
-                else -> {
-                    // For all other types, use the standard storage with correct path
-                    imageStorageService.storeFile(file, imageType)
-                }
-            }
 
             return UploadedImageDto(
                 filename = storedFilename,

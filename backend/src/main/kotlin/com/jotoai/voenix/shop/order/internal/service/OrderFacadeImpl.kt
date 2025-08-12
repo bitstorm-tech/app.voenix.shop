@@ -107,7 +107,6 @@ class OrderFacadeImpl(
                     generatedImageId = cartItem.generatedImageId,
                     generatedImageFilename = null, // TODO: Get from image service if needed
                     promptId = cartItem.promptId,
-                    prompt = cartItem.promptText,
                     customData = cartItem.customData ?: emptyMap(),
                 )
             order.addItem(orderItem)

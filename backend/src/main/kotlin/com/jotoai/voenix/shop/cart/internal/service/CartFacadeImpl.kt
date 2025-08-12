@@ -74,13 +74,12 @@ class CartFacadeImpl(
             }
         }
 
-        val promptText =
-            request.promptId?.let { promptId ->
-                if (!promptQueryService.existsById(promptId)) {
-                    throw ResourceNotFoundException("Prompt not found with id: $promptId")
-                }
-                promptQueryService.getPromptById(promptId).promptText
+        // Validate prompt if provided
+        request.promptId?.let { promptId ->
+            if (!promptQueryService.existsById(promptId)) {
+                throw ResourceNotFoundException("Prompt not found with id: $promptId")
             }
+        }
 
         // Create new cart item
         val cartItem =
@@ -94,7 +93,6 @@ class CartFacadeImpl(
                 customData = request.customData,
                 generatedImageId = request.generatedImageId,
                 promptId = request.promptId,
-                prompt = promptText,
             )
 
         // Add or update item in cart
@@ -152,7 +150,6 @@ class CartFacadeImpl(
                 throw ResourceNotFoundException("Prompt not found with id: $promptId")
             }
             cartItem.promptId = promptId
-            cartItem.prompt = promptQueryService.getPromptById(promptId).promptText
         }
 
         val savedCart = saveCartWithOptimisticLocking(cart)
@@ -282,7 +279,13 @@ class CartFacadeImpl(
                         totalPrice = item.getTotalPrice(),
                         generatedImageId = item.generatedImageId,
                         promptId = item.promptId,
-                        promptText = item.prompt,
+                        promptText = item.promptId?.let { 
+                            try {
+                                promptQueryService.getPromptById(it).promptText
+                            } catch (e: Exception) {
+                                null // Handle case where prompt might have been deleted
+                            }
+                        },
                         customData = item.customData,
                     )
                 },

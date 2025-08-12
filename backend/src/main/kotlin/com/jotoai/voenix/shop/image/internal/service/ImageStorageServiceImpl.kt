@@ -270,7 +270,10 @@ class ImageStorageServiceImpl(
             if (cropArea != null) {
                 logger.debug(
                     "Applying crop - x: {}, y: {}, width: {}, height: {}",
-                    cropArea.x, cropArea.y, cropArea.width, cropArea.height,
+                    cropArea.x,
+                    cropArea.y,
+                    cropArea.width,
+                    cropArea.height,
                 )
                 imageBytes = applyCropping(imageBytes, cropArea)
             }

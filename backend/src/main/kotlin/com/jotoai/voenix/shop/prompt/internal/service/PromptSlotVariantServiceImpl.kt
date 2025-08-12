@@ -100,21 +100,23 @@ class PromptSlotVariantServiceImpl(
         // Update all other provided fields
         request.prompt?.let { promptSlotVariant.prompt = it }
         request.description?.let { promptSlotVariant.description = it }
-        
+
         // Handle image update explicitly
         // The standard ?.let pattern doesn't work here because we need to handle null differently:
-        // - null means "remove the image" 
+        // - null means "remove the image"
         // - field not present in JSON means "don't change the image"
         // Unfortunately, Kotlin data classes can't distinguish between these two cases.
-        // So we use a heuristic: if ANY field is provided in the request, 
+        // So we use a heuristic: if ANY field is provided in the request,
         // then a null exampleImageFilename means delete.
-        if (request.name != null || request.prompt != null || 
-            request.description != null || request.promptSlotTypeId != null || 
-            request.exampleImageFilename != null) {
-            
+        if (request.name != null ||
+            request.prompt != null ||
+            request.description != null ||
+            request.promptSlotTypeId != null ||
+            request.exampleImageFilename != null
+        ) {
             val oldImageFilename = promptSlotVariant.exampleImageFilename
             val newImageFilename = request.exampleImageFilename
-            
+
             // Delete old image if:
             // 1. We're setting to null (removal)
             // 2. We're changing to a different filename
@@ -126,7 +128,7 @@ class PromptSlotVariantServiceImpl(
                     // This prevents orphaned files from blocking updates
                 }
             }
-            
+
             // Always update the filename if any field was provided
             // This handles both setting a new filename and clearing it (null)
             promptSlotVariant.exampleImageFilename = newImageFilename
@@ -144,7 +146,7 @@ class PromptSlotVariantServiceImpl(
             promptSlotVariantRepository
                 .findById(id)
                 .orElseThrow { PromptSlotVariantNotFoundException("PromptSlotVariant", "id", id) }
-        
+
         // Delete the associated image file if it exists
         promptSlotVariant.exampleImageFilename?.let { filename ->
             try {

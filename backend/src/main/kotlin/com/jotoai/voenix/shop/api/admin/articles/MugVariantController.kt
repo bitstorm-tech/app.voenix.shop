@@ -84,15 +84,16 @@ class MugVariantController(
         )
 
         // Create crop area if crop parameters are provided
-        val cropArea = if (cropX != null && cropY != null && cropWidth != null && cropHeight != null) {
-            CropArea(x = cropX, y = cropY, width = cropWidth, height = cropHeight)
-        } else {
-            null
-        }
+        val cropArea =
+            if (cropX != null && cropY != null && cropWidth != null && cropHeight != null) {
+                CropArea(x = cropX, y = cropY, width = cropWidth, height = cropHeight)
+            } else {
+                null
+            }
 
         // Store the image directly in the mug variant images directory
         val storedFilename = imageStorageService.storeMugVariantImage(file, cropArea)
-        
+
         // Update the variant with the new image filename
         val updatedVariant = mugVariantFacade.updateExampleImage(variantId, storedFilename)
 

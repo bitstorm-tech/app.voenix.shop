@@ -10,6 +10,7 @@ import com.jotoai.voenix.shop.cart.api.exceptions.CartNotFoundException
 import com.jotoai.voenix.shop.cart.internal.assembler.CartAssembler
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
+import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -21,6 +22,7 @@ class CartQueryServiceImpl(
     private val cartRepository: CartRepository,
     private val userQueryService: UserQueryService,
     private val cartAssembler: CartAssembler,
+    private val promptQueryService: PromptQueryService,
 ) : CartQueryService {
     private val logger = LoggerFactory.getLogger(CartQueryServiceImpl::class.java)
 
@@ -116,7 +118,13 @@ class CartQueryServiceImpl(
                             totalPrice = item.getTotalPrice(),
                             generatedImageId = item.generatedImageId,
                             promptId = item.promptId,
-                            promptText = item.prompt,
+                            promptText = item.promptId?.let {
+                                try {
+                                    promptQueryService.getPromptById(it).promptText
+                                } catch (e: Exception) {
+                                    null // Handle case where prompt might have been deleted
+                                }
+                            },
                             customData = item.customData,
                         )
                     },

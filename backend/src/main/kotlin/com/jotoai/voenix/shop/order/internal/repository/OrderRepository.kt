@@ -58,7 +58,6 @@ interface OrderRepository : JpaRepository<Order, UUID> {
         """
         SELECT o FROM Order o 
         LEFT JOIN FETCH o.items oi
-        LEFT JOIN FETCH oi.prompt p
         WHERE o.id = :orderId AND o.userId = :userId
         """,
     )

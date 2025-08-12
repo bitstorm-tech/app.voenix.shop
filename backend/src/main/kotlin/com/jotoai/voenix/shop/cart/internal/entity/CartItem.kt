@@ -41,8 +41,6 @@ class CartItem(
     var generatedImageId: Long? = null,
     @Column(name = "prompt_id", nullable = true)
     var promptId: Long? = null,
-    @Column(name = "prompt_text", nullable = true, columnDefinition = "TEXT")
-    var prompt: String? = null,
     @Column(name = "position", nullable = false)
     var position: Int = 0,
     @CreationTimestamp

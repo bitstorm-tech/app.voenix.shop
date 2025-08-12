@@ -9,6 +9,7 @@ import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
 import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
@@ -33,9 +34,11 @@ class ImageGenerationServiceImpl(
     private val openAIImageFacade: OpenAIImageFacade,
     private val promptQueryService: PromptQueryService,
     private val generatedImageRepository: GeneratedImageRepository,
+    private val uploadedImageRepository: UploadedImageRepository,
     private val userQueryService: UserQueryService,
     private val imageStorageService: ImageStorageService,
     private val storagePathService: StoragePathService,
+    private val imageStorageServiceImpl: ImageStorageServiceImpl,
     private val request: HttpServletRequest,
 ) : ImageGenerationService {
     companion object {
@@ -158,13 +161,51 @@ class ImageGenerationServiceImpl(
         uploadedImageUuid: UUID,
         userId: Long,
     ): String {
-        // This is a simplified implementation - in reality, we need to retrieve the uploaded image
-        // and process it through OpenAI. For now, this matches the original implementation limitation.
-        throw UnsupportedOperationException(
-            "User image generation from UUID requires retrieving the uploaded image file. " +
-                "This functionality needs to be implemented to convert UUID back to MultipartFile " +
-                "or extend the OpenAI facade to work with stored images directly.",
-        )
+        logger.info("Processing user image generation for user $userId with uploaded image UUID: $uploadedImageUuid")
+
+        // Retrieve the uploaded image entity
+        val uploadedImage = imageStorageServiceImpl.getUploadedImageByUuid(uploadedImageUuid, userId)
+
+        // Load the image data from storage
+        val (imageBytes, contentType) = imageStorageServiceImpl.getUserImageData(uploadedImage.storedFilename, userId)
+
+        // Create a MultipartFile wrapper for the stored image
+        val multipartFile =
+            ByteArrayMultipartFile(
+                bytes = imageBytes,
+                filename = uploadedImage.originalFilename,
+                contentType = contentType,
+                fieldName = "image",
+            )
+
+        // Create OpenAI request (reuse logic from public generation)
+        val request = PublicImageGenerationRequest(promptId = promptId, n = 1)
+        val openAIRequest = createOpenAIRequest(request)
+
+        logger.debug("Generated OpenAI request for user image: {}", openAIRequest)
+
+        // Generate image using OpenAI service
+        val imageEditResponse = openAIImageFacade.editImageBytes(multipartFile, openAIRequest)
+
+        // Store the generated image(s) in user storage
+        val generatedImages =
+            imageEditResponse.imageBytes.mapIndexed { index, generatedBytes ->
+                imageStorageServiceImpl.storeGeneratedImage(
+                    imageBytes = generatedBytes,
+                    uploadedImage = uploadedImage,
+                    promptId = promptId,
+                    generationNumber = index + 1,
+                )
+            }
+
+        // Return the filename of the first generated image
+        val firstGeneratedImage =
+            generatedImages.firstOrNull()
+                ?: throw IllegalStateException("No images were generated")
+
+        logger.info("Successfully generated ${generatedImages.size} image(s) for user $userId")
+
+        return firstGeneratedImage.filename
     }
 
     private fun checkPublicRateLimit(ipAddress: String) {
