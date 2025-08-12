@@ -4,16 +4,14 @@ import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
-import com.jotoai.voenix.shop.image.api.ImageFacade
-import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.image.api.dto.CropArea
+import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
 import jakarta.validation.Valid
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -31,8 +29,7 @@ import org.springframework.web.multipart.MultipartFile
 class MugVariantController(
     private val mugVariantQueryService: MugVariantQueryService,
     private val mugVariantFacade: MugVariantFacade,
-    private val imageFacade: ImageFacade,
-    private val userQueryService: UserQueryService,
+    private val imageStorageService: ImageStorageServiceImpl,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(MugVariantController::class.java)
@@ -80,20 +77,26 @@ class MugVariantController(
         @RequestParam("cropY", required = false) cropY: Double?,
         @RequestParam("cropWidth", required = false) cropWidth: Double?,
         @RequestParam("cropHeight", required = false) cropHeight: Double?,
-        @AuthenticationPrincipal userDetails: UserDetails,
     ): ResponseEntity<MugArticleVariantDto> {
         logger.info(
             "Received image upload for variant $variantId - File: ${file.originalFilename}, " +
                 "Size: ${file.size} bytes, Crop params: x=$cropX, y=$cropY, width=$cropWidth, height=$cropHeight",
         )
 
-        // Get the actual admin user ID from security context
-        val adminUser = userQueryService.getUserByEmail(userDetails.username)
+        // Create crop area if crop parameters are provided
+        val cropArea = if (cropX != null && cropY != null && cropWidth != null && cropHeight != null) {
+            CropArea(x = cropX, y = cropY, width = cropWidth, height = cropHeight)
+        } else {
+            null
+        }
 
-        // Upload the image using the facade's multipart method
-        val uploadedImage = imageFacade.createUploadedImage(file, adminUser.id)
-        val updatedVariant = mugVariantFacade.updateExampleImage(variantId, uploadedImage.filename)
+        // Store the image directly in the mug variant images directory
+        val storedFilename = imageStorageService.storeMugVariantImage(file, cropArea)
+        
+        // Update the variant with the new image filename
+        val updatedVariant = mugVariantFacade.updateExampleImage(variantId, storedFilename)
 
+        logger.info("Successfully uploaded image for variant $variantId - Filename: $storedFilename")
         return ResponseEntity.ok(updatedVariant)
     }
 

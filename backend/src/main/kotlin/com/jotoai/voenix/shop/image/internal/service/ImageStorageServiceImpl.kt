@@ -233,6 +233,99 @@ class ImageStorageServiceImpl(
         deleteImage(filename, imageType)
     }
 
+    // Mug Variant Storage Operations
+
+    /**
+     * Stores a mug variant example image with optional cropping.
+     * Images are stored in the public mug variant example images directory.
+     *
+     * @param file The multipart file containing the image
+     * @param cropArea Optional crop area to apply to the image
+     * @return The filename of the stored image
+     */
+    fun storeMugVariantImage(
+        file: MultipartFile,
+        cropArea: CropArea? = null,
+    ): String {
+        logger.debug("Storing mug variant image - Original filename: {}", file.originalFilename)
+
+        // Use the public mug variant example image type
+        val imageType = ImageType.MUG_VARIANT_EXAMPLE
+
+        // Validate the file
+        validateFile(file, MAX_FILE_SIZE, ALLOWED_CONTENT_TYPES)
+
+        // Generate a unique filename with PNG extension (we'll convert to PNG)
+        val storedFilename = "${UUID.randomUUID()}.png"
+
+        val targetPath = storagePathService.getPhysicalPath(imageType)
+        val filePath = targetPath.resolve(storedFilename)
+
+        logger.info("Storing mug variant image - Target path: ${filePath.toAbsolutePath()}")
+
+        try {
+            var imageBytes = file.bytes
+
+            // Apply cropping if requested
+            if (cropArea != null) {
+                logger.debug(
+                    "Applying crop - x: {}, y: {}, width: {}, height: {}",
+                    cropArea.x, cropArea.y, cropArea.width, cropArea.height,
+                )
+                imageBytes = applyCropping(imageBytes, cropArea)
+            }
+
+            // Convert to PNG for consistency
+            imageBytes = imageConversionService.convertToPng(imageBytes)
+
+            // Ensure the directory exists
+            Files.createDirectories(targetPath)
+
+            // Write the file
+            writeFile(filePath, imageBytes)
+            logger.info("Successfully stored mug variant image: {}", storedFilename)
+
+            return storedFilename
+        } catch (e: Exception) {
+            logger.error("Failed to store mug variant image: ${e.message}", e)
+            // Try to clean up the file if it was partially written
+            try {
+                Files.deleteIfExists(filePath)
+            } catch (cleanupEx: Exception) {
+                logger.warn("Failed to clean up partial file: ${cleanupEx.message}")
+            }
+            throw RuntimeException("Failed to store mug variant image: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Deletes a mug variant image from storage.
+     *
+     * @param filename The filename of the image to delete
+     * @return true if the file was deleted, false if it didn't exist
+     */
+    fun deleteMugVariantImage(filename: String): Boolean {
+        if (filename.isBlank()) {
+            return false
+        }
+
+        val imageType = ImageType.MUG_VARIANT_EXAMPLE
+        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+
+        return try {
+            val deleted = Files.deleteIfExists(filePath)
+            if (deleted) {
+                logger.info("Deleted mug variant image: {}", filename)
+            } else {
+                logger.debug("Mug variant image not found for deletion: {}", filename)
+            }
+            deleted
+        } catch (e: Exception) {
+            logger.error("Error deleting mug variant image {}: {}", filename, e.message)
+            false
+        }
+    }
+
     // User-specific Storage Operations (formerly in UserImageStorageService)
 
     /**

@@ -7,18 +7,16 @@ import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssemb
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
-import com.jotoai.voenix.shop.image.api.ImageStorageService
-import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.io.IOException
 
 @Service
 class MugVariantServiceImpl(
     private val articleRepository: ArticleRepository,
     private val mugVariantRepository: MugArticleVariantRepository,
-    private val imageStorageService: ImageStorageService,
+    private val imageStorageService: ImageStorageServiceImpl,
     private val mugArticleVariantAssembler: MugArticleVariantAssembler,
 ) : com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService,
     com.jotoai.voenix.shop.article.api.variants.MugVariantFacade {
@@ -119,8 +117,8 @@ class MugVariantServiceImpl(
         // Delete associated image if exists
         variant.exampleImageFilename?.let { filename ->
             try {
-                imageStorageService.deleteFile(filename, ImageType.MUG_VARIANT_EXAMPLE)
-            } catch (e: IOException) {
+                imageStorageService.deleteMugVariantImage(filename)
+            } catch (e: Exception) {
                 logger.warn("Failed to delete mug variant example image during variant deletion: $filename", e)
             }
         }
@@ -151,6 +149,18 @@ class MugVariantServiceImpl(
             mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
                 ?: throw ArticleNotFoundException("Mug variant not found with id: $variantId")
 
+        // Delete the old image if it exists and is different from the new one
+        variant.exampleImageFilename?.let { oldFilename ->
+            if (oldFilename != filename) {
+                try {
+                    imageStorageService.deleteMugVariantImage(oldFilename)
+                    logger.debug("Deleted old mug variant image: $oldFilename")
+                } catch (e: Exception) {
+                    logger.warn("Failed to delete old mug variant image: $oldFilename", e)
+                }
+            }
+        }
+
         variant.exampleImageFilename = filename
         return mugArticleVariantAssembler.toDto(mugVariantRepository.save(variant))
     }
@@ -164,8 +174,8 @@ class MugVariantServiceImpl(
         // Delete the image file if it exists
         variant.exampleImageFilename?.let { filename ->
             try {
-                imageStorageService.deleteFile(filename, ImageType.MUG_VARIANT_EXAMPLE)
-            } catch (e: IOException) {
+                imageStorageService.deleteMugVariantImage(filename)
+            } catch (e: Exception) {
                 logger.warn("Failed to delete mug variant example image: $filename", e)
             }
         }
