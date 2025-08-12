@@ -37,7 +37,7 @@ export default function App() {
             </Route>
           </Routes>
         </Suspense>
-        <Toaster position="top-right" richColors />
+        <Toaster position="top-center" richColors />
         <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-left" />
       </Router>
     </QueryClientProvider>
