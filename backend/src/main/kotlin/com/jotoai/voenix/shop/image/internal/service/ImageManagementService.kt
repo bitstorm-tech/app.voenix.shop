@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
+import java.time.LocalDateTime
 import java.util.UUID
 
 /**
@@ -55,19 +56,47 @@ class ImageManagementService(
         file: MultipartFile,
         userId: Long,
     ): UploadedImageDto {
+        // Delegate to the overloaded method with default PRIVATE type for backward compatibility
+        return createUploadedImage(file, userId, ImageType.PRIVATE)
+    }
+
+    @Transactional
+    override fun createUploadedImage(
+        file: MultipartFile,
+        userId: Long,
+        imageType: ImageType,
+    ): UploadedImageDto {
         try {
-            logger.debug("Creating uploaded image for user $userId")
-            val storageImpl = imageStorageService as ImageStorageServiceImpl
-            val uploadedImage = storageImpl.storeUploadedImage(file, userId)
+            logger.debug("Creating uploaded image for user $userId with type $imageType")
+            
+            val uuid = UUID.randomUUID()
+            val originalFilename = file.originalFilename ?: "unknown"
+            val contentType = file.contentType ?: "application/octet-stream"
+            val fileSize = file.size
+            val uploadedAt = java.time.LocalDateTime.now()
+            
+            // Route to appropriate storage based on imageType
+            val storedFilename = when (imageType) {
+                ImageType.PRIVATE -> {
+                    // For private images, use the existing user-specific storage
+                    val storageImpl = imageStorageService as ImageStorageServiceImpl
+                    val uploadedImage = storageImpl.storeUploadedImage(file, userId)
+                    uploadedImage.storedFilename
+                }
+                else -> {
+                    // For all other types, use the standard storage with correct path
+                    imageStorageService.storeFile(file, imageType)
+                }
+            }
 
             return UploadedImageDto(
-                filename = uploadedImage.storedFilename,
-                imageType = ImageType.PRIVATE,
-                uuid = uploadedImage.uuid,
-                originalFilename = uploadedImage.originalFilename,
-                contentType = uploadedImage.contentType,
-                fileSize = uploadedImage.fileSize,
-                uploadedAt = uploadedImage.uploadedAt,
+                filename = storedFilename,
+                imageType = imageType,
+                uuid = uuid,
+                originalFilename = originalFilename,
+                contentType = contentType,
+                fileSize = fileSize,
+                uploadedAt = uploadedAt,
             )
         } catch (e: DataAccessException) {
             throw ImageStorageException("Failed to create uploaded image: ${e.message}", e)

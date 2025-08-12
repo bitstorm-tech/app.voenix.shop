@@ -44,13 +44,13 @@ class AdminImageController(
         // Get the actual admin user ID from security context
         val adminUser = userQueryService.getUserByEmail(userDetails.username)
 
-        // Upload the image using the facade's multipart method
-        val uploadedImage = imageFacade.createUploadedImage(file, adminUser.id)
+        // Upload the image using the facade's multipart method with the specified imageType
+        val uploadedImage = imageFacade.createUploadedImage(file, adminUser.id, createImageRequest.imageType)
 
         // Convert to the expected return type
         return SimpleImageDto(
             filename = uploadedImage.filename,
-            imageType = createImageRequest.imageType,
+            imageType = uploadedImage.imageType,
         )
     }
 

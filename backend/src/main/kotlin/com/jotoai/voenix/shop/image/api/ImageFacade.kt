@@ -3,6 +3,7 @@ package com.jotoai.voenix.shop.image.api
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
+import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import org.springframework.web.multipart.MultipartFile
@@ -19,6 +20,15 @@ interface ImageFacade {
     fun createUploadedImage(
         file: MultipartFile,
         userId: Long,
+    ): UploadedImageDto
+
+    /**
+     * Creates a new uploaded image from multipart file with specified image type.
+     */
+    fun createUploadedImage(
+        file: MultipartFile,
+        userId: Long,
+        imageType: ImageType,
     ): UploadedImageDto
 
     /**

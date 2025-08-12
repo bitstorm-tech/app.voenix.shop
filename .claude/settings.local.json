@@ -57,7 +57,8 @@
       "mcp__context7__get-library-docs",
       "Bash(echo:*)",
       "Bash(curl:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(lsof:*)"
     ],
     "deny": []
   }
