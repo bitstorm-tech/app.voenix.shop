@@ -178,8 +178,8 @@ class ImageGenerationServiceImpl(
                 fieldName = "image",
             )
 
-        // Create OpenAI request (reuse logic from public generation)
-        val request = PublicImageGenerationRequest(promptId = promptId, n = 1)
+        // Create OpenAI request to generate 4 images (matching the public generation)
+        val request = PublicImageGenerationRequest(promptId = promptId, n = 4)
         val openAIRequest = createOpenAIRequest(request)
 
         logger.debug("Generated OpenAI request for user image: {}", openAIRequest)

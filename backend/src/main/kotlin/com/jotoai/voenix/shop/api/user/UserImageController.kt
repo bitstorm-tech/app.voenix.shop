@@ -52,17 +52,15 @@ class UserImageController(
         // First upload the image to get UUID
         val uploadedImage = imageFacade.createUploadedImage(imageFile, user.id)
 
-        // Then generate images using the uploaded image UUID
-        val generatedImageIds =
-            (1..generationRequest.n).map {
-                imageGenerationService.generateUserImage(promptId, uploadedImage.uuid, user.id)
-            }
-
-        // Create response with API URLs and parse IDs from generated filenames
-        val imageUrls =
-            generatedImageIds.map { filename ->
-                "/api/user/images/$filename"
-            }
+        // Generate all 4 images in one call (this will return the first image filename)
+        val firstGeneratedImage = imageGenerationService.generateUserImage(promptId, uploadedImage.uuid, user.id)
+        
+        // Extract the base UUID from the first filename to construct all 4 filenames
+        // Format is: {uuid}_generated_1.png, so we need to construct 1-4
+        val baseUuid = uploadedImage.uuid.toString()
+        val imageUrls = (1..generationRequest.n).map { index ->
+            "/api/user/images/${baseUuid}_generated_${index}.png"
+        }
 
         // For now, return empty list for generated image IDs as the public API returns filenames
         return PublicImageGenerationResponse(

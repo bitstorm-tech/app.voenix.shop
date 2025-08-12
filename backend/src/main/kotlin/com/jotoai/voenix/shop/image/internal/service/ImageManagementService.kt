@@ -81,7 +81,16 @@ class ImageManagementService(
                         // For private images, use the existing user-specific storage
                         val storageImpl = imageStorageService as ImageStorageServiceImpl
                         val uploadedImage = storageImpl.storeUploadedImage(file, userId)
-                        uploadedImage.storedFilename
+                        // Return the DTO with the actual UUID from the saved entity
+                        return UploadedImageDto(
+                            filename = uploadedImage.storedFilename,
+                            imageType = imageType,
+                            uuid = uploadedImage.uuid,  // Use the UUID from the saved entity
+                            originalFilename = uploadedImage.originalFilename,
+                            contentType = uploadedImage.contentType,
+                            fileSize = uploadedImage.fileSize,
+                            uploadedAt = uploadedImage.uploadedAt,
+                        )
                     }
                     else -> {
                         // For all other types, use the standard storage with correct path
