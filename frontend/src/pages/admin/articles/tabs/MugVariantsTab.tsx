@@ -202,11 +202,11 @@ export default function MugVariantsTab({
     setImageFile(null);
     setCropData(null);
     setImageDimensions(null);
-    // Clear the existing image URL when removing image
+    // Mark the existing image for removal but keep the URL reference
     if (existingImageUrl) {
       setImageRemoved(true);
+      // Don't clear existingImageUrl here - we need it to know which image to remove
     }
-    setExistingImageUrl(null);
   };
 
   const handleEditVariant = (variant: ArticleMugVariant) => {
@@ -320,9 +320,8 @@ export default function MugVariantsTab({
         // Handle image removal if user removed the existing image
         if (imageRemoved && existingImageUrl && !imageFile) {
           try {
-            await articlesApi.removeMugVariantImage(editingVariantId);
-            response.exampleImageFilename = null;
-            response.exampleImageUrl = null;
+            // The removeMugVariantImage API returns the updated variant
+            response = await articlesApi.removeMugVariantImage(editingVariantId);
             toast.success('Image removed successfully');
           } catch (error) {
             console.error('Error removing variant image:', error);
