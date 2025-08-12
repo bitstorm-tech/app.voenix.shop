@@ -6,6 +6,7 @@ import com.jotoai.voenix.shop.prompt.api.dto.slottypes.CreatePromptSlotTypeReque
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.PromptSlotTypeDto
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.UpdatePromptSlotTypeRequest
 import jakarta.validation.Valid
+import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -45,7 +46,8 @@ class AdminPromptSlotTypeController(
     @DeleteMapping("/{id}")
     fun deletePromptSlotType(
         @PathVariable id: Long,
-    ) {
+    ): ResponseEntity<Void> {
         promptSlotTypeFacade.deletePromptSlotType(id)
+        return ResponseEntity.noContent().build()
     }
 }
