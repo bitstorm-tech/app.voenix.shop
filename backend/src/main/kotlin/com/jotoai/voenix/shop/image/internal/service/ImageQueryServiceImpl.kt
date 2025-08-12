@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.image.api.ImageQueryService
+import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
@@ -70,4 +71,38 @@ class ImageQueryServiceImpl(
             // For anonymous users, only check existence
             existsGeneratedImageById(imageId)
         }
+
+    override fun findGeneratedImageById(id: Long): GeneratedImageDto? {
+        val generatedImage = generatedImageRepository.findById(id).orElse(null)
+        return generatedImage?.let {
+            GeneratedImageDto(
+                filename = it.filename,
+                imageType = ImageType.GENERATED,
+                promptId = it.promptId,
+                userId = it.userId,
+                generatedAt = it.generatedAt,
+                ipAddress = it.ipAddress,
+            )
+        }
+    }
+
+    override fun findGeneratedImagesByIds(ids: List<Long>): Map<Long, GeneratedImageDto> {
+        if (ids.isEmpty()) return emptyMap()
+
+        return generatedImageRepository
+            .findAllById(ids)
+            .associateBy(
+                { requireNotNull(it.id) { "GeneratedImage ID cannot be null" } },
+                { generatedImage ->
+                    GeneratedImageDto(
+                        filename = generatedImage.filename,
+                        imageType = ImageType.GENERATED,
+                        promptId = generatedImage.promptId,
+                        userId = generatedImage.userId,
+                        generatedAt = generatedImage.generatedAt,
+                        ipAddress = generatedImage.ipAddress,
+                    )
+                },
+            )
+    }
 }

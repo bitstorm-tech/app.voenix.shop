@@ -1,7 +1,9 @@
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { CartItemImage } from '@/components/CartItemImage';
 import { Button } from '@/components/ui/Button';
 import { useSession } from '@/hooks/queries/useAuth';
 import { useCart, useRemoveCartItem, useUpdateCartItem } from '@/hooks/queries/useCart';
+import { imagePreloader } from '@/lib/imagePreloader';
 import { Minus, Plus, RefreshCw, ShoppingBag, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +31,25 @@ export default function CartPage() {
   const items = cartData?.items || [];
   const totalItems = cartData?.totalItemCount || 0;
   const totalPrice = (cartData?.totalPrice || 0) / 100; // Convert cents to dollars
+
+  // Preload cart images for better performance
+  useEffect(() => {
+    if (items.length > 0) {
+      const imagesToPreload = items
+        .filter(item => item.generatedImageFilename)
+        .map((item, index) => ({
+          src: `/api/user/images/${item.generatedImageFilename}`,
+          priority: index < 3 ? 'high' : 'medium' as const, // First 3 images get high priority
+        }));
+
+      if (imagesToPreload.length > 0) {
+        imagePreloader.preloadImages(imagesToPreload).catch(error => {
+          console.log('Some images failed to preload:', error);
+          // Non-critical error, don't show to user
+        });
+      }
+    }
+  }, [items]);
 
   const handleUpdateQuantity = async (itemId: number, newQuantity: number) => {
     setUpdatingItems((prev) => new Set(prev).add(itemId));
@@ -160,29 +181,19 @@ export default function CartPage() {
                 return (
                   <div key={itemId} className="rounded-lg bg-white p-6 shadow-sm">
                     <div className="sm:flex sm:items-start">
-                      <div className="flex-shrink-0">
-                        {imageUrl ? (
-                          <img
-                            src={imageUrl}
-                            alt="Custom mug design"
-                            className="h-24 w-24 rounded-md object-cover sm:h-32 sm:w-32"
-                            onError={(e) => {
-                              // Hide broken image and show placeholder div instead
-                              e.currentTarget.style.display = 'none';
-                              const placeholder = e.currentTarget.nextElementSibling;
-                              if (placeholder) {
-                                (placeholder as HTMLElement).style.display = 'flex';
-                              }
-                            }}
-                          />
-                        ) : null}
-                        <div
-                          className="flex h-24 w-24 items-center justify-center rounded-md bg-gray-200 sm:h-32 sm:w-32"
-                          style={{ display: imageUrl ? 'none' : 'flex' }}
-                        >
-                          <ShoppingBag className="h-8 w-8 text-gray-400" />
-                        </div>
-                      </div>
+                      <CartItemImage 
+                        src={imageUrl} 
+                        alt={`${displayItem.name}${displayItem.variant ? ` - ${displayItem.variant.colorCode}` : ''} design preview`}
+                        className="h-24 w-24 rounded-md object-cover sm:h-32 sm:w-32"
+                        onLoad={() => {
+                          // Optional: Analytics tracking for successful image loads
+                          console.log(`Image loaded successfully for item ${itemId}`);
+                        }}
+                        onError={(error) => {
+                          // Optional: Error tracking for failed image loads
+                          console.error(`Image failed to load for item ${itemId}:`, error);
+                        }}
+                      />
                       <div className="mt-4 sm:mt-0 sm:ml-6 sm:flex-1">
                         <div className="sm:flex sm:items-start sm:justify-between">
                           <div>

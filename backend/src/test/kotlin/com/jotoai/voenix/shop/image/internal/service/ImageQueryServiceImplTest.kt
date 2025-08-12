@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.service
 
+import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
+import java.util.Optional
 import java.util.UUID
 
 class ImageQueryServiceImplTest {
@@ -334,6 +336,278 @@ class ImageQueryServiceImplTest {
         // Then
         assertTrue(ownerResult)
         assertFalse(requesterResult)
+    }
+
+    // VALIDATE GENERATED IMAGE OWNERSHIP TESTS
+
+    @Test
+    fun `validateGeneratedImageOwnership should return true for authenticated user who owns the image`() {
+        // Given
+        val imageId = 123L
+        val userId = 1L
+
+        whenever(generatedImageRepository.existsByIdAndUserId(imageId, userId)).thenReturn(true)
+
+        // When
+        val result = imageQueryService.validateGeneratedImageOwnership(imageId, userId)
+
+        // Then
+        assertTrue(result)
+    }
+
+    @Test
+    fun `validateGeneratedImageOwnership should return false for authenticated user who does not own the image`() {
+        // Given
+        val imageId = 123L
+        val userId = 1L
+
+        whenever(generatedImageRepository.existsByIdAndUserId(imageId, userId)).thenReturn(false)
+
+        // When
+        val result = imageQueryService.validateGeneratedImageOwnership(imageId, userId)
+
+        // Then
+        assertFalse(result)
+    }
+
+    @Test
+    fun `validateGeneratedImageOwnership should return true for anonymous user when image exists`() {
+        // Given
+        val imageId = 123L
+        val userId = null
+
+        whenever(generatedImageRepository.existsById(imageId)).thenReturn(true)
+
+        // When
+        val result = imageQueryService.validateGeneratedImageOwnership(imageId, userId)
+
+        // Then
+        assertTrue(result)
+    }
+
+    @Test
+    fun `validateGeneratedImageOwnership should return false for anonymous user when image does not exist`() {
+        // Given
+        val imageId = 123L
+        val userId = null
+
+        whenever(generatedImageRepository.existsById(imageId)).thenReturn(false)
+
+        // When
+        val result = imageQueryService.validateGeneratedImageOwnership(imageId, userId)
+
+        // Then
+        assertFalse(result)
+    }
+
+    // FIND GENERATED IMAGE BY ID TESTS
+
+    @Test
+    fun `findGeneratedImageById should return GeneratedImageDto when image exists`() {
+        // Given
+        val imageId = 123L
+        val generatedImage =
+            createGeneratedImage(
+                id = imageId,
+                filename = "test-image.jpg",
+                promptId = 100L,
+                userId = 1L,
+                ipAddress = "192.168.1.1",
+            )
+
+        whenever(generatedImageRepository.findById(imageId)).thenReturn(Optional.of(generatedImage))
+
+        // When
+        val result = imageQueryService.findGeneratedImageById(imageId)
+
+        // Then
+        assertNotNull(result)
+        assertEquals("test-image.jpg", result!!.filename)
+        assertEquals(ImageType.GENERATED, result.imageType)
+        assertEquals(100L, result.promptId)
+        assertEquals(1L, result.userId)
+        assertEquals("192.168.1.1", result.ipAddress)
+        assertTrue(result is GeneratedImageDto)
+    }
+
+    @Test
+    fun `findGeneratedImageById should return null when image does not exist`() {
+        // Given
+        val imageId = 123L
+
+        whenever(generatedImageRepository.findById(imageId)).thenReturn(Optional.empty())
+
+        // When
+        val result = imageQueryService.findGeneratedImageById(imageId)
+
+        // Then
+        assertNull(result)
+    }
+
+    @Test
+    fun `findGeneratedImageById should handle anonymous user images`() {
+        // Given
+        val imageId = 123L
+        val generatedImage =
+            createGeneratedImage(
+                id = imageId,
+                filename = "anonymous-image.jpg",
+                promptId = 100L,
+                userId = null,
+                ipAddress = "127.0.0.1",
+            )
+
+        whenever(generatedImageRepository.findById(imageId)).thenReturn(Optional.of(generatedImage))
+
+        // When
+        val result = imageQueryService.findGeneratedImageById(imageId)
+
+        // Then
+        assertNotNull(result)
+        assertEquals("anonymous-image.jpg", result!!.filename)
+        assertEquals(ImageType.GENERATED, result.imageType)
+        assertEquals(100L, result.promptId)
+        assertNull(result.userId)
+        assertEquals("127.0.0.1", result.ipAddress)
+    }
+
+    // FIND GENERATED IMAGES BY IDS TESTS
+
+    @Test
+    fun `findGeneratedImagesByIds should return map of images when all IDs exist`() {
+        // Given
+        val imageId1 = 123L
+        val imageId2 = 124L
+        val imageId3 = 125L
+        val ids = listOf(imageId1, imageId2, imageId3)
+
+        val generatedImage1 = createGeneratedImage(id = imageId1, filename = "image1.jpg", promptId = 100L)
+        val generatedImage2 = createGeneratedImage(id = imageId2, filename = "image2.jpg", promptId = 101L)
+        val generatedImage3 = createGeneratedImage(id = imageId3, filename = "image3.jpg", promptId = 102L)
+
+        val allImages = listOf(generatedImage1, generatedImage2, generatedImage3)
+
+        whenever(generatedImageRepository.findAllById(ids)).thenReturn(allImages)
+
+        // When
+        val result = imageQueryService.findGeneratedImagesByIds(ids)
+
+        // Then
+        assertEquals(3, result.size)
+
+        assertNotNull(result[imageId1])
+        assertEquals("image1.jpg", result[imageId1]!!.filename)
+        assertEquals(100L, result[imageId1]!!.promptId)
+
+        assertNotNull(result[imageId2])
+        assertEquals("image2.jpg", result[imageId2]!!.filename)
+        assertEquals(101L, result[imageId2]!!.promptId)
+
+        assertNotNull(result[imageId3])
+        assertEquals("image3.jpg", result[imageId3]!!.filename)
+        assertEquals(102L, result[imageId3]!!.promptId)
+
+        result.values.forEach {
+            assertEquals(ImageType.GENERATED, it.imageType)
+            assertTrue(it is GeneratedImageDto)
+        }
+    }
+
+    @Test
+    fun `findGeneratedImagesByIds should return partial results when some IDs exist`() {
+        // Given
+        val existingId1 = 123L
+        val existingId2 = 124L
+        val missingId = 999L
+        val ids = listOf(existingId1, existingId2, missingId)
+
+        val generatedImage1 = createGeneratedImage(id = existingId1, filename = "image1.jpg")
+        val generatedImage2 = createGeneratedImage(id = existingId2, filename = "image2.jpg")
+
+        val foundImages = listOf(generatedImage1, generatedImage2)
+
+        whenever(generatedImageRepository.findAllById(ids)).thenReturn(foundImages)
+
+        // When
+        val result = imageQueryService.findGeneratedImagesByIds(ids)
+
+        // Then
+        assertEquals(2, result.size)
+        assertTrue(result.containsKey(existingId1))
+        assertTrue(result.containsKey(existingId2))
+        assertFalse(result.containsKey(missingId))
+
+        assertEquals("image1.jpg", result[existingId1]!!.filename)
+        assertEquals("image2.jpg", result[existingId2]!!.filename)
+    }
+
+    @Test
+    fun `findGeneratedImagesByIds should return empty map when no IDs exist`() {
+        // Given
+        val ids = listOf(123L, 124L, 125L)
+
+        whenever(generatedImageRepository.findAllById(ids)).thenReturn(emptyList())
+
+        // When
+        val result = imageQueryService.findGeneratedImagesByIds(ids)
+
+        // Then
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `findGeneratedImagesByIds should return empty map when input list is empty`() {
+        // Given
+        val ids = emptyList<Long>()
+
+        // When
+        val result = imageQueryService.findGeneratedImagesByIds(ids)
+
+        // Then
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `findGeneratedImagesByIds should handle single ID`() {
+        // Given
+        val imageId = 123L
+        val ids = listOf(imageId)
+        val generatedImage = createGeneratedImage(id = imageId, filename = "single-image.jpg")
+
+        whenever(generatedImageRepository.findAllById(ids)).thenReturn(listOf(generatedImage))
+
+        // When
+        val result = imageQueryService.findGeneratedImagesByIds(ids)
+
+        // Then
+        assertEquals(1, result.size)
+        assertTrue(result.containsKey(imageId))
+        assertEquals("single-image.jpg", result[imageId]!!.filename)
+    }
+
+    @Test
+    fun `findGeneratedImagesByIds should handle mixed user and anonymous images`() {
+        // Given
+        val userImageId = 123L
+        val anonymousImageId = 124L
+        val ids = listOf(userImageId, anonymousImageId)
+
+        val userImage = createGeneratedImage(id = userImageId, filename = "user-image.jpg", userId = 1L)
+        val anonymousImage = createGeneratedImage(id = anonymousImageId, filename = "anon-image.jpg", userId = null)
+
+        val allImages = listOf(userImage, anonymousImage)
+
+        whenever(generatedImageRepository.findAllById(ids)).thenReturn(allImages)
+
+        // When
+        val result = imageQueryService.findGeneratedImagesByIds(ids)
+
+        // Then
+        assertEquals(2, result.size)
+        assertEquals("user-image.jpg", result[userImageId]!!.filename)
+        assertEquals(1L, result[userImageId]!!.userId)
+        assertEquals("anon-image.jpg", result[anonymousImageId]!!.filename)
+        assertNull(result[anonymousImageId]!!.userId)
     }
 
     // EDGE CASE TESTS

@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.image.api
 
+import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import java.util.UUID
 
@@ -63,4 +64,22 @@ interface ImageQueryService {
         imageId: Long,
         userId: Long?,
     ): Boolean
+
+    /**
+     * Retrieves a generated image by its Long ID.
+     * Returns null if not found.
+     *
+     * @param id the ID of the generated image
+     * @return GeneratedImageDto or null if not found
+     */
+    fun findGeneratedImageById(id: Long): GeneratedImageDto?
+
+    /**
+     * Retrieves multiple generated images by their Long IDs.
+     * This method performs batch loading to avoid N+1 query problems.
+     *
+     * @param ids list of generated image IDs
+     * @return map of ID to GeneratedImageDto for found images
+     */
+    fun findGeneratedImagesByIds(ids: List<Long>): Map<Long, GeneratedImageDto>
 }

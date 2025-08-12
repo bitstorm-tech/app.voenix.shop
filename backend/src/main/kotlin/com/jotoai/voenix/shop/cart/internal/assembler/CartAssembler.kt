@@ -6,11 +6,14 @@ import com.jotoai.voenix.shop.cart.api.dto.CartItemDto
 import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.entity.CartItem
+import com.jotoai.voenix.shop.image.api.ImageQueryService
+import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import org.springframework.stereotype.Component
 
 @Component
 class CartAssembler(
     private val articleQueryService: ArticleQueryService,
+    private val imageQueryService: ImageQueryService,
 ) {
     fun toDto(entity: Cart): CartDto =
         CartDto(
@@ -23,9 +26,13 @@ class CartAssembler(
                 run {
                     val articleIds = entity.items.map { it.articleId }.distinct()
                     val variantIds = entity.items.map { it.variantId }.distinct()
+                    val generatedImageIds = entity.items.mapNotNull { it.generatedImageId }.distinct()
+
                     val articlesById = articleQueryService.getArticlesByIds(articleIds)
                     val variantsById = articleQueryService.getMugVariantsByIds(variantIds)
-                    entity.items.map { toItemDto(it, articlesById, variantsById) }
+                    val imagesById = imageQueryService.findGeneratedImagesByIds(generatedImageIds)
+
+                    entity.items.map { toItemDto(it, articlesById, variantsById, imagesById) }
                 },
             totalItemCount = entity.getTotalItemCount(),
             totalPrice = entity.getTotalPrice(),
@@ -38,10 +45,11 @@ class CartAssembler(
         entity: CartItem,
         articlesById: Map<Long, com.jotoai.voenix.shop.article.api.dto.ArticleDto>,
         variantsById: Map<Long, com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto>,
+        imagesById: Map<Long, GeneratedImageDto>,
     ): CartItemDto {
         // Use FK fields directly
         val generatedImageId = entity.generatedImageId
-        val generatedImageFilename: String? = null // TODO: Get from image service if needed
+        val generatedImageFilename: String? = generatedImageId?.let { imagesById[it]?.filename }
         val promptId = entity.promptId
 
         return CartItemDto(
