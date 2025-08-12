@@ -58,4 +58,16 @@ class ImageQueryServiceImpl(
         id: Long,
         userId: Long,
     ): Boolean = generatedImageRepository.existsByIdAndUserId(id, userId)
+
+    override fun validateGeneratedImageOwnership(
+        imageId: Long,
+        userId: Long?,
+    ): Boolean =
+        if (userId != null) {
+            // For authenticated users, check ownership
+            existsGeneratedImageByIdAndUserId(imageId, userId)
+        } else {
+            // For anonymous users, only check existence
+            existsGeneratedImageById(imageId)
+        }
 }

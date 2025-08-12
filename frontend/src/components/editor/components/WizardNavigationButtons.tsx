@@ -44,6 +44,10 @@ export default function WizardNavigationButtons() {
           throw new Error('Please select a generated image before adding to cart');
         }
 
+        if (!selectedGeneratedImageInfo?.generatedImageId) {
+          throw new Error('Generated image information is missing. Please try generating the image again.');
+        }
+
         if (!selectedMug) {
           throw new Error('Please select a mug before adding to cart');
         }

@@ -15,6 +15,8 @@ import com.jotoai.voenix.shop.cart.internal.entity.CartItem
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageQueryService
+import com.jotoai.voenix.shop.image.api.exceptions.ImageAccessDeniedException
+import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
@@ -67,11 +69,40 @@ class CartFacadeImpl(
         // Get current price from cost calculation
         val currentPrice = articleQueryService.getCurrentGrossPrice(request.articleId)
 
-        // Validate related entities if provided
+        // Validate generated image if provided
         request.generatedImageId?.let { imageId ->
-            if (!imageQueryService.existsGeneratedImageById(imageId)) {
-                throw ResourceNotFoundException("Generated image not found with id: $imageId")
+            logger.debug(
+                "Validating generated image for cart operation: userId={}, generatedImageId={}, articleId={}, variantId={}",
+                userId,
+                imageId,
+                request.articleId,
+                request.variantId,
+            )
+
+            if (!imageQueryService.validateGeneratedImageOwnership(imageId, userId)) {
+                logger.warn(
+                    "Generated image validation failed: userId={}, generatedImageId={}, reason=ownership_check_failed",
+                    userId,
+                    imageId,
+                )
+
+                // First check if image exists at all
+                if (!imageQueryService.existsGeneratedImageById(imageId)) {
+                    throw ImageNotFoundException("Generated image not found with id: $imageId")
+                } else {
+                    throw ImageAccessDeniedException(
+                        "You don't have permission to use this image",
+                        userId,
+                        imageId.toString(),
+                    )
+                }
             }
+
+            logger.debug(
+                "Generated image validation successful: userId={}, generatedImageId={}",
+                userId,
+                imageId,
+            )
         }
 
         // Validate prompt if provided
@@ -100,12 +131,15 @@ class CartFacadeImpl(
 
         val savedCart = saveCartWithOptimisticLocking(cart)
 
-        logger.debug(
-            "Added item to cart: userId={}, articleId={}, variantId={}, quantity={}",
+        logger.info(
+            "Successfully added item to cart: userId={}, articleId={}, variantId={}, quantity={}, generatedImageId={}, promptId={}, hasCustomData={}",
             userId,
             request.articleId,
             request.variantId,
             request.quantity,
+            request.generatedImageId,
+            request.promptId,
+            request.customData.isNotEmpty(),
         )
 
         return cartAssembler.toDto(savedCart)
@@ -139,9 +173,39 @@ class CartFacadeImpl(
 
         // Update FK fields directly
         request.generatedImageId?.let { imageId ->
-            if (!imageQueryService.existsGeneratedImageById(imageId)) {
-                throw ResourceNotFoundException("Generated image not found with id: $imageId")
+            logger.debug(
+                "Validating generated image for cart update: userId={}, itemId={}, generatedImageId={}",
+                userId,
+                itemId,
+                imageId,
+            )
+
+            if (!imageQueryService.validateGeneratedImageOwnership(imageId, userId)) {
+                logger.warn(
+                    "Generated image validation failed during cart update: userId={}, itemId={}, generatedImageId={}, reason=ownership_check_failed",
+                    userId,
+                    itemId,
+                    imageId,
+                )
+
+                // First check if image exists at all
+                if (!imageQueryService.existsGeneratedImageById(imageId)) {
+                    throw ImageNotFoundException("Generated image not found with id: $imageId")
+                } else {
+                    throw ImageAccessDeniedException(
+                        "You don't have permission to use this image",
+                        userId,
+                        imageId.toString(),
+                    )
+                }
             }
+
+            logger.debug(
+                "Generated image validation successful for cart update: userId={}, itemId={}, generatedImageId={}",
+                userId,
+                itemId,
+                imageId,
+            )
             cartItem.generatedImageId = imageId
         }
 
@@ -154,7 +218,15 @@ class CartFacadeImpl(
 
         val savedCart = saveCartWithOptimisticLocking(cart)
 
-        logger.debug("Updated cart item: userId={}, itemId={}, quantity={}", userId, itemId, request.quantity)
+        logger.info(
+            "Successfully updated cart item: userId={}, itemId={}, quantity={}, generatedImageId={}, promptId={}, hasCustomData={}",
+            userId,
+            itemId,
+            request.quantity,
+            cartItem.generatedImageId,
+            cartItem.promptId,
+            request.customData != null,
+        )
 
         return cartAssembler.toDto(savedCart)
     }
@@ -172,13 +244,32 @@ class CartFacadeImpl(
                 .findActiveCartByUserId(userId)
                 .orElseThrow { CartNotFoundException(userId, true) }
 
+        // Log details about the item being removed before removal
+        val itemToRemove = cart.items.find { it.id == itemId }
+        itemToRemove?.let { item ->
+            logger.debug(
+                "Removing cart item: userId={}, itemId={}, articleId={}, variantId={}, generatedImageId={}, promptId={}",
+                userId,
+                itemId,
+                item.articleId,
+                item.variantId,
+                item.generatedImageId,
+                item.promptId,
+            )
+        }
+
         if (!cart.removeItem(itemId)) {
             throw CartItemNotFoundException(cart.id!!, itemId)
         }
 
         val savedCart = saveCartWithOptimisticLocking(cart)
 
-        logger.debug("Removed item from cart: userId={}, itemId={}", userId, itemId)
+        logger.info(
+            "Successfully removed item from cart: userId={}, itemId={}, hadGeneratedImage={}",
+            userId,
+            itemId,
+            itemToRemove?.generatedImageId != null,
+        )
 
         return cartAssembler.toDto(savedCart)
     }
@@ -193,11 +284,27 @@ class CartFacadeImpl(
                 .findActiveCartByUserId(userId)
                 .orElseThrow { CartNotFoundException(userId, true) }
 
+        // Log details about items being cleared
+        val itemsWithGeneratedImages = cart.items.count { it.generatedImageId != null }
+        val totalItems = cart.items.size
+
+        logger.debug(
+            "Clearing cart contents: userId={}, totalItems={}, itemsWithGeneratedImages={}",
+            userId,
+            totalItems,
+            itemsWithGeneratedImages,
+        )
+
         cart.clearItems()
 
         val savedCart = saveCartWithOptimisticLocking(cart)
 
-        logger.debug("Cleared cart for user: {}", userId)
+        logger.info(
+            "Successfully cleared cart: userId={}, clearedItems={}, clearedItemsWithGeneratedImages={}",
+            userId,
+            totalItems,
+            itemsWithGeneratedImages,
+        )
 
         return cartAssembler.toDto(savedCart)
     }
@@ -247,6 +354,14 @@ class CartFacadeImpl(
                 .findById(cartId)
                 .orElseThrow { CartNotFoundException(userId = 0, isActiveCart = false) }
 
+        logger.debug(
+            "Refreshing cart prices for order: cartId={}, userId={}, itemCount={}, itemsWithGeneratedImages={}",
+            cartId,
+            cart.userId,
+            cart.items.size,
+            cart.items.count { it.generatedImageId != null },
+        )
+
         // Update prices to current
         cart.items.forEach { item ->
             val currentPrice = articleQueryService.getCurrentGrossPrice(item.articleId)
@@ -279,13 +394,14 @@ class CartFacadeImpl(
                         totalPrice = item.getTotalPrice(),
                         generatedImageId = item.generatedImageId,
                         promptId = item.promptId,
-                        promptText = item.promptId?.let { 
-                            try {
-                                promptQueryService.getPromptById(it).promptText
-                            } catch (e: Exception) {
-                                null // Handle case where prompt might have been deleted
-                            }
-                        },
+                        promptText =
+                            item.promptId?.let {
+                                try {
+                                    promptQueryService.getPromptById(it).promptText
+                                } catch (e: Exception) {
+                                    null // Handle case where prompt might have been deleted
+                                }
+                            },
                         customData = item.customData,
                     )
                 },

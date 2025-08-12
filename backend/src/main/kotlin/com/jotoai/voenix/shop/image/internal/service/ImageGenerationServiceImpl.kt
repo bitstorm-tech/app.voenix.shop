@@ -95,6 +95,28 @@ class ImageGenerationServiceImpl(
         )
     }
 
+    @Transactional
+    override fun generateUserImageWithIds(
+        promptId: Long,
+        uploadedImageUuid: UUID?,
+        userId: Long,
+    ): PublicImageGenerationResponse {
+        logger.info("Processing user image generation with IDs request for user $userId with prompt ID: $promptId")
+
+        requireNotNull(uploadedImageUuid) { "Uploaded image UUID is required for user image generation" }
+
+        checkUserRateLimit(userId)
+        validatePrompt(promptId)
+
+        // Validate user exists
+        userQueryService.getUserById(userId)
+
+        return executeWithErrorHandling(
+            operation = { processUserImageGenerationWithIds(promptId, uploadedImageUuid, userId) },
+            contextMessage = "generating image with IDs for user $userId",
+        )
+    }
+
     override fun isRateLimited(
         userId: Long?,
         ipAddress: String?,
@@ -206,6 +228,74 @@ class ImageGenerationServiceImpl(
         logger.info("Successfully generated ${generatedImages.size} image(s) for user $userId")
 
         return firstGeneratedImage.filename
+    }
+
+    private fun processUserImageGenerationWithIds(
+        promptId: Long,
+        uploadedImageUuid: UUID,
+        userId: Long,
+    ): PublicImageGenerationResponse {
+        logger.info("Processing user image generation with IDs for user $userId with uploaded image UUID: $uploadedImageUuid")
+
+        // Retrieve the uploaded image entity
+        val uploadedImage = imageStorageServiceImpl.getUploadedImageByUuid(uploadedImageUuid, userId)
+
+        // Load the image data from storage
+        val (imageBytes, contentType) = imageStorageServiceImpl.getUserImageData(uploadedImage.storedFilename, userId)
+
+        // Create a MultipartFile wrapper for the stored image
+        val multipartFile =
+            ByteArrayMultipartFile(
+                bytes = imageBytes,
+                filename = uploadedImage.originalFilename,
+                contentType = contentType,
+                fieldName = "image",
+            )
+
+        // Create OpenAI request to generate 4 images (matching the public generation)
+        val request = PublicImageGenerationRequest(promptId = promptId, n = 4)
+        val openAIRequest = createOpenAIRequest(request)
+
+        logger.debug("Generated OpenAI request for user image with IDs: {}", openAIRequest)
+
+        // Generate image using OpenAI service
+        val imageEditResponse = openAIImageFacade.editImageBytes(multipartFile, openAIRequest)
+
+        // Store each generated image and create database records
+        val generatedImages =
+            imageEditResponse.imageBytes.mapIndexed { index, generatedBytes ->
+                logger.info("Processing generated image ${index + 1} of ${imageEditResponse.imageBytes.size}")
+                val generatedImage =
+                    imageStorageServiceImpl.storeGeneratedImage(
+                        imageBytes = generatedBytes,
+                        uploadedImage = uploadedImage,
+                        promptId = promptId,
+                        generationNumber = index + 1,
+                    )
+                logger.info("Saved generated image to database with ID: ${generatedImage.id}, filename: ${generatedImage.filename}")
+                generatedImage
+            }
+
+        // Create image URLs for user images
+        val baseUuid = uploadedImage.uuid.toString()
+        val imageUrls =
+            (1..request.n).map { index ->
+                "/api/user/images/${baseUuid}_generated_$index.png"
+            }
+
+        // Extract the generated image IDs
+        val generatedImageIds = generatedImages.mapNotNull { it.id }
+
+        logger.info("Generated images count: ${generatedImages.size}")
+        generatedImages.forEachIndexed { index, img ->
+            logger.info("Image $index: ID=${img.id}, filename=${img.filename}")
+        }
+        logger.info("Successfully generated ${generatedImages.size} images with IDs $generatedImageIds for user $userId")
+
+        return PublicImageGenerationResponse(
+            imageUrls = imageUrls,
+            generatedImageIds = generatedImageIds,
+        )
     }
 
     private fun checkPublicRateLimit(ipAddress: String) {

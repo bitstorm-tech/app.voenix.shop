@@ -49,4 +49,18 @@ interface ImageQueryService {
         id: Long,
         userId: Long,
     ): Boolean
+
+    /**
+     * Validates generated image ownership for cart operations.
+     * For authenticated users: Checks if the image exists and belongs to the user.
+     * For anonymous users (userId null): Only checks if the image exists.
+     *
+     * @param imageId the ID of the generated image
+     * @param userId the user ID, null for anonymous users
+     * @return true if validation passes, false otherwise
+     */
+    fun validateGeneratedImageOwnership(
+        imageId: Long,
+        userId: Long?,
+    ): Boolean
 }

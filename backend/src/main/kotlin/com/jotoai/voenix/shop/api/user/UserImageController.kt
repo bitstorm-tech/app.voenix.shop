@@ -3,7 +3,6 @@ package com.jotoai.voenix.shop.api.user
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.ImageGenerationService
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import org.slf4j.LoggerFactory
@@ -43,30 +42,18 @@ class UserImageController(
         val user = userQueryService.getUserByEmail(userDetails.username)
         logger.info("Received authenticated image generation request from user ${user.id} for prompt ID: $promptId")
 
-        val generationRequest =
-            PublicImageGenerationRequest(
-                promptId = promptId,
-                n = 4,
-            )
-
         // First upload the image to get UUID
         val uploadedImage = imageFacade.createUploadedImage(imageFile, user.id)
+        logger.info("Uploaded image for user ${user.id} with UUID: ${uploadedImage.uuid}")
 
-        // Generate all 4 images in one call (this will return the first image filename)
-        val firstGeneratedImage = imageGenerationService.generateUserImage(promptId, uploadedImage.uuid, user.id)
-        
-        // Extract the base UUID from the first filename to construct all 4 filenames
-        // Format is: {uuid}_generated_1.png, so we need to construct 1-4
-        val baseUuid = uploadedImage.uuid.toString()
-        val imageUrls = (1..generationRequest.n).map { index ->
-            "/api/user/images/${baseUuid}_generated_${index}.png"
-        }
+        // Generate all 4 images in one call and get the complete response with IDs
+        val response = imageGenerationService.generateUserImageWithIds(promptId, uploadedImage.uuid, user.id)
 
-        // For now, return empty list for generated image IDs as the public API returns filenames
-        return PublicImageGenerationResponse(
-            imageUrls = imageUrls,
-            generatedImageIds = emptyList(),
+        logger.info(
+            "Generated ${response.generatedImageIds.size} images with IDs: ${response.generatedImageIds} for user ${user.id}",
         )
+
+        return response
     }
 
     @GetMapping("/{filename}")

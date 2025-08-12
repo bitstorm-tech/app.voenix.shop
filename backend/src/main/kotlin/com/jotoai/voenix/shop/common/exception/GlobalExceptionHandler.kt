@@ -1,6 +1,8 @@
 package com.jotoai.voenix.shop.common.exception
 
 import com.jotoai.voenix.shop.common.dto.ErrorResponse
+import com.jotoai.voenix.shop.image.api.exceptions.ImageAccessDeniedException
+import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -80,6 +82,43 @@ class GlobalExceptionHandler {
             )
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
+    }
+
+    @ExceptionHandler(ImageNotFoundException::class)
+    fun handleImageNotFoundException(ex: ImageNotFoundException): ResponseEntity<ErrorResponse> {
+        log.warn("Image not found: {}", ex.message)
+
+        val errorResponse =
+            ErrorResponse(
+                timestamp = LocalDateTime.now(),
+                status = HttpStatus.NOT_FOUND.value(),
+                error = "Not Found",
+                message = ex.message ?: "Generated image not found",
+                path = "",
+            )
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse)
+    }
+
+    @ExceptionHandler(ImageAccessDeniedException::class)
+    fun handleImageAccessDeniedException(ex: ImageAccessDeniedException): ResponseEntity<ErrorResponse> {
+        log.warn(
+            "Access denied to image: userId={}, resourceId={}, message={}",
+            ex.userId,
+            ex.resourceId,
+            ex.message,
+        )
+
+        val errorResponse =
+            ErrorResponse(
+                timestamp = LocalDateTime.now(),
+                status = HttpStatus.FORBIDDEN.value(),
+                error = "Forbidden",
+                message = ex.message ?: "You don't have permission to access this image",
+                path = "",
+            )
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse)
     }
 
     @ExceptionHandler(Exception::class)

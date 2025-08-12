@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
-import java.util.*
+import java.util.UUID
 
 /**
  * Consolidated image management service that handles all image operations.
@@ -85,7 +85,7 @@ class ImageManagementService(
                         return UploadedImageDto(
                             filename = uploadedImage.storedFilename,
                             imageType = imageType,
-                            uuid = uploadedImage.uuid,  // Use the UUID from the saved entity
+                            uuid = uploadedImage.uuid, // Use the UUID from the saved entity
                             originalFilename = uploadedImage.originalFilename,
                             contentType = uploadedImage.contentType,
                             fileSize = uploadedImage.fileSize,

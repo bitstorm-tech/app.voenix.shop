@@ -118,13 +118,14 @@ class CartQueryServiceImpl(
                             totalPrice = item.getTotalPrice(),
                             generatedImageId = item.generatedImageId,
                             promptId = item.promptId,
-                            promptText = item.promptId?.let {
-                                try {
-                                    promptQueryService.getPromptById(it).promptText
-                                } catch (e: Exception) {
-                                    null // Handle case where prompt might have been deleted
-                                }
-                            },
+                            promptText =
+                                item.promptId?.let {
+                                    try {
+                                        promptQueryService.getPromptById(it).promptText
+                                    } catch (e: Exception) {
+                                        null // Handle case where prompt might have been deleted
+                                    }
+                                },
                             customData = item.customData,
                         )
                     },

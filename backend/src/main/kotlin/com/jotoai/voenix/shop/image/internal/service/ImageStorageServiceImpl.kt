@@ -413,7 +413,11 @@ class ImageStorageServiceImpl(
                 generatedAt = LocalDateTime.now(),
             )
 
-        return generatedImageRepository.save(generatedImage)
+        val savedImage = generatedImageRepository.save(generatedImage)
+        // Flush to ensure ID is generated immediately
+        generatedImageRepository.flush()
+        logger.info("Generated image saved with ID: ${savedImage.id}")
+        return savedImage
     }
 
     /**

@@ -29,6 +29,17 @@ interface ImageGenerationService {
     ): String
 
     /**
+     * Generates AI images for authenticated users and returns complete response with IDs.
+     * This method is similar to generateUserImage but returns the full response including
+     * generated image IDs for tracking purposes.
+     */
+    fun generateUserImageWithIds(
+        promptId: Long,
+        uploadedImageUuid: UUID?,
+        userId: Long,
+    ): PublicImageGenerationResponse
+
+    /**
      * Checks rate limiting for image generation.
      */
     fun isRateLimited(
