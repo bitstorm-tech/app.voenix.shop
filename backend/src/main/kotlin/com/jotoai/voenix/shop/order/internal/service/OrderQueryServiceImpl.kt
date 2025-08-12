@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.order.internal.service
 
 import com.jotoai.voenix.shop.common.dto.PaginatedResponse
+import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.order.api.OrderQueryService
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
 import com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto
@@ -18,6 +19,7 @@ import java.util.UUID
 class OrderQueryServiceImpl(
     private val orderRepository: OrderRepository,
     private val orderAssembler: OrderAssembler,
+    private val imageQueryService: ImageQueryService,
 ) : OrderQueryService {
     /**
      * Gets an order by ID, ensuring it belongs to the user
@@ -40,6 +42,11 @@ class OrderQueryServiceImpl(
         orderId: UUID,
     ): OrderForPdfDto {
         val order = findOrderEntity(userId, orderId)
+        
+        // Fetch image filenames for all items with generated images
+        val generatedImageIds = order.items.mapNotNull { it.generatedImageId }.distinct()
+        val imagesById = imageQueryService.findGeneratedImagesByIds(generatedImageIds)
+        
         return OrderForPdfDto(
             id = order.id!!,
             orderNumber = order.orderNumber,
@@ -49,7 +56,8 @@ class OrderQueryServiceImpl(
                     OrderItemForPdfDto(
                         id = orderItem.id!!,
                         quantity = orderItem.quantity,
-                        generatedImageFilename = orderItem.generatedImageFilename,
+                        generatedImageId = orderItem.generatedImageId,
+                        generatedImageFilename = orderItem.generatedImageId?.let { imagesById[it]?.filename },
                         articleId = orderItem.articleId,
                     )
                 },

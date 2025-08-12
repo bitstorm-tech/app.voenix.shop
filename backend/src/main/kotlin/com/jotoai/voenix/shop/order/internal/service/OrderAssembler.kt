@@ -1,6 +1,8 @@
 package com.jotoai.voenix.shop.order.internal.service
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.image.api.ImageQueryService
+import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.order.api.dto.AddressDto
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
 import com.jotoai.voenix.shop.order.api.dto.OrderItemDto
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Component
 class OrderAssembler(
     @param:Value("\${app.base-url:http://localhost:8080}") private val appBaseUrl: String,
     private val articleQueryService: ArticleQueryService,
+    private val imageQueryService: ImageQueryService,
 ) {
     fun toDto(entity: Order): OrderDto =
         OrderDto(
@@ -35,9 +38,13 @@ class OrderAssembler(
                 run {
                     val articleIds = entity.items.map { it.articleId }.distinct()
                     val variantIds = entity.items.map { it.variantId }.distinct()
+                    val generatedImageIds = entity.items.mapNotNull { it.generatedImageId }.distinct()
+                    
                     val articlesById = articleQueryService.getArticlesByIds(articleIds)
                     val variantsById = articleQueryService.getMugVariantsByIds(variantIds)
-                    entity.items.map { toItemDto(it, articlesById, variantsById) }
+                    val imagesById = imageQueryService.findGeneratedImagesByIds(generatedImageIds)
+                    
+                    entity.items.map { toItemDto(it, articlesById, variantsById, imagesById) }
                 },
             pdfUrl = generatePdfUrl(entity.id),
             createdAt = requireNotNull(entity.createdAt) { "Order createdAt cannot be null when converting to DTO" },
@@ -48,6 +55,7 @@ class OrderAssembler(
         entity: OrderItem,
         articlesById: Map<Long, com.jotoai.voenix.shop.article.api.dto.ArticleDto>,
         variantsById: Map<Long, com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto>,
+        imagesById: Map<Long, GeneratedImageDto>,
     ): OrderItemDto =
         OrderItemDto(
             id = requireNotNull(entity.id) { "OrderItem ID cannot be null when converting to DTO" },
@@ -61,7 +69,7 @@ class OrderAssembler(
             pricePerItem = entity.pricePerItem,
             totalPrice = entity.totalPrice,
             generatedImageId = entity.generatedImageId,
-            generatedImageFilename = entity.generatedImageFilename,
+            generatedImageFilename = entity.generatedImageId?.let { imagesById[it]?.filename },
             promptId = entity.promptId,
             customData = entity.customData,
             createdAt =

@@ -105,7 +105,6 @@ class OrderFacadeImpl(
                     pricePerItem = cartItem.priceAtTime,
                     totalPrice = cartItem.totalPrice,
                     generatedImageId = cartItem.generatedImageId,
-                    generatedImageFilename = null, // TODO: Get from image service if needed
                     promptId = cartItem.promptId,
                     customData = cartItem.customData ?: emptyMap(),
                 )

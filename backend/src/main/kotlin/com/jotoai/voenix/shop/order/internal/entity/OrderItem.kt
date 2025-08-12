@@ -36,8 +36,6 @@ class OrderItem(
     var totalPrice: Long, // Total price for this line item (pricePerItem * quantity)
     @Column(name = "generated_image_id", nullable = true)
     var generatedImageId: Long? = null,
-    @Column(name = "generated_image_filename", nullable = true, length = 255)
-    var generatedImageFilename: String? = null,
     @Column(name = "prompt_id", nullable = true)
     var promptId: Long? = null,
     @JdbcTypeCode(SqlTypes.JSON)
