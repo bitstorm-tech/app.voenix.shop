@@ -418,7 +418,7 @@ export interface CreatePromptSlotVariantRequest {
   name: string;
   prompt: string;
   description?: string;
-  exampleImageFilename?: string;
+  exampleImageFilename?: string | null;
 }
 
 export interface UpdatePromptSlotVariantRequest {
@@ -426,7 +426,7 @@ export interface UpdatePromptSlotVariantRequest {
   name?: string;
   prompt?: string;
   description?: string;
-  exampleImageFilename?: string;
+  exampleImageFilename?: string | null;
 }
 
 // Image API endpoints

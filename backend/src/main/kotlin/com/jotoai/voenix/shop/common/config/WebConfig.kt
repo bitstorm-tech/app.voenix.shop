@@ -65,9 +65,20 @@ class WebConfig(
                         return if (requestedResource.exists() && requestedResource.isReadable) {
                             requestedResource
                         } else {
-                            // For SPA routing, return index.html for non-API routes
-                            if (!resourcePath.startsWith("api/")) {
-                                ClassPathResource("/static/index.html")
+                            // Don't try to serve index.html for images or API routes
+                            if (!resourcePath.startsWith("api/") && 
+                                !resourcePath.endsWith(".png") && 
+                                !resourcePath.endsWith(".jpg") && 
+                                !resourcePath.endsWith(".jpeg") &&
+                                !resourcePath.endsWith(".gif") &&
+                                !resourcePath.endsWith(".webp")) {
+                                // Only return index.html if it exists
+                                val indexResource = ClassPathResource("/static/index.html")
+                                if (indexResource.exists()) {
+                                    indexResource
+                                } else {
+                                    null
+                                }
                             } else {
                                 null
                             }

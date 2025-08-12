@@ -38,8 +38,8 @@ class StorageConfiguration {
                 ImageType.PUBLIC to
                     ImageTypePathConfig(
                         relativePath = "public/images",
-                        urlPath = "/api/public/images",
-                        isPubliclyAccessible = false,
+                        urlPath = "/images/public",
+                        isPubliclyAccessible = true,
                     ),
                 // Prompt example images - publicly accessible via static URL mapping
                 ImageType.PROMPT_EXAMPLE to

@@ -1,5 +1,7 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
+import com.jotoai.voenix.shop.image.api.ImageStorageService
+import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.prompt.api.PromptSlotVariantFacade
 import com.jotoai.voenix.shop.prompt.api.PromptSlotVariantQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVariantRequest
@@ -18,6 +20,7 @@ class PromptSlotVariantServiceImpl(
     private val promptSlotVariantRepository: PromptSlotVariantRepository,
     private val promptSlotTypeRepository: PromptSlotTypeRepository,
     private val promptSlotVariantAssembler: PromptSlotVariantAssembler,
+    private val imageStorageService: ImageStorageService,
 ) : PromptSlotVariantFacade,
     PromptSlotVariantQueryService {
     override fun getAllSlotVariants(): List<PromptSlotVariantDto> =
@@ -97,7 +100,37 @@ class PromptSlotVariantServiceImpl(
         // Update all other provided fields
         request.prompt?.let { promptSlotVariant.prompt = it }
         request.description?.let { promptSlotVariant.description = it }
-        request.exampleImageFilename?.let { promptSlotVariant.exampleImageFilename = it }
+        
+        // Handle image update explicitly
+        // The standard ?.let pattern doesn't work here because we need to handle null differently:
+        // - null means "remove the image" 
+        // - field not present in JSON means "don't change the image"
+        // Unfortunately, Kotlin data classes can't distinguish between these two cases.
+        // So we use a heuristic: if ANY field is provided in the request, 
+        // then a null exampleImageFilename means delete.
+        if (request.name != null || request.prompt != null || 
+            request.description != null || request.promptSlotTypeId != null || 
+            request.exampleImageFilename != null) {
+            
+            val oldImageFilename = promptSlotVariant.exampleImageFilename
+            val newImageFilename = request.exampleImageFilename
+            
+            // Delete old image if:
+            // 1. We're setting to null (removal)
+            // 2. We're changing to a different filename
+            if (oldImageFilename != null && oldImageFilename != newImageFilename) {
+                try {
+                    imageStorageService.deleteFile(oldImageFilename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+                } catch (e: Exception) {
+                    // Log but don't fail the update if image deletion fails
+                    // This prevents orphaned files from blocking updates
+                }
+            }
+            
+            // Always update the filename if any field was provided
+            // This handles both setting a new filename and clearing it (null)
+            promptSlotVariant.exampleImageFilename = newImageFilename
+        }
 
         // Save and return DTO
         val savedEntity = promptSlotVariantRepository.save(promptSlotVariant)
@@ -106,12 +139,23 @@ class PromptSlotVariantServiceImpl(
 
     @Transactional
     override fun deleteSlotVariant(id: Long) {
-        // Check entity exists before deletion
-        if (!promptSlotVariantRepository.existsById(id)) {
-            throw PromptSlotVariantNotFoundException("PromptSlotVariant", "id", id)
+        // Find the entity to get the image filename before deletion
+        val promptSlotVariant =
+            promptSlotVariantRepository
+                .findById(id)
+                .orElseThrow { PromptSlotVariantNotFoundException("PromptSlotVariant", "id", id) }
+        
+        // Delete the associated image file if it exists
+        promptSlotVariant.exampleImageFilename?.let { filename ->
+            try {
+                imageStorageService.deleteFile(filename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+            } catch (e: Exception) {
+                // Log but don't fail the deletion if image deletion fails
+                // This prevents orphaned files from blocking entity deletion
+            }
         }
 
-        // Delete by ID
+        // Delete the entity
         promptSlotVariantRepository.deleteById(id)
     }
 }

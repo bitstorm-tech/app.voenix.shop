@@ -129,7 +129,8 @@ export default function NewOrEditPromptSlotVariant() {
           promptSlotTypeId: formData.promptSlotTypeId,
           prompt: formData.prompt,
           description: formData.description,
-          exampleImageFilename: finalImageFilename === 'pending' ? undefined : finalImageFilename,
+          // Send null to explicitly remove image, undefined to not change it
+          exampleImageFilename: finalImageFilename === 'pending' ? undefined : (finalImageFilename ?? null),
         };
         await promptSlotVariantsApi.update(parseInt(id), updateData);
       } else {
@@ -138,7 +139,8 @@ export default function NewOrEditPromptSlotVariant() {
           promptSlotTypeId: formData.promptSlotTypeId,
           prompt: formData.prompt,
           description: formData.description,
-          exampleImageFilename: finalImageFilename === 'pending' ? undefined : finalImageFilename,
+          // Send null to explicitly have no image, undefined to not set it
+          exampleImageFilename: finalImageFilename === 'pending' ? undefined : (finalImageFilename ?? null),
         };
         await promptSlotVariantsApi.create(createData);
       }

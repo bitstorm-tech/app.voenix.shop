@@ -1,5 +1,7 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
+import com.jotoai.voenix.shop.image.api.ImageStorageService
+import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSlotVariantNotFoundException
@@ -31,6 +33,7 @@ class PromptSlotVariantServiceImplTest {
     private lateinit var promptSlotVariantRepository: PromptSlotVariantRepository
     private lateinit var promptSlotTypeRepository: PromptSlotTypeRepository
     private lateinit var promptSlotVariantAssembler: PromptSlotVariantAssembler
+    private lateinit var imageStorageService: ImageStorageService
     private lateinit var service: PromptSlotVariantServiceImpl
 
     private val testPromptSlotType =
@@ -58,12 +61,14 @@ class PromptSlotVariantServiceImplTest {
         promptSlotVariantRepository = mock()
         promptSlotTypeRepository = mock()
         promptSlotVariantAssembler = mock()
+        imageStorageService = mock()
 
         service =
             PromptSlotVariantServiceImpl(
                 promptSlotVariantRepository = promptSlotVariantRepository,
                 promptSlotTypeRepository = promptSlotTypeRepository,
                 promptSlotVariantAssembler = promptSlotVariantAssembler,
+                imageStorageService = imageStorageService,
             )
     }
 
@@ -374,7 +379,7 @@ class PromptSlotVariantServiceImplTest {
         }
 
         @Test
-        fun `should handle null values in update request`() {
+        fun `should delete image when explicitly set to null`() {
             // Given
             val existingEntity =
                 PromptSlotVariant(
@@ -383,34 +388,33 @@ class PromptSlotVariantServiceImplTest {
                     name = "Keep Name",
                     prompt = "Keep prompt",
                     description = "Keep description",
-                    exampleImageFilename = "keep.jpg",
+                    exampleImageFilename = "old-image.jpg",
                 )
 
             val request =
                 UpdatePromptSlotVariantRequest(
-                    promptSlotTypeId = null,
-                    name = null,
-                    prompt = null,
-                    description = null,
+                    name = "Updated Name",
                     exampleImageFilename = null,
                 )
 
             whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
+            whenever(promptSlotVariantRepository.existsByNameAndIdNot("Updated Name", 1L)).thenReturn(false)
             whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
             whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            whenever(imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)).thenReturn(true)
 
             // When
             val result = service.updateSlotVariant(1L, request)
 
             // Then
             assertNotNull(result)
-            assertEquals("Keep Name", existingEntity.name)
+            assertEquals("Updated Name", existingEntity.name)
             assertEquals("Keep prompt", existingEntity.prompt)
             assertEquals("Keep description", existingEntity.description)
-            assertEquals("keep.jpg", existingEntity.exampleImageFilename)
-
-            verify(promptSlotTypeRepository, never()).existsById(any())
-            verify(promptSlotVariantRepository, never()).existsByNameAndIdNot(any(), any())
+            assertEquals(null, existingEntity.exampleImageFilename) // Should be cleared
+            
+            // Verify the old image was deleted
+            verify(imageStorageService).deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
         }
 
         @Test
@@ -442,28 +446,129 @@ class PromptSlotVariantServiceImplTest {
             assertEquals("Same Name", existingEntity.name)
             assertEquals("Updated prompt", existingEntity.prompt)
         }
+        
+        @Test
+        fun `should delete old image when replacing with new image`() {
+            // Given
+            val existingEntity =
+                PromptSlotVariant(
+                    id = 1L,
+                    promptSlotTypeId = 1L,
+                    name = "Test",
+                    prompt = "Test prompt",
+                    exampleImageFilename = "old-image.jpg",
+                )
+
+            val request =
+                UpdatePromptSlotVariantRequest(
+                    exampleImageFilename = "new-image.jpg",
+                )
+
+            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
+            whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
+            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            whenever(imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)).thenReturn(true)
+
+            // When
+            val result = service.updateSlotVariant(1L, request)
+
+            // Then
+            assertNotNull(result)
+            assertEquals("new-image.jpg", existingEntity.exampleImageFilename)
+            
+            // Verify the old image was deleted
+            verify(imageStorageService).deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+        }
+        
+        @Test
+        fun `should not delete image when filename stays the same`() {
+            // Given
+            val existingEntity =
+                PromptSlotVariant(
+                    id = 1L,
+                    promptSlotTypeId = 1L,
+                    name = "Test",
+                    prompt = "Test prompt",
+                    exampleImageFilename = "same-image.jpg",
+                )
+
+            val request =
+                UpdatePromptSlotVariantRequest(
+                    name = "Updated Name",
+                    exampleImageFilename = "same-image.jpg",
+                )
+
+            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
+            whenever(promptSlotVariantRepository.existsByNameAndIdNot("Updated Name", 1L)).thenReturn(false)
+            whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
+            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+
+            // When
+            val result = service.updateSlotVariant(1L, request)
+
+            // Then
+            assertNotNull(result)
+            assertEquals("same-image.jpg", existingEntity.exampleImageFilename)
+            
+            // Verify the image was NOT deleted since it's the same
+            verify(imageStorageService, never()).deleteFile(any(), any())
+        }
     }
 
     @Nested
     @DisplayName("Delete Slot Variant Tests")
     inner class DeleteSlotVariantTests {
         @Test
-        fun `should successfully delete existing slot variant`() {
+        fun `should successfully delete slot variant with image cleanup`() {
             // Given
-            whenever(promptSlotVariantRepository.existsById(1L)).thenReturn(true)
+            val existingEntity =
+                PromptSlotVariant(
+                    id = 1L,
+                    promptSlotTypeId = 1L,
+                    name = "To Delete",
+                    prompt = "Will be deleted",
+                    exampleImageFilename = "image-to-delete.jpg",
+                )
+            
+            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
+            whenever(imageStorageService.deleteFile("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)).thenReturn(true)
 
             // When
             service.deleteSlotVariant(1L)
 
             // Then
-            verify(promptSlotVariantRepository).existsById(1L)
+            verify(promptSlotVariantRepository).findById(1L)
+            verify(imageStorageService).deleteFile("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+            verify(promptSlotVariantRepository).deleteById(1L)
+        }
+        
+        @Test
+        fun `should successfully delete slot variant without image`() {
+            // Given
+            val existingEntity =
+                PromptSlotVariant(
+                    id = 1L,
+                    promptSlotTypeId = 1L,
+                    name = "To Delete",
+                    prompt = "Will be deleted",
+                    exampleImageFilename = null,
+                )
+            
+            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
+
+            // When
+            service.deleteSlotVariant(1L)
+
+            // Then
+            verify(promptSlotVariantRepository).findById(1L)
+            verify(imageStorageService, never()).deleteFile(any(), any())
             verify(promptSlotVariantRepository).deleteById(1L)
         }
 
         @Test
         fun `should throw exception when trying to delete non-existent variant`() {
             // Given
-            whenever(promptSlotVariantRepository.existsById(999L)).thenReturn(false)
+            whenever(promptSlotVariantRepository.findById(999L)).thenReturn(Optional.empty())
 
             // When/Then
             val exception =
@@ -471,14 +576,24 @@ class PromptSlotVariantServiceImplTest {
                     service.deleteSlotVariant(999L)
                 }
 
-            verify(promptSlotVariantRepository).existsById(999L)
+            verify(promptSlotVariantRepository).findById(999L)
             verify(promptSlotVariantRepository, never()).deleteById(any())
+            verify(imageStorageService, never()).deleteFile(any(), any())
         }
 
         @Test
         fun `should handle deletion of variant with references`() {
             // Given
-            whenever(promptSlotVariantRepository.existsById(1L)).thenReturn(true)
+            val existingEntity =
+                PromptSlotVariant(
+                    id = 1L,
+                    promptSlotTypeId = 1L,
+                    name = "Referenced",
+                    prompt = "Referenced prompt",
+                    exampleImageFilename = null,
+                )
+            
+            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
 
             // When
             service.deleteSlotVariant(1L)
