@@ -2,13 +2,11 @@ package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.article.api.dto.CreateMugDetailsRequest
 import com.jotoai.voenix.shop.article.api.dto.UpdateMugDetailsRequest
+import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleDetails
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleDetailsRepository
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -17,6 +15,12 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.mockito.ArgumentCaptor
+import org.mockito.Mockito.any
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
 
 @DisplayName("MugDetailsService Tests")
 class MugDetailsServiceTest {
@@ -26,8 +30,20 @@ class MugDetailsServiceTest {
     
     @BeforeEach
     fun setUp() {
-        mugDetailsRepository = mockk()
+        mugDetailsRepository = mock(MugArticleDetailsRepository::class.java)
         mugDetailsService = MugDetailsService(mugDetailsRepository)
+    }
+    
+    private fun createTestArticle(id: Long = 1L): Article {
+        val category = mock(ArticleCategory::class.java)
+        return Article(
+            id = id,
+            name = "Test Mug",
+            descriptionShort = "Test mug description",
+            descriptionLong = "Test mug long description",
+            articleType = ArticleType.MUG,
+            category = category
+        )
     }
     
     @Nested
@@ -37,7 +53,7 @@ class MugDetailsServiceTest {
         @Test
         fun `should create mug details with all fields including document format`() {
             // Given
-            val article = Article().apply { id = 1L }
+            val article = createTestArticle()
             val request = CreateMugDetailsRequest(
                 heightMm = 95,
                 diameterMm = 82,
@@ -50,18 +66,18 @@ class MugDetailsServiceTest {
                 dishwasherSafe = true
             )
             
-            val savedDetailsSlot = slot<MugArticleDetails>()
-            every { mugDetailsRepository.saveAndFlush(capture(savedDetailsSlot)) } answers {
-                firstArg<MugArticleDetails>()
+            val savedDetailsCaptor = ArgumentCaptor.forClass(MugArticleDetails::class.java)
+            `when`(mugDetailsRepository.saveAndFlush(savedDetailsCaptor.capture())).thenAnswer { invocation ->
+                invocation.getArgument<MugArticleDetails>(0)
             }
             
             // When
             val result = mugDetailsService.create(article, request)
             
             // Then
-            verify(exactly = 1) { mugDetailsRepository.saveAndFlush(any()) }
+            verify(mugDetailsRepository, times(1)).saveAndFlush(any(MugArticleDetails::class.java))
             
-            val savedDetails = savedDetailsSlot.captured
+            val savedDetails = savedDetailsCaptor.value
             assertThat(savedDetails.articleId).isEqualTo(1L)
             assertThat(savedDetails.heightMm).isEqualTo(95)
             assertThat(savedDetails.diameterMm).isEqualTo(82)
@@ -77,7 +93,7 @@ class MugDetailsServiceTest {
         @Test
         fun `should create mug details without optional document format fields`() {
             // Given
-            val article = Article().apply { id = 1L }
+            val article = createTestArticle()
             val request = CreateMugDetailsRequest(
                 heightMm = 95,
                 diameterMm = 82,
@@ -90,16 +106,16 @@ class MugDetailsServiceTest {
                 dishwasherSafe = true
             )
             
-            val savedDetailsSlot = slot<MugArticleDetails>()
-            every { mugDetailsRepository.saveAndFlush(capture(savedDetailsSlot)) } answers {
-                firstArg<MugArticleDetails>()
+            val savedDetailsCaptor = ArgumentCaptor.forClass(MugArticleDetails::class.java)
+            `when`(mugDetailsRepository.saveAndFlush(savedDetailsCaptor.capture())).thenAnswer { invocation ->
+                invocation.getArgument<MugArticleDetails>(0)
             }
             
             // When
             val result = mugDetailsService.create(article, request)
             
             // Then
-            val savedDetails = savedDetailsSlot.captured
+            val savedDetails = savedDetailsCaptor.value
             assertThat(savedDetails.documentFormatWidthMm).isNull()
             assertThat(savedDetails.documentFormatHeightMm).isNull()
             assertThat(savedDetails.documentFormatMarginBottomMm).isNull()
@@ -108,7 +124,7 @@ class MugDetailsServiceTest {
         @Test
         fun `should reject document format width less than or equal to print template width`() {
             // Given
-            val article = Article().apply { id = 1L }
+            val article = createTestArticle()
             val request = CreateMugDetailsRequest(
                 heightMm = 95,
                 diameterMm = 82,
@@ -131,7 +147,7 @@ class MugDetailsServiceTest {
         @Test
         fun `should reject document format height less than or equal to print template height`() {
             // Given
-            val article = Article().apply { id = 1L }
+            val article = createTestArticle()
             val request = CreateMugDetailsRequest(
                 heightMm = 95,
                 diameterMm = 82,
@@ -160,7 +176,7 @@ class MugDetailsServiceTest {
         )
         fun `should reject invalid document format dimensions`(docWidth: Int, docHeight: Int) {
             // Given
-            val article = Article().apply { id = 1L }
+            val article = createTestArticle()
             val request = CreateMugDetailsRequest(
                 heightMm = 95,
                 diameterMm = 82,
@@ -185,7 +201,7 @@ class MugDetailsServiceTest {
         @Test
         fun `should update existing mug details with document format fields`() {
             // Given
-            val article = Article().apply { id = 1L }
+            val article = createTestArticle()
             val existingDetails = MugArticleDetails(
                 articleId = 1L,
                 heightMm = 90,
@@ -209,17 +225,17 @@ class MugDetailsServiceTest {
                 dishwasherSafe = false
             )
             
-            every { mugDetailsRepository.findByArticleId(1L) } returns existingDetails
-            every { mugDetailsRepository.saveAndFlush(any()) } answers {
-                firstArg<MugArticleDetails>()
+            `when`(mugDetailsRepository.findByArticleId(1L)).thenReturn(existingDetails)
+            `when`(mugDetailsRepository.saveAndFlush(any(MugArticleDetails::class.java))).thenAnswer { invocation ->
+                invocation.getArgument<MugArticleDetails>(0)
             }
             
             // When
             val result = mugDetailsService.update(article, request)
             
             // Then
-            verify(exactly = 1) { mugDetailsRepository.findByArticleId(1L) }
-            verify(exactly = 1) { mugDetailsRepository.saveAndFlush(existingDetails) }
+            verify(mugDetailsRepository, times(1)).findByArticleId(1L)
+            verify(mugDetailsRepository, times(1)).saveAndFlush(existingDetails)
             
             assertThat(existingDetails.heightMm).isEqualTo(95)
             assertThat(existingDetails.diameterMm).isEqualTo(82)
@@ -235,7 +251,7 @@ class MugDetailsServiceTest {
         @Test
         fun `should create new mug details if not exists during update`() {
             // Given
-            val article = Article().apply { id = 1L }
+            val article = createTestArticle()
             val request = UpdateMugDetailsRequest(
                 heightMm = 95,
                 diameterMm = 82,
@@ -248,23 +264,23 @@ class MugDetailsServiceTest {
                 dishwasherSafe = true
             )
             
-            every { mugDetailsRepository.findByArticleId(1L) } returns null
-            every { mugDetailsRepository.saveAndFlush(any()) } answers {
-                firstArg<MugArticleDetails>()
+            `when`(mugDetailsRepository.findByArticleId(1L)).thenReturn(null)
+            `when`(mugDetailsRepository.saveAndFlush(any(MugArticleDetails::class.java))).thenAnswer { invocation ->
+                invocation.getArgument<MugArticleDetails>(0)
             }
             
             // When
             val result = mugDetailsService.update(article, request)
             
             // Then
-            verify(exactly = 1) { mugDetailsRepository.findByArticleId(1L) }
-            verify(exactly = 1) { mugDetailsRepository.saveAndFlush(any()) }
+            verify(mugDetailsRepository, times(1)).findByArticleId(1L)
+            verify(mugDetailsRepository, times(1)).saveAndFlush(any(MugArticleDetails::class.java))
         }
         
         @Test
         fun `should clear document format fields when updating with null values`() {
             // Given
-            val article = Article().apply { id = 1L }
+            val article = createTestArticle()
             val existingDetails = MugArticleDetails(
                 articleId = 1L,
                 heightMm = 95,
@@ -287,9 +303,9 @@ class MugDetailsServiceTest {
                 dishwasherSafe = true
             )
             
-            every { mugDetailsRepository.findByArticleId(1L) } returns existingDetails
-            every { mugDetailsRepository.saveAndFlush(any()) } answers {
-                firstArg<MugArticleDetails>()
+            `when`(mugDetailsRepository.findByArticleId(1L)).thenReturn(existingDetails)
+            `when`(mugDetailsRepository.saveAndFlush(any(MugArticleDetails::class.java))).thenAnswer { invocation ->
+                invocation.getArgument<MugArticleDetails>(0)
             }
             
             // When
@@ -304,7 +320,7 @@ class MugDetailsServiceTest {
         @Test
         fun `should validate document format during update`() {
             // Given
-            val article = Article().apply { id = 1L }
+            val article = createTestArticle()
             val existingDetails = MugArticleDetails(
                 articleId = 1L,
                 heightMm = 95,
@@ -324,7 +340,7 @@ class MugDetailsServiceTest {
                 dishwasherSafe = true
             )
             
-            every { mugDetailsRepository.findByArticleId(1L) } returns existingDetails
+            `when`(mugDetailsRepository.findByArticleId(1L)).thenReturn(existingDetails)
             
             // When/Then
             assertThatThrownBy { mugDetailsService.update(article, request) }
@@ -340,7 +356,7 @@ class MugDetailsServiceTest {
         @Test
         fun `should accept document format one millimeter larger than print template`() {
             // Given
-            val article = Article().apply { id = 1L }
+            val article = createTestArticle()
             val request = CreateMugDetailsRequest(
                 heightMm = 95,
                 diameterMm = 82,
@@ -352,8 +368,8 @@ class MugDetailsServiceTest {
                 dishwasherSafe = true
             )
             
-            every { mugDetailsRepository.saveAndFlush(any()) } answers {
-                firstArg<MugArticleDetails>()
+            `when`(mugDetailsRepository.saveAndFlush(any(MugArticleDetails::class.java))).thenAnswer { invocation ->
+                invocation.getArgument<MugArticleDetails>(0)
             }
             
             // When/Then - should not throw
@@ -366,7 +382,7 @@ class MugDetailsServiceTest {
         @Test
         fun `should handle very large document format values`() {
             // Given
-            val article = Article().apply { id = 1L }
+            val article = createTestArticle()
             val request = CreateMugDetailsRequest(
                 heightMm = 95,
                 diameterMm = 82,
@@ -378,8 +394,8 @@ class MugDetailsServiceTest {
                 dishwasherSafe = true
             )
             
-            every { mugDetailsRepository.saveAndFlush(any()) } answers {
-                firstArg<MugArticleDetails>()
+            `when`(mugDetailsRepository.saveAndFlush(any(MugArticleDetails::class.java))).thenAnswer { invocation ->
+                invocation.getArgument<MugArticleDetails>(0)
             }
             
             // When - Currently no max validation, so this should pass
@@ -395,7 +411,7 @@ class MugDetailsServiceTest {
         @Test
         fun `should validate only provided document format dimensions`() {
             // Given - only width provided, height is null
-            val article = Article().apply { id = 1L }
+            val article = createTestArticle()
             val request = CreateMugDetailsRequest(
                 heightMm = 95,
                 diameterMm = 82,

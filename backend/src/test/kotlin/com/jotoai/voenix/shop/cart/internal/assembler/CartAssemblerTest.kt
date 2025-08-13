@@ -456,20 +456,24 @@ class CartAssemblerTest {
         generatedImageId: Long? = null,
         promptId: Long? = null,
         position: Int = 0
-    ): CartItem = CartItem(
-        id = id,
-        articleId = articleId,
-        variantId = variantId,
-        quantity = quantity,
-        priceAtTime = priceAtTime,
-        originalPrice = priceAtTime,
-        customData = emptyMap(),
-        generatedImageId = generatedImageId,
-        promptId = promptId,
-        position = position,
-        createdAt = OffsetDateTime.now(),
-        updatedAt = OffsetDateTime.now()
-    )
+    ): CartItem {
+        val tempCart = createCart(id = 999L, userId = 999L)
+        return CartItem(
+            id = id,
+            cart = tempCart,
+            articleId = articleId,
+            variantId = variantId,
+            quantity = quantity,
+            priceAtTime = priceAtTime,
+            originalPrice = priceAtTime,
+            customData = emptyMap(),
+            generatedImageId = generatedImageId,
+            promptId = promptId,
+            position = position,
+            createdAt = OffsetDateTime.now(),
+            updatedAt = OffsetDateTime.now()
+        )
+    }
 
     private fun createArticleDto(
         id: Long,
@@ -477,13 +481,17 @@ class CartAssemblerTest {
         articleType: ArticleType = ArticleType.MUG
     ): ArticleDto = ArticleDto(
         id = id,
-        articleType = articleType,
         name = name,
-        nameUrlPath = name.lowercase().replace(" ", "-"),
-        description = "Description for $name",
-        price = 1999L,
+        descriptionShort = "Short description for $name",
+        descriptionLong = "Long description for $name",
+        active = true,
+        articleType = articleType,
+        categoryId = 1L,
+        categoryName = "Test Category",
+        subcategoryId = 1L,
+        subcategoryName = "Test Subcategory",
         supplierId = 1L,
-        isActive = true,
+        supplierName = "Test Supplier",
         createdAt = OffsetDateTime.now(),
         updatedAt = OffsetDateTime.now()
     )
@@ -495,9 +503,12 @@ class CartAssemblerTest {
     ): MugArticleVariantDto = MugArticleVariantDto(
         id = id,
         articleId = articleId,
-        colorCode = colorCode,
+        insideColorCode = colorCode,
+        outsideColorCode = colorCode,
+        name = "${colorCode.lowercase().replaceFirstChar { it.uppercase() }} Mug",
         exampleImageUrl = null,
-        isActive = true,
+        articleVariantNumber = "VAR-$id",
+        isDefault = colorCode == "WHITE",
         createdAt = OffsetDateTime.now(),
         updatedAt = OffsetDateTime.now()
     )
