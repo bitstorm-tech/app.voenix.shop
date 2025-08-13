@@ -14,9 +14,6 @@ import com.jotoai.voenix.shop.pdf.api.dto.PdfSize
 import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
 import com.jotoai.voenix.shop.pdf.internal.config.PdfQrProperties
 import jakarta.annotation.PostConstruct
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import javax.imageio.ImageIO
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -25,6 +22,9 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import javax.imageio.ImageIO
 
 /*
  * PDF generation functionality is temporarily disabled due to memory and performance issues.

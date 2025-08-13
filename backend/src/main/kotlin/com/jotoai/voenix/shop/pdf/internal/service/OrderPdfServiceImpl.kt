@@ -138,19 +138,32 @@ class OrderPdfServiceImpl(
         pageNumber: Int,
         totalPages: Int,
     ) {
-        val page = PDPage(PDRectangle(pageWidth, pageHeight))
+        // Get document format dimensions for this specific item, fallback to configuration
+        val itemPageWidth = getPageWidth(orderItem)
+        val itemPageHeight = getPageHeight(orderItem)
+        val itemMargin = getMargin(orderItem)
+
+        val page = PDPage(PDRectangle(itemPageWidth, itemPageHeight))
         document.addPage(page)
 
         try {
             PDPageContentStream(document, page).use { contentStream ->
                 // Add header with order number and page info
-                addHeader(contentStream, orderData.orderNumber ?: "UNKNOWN", pageNumber, totalPages)
+                addHeader(
+                    contentStream,
+                    orderData.orderNumber ?: "UNKNOWN",
+                    pageNumber,
+                    totalPages,
+                    itemPageWidth,
+                    itemPageHeight,
+                    itemMargin,
+                )
 
                 // Add product image (centered)
-                addProductImage(document, contentStream, orderData, orderItem)
+                addProductImage(document, contentStream, orderData, orderItem, itemPageWidth, itemPageHeight, itemMargin)
 
                 // Add QR code in bottom left
-                addQrCode(document, contentStream, orderData.id.toString())
+                addQrCode(document, contentStream, orderData.id.toString(), itemMargin)
             }
         } catch (e: IOException) {
             throw PdfGenerationException("I/O error creating page $pageNumber for order ${orderData.orderNumber}", e)
@@ -170,6 +183,33 @@ class OrderPdfServiceImpl(
     }
 
     /**
+     * Gets the page width for a specific order item, using document format or falling back to configuration
+     */
+    private fun getPageWidth(orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData): Float =
+        orderItem.article.mugDetails
+            ?.documentFormatWidthMm
+            ?.let { it * MM_TO_POINTS }
+            ?: (pdfWidthMm * MM_TO_POINTS)
+
+    /**
+     * Gets the page height for a specific order item, using document format or falling back to configuration
+     */
+    private fun getPageHeight(orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData): Float =
+        orderItem.article.mugDetails
+            ?.documentFormatHeightMm
+            ?.let { it * MM_TO_POINTS }
+            ?: (pdfHeightMm * MM_TO_POINTS)
+
+    /**
+     * Gets the margin for a specific order item, using document format or falling back to configuration
+     */
+    private fun getMargin(orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData): Float =
+        orderItem.article.mugDetails
+            ?.documentFormatMarginBottomMm
+            ?.let { it * MM_TO_POINTS }
+            ?: (pdfMarginMm * MM_TO_POINTS)
+
+    /**
      * Adds order number and page information
      * Text is rotated 90 degrees clockwise and positioned on the left side
      */
@@ -178,6 +218,9 @@ class OrderPdfServiceImpl(
         orderNumber: String,
         pageNumber: Int,
         totalPages: Int,
+        pageWidth: Float,
+        pageHeight: Float,
+        margin: Float,
     ) {
         val boldFont = PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD)
         val fontSize = HEADER_FONT_SIZE
@@ -220,6 +263,9 @@ class OrderPdfServiceImpl(
         contentStream: PDPageContentStream,
         orderData: OrderPdfData,
         orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData,
+        pageWidth: Float,
+        pageHeight: Float,
+        margin: Float,
     ) {
         try {
             // Get image data - try generated image first, then fallback to placeholder
@@ -250,18 +296,21 @@ class OrderPdfServiceImpl(
                     }
                 }
 
-            // Get MugArticleDetails for the correct print template dimensions
-            val mugDetails = articleQueryService.getMugDetailsByArticleId(orderItem.article.id)
-
             // Create PDF image object
             val pdfImage = PDImageXObject.createFromByteArray(document, imageData, PDF_IMAGE_NAME_PRODUCT)
 
             // Use exact print template dimensions from MugArticleDetails
             // Never scale or correct the image size - use exact dimensions from database
-            val imageWidthMm = mugDetails?.printTemplateWidthMm?.toFloat() ?: (pdfWidthMm - (2 * pdfMarginMm))
+            val imageWidthMm =
+                orderItem.article.mugDetails
+                    ?.printTemplateWidthMm
+                    ?.toFloat()
+                    ?: ((pageWidth / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)))
             val imageHeightMm =
-                mugDetails?.printTemplateHeightMm?.toFloat()
-                    ?: (pdfHeightMm - (2 * pdfMarginMm) - DEFAULT_IMAGE_MARGIN_MM)
+                orderItem.article.mugDetails
+                    ?.printTemplateHeightMm
+                    ?.toFloat()
+                    ?: ((pageHeight / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)) - DEFAULT_IMAGE_MARGIN_MM)
 
             // Convert exact dimensions to points (no scaling or aspect ratio correction)
             val imageWidthPt = imageWidthMm * MM_TO_POINTS
@@ -286,7 +335,7 @@ class OrderPdfServiceImpl(
             logger.error("I/O error adding product image for order item ${orderItem.id}", e)
             try {
                 // Add placeholder text instead
-                addPlaceholderText(contentStream, "Image not available")
+                addPlaceholderText(contentStream, "Image not available", pageWidth, pageHeight)
             } catch (placeholderException: IOException) {
                 logger.error("Failed to add placeholder text for order item ${orderItem.id}", placeholderException)
                 throw PdfGenerationException(
@@ -298,7 +347,7 @@ class OrderPdfServiceImpl(
             logger.error("Invalid image data for order item ${orderItem.id}", e)
             try {
                 // Add placeholder text instead
-                addPlaceholderText(contentStream, "Image not available")
+                addPlaceholderText(contentStream, "Image not available", pageWidth, pageHeight)
             } catch (placeholderException: IOException) {
                 logger.error("Failed to add placeholder text for order item ${orderItem.id}", placeholderException)
                 throw PdfGenerationException(
@@ -316,6 +365,7 @@ class OrderPdfServiceImpl(
         document: PDDocument,
         contentStream: PDPageContentStream,
         orderId: String,
+        margin: Float,
     ) {
         try {
             // Generate QR code
@@ -339,7 +389,14 @@ class OrderPdfServiceImpl(
             logger.error("QR code generation error for order ID $orderId", e)
             try {
                 // Add fallback text
-                addPlaceholderText(contentStream, "Order ID: $orderId", margin, margin + FALLBACK_TEXT_OFFSET)
+                addPlaceholderText(
+                    contentStream,
+                    "Order ID: $orderId",
+                    Float.MAX_VALUE,
+                    Float.MAX_VALUE,
+                    margin,
+                    margin + FALLBACK_TEXT_OFFSET,
+                )
             } catch (placeholderException: IOException) {
                 logger.error("Failed to add QR code fallback text for order ID $orderId", placeholderException)
                 throw PdfGenerationException("Failed to add QR code and fallback text for order ID $orderId", e)
@@ -348,7 +405,14 @@ class OrderPdfServiceImpl(
             logger.error("I/O error generating QR code for order ID $orderId", e)
             try {
                 // Add fallback text
-                addPlaceholderText(contentStream, "Order ID: $orderId", margin, margin + FALLBACK_TEXT_OFFSET)
+                addPlaceholderText(
+                    contentStream,
+                    "Order ID: $orderId",
+                    Float.MAX_VALUE,
+                    Float.MAX_VALUE,
+                    margin,
+                    margin + FALLBACK_TEXT_OFFSET,
+                )
             } catch (placeholderException: IOException) {
                 logger.error("Failed to add QR code fallback text for order ID $orderId", placeholderException)
                 throw PdfGenerationException("Failed to add QR code and fallback text for order ID $orderId", e)
@@ -403,6 +467,8 @@ class OrderPdfServiceImpl(
     private fun addPlaceholderText(
         contentStream: PDPageContentStream,
         text: String,
+        pageWidth: Float,
+        pageHeight: Float,
         x: Float = pageWidth / 2,
         y: Float = pageHeight / 2,
     ) {

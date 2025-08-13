@@ -30,4 +30,7 @@ data class ArticlePdfData(
 data class MugDetailsPdfData(
     val printTemplateWidthMm: Int,
     val printTemplateHeightMm: Int,
+    val documentFormatWidthMm: Int?,
+    val documentFormatHeightMm: Int?,
+    val documentFormatMarginBottomMm: Int?,
 )
