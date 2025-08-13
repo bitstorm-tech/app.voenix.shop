@@ -42,11 +42,11 @@ class OrderQueryServiceImpl(
         orderId: UUID,
     ): OrderForPdfDto {
         val order = findOrderEntity(userId, orderId)
-        
+
         // Fetch image filenames for all items with generated images
         val generatedImageIds = order.items.mapNotNull { it.generatedImageId }.distinct()
         val imagesById = imageQueryService.findGeneratedImagesByIds(generatedImageIds)
-        
+
         return OrderForPdfDto(
             id = order.id!!,
             orderNumber = order.orderNumber,

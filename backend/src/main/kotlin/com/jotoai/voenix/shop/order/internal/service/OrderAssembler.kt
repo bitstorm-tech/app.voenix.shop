@@ -39,11 +39,11 @@ class OrderAssembler(
                     val articleIds = entity.items.map { it.articleId }.distinct()
                     val variantIds = entity.items.map { it.variantId }.distinct()
                     val generatedImageIds = entity.items.mapNotNull { it.generatedImageId }.distinct()
-                    
+
                     val articlesById = articleQueryService.getArticlesByIds(articleIds)
                     val variantsById = articleQueryService.getMugVariantsByIds(variantIds)
                     val imagesById = imageQueryService.findGeneratedImagesByIds(generatedImageIds)
-                    
+
                     entity.items.map { toItemDto(it, articlesById, variantsById, imagesById) }
                 },
             pdfUrl = generatePdfUrl(entity.id),

@@ -14,6 +14,9 @@ import com.jotoai.voenix.shop.pdf.api.dto.PdfSize
 import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
 import com.jotoai.voenix.shop.pdf.internal.config.PdfQrProperties
 import jakarta.annotation.PostConstruct
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import javax.imageio.ImageIO
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -22,9 +25,6 @@ import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import javax.imageio.ImageIO
 
 /*
  * PDF generation functionality is temporarily disabled due to memory and performance issues.
@@ -34,9 +34,6 @@ import javax.imageio.ImageIO
 
 @Service
 class PdfServiceImpl(
-    @param:Value("\${pdf.size.width}") private val pdfWidthMm: Float,
-    @param:Value("\${pdf.size.height}") private val pdfHeightMm: Float,
-    @param:Value("\${pdf.margin}") private val marginMm: Float,
     @param:Value("\${app.base-url}") private val appBaseUrl: String,
     private val articleQueryService: ArticleQueryService,
     private val storagePathService: StoragePathService,
@@ -47,7 +44,7 @@ class PdfServiceImpl(
         private val logger = LoggerFactory.getLogger(PdfServiceImpl::class.java)
 
         // PDF conversion and layout constants
-        private const val MM_TO_POINTS = 2.834645669f
+        private const val MM_TO_POINTS = 2.8346457f
         private const val QR_CODE_SIZE_PIXELS = 150
         private const val QR_CODE_SIZE_POINTS = 150f
 
@@ -65,13 +62,6 @@ class PdfServiceImpl(
             logger.info("Initialized PDF QR base URL with app base URL: $appBaseUrl")
         }
     }
-
-    private val pdfSize =
-        PdfSize(
-            width = pdfWidthMm * MM_TO_POINTS,
-            height = pdfHeightMm * MM_TO_POINTS,
-            margin = marginMm * MM_TO_POINTS,
-        )
 
     override fun generatePdf(request: GeneratePdfRequest): ByteArray {
         try {
@@ -97,6 +87,25 @@ class PdfServiceImpl(
                     throw PdfGenerationException("Invalid image filename: ${request.imageFilename}", e)
                 }
 
+            // Validate document format fields from database
+            val pdfWidthMm =
+                mugDetails.documentFormatWidthMm?.toFloat()
+                    ?: throw PdfGenerationException("Document format width not configured for article ${request.articleId}")
+            val pdfHeightMm =
+                mugDetails.documentFormatHeightMm?.toFloat()
+                    ?: throw PdfGenerationException("Document format height not configured for article ${request.articleId}")
+            val marginMm =
+                mugDetails.documentFormatMarginBottomMm?.toFloat()
+                    ?: throw PdfGenerationException("Document format margin not configured for article ${request.articleId}")
+
+            // Convert dimensions from mm to points
+            val pdfSize =
+                PdfSize(
+                    width = pdfWidthMm * MM_TO_POINTS,
+                    height = pdfHeightMm * MM_TO_POINTS,
+                    margin = marginMm * MM_TO_POINTS,
+                )
+
             // Use try-with-resources for proper resource management
             PDDocument().use { document ->
                 val page = PDPage(PDRectangle(pdfSize.width, pdfSize.height))
@@ -105,7 +114,7 @@ class PdfServiceImpl(
                 PDPageContentStream(document, page).use { contentStream ->
                     // Generate QR code URL pointing to the article
                     val qrUrl = pdfQrProperties.generateQrUrl("/articles/${request.articleId}")
-                    addQrCode(document, contentStream, qrUrl)
+                    addQrCode(document, contentStream, qrUrl, pdfSize)
 
                     addCenteredImage(
                         document,
@@ -113,6 +122,7 @@ class PdfServiceImpl(
                         imageData,
                         mugDetails.printTemplateWidthMm.toFloat(),
                         mugDetails.printTemplateHeightMm.toFloat(),
+                        pdfSize,
                     )
                 }
 
@@ -158,6 +168,7 @@ class PdfServiceImpl(
         document: PDDocument,
         contentStream: PDPageContentStream,
         qrContent: String,
+        pdfSize: PdfSize,
     ) {
         try {
             val qrCodeWriter = QRCodeWriter()
@@ -193,6 +204,7 @@ class PdfServiceImpl(
         imageData: ByteArray,
         imageWidthMm: Float,
         imageHeightMm: Float,
+        pdfSize: PdfSize,
     ) {
         try {
             val image = PDImageXObject.createFromByteArray(document, imageData, PDF_IMAGE_NAME_MAIN)
