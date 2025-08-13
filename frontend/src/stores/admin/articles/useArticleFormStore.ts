@@ -99,6 +99,9 @@ const initialArticle: Partial<Article> = {
     printTemplateHeightMm: 0,
     fillingQuantity: '',
     dishwasherSafe: true,
+    documentFormatWidthMm: undefined,
+    documentFormatHeightMm: undefined,
+    documentFormatMarginBottomMm: undefined,
   },
 };
 
@@ -205,6 +208,9 @@ export const useArticleFormStore = create<ArticleFormState>()(
             printTemplateHeightMm: 0,
             fillingQuantity: '',
             dishwasherSafe: true,
+            documentFormatWidthMm: undefined,
+            documentFormatHeightMm: undefined,
+            documentFormatMarginBottomMm: undefined,
           };
         }
         Object.assign(state.article.mugDetails, details);
@@ -240,6 +246,9 @@ export const useArticleFormStore = create<ArticleFormState>()(
               printTemplateHeightMm: 0,
               fillingQuantity: '',
               dishwasherSafe: true,
+              documentFormatWidthMm: undefined,
+              documentFormatHeightMm: undefined,
+              documentFormatMarginBottomMm: undefined,
             };
             delete state.article.shirtDetails;
             break;

@@ -21,6 +21,13 @@ class MugDetailsService(
         article: Article,
         request: CreateMugDetailsRequest,
     ): MugArticleDetailsDto {
+        validateDocumentFormatDimensions(
+            request.documentFormatWidthMm,
+            request.documentFormatHeightMm,
+            request.printTemplateWidthMm,
+            request.printTemplateHeightMm,
+        )
+
         val details =
             MugArticleDetails(
                 articleId = article.id!!,
@@ -28,6 +35,9 @@ class MugDetailsService(
                 diameterMm = request.diameterMm,
                 printTemplateWidthMm = request.printTemplateWidthMm,
                 printTemplateHeightMm = request.printTemplateHeightMm,
+                documentFormatWidthMm = request.documentFormatWidthMm,
+                documentFormatHeightMm = request.documentFormatHeightMm,
+                documentFormatMarginBottomMm = request.documentFormatMarginBottomMm,
                 fillingQuantity = request.fillingQuantity,
                 dishwasherSafe = request.dishwasherSafe,
             )
@@ -40,6 +50,13 @@ class MugDetailsService(
         article: Article,
         request: UpdateMugDetailsRequest,
     ): MugArticleDetailsDto {
+        validateDocumentFormatDimensions(
+            request.documentFormatWidthMm,
+            request.documentFormatHeightMm,
+            request.printTemplateWidthMm,
+            request.printTemplateHeightMm,
+        )
+
         val existingDetails = mugDetailsRepository.findByArticleId(article.id!!)
 
         return if (existingDetails != null) {
@@ -48,6 +65,9 @@ class MugDetailsService(
                 diameterMm = request.diameterMm
                 printTemplateWidthMm = request.printTemplateWidthMm
                 printTemplateHeightMm = request.printTemplateHeightMm
+                documentFormatWidthMm = request.documentFormatWidthMm
+                documentFormatHeightMm = request.documentFormatHeightMm
+                documentFormatMarginBottomMm = request.documentFormatMarginBottomMm
                 fillingQuantity = request.fillingQuantity
                 dishwasherSafe = request.dishwasherSafe
             }
@@ -60,10 +80,34 @@ class MugDetailsService(
                     diameterMm = request.diameterMm,
                     printTemplateWidthMm = request.printTemplateWidthMm,
                     printTemplateHeightMm = request.printTemplateHeightMm,
+                    documentFormatWidthMm = request.documentFormatWidthMm,
+                    documentFormatHeightMm = request.documentFormatHeightMm,
+                    documentFormatMarginBottomMm = request.documentFormatMarginBottomMm,
                     fillingQuantity = request.fillingQuantity,
                     dishwasherSafe = request.dishwasherSafe,
                 ),
             )
+        }
+    }
+
+    private fun validateDocumentFormatDimensions(
+        documentFormatWidthMm: Int?,
+        documentFormatHeightMm: Int?,
+        printTemplateWidthMm: Int,
+        printTemplateHeightMm: Int,
+    ) {
+        documentFormatWidthMm?.let { docWidth ->
+            require(docWidth > printTemplateWidthMm) {
+                "Document format width ($docWidth mm) must be greater than " +
+                    "print template width ($printTemplateWidthMm mm)"
+            }
+        }
+
+        documentFormatHeightMm?.let { docHeight ->
+            require(docHeight > printTemplateHeightMm) {
+                "Document format height ($docHeight mm) must be greater than " +
+                    "print template height ($printTemplateHeightMm mm)"
+            }
         }
     }
 }

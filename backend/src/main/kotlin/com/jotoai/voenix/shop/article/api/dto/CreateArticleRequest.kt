@@ -45,6 +45,12 @@ data class CreateMugDetailsRequest(
     @field:NotNull(message = "Print template height is required")
     @field:Positive(message = "Print template height must be positive")
     val printTemplateHeightMm: Int,
+    @field:Positive(message = "Document format width must be positive")
+    val documentFormatWidthMm: Int? = null,
+    @field:Positive(message = "Document format height must be positive")
+    val documentFormatHeightMm: Int? = null,
+    @field:Positive(message = "Document format margin bottom must be positive")
+    val documentFormatMarginBottomMm: Int? = null,
     val fillingQuantity: String? = null,
     val dishwasherSafe: Boolean = true,
 )

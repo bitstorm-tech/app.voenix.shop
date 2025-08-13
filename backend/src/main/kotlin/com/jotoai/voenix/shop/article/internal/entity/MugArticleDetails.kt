@@ -23,6 +23,12 @@ class MugArticleDetails(
     var printTemplateWidthMm: Int,
     @Column(name = "print_template_height_mm", nullable = false)
     var printTemplateHeightMm: Int,
+    @Column(name = "document_format_width_mm")
+    var documentFormatWidthMm: Int? = null,
+    @Column(name = "document_format_height_mm")
+    var documentFormatHeightMm: Int? = null,
+    @Column(name = "document_format_margin_bottom_mm")
+    var documentFormatMarginBottomMm: Int? = null,
     @Column(name = "filling_quantity", length = 50)
     var fillingQuantity: String? = null,
     @Column(name = "dishwasher_safe", nullable = false)
@@ -41,6 +47,9 @@ class MugArticleDetails(
             diameterMm = this.diameterMm,
             printTemplateWidthMm = this.printTemplateWidthMm,
             printTemplateHeightMm = this.printTemplateHeightMm,
+            documentFormatWidthMm = this.documentFormatWidthMm,
+            documentFormatHeightMm = this.documentFormatHeightMm,
+            documentFormatMarginBottomMm = this.documentFormatMarginBottomMm,
             fillingQuantity = this.fillingQuantity,
             dishwasherSafe = this.dishwasherSafe,
             createdAt = this.createdAt,

@@ -34,6 +34,9 @@ export interface ArticleMugDetails {
   printTemplateHeightMm: number;
   fillingQuantity?: string;
   dishwasherSafe: boolean;
+  documentFormatWidthMm?: number;
+  documentFormatHeightMm?: number;
+  documentFormatMarginBottomMm?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -111,6 +114,9 @@ export interface CreateMugDetailsRequest {
   printTemplateHeightMm: number;
   fillingQuantity?: string;
   dishwasherSafe: boolean;
+  documentFormatWidthMm?: number;
+  documentFormatHeightMm?: number;
+  documentFormatMarginBottomMm?: number;
 }
 
 export interface CreateShirtDetailsRequest {
