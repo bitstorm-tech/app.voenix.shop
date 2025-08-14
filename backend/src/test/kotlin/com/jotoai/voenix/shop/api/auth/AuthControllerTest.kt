@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.api.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.jotoai.voenix.shop.auth.api.AuthFacade
+import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
@@ -35,7 +35,7 @@ class AuthControllerTest {
     private lateinit var objectMapper: ObjectMapper
 
     @MockitoBean
-    private lateinit var authFacade: AuthFacade
+    private lateinit var authService: AuthService
 
     @Test
     fun `register should create new user and return login response`() {
@@ -64,7 +64,7 @@ class AuthControllerTest {
                 roles = listOf("USER"),
             )
 
-        whenever(authFacade.register(eq(registerRequest), any(), any())).thenReturn(loginResponse)
+        whenever(authService.register(eq(registerRequest), any(), any())).thenReturn(loginResponse)
 
         // When & Then
         mockMvc
@@ -87,7 +87,7 @@ class AuthControllerTest {
                 password = "Test123!@&",
             )
 
-        whenever(authFacade.register(eq(registerRequest), any(), any()))
+        whenever(authService.register(eq(registerRequest), any(), any()))
             .thenThrow(ResourceAlreadyExistsException("User", "email", "existing@example.com"))
 
         // When & Then

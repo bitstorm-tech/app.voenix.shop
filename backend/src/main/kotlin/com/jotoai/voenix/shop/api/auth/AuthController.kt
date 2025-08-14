@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.api.auth
 
-import com.jotoai.voenix.shop.auth.api.AuthFacade
-import com.jotoai.voenix.shop.auth.api.AuthQueryService
+import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
 import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
@@ -19,35 +18,34 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/auth")
 class AuthController(
-    private val authFacade: AuthFacade,
-    private val authQueryService: AuthQueryService,
+    private val authService: AuthService,
 ) {
     @PostMapping("/login")
     fun login(
         @Valid @RequestBody loginRequest: LoginRequest,
         request: HttpServletRequest,
         response: HttpServletResponse,
-    ): LoginResponse = authFacade.login(loginRequest, request, response)
+    ): LoginResponse = authService.login(loginRequest, request, response)
 
     @PostMapping("/logout")
     fun logout(request: HttpServletRequest) {
-        authFacade.logout(request)
+        authService.logout(request)
     }
 
     @GetMapping("/session")
-    fun getSessionInfo(): SessionInfo = authQueryService.getCurrentSession()
+    fun getSessionInfo(): SessionInfo = authService.getCurrentSession()
 
     @PostMapping("/register")
     fun register(
         @Valid @RequestBody registerRequest: RegisterRequest,
         request: HttpServletRequest,
         response: HttpServletResponse,
-    ): LoginResponse = authFacade.register(registerRequest, request, response)
+    ): LoginResponse = authService.register(registerRequest, request, response)
 
     @PostMapping("/register-guest")
     fun registerGuest(
         @Valid @RequestBody registerGuestRequest: RegisterGuestRequest,
         request: HttpServletRequest,
         response: HttpServletResponse,
-    ): LoginResponse = authFacade.registerGuest(registerGuestRequest, request, response)
+    ): LoginResponse = authService.registerGuest(registerGuestRequest, request, response)
 }

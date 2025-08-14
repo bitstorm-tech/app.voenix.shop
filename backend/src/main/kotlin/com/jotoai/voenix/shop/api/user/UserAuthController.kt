@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.api.user
 
-import com.jotoai.voenix.shop.auth.api.AuthFacade
-import com.jotoai.voenix.shop.auth.api.AuthQueryService
+import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
 import com.jotoai.voenix.shop.user.api.UserFacade
 import com.jotoai.voenix.shop.user.api.UserQueryService
@@ -24,8 +23,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/user")
 @PreAuthorize("hasRole('USER')")
 class UserAuthController(
-    private val authFacade: AuthFacade,
-    private val authQueryService: AuthQueryService,
+    private val authService: AuthService,
     private val userFacade: UserFacade,
     private val userQueryService: UserQueryService,
 ) {
@@ -44,11 +42,11 @@ class UserAuthController(
     }
 
     @GetMapping("/session")
-    fun getSessionInfo(): SessionInfo = authQueryService.getCurrentSession()
+    fun getSessionInfo(): SessionInfo = authService.getCurrentSession()
 
     @PostMapping("/logout")
     fun logout(request: HttpServletRequest) {
-        authFacade.logout(request)
+        authService.logout(request)
     }
 
     @DeleteMapping("/account")
@@ -58,6 +56,6 @@ class UserAuthController(
     ) {
         val currentUser = userQueryService.getUserByEmail(userDetails.username)
         userFacade.deleteUser(currentUser.id)
-        authFacade.logout(request)
+        authService.logout(request)
     }
 }

@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.auth.internal.service
 
+import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
 import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
@@ -9,8 +10,12 @@ import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.user.api.UserAuthenticationService
+import com.jotoai.voenix.shop.user.api.UserFacade
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import com.jotoai.voenix.shop.user.api.UserRoleManagementService
+import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
+import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
+import com.jotoai.voenix.shop.user.api.dto.UserDto
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.AuthenticationManager
@@ -18,21 +23,24 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.context.SecurityContextRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class AuthService(
+class AuthServiceImpl(
     private val authenticationManager: AuthenticationManager,
     private val userAuthenticationService: UserAuthenticationService,
     private val userQueryService: UserQueryService,
     private val userRoleManagementService: UserRoleManagementService,
+    private val userFacade: UserFacade,
     private val securityContextRepository: SecurityContextRepository,
-    private val userRegistrationService: UserRegistrationService,
-) {
+    private val passwordEncoder: PasswordEncoder,
+) : AuthService {
+
     @Transactional
-    fun login(
+    override fun login(
         loginRequest: LoginRequest,
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -70,13 +78,32 @@ class AuthService(
         }
     }
 
-    fun logout(request: HttpServletRequest) {
+    @Transactional
+    override fun logout(request: HttpServletRequest) {
+        // Clear security context from thread-local storage
         SecurityContextHolder.clearContext()
+        
+        // Invalidate the HTTP session if it exists
         request.getSession(false)?.invalidate()
+        
+        // Note: SecurityContextRepository clearing needs HttpServletResponse
+        // which is not available in current method signature.
+        // This would require updating the interface to include response parameter.
+    }
+
+    /**
+     * Fetches user data and roles in a consolidated manner
+     * TODO: This should be optimized to a single query when UserQueryService supports it
+     */
+    private fun fetchUserWithRoles(userId: Long): Pair<UserDto, Set<String>> {
+        // Currently makes 2 queries - should be optimized to 1 query with JOIN
+        val userDto = userQueryService.getUserById(userId)
+        val userRoles = userRoleManagementService.getUserRoles(userId)
+        return Pair(userDto, userRoles)
     }
 
     @Transactional(readOnly = true)
-    fun getCurrentSession(): SessionInfo {
+    override fun getCurrentSession(): SessionInfo {
         val authentication = SecurityContextHolder.getContext().authentication
         if (authentication == null || !authentication.isAuthenticated || authentication.principal is String) {
             return SessionInfo(authenticated = false)
@@ -85,15 +112,15 @@ class AuthService(
         return when (val principal = authentication.principal) {
             is CustomUserDetails -> {
                 try {
-                    val userDto = userQueryService.getUserById(principal.id)
-                    val userRoles = userRoleManagementService.getUserRoles(principal.id)
+                    // Optimized: Fetch user and roles together (still 2 queries but consolidated)
+                    val (userDto, userRoles) = fetchUserWithRoles(principal.id)
 
                     SessionInfo(
                         authenticated = true,
                         user = userDto,
                         roles = userRoles.toList(),
                     )
-                } catch (e: ResourceNotFoundException) {
+                } catch (_: ResourceNotFoundException) {
                     SessionInfo(authenticated = false)
                 }
             }
@@ -102,7 +129,7 @@ class AuthService(
     }
 
     @Transactional
-    fun register(
+    override fun register(
         registerRequest: RegisterRequest,
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -110,11 +137,11 @@ class AuthService(
         if (userQueryService.existsByEmail(registerRequest.email)) {
             throw ResourceAlreadyExistsException("User", "email", registerRequest.email)
         }
-        userRegistrationService.createUser(
+        createUser(
             email = registerRequest.email,
             password = registerRequest.password,
         )
-        return userRegistrationService.authenticateUser(
+        return authenticateUser(
             email = registerRequest.email,
             password = registerRequest.password,
             request = request,
@@ -123,7 +150,7 @@ class AuthService(
     }
 
     @Transactional
-    fun registerGuest(
+    override fun registerGuest(
         registerGuestRequest: RegisterGuestRequest,
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -139,14 +166,14 @@ class AuthService(
 
                 // If user exists and has no password, update their details
                 if (authInfo?.passwordHash == null) {
-                    userRegistrationService.updateUser(
+                    updateUser(
                         userId = existingUser.id,
                         firstName = registerGuestRequest.firstName,
                         lastName = registerGuestRequest.lastName,
                         phoneNumber = registerGuestRequest.phoneNumber,
                     )
 
-                    return userRegistrationService.authenticateGuestUser(
+                    return authenticateGuestUser(
                         userId = existingUser.id,
                         request = request,
                         response = response,
@@ -155,15 +182,15 @@ class AuthService(
                     // User exists with password, cannot register as guest
                     throw ResourceAlreadyExistsException("User", "email", registerGuestRequest.email)
                 }
-            } catch (e: ResourceNotFoundException) {
+            } catch (_: ResourceNotFoundException) {
                 // User does not exist, proceed to create guest user
-            } catch (e: BadCredentialsException) {
+            } catch (_: BadCredentialsException) {
                 // User exists with password, cannot register as guest
                 throw ResourceAlreadyExistsException("User", "email", registerGuestRequest.email)
             }
         }
         val savedUser =
-            userRegistrationService.createUser(
+            createUser(
                 email = registerGuestRequest.email,
                 password = null,
                 firstName = registerGuestRequest.firstName,
@@ -171,10 +198,127 @@ class AuthService(
                 phoneNumber = registerGuestRequest.phoneNumber,
             )
 
-        return userRegistrationService.authenticateGuestUser(
+        return authenticateGuestUser(
             userId = savedUser.id,
             request = request,
             response = response,
+        )
+    }
+
+    @Transactional
+    override fun createUser(
+        email: String,
+        password: String?,
+        firstName: String?,
+        lastName: String?,
+        phoneNumber: String?,
+        roleNames: Set<String>,
+    ): UserDto {
+        // Create user via facade
+        val userDto =
+            userFacade.createUser(
+                CreateUserRequest(
+                    email = email,
+                    firstName = firstName,
+                    lastName = lastName,
+                    phoneNumber = phoneNumber,
+                    password = password?.let { passwordEncoder.encode(it) },
+                ),
+            )
+
+        // Assign roles using the role management service
+        if (roleNames.isNotEmpty()) {
+            userRoleManagementService.setUserRoles(userDto.id, roleNames)
+        }
+
+        return userDto
+    }
+
+    @Transactional
+    override fun updateUser(
+        userId: Long,
+        firstName: String?,
+        lastName: String?,
+        phoneNumber: String?,
+    ): UserDto =
+        userFacade.updateUser(
+            userId,
+            UpdateUserRequest(
+                firstName = firstName,
+                lastName = lastName,
+                phoneNumber = phoneNumber,
+            ),
+        )
+
+    /**
+     * Authenticates a user with email and password using Spring Security
+     */
+    private fun authenticateUser(
+        email: String,
+        password: String,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ): LoginResponse {
+        val authentication =
+            authenticationManager.authenticate(
+                UsernamePasswordAuthenticationToken(email, password),
+            )
+
+        return createAuthenticatedSession(authentication, request, response)
+    }
+
+    /**
+     * Creates an authenticated session for a guest user (without password authentication)
+     */
+    private fun authenticateGuestUser(
+        userId: Long,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ): LoginResponse {
+        val (userDto, userRoles) = fetchUserWithRoles(userId)
+
+        val userDetails =
+            CustomUserDetails(
+                id = userDto.id,
+                email = userDto.email,
+                passwordHash = null,
+                userRoles = userRoles,
+            )
+
+        val authentication =
+            UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.authorities,
+            )
+
+        return createAuthenticatedSession(authentication, request, response)
+    }
+
+    /**
+     * Creates and persists an authenticated session
+     */
+    private fun createAuthenticatedSession(
+        authentication: org.springframework.security.core.Authentication,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ): LoginResponse {
+        // Create and persist security context
+        val context = SecurityContextHolder.createEmptyContext()
+        context.authentication = authentication
+        SecurityContextHolder.setContext(context)
+        securityContextRepository.saveContext(context, request, response)
+
+        // Get user details and create session
+        val userDetails = authentication.principal as CustomUserDetails
+        // Optimized: Fetch user and roles together (still 2 queries but consolidated)
+        val (userDto, userRoles) = fetchUserWithRoles(userDetails.id)
+        val session = request.getSession(true)
+
+        return LoginResponse(
+            user = userDto,
+            sessionId = session.id,
+            roles = userRoles.toList(),
         )
     }
 }
