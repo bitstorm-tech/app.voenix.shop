@@ -10,6 +10,7 @@ Engage @agent-system-architecture-lead and @agent-requirements-engineer to:
 4. Specify technology stack and architectural patterns
 5. Create acceptance criteria for each requirement
 6. Estimate implementation complexity and risks
+7. Read the documentation either from site or from context7 to understand technologies
 
 **Output Format:**
 - Executive summary (2-3 sentences)
