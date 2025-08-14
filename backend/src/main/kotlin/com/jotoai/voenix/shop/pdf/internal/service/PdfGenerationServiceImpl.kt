@@ -322,8 +322,8 @@ class PdfGenerationServiceImpl(
             val qrImage = Image.getInstance(qrByteArray.toByteArray())
             qrImage.scaleAbsolute(QR_CODE_SIZE_POINTS, QR_CODE_SIZE_POINTS)
 
-            val qrX = pdfSize.margin
-            val qrY = pdfSize.height - pdfSize.margin - QR_CODE_SIZE_POINTS
+            val qrX = 0f
+            val qrY = pdfSize.height - QR_CODE_SIZE_POINTS
 
             qrImage.setAbsolutePosition(qrX, qrY)
             contentByte.addImage(qrImage)
@@ -635,7 +635,6 @@ class PdfGenerationServiceImpl(
         margin: Float,
     ) {
         try {
-            // Generate QR code
             val qrCodeWriter = QRCodeWriter()
             val bitMatrix = qrCodeWriter.encode(orderId, BarcodeFormat.QR_CODE, ORDER_QR_SIZE_PIXELS, ORDER_QR_SIZE_PIXELS)
 
@@ -646,9 +645,8 @@ class PdfGenerationServiceImpl(
             val qrImage = Image.getInstance(qrByteArray.toByteArray())
             qrImage.scaleAbsolute(ORDER_QR_CODE_SIZE_POINTS, ORDER_QR_CODE_SIZE_POINTS)
 
-            // Position QR code in bottom left corner
-            val xPosition = margin
-            val yPosition = margin
+            val xPosition = 0f
+            val yPosition = 0f
 
             qrImage.setAbsolutePosition(xPosition, yPosition)
             contentByte.addImage(qrImage)
