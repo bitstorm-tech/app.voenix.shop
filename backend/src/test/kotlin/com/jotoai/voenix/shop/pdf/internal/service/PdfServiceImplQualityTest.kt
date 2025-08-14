@@ -137,9 +137,14 @@ class PdfServiceImplQualityTest {
         val article = ArticleWithDetailsDto(
             id = articleId,
             name = "Non-Mug Article",
+            descriptionShort = "Test short description",
+            descriptionLong = "Test long description",
             supplierArticleName = null,
             supplierArticleNumber = null,
             active = true,
+            articleType = ArticleType.SHIRT, // Not a mug, so use SHIRT
+            categoryId = 2L,
+            categoryName = "Shirts",
             mugDetails = null, // No mug details
             mugVariants = emptyList()
         )
