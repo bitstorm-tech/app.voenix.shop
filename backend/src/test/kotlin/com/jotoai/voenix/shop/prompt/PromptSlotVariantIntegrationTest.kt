@@ -84,7 +84,7 @@ class PromptSlotVariantIntegrationTest {
             assertEquals("Nature Background", created.name)
             assertEquals("A beautiful natural landscape with mountains", created.prompt)
             assertEquals("Perfect for nature-themed designs", created.description)
-            assertNull(created.exampleImageUrl) // No actual storage service in test
+            assertNotNull(created.exampleImageUrl) // URL should be generated from filename
             assertNotNull(created.createdAt)
             assertNotNull(created.updatedAt)
 

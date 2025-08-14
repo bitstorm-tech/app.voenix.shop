@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.security
 
+import com.jotoai.voenix.shop.article.api.ArticleFacade
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserQueryService
@@ -32,6 +33,9 @@ class AdminEndpointSecurityWebMvcTest {
 
     @MockitoBean
     private lateinit var articleQueryService: ArticleQueryService
+
+    @MockitoBean
+    private lateinit var articleFacade: ArticleFacade
 
     @Test
     fun testAdminEndpointsRequireAuthentication() {
