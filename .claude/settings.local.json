@@ -63,6 +63,7 @@
       "WebFetch(domain:javadoc.io)",
       "Bash(git log:*)"
     ],
-    "deny": []
+    "deny": [],
+    "defaultMode": "acceptEdits"
   }
 }

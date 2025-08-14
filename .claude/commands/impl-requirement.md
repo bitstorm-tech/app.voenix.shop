@@ -55,5 +55,8 @@ Engage @agent-qa-engineer to perform comprehensive review:
 - Recommended fixes for any critical issues
 - Overall quality score
 
+### All Phases:
+- Don't commit or add changes to git
+
 ### Requirements to Analyze:
 $ARGUMENTS
