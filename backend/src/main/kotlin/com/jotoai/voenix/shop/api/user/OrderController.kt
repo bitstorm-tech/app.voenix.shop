@@ -7,7 +7,7 @@ import com.jotoai.voenix.shop.order.api.dto.OrderDto
 import com.jotoai.voenix.shop.order.api.enums.OrderStatus
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.internal.service.OrderDataConverter
-import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.api.UserService
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable
@@ -32,7 +32,7 @@ import java.util.UUID
 @PreAuthorize("hasRole('USER')")
 class OrderController(
     private val orderService: OrderService,
-    private val userQueryService: UserQueryService,
+    private val userService: UserService,
     private val pdfGenerationService: PdfGenerationService,
     private val orderDataConverter: OrderDataConverter,
 ) {
@@ -128,7 +128,7 @@ class OrderController(
     }
 
     private fun getCurrentUserId(userDetails: UserDetails): Long {
-        val user = userQueryService.getUserByEmail(userDetails.username)
+        val user = userService.getUserByEmail(userDetails.username)
         return user.id
     }
 }

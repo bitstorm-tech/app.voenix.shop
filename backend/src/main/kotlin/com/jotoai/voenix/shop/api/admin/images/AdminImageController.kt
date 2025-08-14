@@ -7,7 +7,7 @@ import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
-import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.api.UserService
 import org.springframework.core.io.Resource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -30,7 +30,7 @@ class AdminImageController(
     private val imageFacade: ImageFacade,
     private val imageAccessService: ImageAccessService,
     private val objectMapper: ObjectMapper,
-    private val userQueryService: UserQueryService,
+    private val userService: UserService,
 ) {
     @PostMapping(consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadImage(
@@ -42,7 +42,7 @@ class AdminImageController(
         val createImageRequest = objectMapper.readValue(requestPart, CreateImageRequest::class.java)
 
         // Get the actual admin user ID from security context
-        val adminUser = userQueryService.getUserByEmail(userDetails.username)
+        val adminUser = userService.getUserByEmail(userDetails.username)
 
         // Upload the image using the facade's multipart method with the specified imageType
         val uploadedImage = imageFacade.createUploadedImage(file, adminUser.id, createImageRequest.imageType)

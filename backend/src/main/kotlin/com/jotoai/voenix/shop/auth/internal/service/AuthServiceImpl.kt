@@ -9,10 +9,7 @@ import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.user.api.UserAuthenticationService
-import com.jotoai.voenix.shop.user.api.UserFacade
-import com.jotoai.voenix.shop.user.api.UserQueryService
-import com.jotoai.voenix.shop.user.api.UserRoleManagementService
+import com.jotoai.voenix.shop.user.api.UserService
 import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UserDto
@@ -31,10 +28,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class AuthServiceImpl(
     private val authenticationManager: AuthenticationManager,
-    private val userAuthenticationService: UserAuthenticationService,
-    private val userQueryService: UserQueryService,
-    private val userRoleManagementService: UserRoleManagementService,
-    private val userFacade: UserFacade,
+    private val userService: UserService,
     private val securityContextRepository: SecurityContextRepository,
     private val passwordEncoder: PasswordEncoder,
 ) : AuthService {
@@ -61,8 +55,8 @@ class AuthServiceImpl(
             securityContextRepository.saveContext(context, request, response)
 
             val userDetails = authentication.principal as CustomUserDetails
-            val userDto = userQueryService.getUserById(userDetails.id)
-            val userRoles = userRoleManagementService.getUserRoles(userDetails.id)
+            val userDto = userService.getUserById(userDetails.id)
+            val userRoles = userService.getUserRoles(userDetails.id)
             val session = request.getSession(true)
 
             return LoginResponse(
@@ -96,8 +90,8 @@ class AuthServiceImpl(
      */
     private fun fetchUserWithRoles(userId: Long): Pair<UserDto, Set<String>> {
         // Currently makes 2 queries - should be optimized to 1 query with JOIN
-        val userDto = userQueryService.getUserById(userId)
-        val userRoles = userRoleManagementService.getUserRoles(userId)
+        val userDto = userService.getUserById(userId)
+        val userRoles = userService.getUserRoles(userId)
         return Pair(userDto, userRoles)
     }
 
@@ -133,7 +127,7 @@ class AuthServiceImpl(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ): LoginResponse {
-        if (userQueryService.existsByEmail(registerRequest.email)) {
+        if (userService.existsByEmail(registerRequest.email)) {
             throw ResourceAlreadyExistsException("User", "email", registerRequest.email)
         }
         createUser(
@@ -155,13 +149,13 @@ class AuthServiceImpl(
         response: HttpServletResponse,
     ): LoginResponse {
         // Check if user already exists
-        val existsUser = userQueryService.existsByEmail(registerGuestRequest.email)
+        val existsUser = userService.existsByEmail(registerGuestRequest.email)
 
         if (existsUser) {
             try {
-                val existingUser = userQueryService.getUserByEmail(registerGuestRequest.email)
+                val existingUser = userService.getUserByEmail(registerGuestRequest.email)
                 // Try to get authentication info to see if they have a password
-                val authInfo = userAuthenticationService.loadUserByEmail(registerGuestRequest.email)
+                val authInfo = userService.loadUserByEmail(registerGuestRequest.email)
 
                 // If user exists and has no password, update their details
                 if (authInfo?.passwordHash == null) {
@@ -213,9 +207,9 @@ class AuthServiceImpl(
         phoneNumber: String?,
         roleNames: Set<String>,
     ): UserDto {
-        // Create user via facade
+        // Create user via unified service
         val userDto =
-            userFacade.createUser(
+            userService.createUser(
                 CreateUserRequest(
                     email = email,
                     firstName = firstName,
@@ -225,9 +219,9 @@ class AuthServiceImpl(
                 ),
             )
 
-        // Assign roles using the role management service
+        // Assign roles using the unified service
         if (roleNames.isNotEmpty()) {
-            userRoleManagementService.setUserRoles(userDto.id, roleNames)
+            userService.setUserRoles(userDto.id, roleNames)
         }
 
         return userDto
@@ -240,7 +234,7 @@ class AuthServiceImpl(
         lastName: String?,
         phoneNumber: String?,
     ): UserDto =
-        userFacade.updateUser(
+        userService.updateUser(
             userId,
             UpdateUserRequest(
                 firstName = firstName,

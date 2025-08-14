@@ -9,20 +9,19 @@ import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
-import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
 import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
-import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.api.UserService
 import jakarta.servlet.http.HttpServletRequest
+import java.io.IOException
+import java.time.LocalDateTime
+import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.io.IOException
-import java.time.LocalDateTime
-import java.util.UUID
 
 /**
  * Consolidated implementation of ImageGenerationService that handles both public and user image generation.
@@ -34,8 +33,7 @@ class ImageGenerationServiceImpl(
     private val openAIImageFacade: OpenAIImageFacade,
     private val promptQueryService: PromptQueryService,
     private val generatedImageRepository: GeneratedImageRepository,
-    private val uploadedImageRepository: UploadedImageRepository,
-    private val userQueryService: UserQueryService,
+    private val userService: UserService,
     private val imageStorageService: ImageStorageService,
     private val storagePathService: StoragePathService,
     private val imageStorageServiceImpl: ImageStorageServiceImpl,
@@ -87,7 +85,7 @@ class ImageGenerationServiceImpl(
         validatePrompt(promptId)
 
         // Validate user exists
-        userQueryService.getUserById(userId)
+        userService.getUserById(userId)
 
         return executeWithErrorHandling(
             operation = { processUserImageGeneration(promptId, uploadedImageUuid, userId) },
@@ -109,7 +107,7 @@ class ImageGenerationServiceImpl(
         validatePrompt(promptId)
 
         // Validate user exists
-        userQueryService.getUserById(userId)
+        userService.getUserById(userId)
 
         return executeWithErrorHandling(
             operation = { processUserImageGenerationWithIds(promptId, uploadedImageUuid, userId) },
@@ -412,20 +410,4 @@ class ImageGenerationServiceImpl(
             logger.error("Argument error $contextMessage", e)
             throw RuntimeException("Failed to generate image. Please try again later.")
         }
-
-    private fun getClientIpAddress(): String {
-        // Check for forwarded IP addresses (when behind a proxy/load balancer)
-        val xForwardedFor = request.getHeader("X-Forwarded-For")
-        if (!xForwardedFor.isNullOrBlank()) {
-            return xForwardedFor.split(",")[0].trim()
-        }
-
-        val xRealIp = request.getHeader("X-Real-IP")
-        if (!xRealIp.isNullOrBlank()) {
-            return xRealIp
-        }
-
-        // Fall back to remote address
-        return request.remoteAddr
-    }
 }

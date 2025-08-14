@@ -5,7 +5,7 @@ import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.api.variants.ShirtVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.ShirtVariantQueryService
 import com.jotoai.voenix.shop.image.api.ImageFacade
-import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.api.UserService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -31,7 +31,7 @@ class ShirtVariantController(
     private val shirtVariantQueryService: ShirtVariantQueryService,
     private val shirtVariantFacade: ShirtVariantFacade,
     private val imageFacade: ImageFacade,
-    private val userQueryService: UserQueryService,
+    private val userService: UserService,
 ) {
     @GetMapping("/{articleId}/variants")
     fun findByArticleId(
@@ -78,7 +78,7 @@ class ShirtVariantController(
         @AuthenticationPrincipal userDetails: UserDetails,
     ): ResponseEntity<ShirtArticleVariantDto> {
         // Get the actual admin user ID from security context
-        val adminUser = userQueryService.getUserByEmail(userDetails.username)
+        val adminUser = userService.getUserByEmail(userDetails.username)
 
         // Upload the image using the facade's multipart method
         val uploadedImage = imageFacade.createUploadedImage(file, adminUser.id)

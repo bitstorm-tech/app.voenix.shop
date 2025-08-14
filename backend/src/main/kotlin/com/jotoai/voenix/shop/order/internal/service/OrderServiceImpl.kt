@@ -22,7 +22,7 @@ import com.jotoai.voenix.shop.order.api.exception.OrderNotFoundException
 import com.jotoai.voenix.shop.order.internal.entity.Order
 import com.jotoai.voenix.shop.order.internal.entity.OrderItem
 import com.jotoai.voenix.shop.order.internal.repository.OrderRepository
-import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.api.UserService
 import jakarta.persistence.EntityManager
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -36,7 +36,7 @@ class OrderServiceImpl(
     private val orderRepository: OrderRepository,
     private val cartQueryService: CartQueryService,
     private val cartFacade: CartFacade,
-    private val userQueryService: UserQueryService,
+    private val userService: UserService,
     private val articleQueryService: ArticleQueryService,
     private val imageQueryService: ImageQueryService,
     private val entityManager: EntityManager,
@@ -53,7 +53,7 @@ class OrderServiceImpl(
         request: CreateOrderRequest,
     ): OrderDto {
         // Validate user exists
-        userQueryService.getUserById(userId)
+        userService.getUserById(userId)
 
         // Get cart information for order
         val cartInfo =

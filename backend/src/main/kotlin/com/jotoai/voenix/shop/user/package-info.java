@@ -14,11 +14,21 @@
  * 
  * <h2>Key Services</h2>
  * <ul>
- *   <li>{@link com.jotoai.voenix.shop.user.api.UserFacade} - User management operations (create, update, delete)</li>
- *   <li>{@link com.jotoai.voenix.shop.user.api.UserQueryService} - User query operations (read-only)</li>
- *   <li>{@link com.jotoai.voenix.shop.user.api.UserAuthenticationService} - Authentication support</li>
- *   <li>{@link com.jotoai.voenix.shop.user.api.UserPasswordService} - Password management</li>
- *   <li>{@link com.jotoai.voenix.shop.user.api.UserRoleManagementService} - Role assignment and management</li>
+ *   <li>{@link com.jotoai.voenix.shop.user.api.UserService} - Unified service for all user operations</li>
+ * </ul>
+ * 
+ * <h2>Architecture</h2>
+ * <p>
+ * This module follows a simplified architecture with a single {@code UserService} that provides
+ * all user-related operations including:
+ * </p>
+ * <ul>
+ *   <li>User management (create, update, delete, restore)</li>
+ *   <li>User queries and search</li>
+ *   <li>Authentication support</li>
+ *   <li>Password management with proper BCrypt encoding</li>
+ *   <li>Role assignment and management</li>
+ *   <li>Bulk operations for efficiency</li>
  * </ul>
  * 
  * 
