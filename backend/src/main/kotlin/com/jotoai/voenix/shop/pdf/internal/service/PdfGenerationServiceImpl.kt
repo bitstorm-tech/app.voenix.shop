@@ -171,7 +171,13 @@ class PdfGenerationServiceImpl(
 
         try {
             val outputStream = ByteArrayOutputStream()
-            val document = Document()
+            
+            // Get dimensions from the first item to initialize document with correct size
+            val firstItem = orderData.items.first()
+            val firstPageWidth = getPageWidth(firstItem)
+            val firstPageHeight = getPageHeight(firstItem)
+            
+            val document = Document(Rectangle(firstPageWidth, firstPageHeight))
             val writer = PdfWriter.getInstance(document, outputStream)
             document.open()
 
@@ -372,8 +378,10 @@ class PdfGenerationServiceImpl(
         val itemPageHeight = getPageHeight(orderItem)
         val itemMargin = getMargin(orderItem)
 
-        // Set page size for current page
-        document.setPageSize(Rectangle(itemPageWidth, itemPageHeight))
+        // Set page size for current page (skip first page as it's already set during Document creation)
+        if (pageNumber > 1) {
+            document.setPageSize(Rectangle(itemPageWidth, itemPageHeight))
+        }
 
         try {
             val contentByte = writer.directContent
