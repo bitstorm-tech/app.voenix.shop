@@ -12,10 +12,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-/*
- * PDF generation functionality is temporarily disabled due to memory and performance issues.
- * This service is preserved for future reactivation when improved implementation is ready.
- * Controllers now return HTTP 503 Service Unavailable instead of calling these services.
+/**
+ * Public PDF generation service implementation using OpenPDF library.
+ * Migrated from Apache PDFBox for improved memory efficiency and performance.
  */
 
 @Service

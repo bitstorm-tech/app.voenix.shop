@@ -14,11 +14,11 @@ import com.jotoai.voenix.shop.pdf.api.dto.PdfSize
 import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
 import com.jotoai.voenix.shop.pdf.internal.config.PdfQrProperties
 import jakarta.annotation.PostConstruct
-import org.apache.pdfbox.pdmodel.PDDocument
-import org.apache.pdfbox.pdmodel.PDPage
-import org.apache.pdfbox.pdmodel.PDPageContentStream
-import org.apache.pdfbox.pdmodel.common.PDRectangle
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject
+import com.lowagie.text.Document
+import com.lowagie.text.Image
+import com.lowagie.text.Rectangle
+import com.lowagie.text.pdf.PdfContentByte
+import com.lowagie.text.pdf.PdfWriter
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -26,10 +26,9 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import javax.imageio.ImageIO
 
-/*
- * PDF generation functionality is temporarily disabled due to memory and performance issues.
- * This service is preserved for future reactivation when improved implementation is ready.
- * Controllers now return HTTP 503 Service Unavailable instead of calling these services.
+/**
+ * PDF generation service implementation using OpenPDF library.
+ * Migrated from Apache PDFBox for improved memory efficiency and performance.
  */
 
 @Service
@@ -106,32 +105,28 @@ class PdfServiceImpl(
                     margin = marginMm * MM_TO_POINTS,
                 )
 
-            // Use try-with-resources for proper resource management
-            PDDocument().use { document ->
-                val page = PDPage(PDRectangle(pdfSize.width, pdfSize.height))
-                document.addPage(page)
-
-                PDPageContentStream(document, page).use { contentStream ->
-                    // Generate QR code URL pointing to the article
-                    val qrUrl = pdfQrProperties.generateQrUrl("/articles/${request.articleId}")
-                    addQrCode(document, contentStream, qrUrl, pdfSize)
-
-                    addCenteredImage(
-                        document,
-                        contentStream,
-                        imageData,
-                        mugDetails.printTemplateWidthMm.toFloat(),
-                        mugDetails.printTemplateHeightMm.toFloat(),
-                        pdfSize,
-                    )
-                }
-
-                val outputStream = ByteArrayOutputStream()
-                document.save(outputStream)
-                val pdfBytes = outputStream.toByteArray()
-
-                return pdfBytes
-            }
+            // Use Document and PdfWriter for OpenPDF
+            val outputStream = ByteArrayOutputStream()
+            val document = Document(Rectangle(pdfSize.width, pdfSize.height))
+            val writer = PdfWriter.getInstance(document, outputStream)
+            
+            document.open()
+            val contentByte = writer.directContent
+            
+            // Generate QR code URL pointing to the article
+            val qrUrl = pdfQrProperties.generateQrUrl("/articles/${request.articleId}")
+            addQrCode(contentByte, qrUrl, pdfSize)
+            
+            addCenteredImage(
+                contentByte,
+                imageData,
+                mugDetails.printTemplateWidthMm.toFloat(),
+                mugDetails.printTemplateHeightMm.toFloat(),
+                pdfSize,
+            )
+            
+            document.close()
+            return outputStream.toByteArray()
         } catch (e: PdfGenerationException) {
             logger.error("Failed to generate PDF for article ${request.articleId}", e)
 
@@ -165,8 +160,7 @@ class PdfServiceImpl(
     }
 
     private fun addQrCode(
-        document: PDDocument,
-        contentStream: PDPageContentStream,
+        contentByte: PdfContentByte,
         qrContent: String,
         pdfSize: PdfSize,
     ) {
@@ -184,12 +178,14 @@ class PdfServiceImpl(
             val qrByteArray = ByteArrayOutputStream()
             ImageIO.write(bufferedImage, IMAGE_FORMAT_PNG, qrByteArray)
 
-            val qrImage = PDImageXObject.createFromByteArray(document, qrByteArray.toByteArray(), PDF_IMAGE_NAME_QR)
-
+            val qrImage = Image.getInstance(qrByteArray.toByteArray())
+            qrImage.scaleAbsolute(QR_CODE_SIZE_POINTS, QR_CODE_SIZE_POINTS)
+            
             val qrX = pdfSize.margin
             val qrY = pdfSize.height - pdfSize.margin - QR_CODE_SIZE_POINTS
-
-            contentStream.drawImage(qrImage, qrX, qrY, QR_CODE_SIZE_POINTS, QR_CODE_SIZE_POINTS)
+            
+            qrImage.setAbsolutePosition(qrX, qrY)
+            contentByte.addImage(qrImage)
             logger.debug("QR code placed at position ({}, {})", qrX, qrY)
         } catch (e: WriterException) {
             throw PdfGenerationException("Failed to generate QR code for content: $qrContent", e)
@@ -199,23 +195,25 @@ class PdfServiceImpl(
     }
 
     private fun addCenteredImage(
-        document: PDDocument,
-        contentStream: PDPageContentStream,
+        contentByte: PdfContentByte,
         imageData: ByteArray,
         imageWidthMm: Float,
         imageHeightMm: Float,
         pdfSize: PdfSize,
     ) {
         try {
-            val image = PDImageXObject.createFromByteArray(document, imageData, PDF_IMAGE_NAME_MAIN)
-
+            val image = Image.getInstance(imageData)
+            
             val imageWidthPoints = imageWidthMm * MM_TO_POINTS
             val imageHeightPoints = imageHeightMm * MM_TO_POINTS
-
+            
+            image.scaleAbsolute(imageWidthPoints, imageHeightPoints)
+            
             val x = (pdfSize.width - imageWidthPoints) / 2
             val y = (pdfSize.height - imageHeightPoints) / 2
-
-            contentStream.drawImage(image, x, y, imageWidthPoints, imageHeightPoints)
+            
+            image.setAbsolutePosition(x, y)
+            contentByte.addImage(image)
             logger.debug(
                 "Image placed at position ({}, {}) with size {}x{} points",
                 x,

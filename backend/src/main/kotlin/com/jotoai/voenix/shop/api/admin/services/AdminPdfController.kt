@@ -1,7 +1,6 @@
-/*
- * PDF generation functionality is temporarily disabled due to memory and performance issues.
- * This feature will be reintroduced in a future update with improved implementation.
- * The original code is preserved below for future reactivation.
+/**
+ * Admin PDF generation controller using OpenPDF library.
+ * Migrated from Apache PDFBox for improved memory efficiency and performance.
  */
 
 package com.jotoai.voenix.shop.api.admin.services
@@ -12,44 +11,33 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-// Temporarily disabled imports for future reactivation:
-// import org.springframework.core.io.ByteArrayResource
-// import org.springframework.http.HttpHeaders
-// import org.springframework.http.MediaType
+import jakarta.validation.Valid
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.web.bind.annotation.RequestBody
+import com.jotoai.voenix.shop.pdf.api.PdfFacade
+import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
 
-@Deprecated("PDF generation is temporarily disabled due to performance issues")
 @RestController
 @RequestMapping("/api/admin/pdf")
 @PreAuthorize("hasRole('ADMIN')")
-class AdminPdfController {
+class AdminPdfController(
+    private val pdfFacade: PdfFacade,
+) {
     @PostMapping("/generate")
-    fun generatePdf(): ResponseEntity<Map<String, String>> =
-        ResponseEntity
-            .status(HttpStatus.SERVICE_UNAVAILABLE)
-            .body(
-                mapOf(
-                    "message" to "PDF generation is temporarily unavailable. " +
-                        "This feature will be reintroduced in a future update.",
-                ),
-            )
+    fun generatePdf(
+        @Valid @RequestBody request: GeneratePdfRequest,
+    ): ResponseEntity<ByteArrayResource> {
+        val pdfData = pdfFacade.generatePdf(request)
+        val resource = ByteArrayResource(pdfData)
+        val filename = "generated-${System.currentTimeMillis()}.pdf"
 
-    /*
-     * Original implementation preserved for future reactivation:
-     *
-     * @PostMapping("/generate")
-     * fun generatePdf(
-     *     @Valid @RequestBody request: GeneratePdfRequest,
-     * ): ResponseEntity<ByteArrayResource> {
-     *     val pdfData = pdfFacade.generatePdf(request)
-     *     val resource = ByteArrayResource(pdfData)
-     *     val filename = "generated-${System.currentTimeMillis()}.pdf"
-     *
-     *     return ResponseEntity
-     *         .ok()
-     *         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$filename\"")
-     *         .contentType(MediaType.APPLICATION_PDF)
-     *         .contentLength(pdfData.size.toLong())
-     *         .body(resource)
-     * }
-     */
+        return ResponseEntity
+            .ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"$filename\"")
+            .contentType(MediaType.APPLICATION_PDF)
+            .contentLength(pdfData.size.toLong())
+            .body(resource)
+    }
 }

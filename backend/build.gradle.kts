@@ -54,7 +54,7 @@ dependencies {
     implementation("io.ktor:ktor-client-logging:3.2.3")
 
     // PDF Generation
-    implementation("org.apache.pdfbox:pdfbox:3.0.5")
+    implementation("com.github.librepdf:openpdf:2.0.3")
 
     // QR Code Generation
     implementation("com.google.zxing:core:3.5.3")
