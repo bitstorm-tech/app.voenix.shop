@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.country.internal.service
 
-import com.jotoai.voenix.shop.country.api.CountryFacade
-import com.jotoai.voenix.shop.country.api.CountryQueryService
+import com.jotoai.voenix.shop.country.api.CountryService
 import com.jotoai.voenix.shop.country.api.dto.CountryDto
 import com.jotoai.voenix.shop.country.api.dto.CreateCountryRequest
 import com.jotoai.voenix.shop.country.api.dto.UpdateCountryRequest
@@ -15,8 +14,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class CountryServiceImpl(
     private val countryRepository: CountryRepository,
-) : CountryFacade,
-    CountryQueryService {
+) : CountryService {
     override fun getAllCountries(): List<CountryDto> = countryRepository.findAll().map { it.toDto() }
 
     override fun getCountryById(id: Long): CountryDto =

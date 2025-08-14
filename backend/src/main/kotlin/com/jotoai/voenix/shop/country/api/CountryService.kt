@@ -1,14 +1,15 @@
 package com.jotoai.voenix.shop.country.api
 
 import com.jotoai.voenix.shop.country.api.dto.CountryDto
+import com.jotoai.voenix.shop.country.api.dto.CreateCountryRequest
+import com.jotoai.voenix.shop.country.api.dto.UpdateCountryRequest
 import com.jotoai.voenix.shop.country.api.exceptions.CountryNotFoundException
 
 /**
- * Query service for Country module read operations.
- * This interface defines all read-only operations for country data.
- * It serves as the primary read API for other modules to access country information.
+ * Unified service interface for Country module operations.
+ * This interface defines all operations for managing and querying countries.
  */
-interface CountryQueryService {
+interface CountryService {
     /**
      * Retrieves all countries.
      */
@@ -28,4 +29,22 @@ interface CountryQueryService {
      * @return true if the country exists, false otherwise
      */
     fun existsById(id: Long): Boolean
+
+    /**
+     * Creates a new country.
+     */
+    fun createCountry(request: CreateCountryRequest): CountryDto
+
+    /**
+     * Updates an existing country.
+     */
+    fun updateCountry(
+        id: Long,
+        request: UpdateCountryRequest,
+    ): CountryDto
+
+    /**
+     * Deletes a country.
+     */
+    fun deleteCountry(id: Long)
 }

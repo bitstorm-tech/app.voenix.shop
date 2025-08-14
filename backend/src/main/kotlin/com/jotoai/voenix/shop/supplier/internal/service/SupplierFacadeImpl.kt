@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.supplier.internal.service
 
-import com.jotoai.voenix.shop.country.api.CountryQueryService
+import com.jotoai.voenix.shop.country.api.CountryService
 import com.jotoai.voenix.shop.country.api.exceptions.CountryNotFoundException
 import com.jotoai.voenix.shop.supplier.api.SupplierFacade
 import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
@@ -21,7 +21,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class SupplierFacadeImpl(
     private val supplierRepository: SupplierRepository,
-    private val countryQueryService: CountryQueryService,
+    private val countryService: CountryService,
     private val validation: SupplierValidation,
 ) : SupplierFacade {
     @Transactional
@@ -40,7 +40,7 @@ class SupplierFacadeImpl(
         val countryDto =
             savedSupplier.countryId?.let { countryId ->
                 try {
-                    countryQueryService.getCountryById(countryId)
+                    countryService.getCountryById(countryId)
                 } catch (e: CountryNotFoundException) {
                     null
                 }
@@ -75,7 +75,7 @@ class SupplierFacadeImpl(
         val countryDto =
             savedSupplier.countryId?.let { countryId ->
                 try {
-                    countryQueryService.getCountryById(countryId)
+                    countryService.getCountryById(countryId)
                 } catch (e: CountryNotFoundException) {
                     null
                 }

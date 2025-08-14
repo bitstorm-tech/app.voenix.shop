@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.supplier.internal.service
 
-import com.jotoai.voenix.shop.country.api.CountryQueryService
+import com.jotoai.voenix.shop.country.api.CountryService
 import com.jotoai.voenix.shop.supplier.api.exceptions.DuplicateSupplierException
 import com.jotoai.voenix.shop.supplier.api.exceptions.InvalidSupplierDataException
 import com.jotoai.voenix.shop.supplier.internal.repository.SupplierRepository
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 @Component
 class SupplierValidation(
     private val supplierRepository: SupplierRepository,
-    private val countryQueryService: CountryQueryService,
+    private val countryService: CountryService,
 ) {
     /**
      * Validates unique field constraints for suppliers.
@@ -61,7 +61,7 @@ class SupplierValidation(
      * @throws InvalidSupplierDataException if country doesn't exist
      */
     fun validateCountryExists(countryId: Long?) {
-        if (countryId != null && !countryQueryService.existsById(countryId)) {
+        if (countryId != null && !countryService.existsById(countryId)) {
             throw InvalidSupplierDataException("countryId", countryId, "does not exist")
         }
     }

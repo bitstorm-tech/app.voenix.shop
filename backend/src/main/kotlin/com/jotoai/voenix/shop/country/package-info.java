@@ -11,8 +11,7 @@
  * 
  * <p>External modules can interact with this module through:
  * <ul>
- *   <li>{@link com.jotoai.voenix.shop.country.api.CountryFacade} - Main administrative operations</li>
- *   <li>{@link com.jotoai.voenix.shop.country.api.CountryQueryService} - Query operations</li>
+ *   <li>{@link com.jotoai.voenix.shop.country.api.CountryService} - All country operations (queries and commands)</li>
  * </ul>
  * </p>
  */

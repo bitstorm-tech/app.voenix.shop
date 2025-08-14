@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.country
 
-import com.jotoai.voenix.shop.country.api.CountryFacade
-import com.jotoai.voenix.shop.country.api.CountryQueryService
+import com.jotoai.voenix.shop.country.api.CountryService
 import com.jotoai.voenix.shop.country.api.dto.CreateCountryRequest
 import com.jotoai.voenix.shop.country.api.dto.UpdateCountryRequest
 import com.jotoai.voenix.shop.country.api.exceptions.CountryNotFoundException
@@ -20,10 +19,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class CountryModuleIntegrationTest {
     @Autowired
-    private lateinit var countryQueryService: CountryQueryService
-
-    @Autowired
-    private lateinit var countryFacade: CountryFacade
+    private lateinit var countryService: CountryService
 
     @Test
     fun `should create country`() {
@@ -34,7 +30,7 @@ class CountryModuleIntegrationTest {
             )
 
         // When
-        val createdCountry = countryFacade.createCountry(request)
+        val createdCountry = countryService.createCountry(request)
 
         // Then - verify returned DTO
         assertNotNull(createdCountry)
@@ -48,7 +44,7 @@ class CountryModuleIntegrationTest {
     fun `should update country`() {
         // Given - create a country first
         val initialCountry =
-            countryFacade.createCountry(
+            countryService.createCountry(
                 CreateCountryRequest(
                     name = "Initial Country",
                 ),
@@ -60,7 +56,7 @@ class CountryModuleIntegrationTest {
             )
 
         // When
-        val updatedCountry = countryFacade.updateCountry(initialCountry.id!!, updateRequest)
+        val updatedCountry = countryService.updateCountry(initialCountry.id!!, updateRequest)
 
         // Then - verify returned DTO
         assertNotNull(updatedCountry)
@@ -72,18 +68,18 @@ class CountryModuleIntegrationTest {
     fun `should delete country`() {
         // Given - create a country first
         val country =
-            countryFacade.createCountry(
+            countryService.createCountry(
                 CreateCountryRequest(
                     name = "Country to Delete",
                 ),
             )
 
         // When
-        countryFacade.deleteCountry(country.id!!)
+        countryService.deleteCountry(country.id!!)
 
         // Then - verify country is deleted
         assertThrows<CountryNotFoundException> {
-            countryQueryService.getCountryById(country.id!!)
+            countryService.getCountryById(country.id!!)
         }
     }
 
@@ -91,29 +87,29 @@ class CountryModuleIntegrationTest {
     fun `should handle query operations correctly`() {
         // Given - create some test countries
         val country1 =
-            countryFacade.createCountry(
+            countryService.createCountry(
                 CreateCountryRequest("Germany"),
             )
         val country2 =
-            countryFacade.createCountry(
+            countryService.createCountry(
                 CreateCountryRequest("France"),
             )
         val country3 =
-            countryFacade.createCountry(
+            countryService.createCountry(
                 CreateCountryRequest("United Kingdom"),
             )
 
         // Test getAllCountries
-        val allCountries = countryQueryService.getAllCountries()
+        val allCountries = countryService.getAllCountries()
         assertTrue(allCountries.size >= 3)
 
         // Test getCountryById
-        val retrievedCountry = countryQueryService.getCountryById(country1.id!!)
+        val retrievedCountry = countryService.getCountryById(country1.id!!)
         assertEquals("Germany", retrievedCountry.name)
 
         // Test existsById
-        assertTrue(countryQueryService.existsById(country2.id!!))
-        assertTrue(countryQueryService.existsById(country3.id!!))
+        assertTrue(countryService.existsById(country2.id!!))
+        assertTrue(countryService.existsById(country3.id!!))
     }
 
     @Test
@@ -121,7 +117,7 @@ class CountryModuleIntegrationTest {
         // When & Then
         val exception =
             assertThrows<CountryNotFoundException> {
-                countryQueryService.getCountryById(99999L)
+                countryService.getCountryById(99999L)
             }
         assertEquals("Country not found with id: '99999'", exception.message)
     }
@@ -137,7 +133,7 @@ class CountryModuleIntegrationTest {
         // When & Then
         val exception =
             assertThrows<CountryNotFoundException> {
-                countryFacade.updateCountry(99999L, updateRequest)
+                countryService.updateCountry(99999L, updateRequest)
             }
         assertEquals("Country not found with id: '99999'", exception.message)
     }
@@ -147,7 +143,7 @@ class CountryModuleIntegrationTest {
         // When & Then
         val exception =
             assertThrows<CountryNotFoundException> {
-                countryFacade.deleteCountry(99999L)
+                countryService.deleteCountry(99999L)
             }
         assertEquals("Country not found with id: '99999'", exception.message)
     }
@@ -159,8 +155,7 @@ class CountryModuleIntegrationTest {
         // and through the architecture tests
 
         // Verify we can access public API
-        assertNotNull(countryQueryService)
-        assertNotNull(countryFacade)
+        assertNotNull(countryService)
 
         // The following would fail at compile time if internal packages were exposed:
         // val internalService: CountryServiceImpl = ... // Should not compile

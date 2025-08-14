@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.api.admin.countries
 
-import com.jotoai.voenix.shop.country.api.CountryFacade
-import com.jotoai.voenix.shop.country.api.CountryQueryService
+import com.jotoai.voenix.shop.country.api.CountryService
 import com.jotoai.voenix.shop.country.api.dto.CountryDto
 import com.jotoai.voenix.shop.country.api.dto.CreateCountryRequest
 import com.jotoai.voenix.shop.country.api.dto.UpdateCountryRequest
@@ -22,33 +21,32 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/countries")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminCountryController(
-    private val countryFacade: CountryFacade,
-    private val countryQueryService: CountryQueryService,
+    private val countryService: CountryService,
 ) {
     @GetMapping
-    fun getAllCountries(): List<CountryDto> = countryQueryService.getAllCountries()
+    fun getAllCountries(): List<CountryDto> = countryService.getAllCountries()
 
     @GetMapping("/{id}")
     fun getCountryById(
         @PathVariable id: Long,
-    ): CountryDto = countryQueryService.getCountryById(id)
+    ): CountryDto = countryService.getCountryById(id)
 
     @PostMapping
     fun createCountry(
         @Valid @RequestBody createCountryRequest: CreateCountryRequest,
-    ): CountryDto = countryFacade.createCountry(createCountryRequest)
+    ): CountryDto = countryService.createCountry(createCountryRequest)
 
     @PutMapping("/{id}")
     fun updateCountry(
         @PathVariable id: Long,
         @Valid @RequestBody updateCountryRequest: UpdateCountryRequest,
-    ): CountryDto = countryFacade.updateCountry(id, updateCountryRequest)
+    ): CountryDto = countryService.updateCountry(id, updateCountryRequest)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteCountry(
         @PathVariable id: Long,
     ) {
-        countryFacade.deleteCountry(id)
+        countryService.deleteCountry(id)
     }
 }

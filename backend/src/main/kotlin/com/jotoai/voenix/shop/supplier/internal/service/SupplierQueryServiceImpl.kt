@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.supplier.internal.service
 
-import com.jotoai.voenix.shop.country.api.CountryQueryService
+import com.jotoai.voenix.shop.country.api.CountryService
 import com.jotoai.voenix.shop.country.api.exceptions.CountryNotFoundException
 import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
@@ -20,14 +20,14 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class SupplierQueryServiceImpl(
     private val supplierRepository: SupplierRepository,
-    private val countryQueryService: CountryQueryService,
+    private val countryService: CountryService,
 ) : SupplierQueryService {
     override fun getAllSuppliers(): List<SupplierDto> =
         supplierRepository.findAll().map { supplier ->
             val countryDto =
                 supplier.countryId?.let { countryId ->
                     try {
-                        countryQueryService.getCountryById(countryId)
+                        countryService.getCountryById(countryId)
                     } catch (e: CountryNotFoundException) {
                         null
                     }
@@ -44,7 +44,7 @@ class SupplierQueryServiceImpl(
         val countryDto =
             supplier.countryId?.let { countryId ->
                 try {
-                    countryQueryService.getCountryById(countryId)
+                    countryService.getCountryById(countryId)
                 } catch (e: CountryNotFoundException) {
                     null
                 }
