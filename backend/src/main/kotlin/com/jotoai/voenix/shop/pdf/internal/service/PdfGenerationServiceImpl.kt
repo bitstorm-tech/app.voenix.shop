@@ -188,6 +188,10 @@ class PdfGenerationServiceImpl(
             orderData.items.forEach { orderItem ->
                 repeat(orderItem.quantity) {
                     if (pageNumber > 1) {
+                        // Set page size BEFORE creating new page
+                        val itemPageWidth = getPageWidth(orderItem)
+                        val itemPageHeight = getPageHeight(orderItem)
+                        document.setPageSize(Rectangle(itemPageWidth, itemPageHeight))
                         document.newPage()
                     }
                     createOrderPage(document, writer, orderData, orderItem, pageNumber, totalPages)
@@ -377,11 +381,6 @@ class PdfGenerationServiceImpl(
         val itemPageWidth = getPageWidth(orderItem)
         val itemPageHeight = getPageHeight(orderItem)
         val itemMargin = getMargin(orderItem)
-
-        // Set page size for current page (skip first page as it's already set during Document creation)
-        if (pageNumber > 1) {
-            document.setPageSize(Rectangle(itemPageWidth, itemPageHeight))
-        }
 
         try {
             val contentByte = writer.directContent
