@@ -1,27 +1,25 @@
 package com.jotoai.voenix.shop.vat
 
-import com.jotoai.voenix.shop.vat.api.VatFacade
-import com.jotoai.voenix.shop.vat.api.VatQueryService
+import com.jotoai.voenix.shop.vat.api.VatService
 import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.TestPropertySource
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
-@TestPropertySource(locations = ["classpath:application-test.properties"])
+@ActiveProfiles("test")
+@Transactional
 class VatModuleIntegrationTest {
     @Autowired
-    private lateinit var vatFacade: VatFacade
-
-    @Autowired
-    private lateinit var vatQueryService: VatQueryService
+    private lateinit var vatService: VatService
 
     @Test
     fun `should expose correct public interfaces`() {
         // Given - initial state
-        val initialVats = vatQueryService.getAllVats()
+        val initialVats = vatService.getAllVats()
 
         // When - creating a new VAT
         val createRequest =
@@ -32,7 +30,7 @@ class VatModuleIntegrationTest {
                 isDefault = true,
             )
 
-        val createdVat = vatFacade.createVat(createRequest)
+        val createdVat = vatService.createVat(createRequest)
 
         // Then - verify creation
         assertThat(createdVat.name).isEqualTo("Test VAT")
@@ -40,26 +38,26 @@ class VatModuleIntegrationTest {
         assertThat(createdVat.isDefault).isTrue()
 
         // And - verify query operations
-        val allVats = vatQueryService.getAllVats()
+        val allVats = vatService.getAllVats()
         assertThat(allVats).hasSize(initialVats.size + 1)
 
-        val retrievedVat = vatQueryService.getVatById(createdVat.id)
+        val retrievedVat = vatService.getVatById(createdVat.id)
         assertThat(retrievedVat).isEqualTo(createdVat)
 
-        val defaultVat = vatQueryService.getDefaultVat()
+        val defaultVat = vatService.getDefaultVat()
         assertThat(defaultVat).isEqualTo(createdVat)
 
-        // And - verify SPI operations
-        assertThat(vatQueryService.getVatById(createdVat.id)).isEqualTo(createdVat)
-        assertThat(vatQueryService.getDefaultVat()).isEqualTo(createdVat)
-        assertThat(vatQueryService.existsById(createdVat.id)).isTrue()
+        // And - verify service operations
+        assertThat(vatService.getVatById(createdVat.id)).isEqualTo(createdVat)
+        assertThat(vatService.getDefaultVat()).isEqualTo(createdVat)
+        assertThat(vatService.existsById(createdVat.id)).isTrue()
 
         // When - deleting the VAT
-        vatFacade.deleteVat(createdVat.id)
+        vatService.deleteVat(createdVat.id)
 
         // Then - verify deletion
-        val finalVats = vatQueryService.getAllVats()
+        val finalVats = vatService.getAllVats()
         assertThat(finalVats).hasSize(initialVats.size)
-        assertThat(vatQueryService.existsById(createdVat.id)).isFalse()
+        assertThat(vatService.existsById(createdVat.id)).isFalse()
     }
 }

@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.api.admin.vat
 
-import com.jotoai.voenix.shop.vat.api.VatFacade
-import com.jotoai.voenix.shop.vat.api.VatQueryService
+import com.jotoai.voenix.shop.vat.api.VatService
 import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest
 import com.jotoai.voenix.shop.vat.api.dto.UpdateValueAddedTaxRequest
 import com.jotoai.voenix.shop.vat.api.dto.ValueAddedTaxDto
@@ -22,33 +21,32 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/vat")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminValueAddedTaxController(
-    private val vatQueryService: VatQueryService,
-    private val vatFacade: VatFacade,
+    private val vatService: VatService,
 ) {
     @GetMapping
-    fun getAllVats(): List<ValueAddedTaxDto> = vatQueryService.getAllVats()
+    fun getAllVats(): List<ValueAddedTaxDto> = vatService.getAllVats()
 
     @GetMapping("/{id}")
     fun getVatById(
         @PathVariable id: Long,
-    ): ValueAddedTaxDto = vatQueryService.getVatById(id)
+    ): ValueAddedTaxDto = vatService.getVatById(id)
 
     @PostMapping
     fun createVat(
         @Valid @RequestBody createValueAddedTaxRequest: CreateValueAddedTaxRequest,
-    ): ValueAddedTaxDto = vatFacade.createVat(createValueAddedTaxRequest)
+    ): ValueAddedTaxDto = vatService.createVat(createValueAddedTaxRequest)
 
     @PutMapping("/{id}")
     fun updateVat(
         @PathVariable id: Long,
         @Valid @RequestBody updateValueAddedTaxRequest: UpdateValueAddedTaxRequest,
-    ): ValueAddedTaxDto = vatFacade.updateVat(id, updateValueAddedTaxRequest)
+    ): ValueAddedTaxDto = vatService.updateVat(id, updateValueAddedTaxRequest)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteVat(
         @PathVariable id: Long,
     ) {
-        vatFacade.deleteVat(id)
+        vatService.deleteVat(id)
     }
 }

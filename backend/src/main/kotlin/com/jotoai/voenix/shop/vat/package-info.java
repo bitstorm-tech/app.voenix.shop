@@ -3,8 +3,7 @@
  * <p>
  * This module provides:
  * <ul>
- *   <li>VAT CRUD operations through {@link com.jotoai.voenix.shop.vat.api.VatFacade}</li>
- *   <li>VAT query operations and data access through {@link com.jotoai.voenix.shop.vat.api.VatQueryService}</li>
+ *   <li>VAT operations and data access through {@link com.jotoai.voenix.shop.vat.api.VatService}</li>
  * </ul>
  * <p>
  * Named interfaces:

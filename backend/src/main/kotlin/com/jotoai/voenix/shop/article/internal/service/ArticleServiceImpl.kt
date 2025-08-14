@@ -31,7 +31,7 @@ import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRep
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.supplier.api.SupplierService
-import com.jotoai.voenix.shop.vat.api.VatQueryService
+import com.jotoai.voenix.shop.vat.api.VatService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -46,7 +46,7 @@ class ArticleServiceImpl(
     private val articleSubCategoryRepository: ArticleSubCategoryRepository,
     private val supplierService: SupplierService,
     private val costCalculationRepository: CostCalculationRepository,
-    private val vatQueryService: VatQueryService,
+    private val vatService: VatService,
     private val mugDetailsService: MugDetailsService,
     private val shirtDetailsService: ShirtDetailsService,
     private val articleAssembler: ArticleAssembler,
@@ -356,13 +356,13 @@ class ArticleServiceImpl(
     ) {
         // Validate VAT rates exist if provided
         request.purchaseVatRateId?.let {
-            if (!vatQueryService.existsById(it)) {
+            if (!vatService.existsById(it)) {
                 throw ArticleNotFoundException("Purchase VAT rate not found with id: $it")
             }
         }
 
         request.salesVatRateId?.let {
-            if (!vatQueryService.existsById(it)) {
+            if (!vatService.existsById(it)) {
                 throw ArticleNotFoundException("Sales VAT rate not found with id: $it")
             }
         }
@@ -417,13 +417,13 @@ class ArticleServiceImpl(
             // Update existing cost calculation
             // Validate VAT rates exist if provided
             request.purchaseVatRateId?.let {
-                if (!vatQueryService.existsById(it)) {
+                if (!vatService.existsById(it)) {
                     throw ArticleNotFoundException("Purchase VAT rate not found with id: $it")
                 }
             }
 
             request.salesVatRateId?.let {
-                if (!vatQueryService.existsById(it)) {
+                if (!vatService.existsById(it)) {
                     throw ArticleNotFoundException("Sales VAT rate not found with id: $it")
                 }
             }

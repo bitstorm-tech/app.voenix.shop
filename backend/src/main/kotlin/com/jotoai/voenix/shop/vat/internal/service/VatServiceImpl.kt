@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.vat.internal.service
 
-import com.jotoai.voenix.shop.vat.api.VatFacade
-import com.jotoai.voenix.shop.vat.api.VatQueryService
+import com.jotoai.voenix.shop.vat.api.VatService
 import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest
 import com.jotoai.voenix.shop.vat.api.dto.UpdateValueAddedTaxRequest
 import com.jotoai.voenix.shop.vat.api.dto.ValueAddedTaxDto
@@ -15,8 +14,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class VatServiceImpl(
     private val valueAddedTaxRepository: ValueAddedTaxRepository,
-) : VatFacade,
-    VatQueryService {
+) : VatService {
     override fun getAllVats(): List<ValueAddedTaxDto> = valueAddedTaxRepository.findAll().map { it.toDto() }
 
     override fun getDefaultVat(): ValueAddedTaxDto? = valueAddedTaxRepository.findByIsDefaultTrue().map { it.toDto() }.orElse(null)
