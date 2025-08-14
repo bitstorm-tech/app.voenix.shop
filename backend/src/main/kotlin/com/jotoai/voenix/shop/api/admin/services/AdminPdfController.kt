@@ -4,7 +4,7 @@
  */
 
 package com.jotoai.voenix.shop.api.admin.services
-import com.jotoai.voenix.shop.pdf.api.PdfFacade
+import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
 import jakarta.validation.Valid
 import org.springframework.core.io.ByteArrayResource
@@ -21,13 +21,13 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/pdf")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminPdfController(
-    private val pdfFacade: PdfFacade,
+    private val pdfGenerationService: PdfGenerationService,
 ) {
     @PostMapping("/generate")
     fun generatePdf(
         @Valid @RequestBody request: GeneratePdfRequest,
     ): ResponseEntity<ByteArrayResource> {
-        val pdfData = pdfFacade.generatePdf(request)
+        val pdfData = pdfGenerationService.generatePdf(request)
         val resource = ByteArrayResource(pdfData)
         val filename = "generated-${System.currentTimeMillis()}.pdf"
 

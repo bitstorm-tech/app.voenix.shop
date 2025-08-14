@@ -6,7 +6,7 @@ import com.jotoai.voenix.shop.order.api.OrderQueryService
 import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
 import com.jotoai.voenix.shop.order.api.enums.OrderStatus
-import com.jotoai.voenix.shop.pdf.api.OrderPdfService
+import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.internal.service.OrderDataConverter
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import jakarta.servlet.http.HttpServletResponse
@@ -35,7 +35,7 @@ class OrderController(
     private val orderFacade: OrderFacade,
     private val orderQueryService: OrderQueryService,
     private val userQueryService: UserQueryService,
-    private val orderPdfService: OrderPdfService,
+    private val pdfGenerationService: PdfGenerationService,
     private val orderDataConverter: OrderDataConverter,
 ) {
     /**
@@ -111,8 +111,8 @@ class OrderController(
         val orderPdfData = orderDataConverter.convertToOrderPdfData(orderForPdf)
 
         // Generate PDF
-        val pdfBytes = orderPdfService.generateOrderPdf(orderPdfData)
-        val filename = orderPdfService.getOrderPdfFilename(orderForPdf.orderNumber ?: "unknown")
+        val pdfBytes = pdfGenerationService.generateOrderPdf(orderPdfData)
+        val filename = pdfGenerationService.getOrderPdfFilename(orderForPdf.orderNumber ?: "unknown")
 
         // Set response headers
         response.contentType = MediaType.APPLICATION_PDF_VALUE

@@ -4,95 +4,165 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
+import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.common.exception.BadRequestException
+import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageAccessService
-import com.jotoai.voenix.shop.pdf.api.OrderPdfService
+import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
+import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
+import com.jotoai.voenix.shop.pdf.api.dto.PdfSize
+import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
 import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
+import com.jotoai.voenix.shop.pdf.internal.config.PdfQrProperties
 import com.lowagie.text.Document
-import com.lowagie.text.Font
 import com.lowagie.text.Image
 import com.lowagie.text.Rectangle
 import com.lowagie.text.pdf.BaseFont
 import com.lowagie.text.pdf.PdfContentByte
 import com.lowagie.text.pdf.PdfWriter
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Service
+import jakarta.annotation.PostConstruct
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.imageio.ImageIO
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 /**
- * Service responsible for generating PDF documents for orders.
- * Creates one page per item quantity with product image, header, and QR code.
+ * Consolidated PDF generation service implementation using OpenPDF library.
+ * This service replaces and consolidates functionality from:
+ * - PdfServiceImpl (PdfFacade, PdfQueryService)
+ * - OrderPdfServiceImpl (OrderPdfService)
+ * - PublicPdfServiceImpl (PublicPdfService)
+ *
+ * Benefits of consolidation:
+ * - Shared utility methods for QR generation, document creation, and image handling
+ * - Consistent error handling across all PDF operations
+ * - Simplified dependency injection and testing
+ * - Reduced code duplication
+ *
+ * Migrated from Apache PDFBox to OpenPDF for improved memory efficiency and performance.
  */
 @Service
-class OrderPdfServiceImpl(
-    @param:Value("\${pdf.size.width:239}") private val pdfWidthMm: Float,
-    @param:Value("\${pdf.size.height:99}") private val pdfHeightMm: Float,
-    @param:Value("\${pdf.margin:1}") private val pdfMarginMm: Float,
+@Transactional(readOnly = true)
+class PdfGenerationServiceImpl(
+    @param:Value("\${app.base-url}") private val appBaseUrl: String,
+    @param:Value("\${pdf.size.width:239}") private val defaultPdfWidthMm: Float,
+    @param:Value("\${pdf.size.height:99}") private val defaultPdfHeightMm: Float,
+    @param:Value("\${pdf.margin:1}") private val defaultPdfMarginMm: Float,
+    private val articleQueryService: ArticleQueryService,
+    private val storagePathService: StoragePathService,
     private val imageAccessService: ImageAccessService,
-) : OrderPdfService {
+    private val pdfQrProperties: PdfQrProperties,
+) : PdfGenerationService {
     companion object {
-        private val logger = LoggerFactory.getLogger(OrderPdfServiceImpl::class.java)
+        private val logger = LoggerFactory.getLogger(PdfGenerationServiceImpl::class.java)
 
-        // Conversion factor from millimeters to PDF points
-        private const val MM_TO_POINTS = 2.834645669f
+        // PDF conversion and layout constants
+        private const val MM_TO_POINTS = 2.8346457f
 
-        // Layout constants
-        private const val QR_CODE_SIZE_POINTS = 40f
+        // QR code settings
+        private const val QR_CODE_SIZE_PIXELS = 150
+        private const val QR_CODE_SIZE_POINTS = 150f
+        private const val ORDER_QR_SIZE_PIXELS = 100
+        private const val ORDER_QR_CODE_SIZE_POINTS = 40f
 
-        // Text positioning constants
+        // Image format constants
+        private const val IMAGE_FORMAT_PNG = "PNG"
+
+        // Order PDF layout constants
         private const val HEADER_MARGIN_FROM_EDGE = 15f
         private const val HEADER_TEXT_OFFSET_FROM_TOP = 5f
         private const val PRODUCT_INFO_TEXT_OFFSET_FROM_TOP = 5f
 
-        // QR code generation settings
-        private const val QR_SIZE_PIXELS = 100
-
         // Font settings
         private const val HEADER_FONT_SIZE = 14f
         private const val PLACEHOLDER_FONT_SIZE = 12f
-        private const val FONT_WIDTH_DIVISOR = 1000f
 
-        // Image settings
+        // Placeholder image settings
         private const val PLACEHOLDER_IMAGE_WIDTH = 400
         private const val PLACEHOLDER_IMAGE_HEIGHT = 300
         private const val PLACEHOLDER_FONT_SIZE_PIXELS = 24
 
-        // Math constants
-        private const val DEGREES_90 = 90.0
-
-        // Text positioning
-        private const val FALLBACK_TEXT_OFFSET = 10f
-
-        // Image format constants
-        private const val IMAGE_FORMAT_PNG = "PNG"
-        private const val PDF_IMAGE_NAME_QR = "QRCode"
-        private const val PDF_IMAGE_NAME_PRODUCT = "ProductImage"
-
         // Default image margins when mug details are not available
         private const val DEFAULT_IMAGE_MARGIN_MM = 15f
 
-        // Product info text layout
-        private const val PRODUCT_INFO_LINE_HEIGHT_FACTOR = 1.2f
+        // Text positioning
+        private const val FALLBACK_TEXT_OFFSET = 10f
     }
 
-    // Calculate PDF dimensions in points
-    private val pageWidth: Float get() = pdfWidthMm * MM_TO_POINTS
-    private val pageHeight: Float get() = pdfHeightMm * MM_TO_POINTS
-    private val margin: Float get() = pdfMarginMm * MM_TO_POINTS
+    @PostConstruct
+    fun init() {
+        // Initialize baseUrl from appBaseUrl if not configured
+        if (pdfQrProperties.baseUrl.isEmpty()) {
+            pdfQrProperties.baseUrl = appBaseUrl
+            logger.info("Initialized PDF QR base URL with app base URL: $appBaseUrl")
+        }
+    }
 
-    /**
-     * Generates a PDF for the given order data.
-     * Creates one page per item quantity with the product image, header text, and QR code.
-     *
-     * @param orderData The order data
-     * @return PDF as byte array
-     */
+    override fun generatePdf(request: GeneratePdfRequest): ByteArray {
+        try {
+            val article = articleQueryService.findById(request.articleId)
+
+            val mugDetails =
+                article.mugDetails
+                    ?: throw IllegalArgumentException("Article ${request.articleId} is not a mug or has no mug details")
+
+            // Load image data using the filename and StoragePathService
+            val imageData = loadImageData(request.imageFilename)
+
+            // Validate document format fields from database
+            val pdfSize =
+                createPdfSize(
+                    mugDetails.documentFormatWidthMm,
+                    mugDetails.documentFormatHeightMm,
+                    mugDetails.documentFormatMarginBottomMm,
+                    request.articleId,
+                )
+
+            // Create PDF document
+            val outputStream = ByteArrayOutputStream()
+            val document = Document(Rectangle(pdfSize.width, pdfSize.height))
+            val writer = PdfWriter.getInstance(document, outputStream)
+
+            document.open()
+            val contentByte = writer.directContent
+
+            // Generate QR code URL pointing to the article
+            val qrUrl = pdfQrProperties.generateQrUrl("/articles/${request.articleId}")
+            addArticleQrCode(contentByte, qrUrl, pdfSize)
+
+            addCenteredImage(
+                contentByte,
+                imageData,
+                mugDetails.printTemplateWidthMm.toFloat(),
+                mugDetails.printTemplateHeightMm.toFloat(),
+                pdfSize,
+            )
+
+            document.close()
+            return outputStream.toByteArray()
+        } catch (e: PdfGenerationException) {
+            logger.error("Failed to generate PDF for article ${request.articleId}", e)
+            throw e
+        } catch (e: IOException) {
+            logger.error("I/O error during PDF generation for article ${request.articleId}", e)
+            throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
+        } catch (e: WriterException) {
+            logger.error("QR code generation error during PDF generation for article ${request.articleId}", e)
+            throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
+        } catch (e: IllegalArgumentException) {
+            logger.error("Invalid argument during PDF generation for article ${request.articleId}", e)
+            throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
+        }
+    }
+
     override fun generateOrderPdf(orderData: OrderPdfData): ByteArray {
         logger.info(
             "Generating PDF for order ${orderData.orderNumber} with " +
@@ -114,7 +184,7 @@ class OrderPdfServiceImpl(
                     if (pageNumber > 1) {
                         document.newPage()
                     }
-                    createPage(document, writer, orderData, orderItem, pageNumber, totalPages)
+                    createOrderPage(document, writer, orderData, orderItem, pageNumber, totalPages)
                     pageNumber++
                 }
             }
@@ -133,10 +203,163 @@ class OrderPdfServiceImpl(
         }
     }
 
-    /**
-     * Creates a single page with product image, header, and QR code
-     */
-    private fun createPage(
+    override fun getOrderPdfFilename(orderNumber: String): String {
+        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
+        return "order_${orderNumber}_$timestamp.pdf"
+    }
+
+    override fun generatePublicPdf(request: PublicPdfGenerationRequest): ByteArray {
+        try {
+            val article =
+                try {
+                    articleQueryService.findById(request.mugId)
+                } catch (e: ResourceNotFoundException) {
+                    throw BadRequestException("Mug not found or unavailable")
+                }
+
+            if (article.mugDetails == null) {
+                throw BadRequestException("The specified article is not a mug")
+            }
+
+            if (!article.active) {
+                throw BadRequestException("This mug is currently unavailable")
+            }
+
+            val filename = request.imageUrl.substringAfterLast("/")
+
+            logger.info("Processing public PDF generation for mug ID: ${request.mugId}")
+
+            val pdfRequest =
+                GeneratePdfRequest(
+                    articleId = request.mugId,
+                    imageFilename = filename,
+                )
+
+            return generatePdf(pdfRequest)
+        } catch (e: BadRequestException) {
+            logger.error("Bad request error generating PDF for public user", e)
+            throw e
+        } catch (e: ResourceNotFoundException) {
+            logger.error("Resource not found error generating PDF for public user", e)
+            throw e
+        } catch (e: PdfGenerationException) {
+            logger.error("PDF generation error for public user", e)
+            throw RuntimeException("Failed to generate PDF. Please try again later.", e)
+        } catch (e: IllegalArgumentException) {
+            logger.error("Invalid argument error generating PDF for public user", e)
+            throw BadRequestException("Invalid request parameters")
+        } catch (e: IllegalStateException) {
+            logger.error("Invalid state error generating PDF for public user", e)
+            throw RuntimeException("Service temporarily unavailable. Please try again later.", e)
+        }
+    }
+
+    private fun loadImageData(imageFilename: String): ByteArray =
+        try {
+            val imageType =
+                storagePathService.findImageTypeByFilename(imageFilename)
+                    ?: throw PdfGenerationException("Could not determine image type for filename: $imageFilename")
+            val imagePath = storagePathService.getPhysicalFilePath(imageType, imageFilename)
+            imagePath.toFile().readBytes()
+        } catch (e: IOException) {
+            throw PdfGenerationException("Failed to load image data for filename: $imageFilename", e)
+        } catch (e: IllegalArgumentException) {
+            throw PdfGenerationException("Invalid image filename: $imageFilename", e)
+        }
+
+    private fun createPdfSize(
+        widthMm: Int?,
+        heightMm: Int?,
+        marginMm: Int?,
+        articleId: Long,
+    ): PdfSize {
+        val pdfWidthMm =
+            widthMm?.toFloat()
+                ?: throw PdfGenerationException("Document format width not configured for article $articleId")
+        val pdfHeightMm =
+            heightMm?.toFloat()
+                ?: throw PdfGenerationException("Document format height not configured for article $articleId")
+        val marginMmFloat =
+            marginMm?.toFloat()
+                ?: throw PdfGenerationException("Document format margin not configured for article $articleId")
+
+        return PdfSize(
+            width = pdfWidthMm * MM_TO_POINTS,
+            height = pdfHeightMm * MM_TO_POINTS,
+            margin = marginMmFloat * MM_TO_POINTS,
+        )
+    }
+
+    private fun addArticleQrCode(
+        contentByte: PdfContentByte,
+        qrContent: String,
+        pdfSize: PdfSize,
+    ) {
+        try {
+            val qrCodeWriter = QRCodeWriter()
+            val bitMatrix =
+                qrCodeWriter.encode(
+                    qrContent,
+                    BarcodeFormat.QR_CODE,
+                    QR_CODE_SIZE_PIXELS,
+                    QR_CODE_SIZE_PIXELS,
+                )
+
+            val bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix)
+            val qrByteArray = ByteArrayOutputStream()
+            ImageIO.write(bufferedImage, IMAGE_FORMAT_PNG, qrByteArray)
+
+            val qrImage = Image.getInstance(qrByteArray.toByteArray())
+            qrImage.scaleAbsolute(QR_CODE_SIZE_POINTS, QR_CODE_SIZE_POINTS)
+
+            val qrX = pdfSize.margin
+            val qrY = pdfSize.height - pdfSize.margin - QR_CODE_SIZE_POINTS
+
+            qrImage.setAbsolutePosition(qrX, qrY)
+            contentByte.addImage(qrImage)
+            logger.debug("QR code placed at position ({}, {})", qrX, qrY)
+        } catch (e: WriterException) {
+            throw PdfGenerationException("Failed to generate QR code for content: $qrContent", e)
+        } catch (e: IOException) {
+            throw PdfGenerationException("I/O error generating QR code for content: $qrContent", e)
+        }
+    }
+
+    private fun addCenteredImage(
+        contentByte: PdfContentByte,
+        imageData: ByteArray,
+        imageWidthMm: Float,
+        imageHeightMm: Float,
+        pdfSize: PdfSize,
+    ) {
+        try {
+            val image = Image.getInstance(imageData)
+
+            val imageWidthPoints = imageWidthMm * MM_TO_POINTS
+            val imageHeightPoints = imageHeightMm * MM_TO_POINTS
+
+            image.scaleAbsolute(imageWidthPoints, imageHeightPoints)
+
+            val x = (pdfSize.width - imageWidthPoints) / 2
+            val y = (pdfSize.height - imageHeightPoints) / 2
+
+            image.setAbsolutePosition(x, y)
+            contentByte.addImage(image)
+            logger.debug(
+                "Image placed at position ({}, {}) with size {}x{} points",
+                x,
+                y,
+                imageWidthPoints,
+                imageHeightPoints,
+            )
+        } catch (e: IOException) {
+            throw PdfGenerationException("I/O error adding centered image to PDF", e)
+        } catch (e: IllegalArgumentException) {
+            throw PdfGenerationException("Invalid image data for centered image", e)
+        }
+    }
+
+    private fun createOrderPage(
         document: Document,
         writer: PdfWriter,
         orderData: OrderPdfData,
@@ -154,8 +377,9 @@ class OrderPdfServiceImpl(
 
         try {
             val contentByte = writer.directContent
+
             // Add header with order number and page info
-            addHeader(
+            addOrderHeader(
                 contentByte,
                 orderData.orderNumber ?: "UNKNOWN",
                 pageNumber,
@@ -185,7 +409,7 @@ class OrderPdfServiceImpl(
             )
 
             // Add QR code in bottom left
-            addQrCode(contentByte, orderData.id.toString(), itemMargin)
+            addOrderQrCode(contentByte, orderData.id.toString(), itemMargin)
         } catch (e: IOException) {
             throw PdfGenerationException("I/O error creating page $pageNumber for order ${orderData.orderNumber}", e)
         } catch (e: WriterException) {
@@ -203,44 +427,25 @@ class OrderPdfServiceImpl(
         logger.debug("Created page $pageNumber/$totalPages for order ${orderData.orderNumber}")
     }
 
-    /**
-     * Gets the page width for a specific order item, using document format or falling back to configuration
-     */
     private fun getPageWidth(orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData): Float =
         orderItem.article.mugDetails
             ?.documentFormatWidthMm
             ?.let { it * MM_TO_POINTS }
-            ?: (pdfWidthMm * MM_TO_POINTS)
+            ?: (defaultPdfWidthMm * MM_TO_POINTS)
 
-    /**
-     * Gets the page height for a specific order item, using document format or falling back to configuration
-     */
     private fun getPageHeight(orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData): Float =
         orderItem.article.mugDetails
             ?.documentFormatHeightMm
             ?.let { it * MM_TO_POINTS }
-            ?: (pdfHeightMm * MM_TO_POINTS)
+            ?: (defaultPdfHeightMm * MM_TO_POINTS)
 
-    /**
-     * Gets the margin for a specific order item, using document format or falling back to configuration
-     */
     private fun getMargin(orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData): Float =
         orderItem.article.mugDetails
             ?.documentFormatMarginBottomMm
             ?.let { it * MM_TO_POINTS }
-            ?: (pdfMarginMm * MM_TO_POINTS)
+            ?: (defaultPdfMarginMm * MM_TO_POINTS)
 
-    /**
-     * Adds order number and page information
-     * Text is rotated 90 degrees clockwise and positioned at the top-left corner
-     *
-     * Positioning logic:
-     * - PDFBox origin (0,0) is at bottom-left
-     * - After 90° clockwise rotation, text flows downward (in visual coordinates)
-     * - X position: left margin + offset from edge
-     * - Y position: accounts for text flowing downward after rotation to keep it at visual top
-     */
-    private fun addHeader(
+    private fun addOrderHeader(
         contentByte: PdfContentByte,
         orderNumber: String,
         pageNumber: Int,
@@ -254,15 +459,12 @@ class OrderPdfServiceImpl(
 
         // Create the combined text on one line
         val headerText = "$orderNumber ($pageNumber/$totalPages)"
-        val textWidth = baseFont.getWidthPoint(headerText, fontSize)
 
         // Save the current graphics state
         contentByte.saveState()
 
         // Position for the rotated text at top-left corner
-        // X: Left margin + offset from edge
         val xPosition = margin + HEADER_MARGIN_FROM_EDGE
-        // Y: Top of page minus offset - after 90° rotation, text flows downward
         val yPosition = pageHeight - margin - HEADER_TEXT_OFFSET_FROM_TOP
 
         // Set font and move to position
@@ -276,16 +478,6 @@ class OrderPdfServiceImpl(
         contentByte.restoreState()
     }
 
-    /**
-     * Adds product information (supplier mug name, supplier article number, variant name)
-     * Text is rotated 90 degrees clockwise and positioned at the top-right corner
-     *
-     * Positioning logic:
-     * - PDFBox origin (0,0) is at bottom-left
-     * - After 90° clockwise rotation, text flows downward (in visual coordinates)
-     * - X position: right margin - offset from edge
-     * - Y position: accounts for rotated text length to align at visual top-right
-     */
     private fun addProductInfo(
         contentByte: PdfContentByte,
         orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData,
@@ -321,9 +513,7 @@ class OrderPdfServiceImpl(
         contentByte.saveState()
 
         // Position for the rotated text at top-right corner
-        // X: Right margin - offset from edge
         val xPosition = pageWidth - margin - HEADER_MARGIN_FROM_EDGE
-        // Y: Top of page minus offset minus text width (since text flows downward after rotation)
         val yPosition = pageHeight - margin - PRODUCT_INFO_TEXT_OFFSET_FROM_TOP - textWidth
 
         // Set font and move to position with 90 degree rotation
@@ -337,9 +527,6 @@ class OrderPdfServiceImpl(
         contentByte.restoreState()
     }
 
-    /**
-     * Adds the product image centered on the page
-     */
     private fun addProductImage(
         contentByte: PdfContentByte,
         orderData: OrderPdfData,
@@ -371,7 +558,6 @@ class OrderPdfServiceImpl(
                             createPlaceholderImage()
                         }
                     }
-
                     else -> {
                         logger.info("No generated image for order item ${orderItem.id}, using placeholder")
                         createPlaceholderImage()
@@ -382,7 +568,6 @@ class OrderPdfServiceImpl(
             val pdfImage = Image.getInstance(imageData)
 
             // Use exact print template dimensions from MugArticleDetails
-            // Never scale or correct the image size - use exact dimensions from database
             val imageWidthMm =
                 orderItem.article.mugDetails
                     ?.printTemplateWidthMm
@@ -394,14 +579,14 @@ class OrderPdfServiceImpl(
                     ?.toFloat()
                     ?: ((pageHeight / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)) - DEFAULT_IMAGE_MARGIN_MM)
 
-            // Convert exact dimensions to points (no scaling or aspect ratio correction)
+            // Convert exact dimensions to points
             val imageWidthPt = imageWidthMm * MM_TO_POINTS
             val imageHeightPt = imageHeightMm * MM_TO_POINTS
 
             // Scale and position image
             pdfImage.scaleAbsolute(imageWidthPt, imageHeightPt)
 
-            // Center the image on the page using exact dimensions
+            // Center the image on the page
             val xPosition = (pageWidth - imageWidthPt) / 2
             val yPosition = (pageHeight - imageHeightPt) / 2
 
@@ -412,14 +597,9 @@ class OrderPdfServiceImpl(
                 "Added product image with exact dimensions ${imageWidthPt}x$imageHeightPt points " +
                     "at position ($xPosition, $yPosition)",
             )
-            logger.debug(
-                "Using exact print template dimensions: " +
-                    "${imageWidthMm}mm x ${imageHeightMm}mm from MugArticleDetails",
-            )
         } catch (e: IOException) {
             logger.error("I/O error adding product image for order item ${orderItem.id}", e)
             try {
-                // Add placeholder text instead
                 addPlaceholderText(contentByte, "Image not available", pageWidth, pageHeight)
             } catch (placeholderException: IOException) {
                 logger.error("Failed to add placeholder text for order item ${orderItem.id}", placeholderException)
@@ -431,7 +611,6 @@ class OrderPdfServiceImpl(
         } catch (e: IllegalArgumentException) {
             logger.error("Invalid image data for order item ${orderItem.id}", e)
             try {
-                // Add placeholder text instead
                 addPlaceholderText(contentByte, "Image not available", pageWidth, pageHeight)
             } catch (placeholderException: IOException) {
                 logger.error("Failed to add placeholder text for order item ${orderItem.id}", placeholderException)
@@ -443,10 +622,7 @@ class OrderPdfServiceImpl(
         }
     }
 
-    /**
-     * Adds QR code containing the order ID in the bottom left corner
-     */
-    private fun addQrCode(
+    private fun addOrderQrCode(
         contentByte: PdfContentByte,
         orderId: String,
         margin: Float,
@@ -454,14 +630,14 @@ class OrderPdfServiceImpl(
         try {
             // Generate QR code
             val qrCodeWriter = QRCodeWriter()
-            val bitMatrix = qrCodeWriter.encode(orderId, BarcodeFormat.QR_CODE, QR_SIZE_PIXELS, QR_SIZE_PIXELS)
+            val bitMatrix = qrCodeWriter.encode(orderId, BarcodeFormat.QR_CODE, ORDER_QR_SIZE_PIXELS, ORDER_QR_SIZE_PIXELS)
 
             val bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix)
             val qrByteArray = ByteArrayOutputStream()
             ImageIO.write(bufferedImage, IMAGE_FORMAT_PNG, qrByteArray)
 
             val qrImage = Image.getInstance(qrByteArray.toByteArray())
-            qrImage.scaleAbsolute(QR_CODE_SIZE_POINTS, QR_CODE_SIZE_POINTS)
+            qrImage.scaleAbsolute(ORDER_QR_CODE_SIZE_POINTS, ORDER_QR_CODE_SIZE_POINTS)
 
             // Position QR code in bottom left corner
             val xPosition = margin
@@ -474,7 +650,6 @@ class OrderPdfServiceImpl(
         } catch (e: WriterException) {
             logger.error("QR code generation error for order ID $orderId", e)
             try {
-                // Add fallback text
                 addPlaceholderText(
                     contentByte,
                     "Order ID: $orderId",
@@ -490,7 +665,6 @@ class OrderPdfServiceImpl(
         } catch (e: IOException) {
             logger.error("I/O error generating QR code for order ID $orderId", e)
             try {
-                // Add fallback text
                 addPlaceholderText(
                     contentByte,
                     "Order ID: $orderId",
@@ -506,9 +680,6 @@ class OrderPdfServiceImpl(
         }
     }
 
-    /**
-     * Creates a simple placeholder image when product image is not available
-     */
     private fun createPlaceholderImage(): ByteArray {
         val width = PLACEHOLDER_IMAGE_WIDTH
         val height = PLACEHOLDER_IMAGE_HEIGHT
@@ -547,9 +718,6 @@ class OrderPdfServiceImpl(
         }
     }
 
-    /**
-     * Adds placeholder text when image cannot be rendered
-     */
     private fun addPlaceholderText(
         contentByte: PdfContentByte,
         text: String,
@@ -576,13 +744,5 @@ class OrderPdfServiceImpl(
         } catch (e: IOException) {
             logger.error("Failed to add placeholder text: $text", e)
         }
-    }
-
-    /**
-     * Generates the PDF filename for an order
-     */
-    override fun getOrderPdfFilename(orderNumber: String): String {
-        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-        return "order_${orderNumber}_$timestamp.pdf"
     }
 }

@@ -4,7 +4,7 @@
  */
 
 package com.jotoai.voenix.shop.api.public.pdf
-import com.jotoai.voenix.shop.pdf.api.PublicPdfService
+import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
 import jakarta.validation.Valid
 import org.springframework.core.io.ByteArrayResource
@@ -19,13 +19,13 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/public/pdf")
 class PublicPdfController(
-    private val publicPdfService: PublicPdfService,
+    private val pdfGenerationService: PdfGenerationService,
 ) {
     @PostMapping("/generate")
     fun generatePdf(
         @Valid @RequestBody request: PublicPdfGenerationRequest,
     ): ResponseEntity<ByteArrayResource> {
-        val pdfData = publicPdfService.generatePublicPdf(request)
+        val pdfData = pdfGenerationService.generatePublicPdf(request)
         val resource = ByteArrayResource(pdfData)
         val filename = "mug-preview-${System.currentTimeMillis()}.pdf"
 
