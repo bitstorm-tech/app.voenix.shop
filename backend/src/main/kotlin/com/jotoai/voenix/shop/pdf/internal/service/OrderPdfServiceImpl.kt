@@ -45,7 +45,11 @@ class OrderPdfServiceImpl(
 
         // Layout constants
         private const val QR_CODE_SIZE_POINTS = 40f
+        
+        // Text positioning constants
         private const val HEADER_MARGIN_FROM_EDGE = 15f
+        private const val HEADER_TEXT_OFFSET_FROM_TOP = 5f
+        private const val PRODUCT_INFO_TEXT_OFFSET_FROM_TOP = 5f
 
         // QR code generation settings
         private const val QR_SIZE_PIXELS = 100
@@ -229,7 +233,13 @@ class OrderPdfServiceImpl(
 
     /**
      * Adds order number and page information
-     * Text is rotated 90 degrees clockwise and positioned on the left side
+     * Text is rotated 90 degrees clockwise and positioned at the top-left corner
+     * 
+     * Positioning logic:
+     * - PDFBox origin (0,0) is at bottom-left
+     * - After 90° clockwise rotation, text flows downward (in visual coordinates)
+     * - X position: left margin + offset from edge
+     * - Y position: accounts for text flowing downward after rotation to keep it at visual top
      */
     private fun addHeader(
         contentStream: PDPageContentStream,
@@ -250,13 +260,14 @@ class OrderPdfServiceImpl(
         // Save the current graphics state
         contentStream.saveGraphicsState()
 
-        // Position for the rotated text on the left side
-        // The text will be rotated 90 degrees clockwise
+        // Position for the rotated text at top-left corner
+        // X: Left margin + offset from edge
         val xPosition = margin + HEADER_MARGIN_FROM_EDGE
-        val yPositionBase = pageHeight / 2 // Center vertically on the page
+        // Y: Top of page minus offset - after 90° rotation, text flows downward
+        val yPosition = pageHeight - margin - HEADER_TEXT_OFFSET_FROM_TOP
 
         // Move to the position where we want the text
-        contentStream.transform(Matrix.getTranslateInstance(xPosition, yPositionBase))
+        contentStream.transform(Matrix.getTranslateInstance(xPosition, yPosition))
 
         // Rotate 90 degrees clockwise around the current position
         contentStream.transform(Matrix.getRotateInstance(Math.toRadians(DEGREES_90), 0f, 0f))
@@ -264,8 +275,8 @@ class OrderPdfServiceImpl(
         // Draw the combined text in one line
         contentStream.beginText()
         contentStream.setFont(boldFont, fontSize)
-        // Center the text along its length (which becomes vertical after rotation)
-        contentStream.newLineAtOffset(-textWidth / 2, 0f)
+        // After rotation and transform, (0,0) is at the desired top-left position
+        contentStream.newLineAtOffset(0f, 0f)
         contentStream.showText(headerText)
         contentStream.endText()
 
@@ -275,7 +286,13 @@ class OrderPdfServiceImpl(
 
     /**
      * Adds product information (supplier mug name, supplier article number, variant name)
-     * Text is rotated 90 degrees clockwise and positioned on the right side
+     * Text is rotated 90 degrees clockwise and positioned at the top-right corner
+     * 
+     * Positioning logic:
+     * - PDFBox origin (0,0) is at bottom-left
+     * - After 90° clockwise rotation, text flows downward (in visual coordinates)
+     * - X position: right margin - offset from edge
+     * - Y position: accounts for rotated text length to align at visual top-right
      */
     private fun addProductInfo(
         contentStream: PDPageContentStream,
@@ -304,23 +321,21 @@ class OrderPdfServiceImpl(
 
         if (productInfoLines.isEmpty()) return
 
-        // Save the current graphics state
-        contentStream.saveGraphicsState()
-
-        // Position for the rotated text on the right side
-        val xPosition = pageWidth - margin - HEADER_MARGIN_FROM_EDGE
-        val yPositionBase = pageHeight / 2 // Center vertically on the page
-
-        // Calculate total text height to center all lines
-        val lineHeight = fontSize * PRODUCT_INFO_LINE_HEIGHT_FACTOR
-        val totalTextHeight = productInfoLines.size * lineHeight
-        var currentYOffset = totalTextHeight / 2
-
+        // Combine all product info into one line
         val line = productInfoLines.joinToString(" | ")
         val textWidth = regularFont.getStringWidth(line) / FONT_WIDTH_DIVISOR * fontSize
 
+        // Save the current graphics state
+        contentStream.saveGraphicsState()
+
+        // Position for the rotated text at top-right corner
+        // X: Right margin - offset from edge  
+        val xPosition = pageWidth - margin - HEADER_MARGIN_FROM_EDGE
+        // Y: Top of page minus offset minus text width (since text flows downward after rotation)
+        val yPosition = pageHeight - margin - PRODUCT_INFO_TEXT_OFFSET_FROM_TOP - textWidth
+
         // Move to the position where we want the text
-        contentStream.transform(Matrix.getTranslateInstance(xPosition, yPositionBase + currentYOffset))
+        contentStream.transform(Matrix.getTranslateInstance(xPosition, yPosition))
 
         // Rotate 90 degrees clockwise around the current position
         contentStream.transform(Matrix.getRotateInstance(Math.toRadians(DEGREES_90), 0f, 0f))
@@ -328,14 +343,10 @@ class OrderPdfServiceImpl(
         // Draw the text
         contentStream.beginText()
         contentStream.setFont(regularFont, fontSize)
-        // Center the text along its length (which becomes vertical after rotation)
-        contentStream.newLineAtOffset(-textWidth / 2, 0f)
+        // After rotation and transform, (0,0) is at the desired top-right position
+        contentStream.newLineAtOffset(0f, 0f)
         contentStream.showText(line)
         contentStream.endText()
-
-        // Reset transformation for next line
-        contentStream.restoreGraphicsState()
-        contentStream.saveGraphicsState()
 
         // Restore the graphics state
         contentStream.restoreGraphicsState()
