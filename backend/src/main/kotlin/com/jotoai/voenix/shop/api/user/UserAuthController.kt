@@ -2,8 +2,7 @@ package com.jotoai.voenix.shop.api.user
 
 import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
-import com.jotoai.voenix.shop.user.api.UserFacade
-import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.api.UserService
 import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import jakarta.servlet.http.HttpServletRequest
@@ -24,21 +23,20 @@ import org.springframework.web.bind.annotation.RestController
 @PreAuthorize("hasRole('USER')")
 class UserAuthController(
     private val authService: AuthService,
-    private val userFacade: UserFacade,
-    private val userQueryService: UserQueryService,
+    private val userService: UserService,
 ) {
     @GetMapping("/profile")
     fun getCurrentUserProfile(
         @AuthenticationPrincipal userDetails: UserDetails,
-    ): UserDto = userQueryService.getUserByEmail(userDetails.username)
+    ): UserDto = userService.getUserByEmail(userDetails.username)
 
     @PutMapping("/profile")
     fun updateCurrentUserProfile(
         @AuthenticationPrincipal userDetails: UserDetails,
         @Valid @RequestBody updateUserRequest: UpdateUserRequest,
     ): UserDto {
-        val currentUser = userQueryService.getUserByEmail(userDetails.username)
-        return userFacade.updateUser(currentUser.id, updateUserRequest)
+        val currentUser = userService.getUserByEmail(userDetails.username)
+        return userService.updateUser(currentUser.id, updateUserRequest)
     }
 
     @GetMapping("/session")
@@ -54,8 +52,8 @@ class UserAuthController(
         @AuthenticationPrincipal userDetails: UserDetails,
         request: HttpServletRequest,
     ) {
-        val currentUser = userQueryService.getUserByEmail(userDetails.username)
-        userFacade.deleteUser(currentUser.id)
+        val currentUser = userService.getUserByEmail(userDetails.username)
+        userService.deleteUser(currentUser.id)
         authService.logout(request)
     }
 }

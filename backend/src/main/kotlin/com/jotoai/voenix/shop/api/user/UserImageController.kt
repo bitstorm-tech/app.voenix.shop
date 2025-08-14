@@ -4,7 +4,7 @@ import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.ImageGenerationService
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
-import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.api.UserService
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -27,7 +27,7 @@ class UserImageController(
     private val imageGenerationService: ImageGenerationService,
     private val imageFacade: ImageFacade,
     private val imageAccessService: ImageAccessService,
-    private val userQueryService: UserQueryService,
+    private val userService: UserService,
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(UserImageController::class.java)
@@ -39,7 +39,7 @@ class UserImageController(
         @RequestParam("promptId") promptId: Long,
         @AuthenticationPrincipal userDetails: UserDetails,
     ): PublicImageGenerationResponse {
-        val user = userQueryService.getUserByEmail(userDetails.username)
+        val user = userService.getUserByEmail(userDetails.username)
         logger.info("Received authenticated image generation request from user ${user.id} for prompt ID: $promptId")
 
         // First upload the image to get UUID
@@ -61,7 +61,7 @@ class UserImageController(
         @PathVariable filename: String,
         @AuthenticationPrincipal userDetails: UserDetails,
     ): ResponseEntity<ByteArray> {
-        val user = userQueryService.getUserByEmail(userDetails.username)
+        val user = userService.getUserByEmail(userDetails.username)
         logger.info("User ${user.id} retrieving image: $filename")
 
         // Use the serveUserImage method instead which handles validation internally

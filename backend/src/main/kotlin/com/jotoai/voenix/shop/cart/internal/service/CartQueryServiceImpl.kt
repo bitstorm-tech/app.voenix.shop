@@ -11,7 +11,7 @@ import com.jotoai.voenix.shop.cart.internal.assembler.CartAssembler
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
-import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.api.UserService
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -20,7 +20,7 @@ import java.time.OffsetDateTime
 @Service
 class CartQueryServiceImpl(
     private val cartRepository: CartRepository,
-    private val userQueryService: UserQueryService,
+    private val userService: UserService,
     private val cartAssembler: CartAssembler,
     private val promptQueryService: PromptQueryService,
 ) : CartQueryService {
@@ -32,7 +32,7 @@ class CartQueryServiceImpl(
     @Transactional
     override fun getOrCreateActiveCart(userId: Long): CartDto {
         // Validate user exists
-        userQueryService.getUserById(userId)
+        userService.getUserById(userId)
 
         val cart = getOrCreateActiveCartEntity(userId)
         return cartAssembler.toDto(cart)

@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.api.admin.users
 
-import com.jotoai.voenix.shop.user.api.UserFacade
-import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.api.UserService
 import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UserDto
@@ -22,33 +21,32 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/users")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminUserController(
-    private val userFacade: UserFacade,
-    private val userQueryService: UserQueryService,
+    private val userService: UserService,
 ) {
     @GetMapping
-    fun getAllUsers(): List<UserDto> = userQueryService.getAllUsers()
+    fun getAllUsers(): List<UserDto> = userService.getAllUsers()
 
     @GetMapping("/{id}")
     fun getUserById(
         @PathVariable id: Long,
-    ): UserDto = userQueryService.getUserById(id)
+    ): UserDto = userService.getUserById(id)
 
     @PostMapping
     fun createUser(
         @Valid @RequestBody createUserRequest: CreateUserRequest,
-    ): UserDto = userFacade.createUser(createUserRequest)
+    ): UserDto = userService.createUser(createUserRequest)
 
     @PutMapping("/{id}")
     fun updateUser(
         @PathVariable id: Long,
         @Valid @RequestBody updateUserRequest: UpdateUserRequest,
-    ): UserDto = userFacade.updateUser(id, updateUserRequest)
+    ): UserDto = userService.updateUser(id, updateUserRequest)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteUser(
         @PathVariable id: Long,
     ) {
-        userFacade.deleteUser(id)
+        userService.deleteUser(id)
     }
 }

@@ -18,7 +18,7 @@ import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.image.api.exceptions.ImageAccessDeniedException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
-import com.jotoai.voenix.shop.user.api.UserQueryService
+import com.jotoai.voenix.shop.user.api.UserService
 import org.slf4j.LoggerFactory
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.orm.ObjectOptimisticLockingFailureException
@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 class CartFacadeImpl(
     private val cartRepository: CartRepository,
-    private val userQueryService: UserQueryService,
+    private val userService: UserService,
     private val imageQueryService: ImageQueryService,
     private val promptQueryService: PromptQueryService,
     private val cartAssembler: CartAssembler,
@@ -46,7 +46,7 @@ class CartFacadeImpl(
         request: AddToCartRequest,
     ): CartDto {
         // Validate user exists
-        userQueryService.getUserById(userId)
+        userService.getUserById(userId)
 
         // Validate article and variant exist using ArticleQueryService
         val articlesById = articleQueryService.getArticlesByIds(listOf(request.articleId))

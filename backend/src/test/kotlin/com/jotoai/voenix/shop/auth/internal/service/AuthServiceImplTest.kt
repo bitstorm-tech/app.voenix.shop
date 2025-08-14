@@ -7,11 +7,9 @@ import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.user.api.UserAuthenticationService
-import com.jotoai.voenix.shop.user.api.UserFacade
-import com.jotoai.voenix.shop.user.api.UserQueryService
-import com.jotoai.voenix.shop.user.api.UserRoleManagementService
+import com.jotoai.voenix.shop.user.api.UserService
 import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
+import com.jotoai.voenix.shop.user.api.dto.UserAuthenticationDto
 import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import jakarta.servlet.http.HttpServletRequest
@@ -44,11 +42,8 @@ import java.time.OffsetDateTime
 class AuthServiceImplTest {
     private lateinit var authService: AuthService
     private lateinit var authenticationManager: AuthenticationManager
-    private lateinit var userAuthenticationService: UserAuthenticationService
+    private lateinit var userService: UserService
     private lateinit var securityContextRepository: SecurityContextRepository
-    private lateinit var userFacade: UserFacade
-    private lateinit var userQueryService: UserQueryService
-    private lateinit var userRoleManagementService: UserRoleManagementService
     private lateinit var passwordEncoder: PasswordEncoder
     private lateinit var httpRequest: HttpServletRequest
     private lateinit var httpResponse: HttpServletResponse
@@ -59,11 +54,8 @@ class AuthServiceImplTest {
     @BeforeEach
     fun setUp() {
         authenticationManager = mock()
-        userAuthenticationService = mock()
+        userService = mock()
         securityContextRepository = mock()
-        userFacade = mock()
-        userQueryService = mock()
-        userRoleManagementService = mock()
         passwordEncoder = mock()
         httpRequest = mock()
         httpResponse = mock()
@@ -74,10 +66,7 @@ class AuthServiceImplTest {
         authService =
             AuthServiceImpl(
                 authenticationManager = authenticationManager,
-                userAuthenticationService = userAuthenticationService,
-                userQueryService = userQueryService,
-                userRoleManagementService = userRoleManagementService,
-                userFacade = userFacade,
+                userService = userService,
                 securityContextRepository = securityContextRepository,
                 passwordEncoder = passwordEncoder,
             )
@@ -96,8 +85,8 @@ class AuthServiceImplTest {
         whenever(httpSession.id).thenReturn("session-123")
         whenever(authenticationManager.authenticate(any())).thenReturn(authentication)
         whenever(authentication.principal).thenReturn(principal)
-        whenever(userQueryService.getUserById(1L)).thenReturn(userDto)
-        whenever(userRoleManagementService.getUserRoles(1L)).thenReturn(userRoles)
+        whenever(userService.getUserById(1L)).thenReturn(userDto)
+        whenever(userService.getUserRoles(1L)).thenReturn(userRoles)
 
         val result = authService.login(loginRequest, httpRequest, httpResponse)
 
@@ -149,8 +138,8 @@ class AuthServiceImplTest {
         SecurityContextHolder.getContext().authentication = authentication
         whenever(authentication.isAuthenticated).thenReturn(true)
         whenever(authentication.principal).thenReturn(principal)
-        whenever(userQueryService.getUserById(1L)).thenReturn(userDto)
-        whenever(userRoleManagementService.getUserRoles(1L)).thenReturn(userRoles)
+        whenever(userService.getUserById(1L)).thenReturn(userDto)
+        whenever(userService.getUserRoles(1L)).thenReturn(userRoles)
 
         val result = authService.getCurrentSession()
 
@@ -178,7 +167,7 @@ class AuthServiceImplTest {
         SecurityContextHolder.getContext().authentication = authentication
         whenever(authentication.isAuthenticated).thenReturn(true)
         whenever(authentication.principal).thenReturn(principal)
-        whenever(userQueryService.getUserById(999L)).thenThrow(ResourceNotFoundException("User", "id", "999"))
+        whenever(userService.getUserById(999L)).thenThrow(ResourceNotFoundException("User", "id", "999"))
 
         val result = authService.getCurrentSession()
 
@@ -210,9 +199,9 @@ class AuthServiceImplTest {
         whenever(httpSession.id).thenReturn("session-123")
         whenever(authenticationManager.authenticate(any())).thenReturn(authentication)
         whenever(authentication.principal).thenReturn(principal)
-        whenever(userFacade.createUser(any())).thenReturn(userDto)
-        whenever(userQueryService.getUserById(1L)).thenReturn(userDto)
-        whenever(userRoleManagementService.getUserRoles(1L)).thenReturn(userRoles)
+        whenever(userService.createUser(any())).thenReturn(userDto)
+        whenever(userService.getUserById(1L)).thenReturn(userDto)
+        whenever(userService.getUserRoles(1L)).thenReturn(userRoles)
 
         val result = authService.register(registerRequest, httpRequest, httpResponse)
 
@@ -221,7 +210,7 @@ class AuthServiceImplTest {
         assertEquals(userDto, result.user)
 
         val captor = argumentCaptor<CreateUserRequest>()
-        verify(userFacade).createUser(captor.capture())
+        verify(userService).createUser(captor.capture())
         val createRequest = captor.firstValue
         assertEquals("newuser@example.com", createRequest.email)
         assertEquals("encoded-password", createRequest.password)
@@ -241,16 +230,14 @@ class AuthServiceImplTest {
         val userRoles = setOf("USER")
         val principal = CustomUserDetails(id = 1L, email = "guest@example.com", passwordHash = null, userRoles = userRoles)
 
-        whenever(userQueryService.getUserByEmail("guest@example.com")).thenThrow(
-            ResourceNotFoundException("User", "email", "guest@example.com"),
-        )
+        whenever(userService.existsByEmail("guest@example.com")).thenReturn(false)
         whenever(httpRequest.getSession(true)).thenReturn(httpSession)
         whenever(httpSession.id).thenReturn("session-123")
         whenever(authenticationManager.authenticate(any())).thenReturn(authentication)
         whenever(authentication.principal).thenReturn(principal)
-        whenever(userFacade.createUser(any())).thenReturn(userDto)
-        whenever(userQueryService.getUserById(1L)).thenReturn(userDto)
-        whenever(userRoleManagementService.getUserRoles(1L)).thenReturn(userRoles)
+        whenever(userService.createUser(any())).thenReturn(userDto)
+        whenever(userService.getUserById(1L)).thenReturn(userDto)
+        whenever(userService.getUserRoles(1L)).thenReturn(userRoles)
 
         val result = authService.registerGuest(registerRequest, httpRequest, httpResponse)
 
@@ -259,7 +246,7 @@ class AuthServiceImplTest {
         assertEquals(userDto, result.user)
 
         val captor = argumentCaptor<CreateUserRequest>()
-        verify(userFacade).createUser(captor.capture())
+        verify(userService).createUser(captor.capture())
         val createRequest = captor.firstValue
         assertEquals("guest@example.com", createRequest.email)
         assertEquals(null, createRequest.password)
@@ -281,14 +268,16 @@ class AuthServiceImplTest {
         val userRoles = setOf("USER")
         val principal = CustomUserDetails(id = 5L, email = "guest@example.com", passwordHash = null, userRoles = userRoles)
 
-        whenever(userQueryService.getUserByEmail("guest@example.com")).thenReturn(existingUser)
+        whenever(userService.existsByEmail("guest@example.com")).thenReturn(true)
+        whenever(userService.getUserByEmail("guest@example.com")).thenReturn(existingUser)
+        whenever(userService.loadUserByEmail("guest@example.com")).thenReturn(null)
         whenever(httpRequest.getSession(true)).thenReturn(httpSession)
         whenever(httpSession.id).thenReturn("session-123")
         whenever(authenticationManager.authenticate(any())).thenReturn(authentication)
         whenever(authentication.principal).thenReturn(principal)
-        whenever(userFacade.updateUser(any(), any())).thenReturn(updatedUser)
-        whenever(userQueryService.getUserById(5L)).thenReturn(updatedUser)
-        whenever(userRoleManagementService.getUserRoles(5L)).thenReturn(userRoles)
+        whenever(userService.updateUser(any(), any())).thenReturn(updatedUser)
+        whenever(userService.getUserById(5L)).thenReturn(updatedUser)
+        whenever(userService.getUserRoles(5L)).thenReturn(userRoles)
 
         val result = authService.registerGuest(registerRequest, httpRequest, httpResponse)
 
@@ -298,7 +287,7 @@ class AuthServiceImplTest {
 
         val idCaptor = argumentCaptor<Long>()
         val requestCaptor = argumentCaptor<UpdateUserRequest>()
-        verify(userFacade).updateUser(idCaptor.capture(), requestCaptor.capture())
+        verify(userService).updateUser(idCaptor.capture(), requestCaptor.capture())
         assertEquals(5L, idCaptor.firstValue)
         val updateRequest = requestCaptor.firstValue
         assertEquals("UpdatedGuest", updateRequest.firstName)
@@ -317,10 +306,16 @@ class AuthServiceImplTest {
         // Simulate user that has a password (not a guest user)
         val existingUser = createTestUser(email = "existing@example.com")
 
-        whenever(userQueryService.getUserByEmail("existing@example.com")).thenReturn(existingUser)
-        // Since the user has a password (not a guest), trying to authenticate as guest will fail
-        whenever(authenticationManager.authenticate(any()))
-            .thenThrow(BadCredentialsException("User has password"))
+        whenever(userService.existsByEmail("existing@example.com")).thenReturn(true)
+        whenever(userService.getUserByEmail("existing@example.com")).thenReturn(existingUser)
+        whenever(userService.loadUserByEmail("existing@example.com")).thenReturn(
+            UserAuthenticationDto(
+                id = existingUser.id,
+                email = existingUser.email,
+                passwordHash = "hashedPassword",
+                roles = setOf("USER")
+            )
+        )
 
         assertThrows<ResourceAlreadyExistsException> {
             authService.registerGuest(registerRequest, httpRequest, httpResponse)
@@ -331,7 +326,7 @@ class AuthServiceImplTest {
     fun `createUser should create user with all fields`() {
         val userDto = createTestUser()
 
-        whenever(userFacade.createUser(any())).thenReturn(userDto)
+        whenever(userService.createUser(any())).thenReturn(userDto)
         whenever(passwordEncoder.encode("password123")).thenReturn("encoded-password")
 
         val result =
@@ -347,21 +342,21 @@ class AuthServiceImplTest {
         assertEquals(userDto, result)
 
         val captor = argumentCaptor<CreateUserRequest>()
-        verify(userFacade).createUser(captor.capture())
+        verify(userService).createUser(captor.capture())
         val request = captor.firstValue
         assertEquals("test@example.com", request.email)
         assertEquals("encoded-password", request.password)
         assertEquals("John", request.firstName)
         assertEquals("Doe", request.lastName)
         assertEquals("+1234567890", request.phoneNumber)
-        verify(userRoleManagementService).setUserRoles(1L, setOf("USER", "ADMIN"))
+        verify(userService).setUserRoles(1L, setOf("USER", "ADMIN"))
     }
 
     @Test
     fun `createUser should create user without password for guest`() {
         val userDto = createTestUser()
 
-        whenever(userFacade.createUser(any())).thenReturn(userDto)
+        whenever(userService.createUser(any())).thenReturn(userDto)
 
         val result =
             authService.createUser(
@@ -376,7 +371,7 @@ class AuthServiceImplTest {
         assertEquals(userDto, result)
 
         val captor = argumentCaptor<CreateUserRequest>()
-        verify(userFacade).createUser(captor.capture())
+        verify(userService).createUser(captor.capture())
         val request = captor.firstValue
         assertEquals("guest@example.com", request.email)
         assertEquals(null, request.password)
@@ -389,7 +384,7 @@ class AuthServiceImplTest {
     fun `updateUser should update user fields`() {
         val userDto = createTestUser()
 
-        whenever(userFacade.updateUser(any(), any())).thenReturn(userDto)
+        whenever(userService.updateUser(any(), any())).thenReturn(userDto)
 
         val result =
             authService.updateUser(
@@ -403,7 +398,7 @@ class AuthServiceImplTest {
 
         val idCaptor = argumentCaptor<Long>()
         val requestCaptor = argumentCaptor<UpdateUserRequest>()
-        verify(userFacade).updateUser(idCaptor.capture(), requestCaptor.capture())
+        verify(userService).updateUser(idCaptor.capture(), requestCaptor.capture())
         assertEquals(1L, idCaptor.firstValue)
         val request = requestCaptor.firstValue
         assertEquals("UpdatedJohn", request.firstName)
