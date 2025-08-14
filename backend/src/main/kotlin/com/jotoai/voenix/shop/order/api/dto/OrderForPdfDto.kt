@@ -20,4 +20,5 @@ data class OrderItemForPdfDto(
     val generatedImageId: Long?,
     val generatedImageFilename: String?, // Dynamically fetched from ImageQueryService
     val articleId: Long,
+    val variantId: Long,
 )

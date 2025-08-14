@@ -20,11 +20,15 @@ data class OrderItemPdfData(
     val quantity: Int,
     val generatedImageFilename: String?,
     val article: ArticlePdfData,
+    val variantId: Long,
+    val variantName: String?,
 )
 
 data class ArticlePdfData(
     val id: Long,
     val mugDetails: MugDetailsPdfData?,
+    val supplierArticleName: String?,
+    val supplierArticleNumber: String?,
 )
 
 data class MugDetailsPdfData(

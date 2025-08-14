@@ -4,11 +4,16 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.pdf.api.OrderPdfService
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
 import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import javax.imageio.ImageIO
 import org.apache.pdfbox.pdmodel.PDDocument
 import org.apache.pdfbox.pdmodel.PDPage
 import org.apache.pdfbox.pdmodel.PDPageContentStream
@@ -20,12 +25,6 @@ import org.apache.pdfbox.util.Matrix
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
-import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import javax.imageio.ImageIO
 
 /**
  * Service responsible for generating PDF documents for orders.
@@ -37,7 +36,6 @@ class OrderPdfServiceImpl(
     @param:Value("\${pdf.size.height:99}") private val pdfHeightMm: Float,
     @param:Value("\${pdf.margin:1}") private val pdfMarginMm: Float,
     private val imageAccessService: ImageAccessService,
-    private val articleQueryService: ArticleQueryService,
 ) : OrderPdfService {
     companion object {
         private val logger = LoggerFactory.getLogger(OrderPdfServiceImpl::class.java)
@@ -75,6 +73,9 @@ class OrderPdfServiceImpl(
 
         // Default image margins when mug details are not available
         private const val DEFAULT_IMAGE_MARGIN_MM = 15f
+
+        // Product info text layout
+        private const val PRODUCT_INFO_LINE_HEIGHT_FACTOR = 1.2f
     }
 
     // Calculate PDF dimensions in points
@@ -92,7 +93,7 @@ class OrderPdfServiceImpl(
     override fun generateOrderPdf(orderData: OrderPdfData): ByteArray {
         logger.info(
             "Generating PDF for order ${orderData.orderNumber} with " +
-                "${orderData.getTotalItemCount()} total items",
+                    "${orderData.getTotalItemCount()} total items",
         )
 
         try {
@@ -159,8 +160,25 @@ class OrderPdfServiceImpl(
                     itemMargin,
                 )
 
+                // Add product information on the right side
+                addProductInfo(
+                    contentStream,
+                    orderItem,
+                    itemPageWidth,
+                    itemPageHeight,
+                    itemMargin,
+                )
+
                 // Add product image (centered)
-                addProductImage(document, contentStream, orderData, orderItem, itemPageWidth, itemPageHeight, itemMargin)
+                addProductImage(
+                    document,
+                    contentStream,
+                    orderData,
+                    orderItem,
+                    itemPageWidth,
+                    itemPageHeight,
+                    itemMargin,
+                )
 
                 // Add QR code in bottom left
                 addQrCode(document, contentStream, orderData.id.toString(), itemMargin)
@@ -256,6 +274,74 @@ class OrderPdfServiceImpl(
     }
 
     /**
+     * Adds product information (supplier mug name, supplier article number, variant name)
+     * Text is rotated 90 degrees clockwise and positioned on the right side
+     */
+    private fun addProductInfo(
+        contentStream: PDPageContentStream,
+        orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData,
+        pageWidth: Float,
+        pageHeight: Float,
+        margin: Float,
+    ) {
+        val regularFont = PDType1Font(Standard14Fonts.FontName.HELVETICA)
+        val fontSize = HEADER_FONT_SIZE
+
+        // Build product info text lines
+        val productInfoLines = mutableListOf<String>()
+
+        orderItem.article.supplierArticleName?.let { name ->
+            productInfoLines.add(name)
+        }
+
+        orderItem.article.supplierArticleNumber?.let { number ->
+            productInfoLines.add(number)
+        }
+
+        orderItem.variantName?.let { variant ->
+            productInfoLines.add(variant)
+        }
+
+        if (productInfoLines.isEmpty()) return
+
+        // Save the current graphics state
+        contentStream.saveGraphicsState()
+
+        // Position for the rotated text on the right side
+        val xPosition = pageWidth - margin - HEADER_MARGIN_FROM_EDGE
+        val yPositionBase = pageHeight / 2 // Center vertically on the page
+
+        // Calculate total text height to center all lines
+        val lineHeight = fontSize * PRODUCT_INFO_LINE_HEIGHT_FACTOR
+        val totalTextHeight = productInfoLines.size * lineHeight
+        var currentYOffset = totalTextHeight / 2
+
+        val line = productInfoLines.joinToString(" | ")
+        val textWidth = regularFont.getStringWidth(line) / FONT_WIDTH_DIVISOR * fontSize
+
+        // Move to the position where we want the text
+        contentStream.transform(Matrix.getTranslateInstance(xPosition, yPositionBase + currentYOffset))
+
+        // Rotate 90 degrees clockwise around the current position
+        contentStream.transform(Matrix.getRotateInstance(Math.toRadians(DEGREES_90), 0f, 0f))
+
+        // Draw the text
+        contentStream.beginText()
+        contentStream.setFont(regularFont, fontSize)
+        // Center the text along its length (which becomes vertical after rotation)
+        contentStream.newLineAtOffset(-textWidth / 2, 0f)
+        contentStream.showText(line)
+        contentStream.endText()
+
+        // Reset transformation for next line
+        contentStream.restoreGraphicsState()
+        contentStream.saveGraphicsState()
+
+        // Restore the graphics state
+        contentStream.restoreGraphicsState()
+    }
+
+    /**
      * Adds the product image centered on the page
      */
     private fun addProductImage(
@@ -277,19 +363,20 @@ class OrderPdfServiceImpl(
                         } catch (e: IOException) {
                             logger.warn(
                                 "Could not load generated image ${orderItem.generatedImageFilename} " +
-                                    "for order ${orderData.orderNumber}, using placeholder",
+                                        "for order ${orderData.orderNumber}, using placeholder",
                                 e,
                             )
                             createPlaceholderImage()
                         } catch (e: IllegalArgumentException) {
                             logger.warn(
                                 "Invalid image filename ${orderItem.generatedImageFilename} " +
-                                    "for order ${orderData.orderNumber}, using placeholder",
+                                        "for order ${orderData.orderNumber}, using placeholder",
                                 e,
                             )
                             createPlaceholderImage()
                         }
                     }
+
                     else -> {
                         logger.info("No generated image for order item ${orderItem.id}, using placeholder")
                         createPlaceholderImage()
@@ -325,11 +412,11 @@ class OrderPdfServiceImpl(
 
             logger.debug(
                 "Added product image with exact dimensions ${imageWidthPt}x$imageHeightPt points " +
-                    "at position ($xPosition, $yPosition)",
+                        "at position ($xPosition, $yPosition)",
             )
             logger.debug(
                 "Using exact print template dimensions: " +
-                    "${imageWidthMm}mm x ${imageHeightMm}mm from MugArticleDetails",
+                        "${imageWidthMm}mm x ${imageHeightMm}mm from MugArticleDetails",
             )
         } catch (e: IOException) {
             logger.error("I/O error adding product image for order item ${orderItem.id}", e)

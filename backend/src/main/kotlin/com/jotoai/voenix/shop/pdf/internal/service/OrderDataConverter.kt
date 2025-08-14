@@ -27,6 +27,8 @@ class OrderDataConverter(
 
     private fun convertToOrderItemPdfData(orderItem: OrderItemForPdfDto): OrderItemPdfData {
         val mugDetails = articleQueryService.getMugDetailsByArticleId(orderItem.articleId)
+        val article = articleQueryService.getArticlesByIds(listOf(orderItem.articleId))[orderItem.articleId]
+        val variant = articleQueryService.getMugVariantsByIds(listOf(orderItem.variantId))[orderItem.variantId]
 
         return OrderItemPdfData(
             id = orderItem.id,
@@ -45,7 +47,11 @@ class OrderDataConverter(
                                 documentFormatMarginBottomMm = it.documentFormatMarginBottomMm,
                             )
                         },
+                    supplierArticleName = article?.supplierArticleName,
+                    supplierArticleNumber = article?.supplierArticleNumber,
                 ),
+            variantId = orderItem.variantId,
+            variantName = variant?.name,
         )
     }
 }

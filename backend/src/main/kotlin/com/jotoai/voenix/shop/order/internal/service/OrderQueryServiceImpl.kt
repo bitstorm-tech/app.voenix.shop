@@ -59,6 +59,7 @@ class OrderQueryServiceImpl(
                         generatedImageId = orderItem.generatedImageId,
                         generatedImageFilename = orderItem.generatedImageId?.let { imagesById[it]?.filename },
                         articleId = orderItem.articleId,
+                        variantId = orderItem.variantId,
                     )
                 },
         )
