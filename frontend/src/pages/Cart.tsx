@@ -39,7 +39,7 @@ export default function CartPage() {
         .filter(item => item.generatedImageFilename)
         .map((item, index) => ({
           src: `/api/user/images/${item.generatedImageFilename}`,
-          priority: index < 3 ? 'high' : 'medium' as const, // First 3 images get high priority
+          priority: (index < 3 ? 'high' : 'medium') as 'high' | 'medium' | 'low', // First 3 images get high priority
         }));
 
       if (imagesToPreload.length > 0) {

@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { CartItemImage } from '../CartItemImage';
 import { useImageWithFallback } from '@/hooks/useImageWithFallback';
 

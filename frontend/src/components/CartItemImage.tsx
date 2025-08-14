@@ -19,8 +19,6 @@ export function CartItemImage({
   onError 
 }: CartItemImageProps) {
   const { 
-    status, 
-    error, 
     retryCount, 
     retry, 
     isLoading, 

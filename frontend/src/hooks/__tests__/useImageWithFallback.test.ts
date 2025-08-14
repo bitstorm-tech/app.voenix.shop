@@ -20,7 +20,7 @@ class MockImage {
 }
 
 // Replace global Image with MockImage
-global.Image = MockImage as any;
+(globalThis as any).Image = MockImage;
 
 describe('useImageWithFallback', () => {
   beforeEach(() => {
@@ -349,10 +349,10 @@ describe('useImageWithFallback', () => {
 
     it('should calculate exponential backoff correctly', async () => {
       const delays: number[] = [];
-      const originalSetTimeout = global.setTimeout;
+      const originalSetTimeout = globalThis.setTimeout;
       
       // Spy on setTimeout to capture delays
-      jest.spyOn(global, 'setTimeout').mockImplementation((fn, delay) => {
+      jest.spyOn(globalThis, 'setTimeout').mockImplementation((fn: any, delay: any) => {
         if (typeof delay === 'number' && delay > 0) {
           delays.push(delay);
         }

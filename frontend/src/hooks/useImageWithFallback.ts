@@ -31,13 +31,13 @@ export function useImageWithFallback(
     retryCount: 0,
   });
 
-  const retryTimeoutRef = useRef<NodeJS.Timeout>();
-  const imgRef = useRef<HTMLImageElement>();
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
   const cleanup = useCallback(() => {
     if (retryTimeoutRef.current) {
       clearTimeout(retryTimeoutRef.current);
-      retryTimeoutRef.current = undefined;
+      retryTimeoutRef.current = null;
     }
     if (imgRef.current) {
       imgRef.current.onload = null;
