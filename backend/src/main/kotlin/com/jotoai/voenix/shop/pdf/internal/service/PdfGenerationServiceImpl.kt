@@ -168,12 +168,12 @@ class PdfGenerationServiceImpl(
 
         try {
             val outputStream = ByteArrayOutputStream()
-            
+
             // Get dimensions from the first item to initialize document with correct size
             val firstItem = orderData.items.first()
             val firstPageWidth = getPageWidth(firstItem)
             val firstPageHeight = getPageHeight(firstItem)
-            
+
             val document = Document(Rectangle(firstPageWidth, firstPageHeight))
             val writer = PdfWriter.getInstance(document, outputStream)
             document.open()
@@ -191,7 +191,7 @@ class PdfGenerationServiceImpl(
                         document.setPageSize(Rectangle(itemPageWidth, itemPageHeight))
                         document.newPage()
                     }
-                    createOrderPage(document, writer, orderData, orderItem, pageNumber, totalPages)
+                    createOrderPage(writer, orderData, orderItem, pageNumber, totalPages)
                     pageNumber++
                 }
             }
@@ -220,7 +220,7 @@ class PdfGenerationServiceImpl(
             val article =
                 try {
                     articleQueryService.findById(request.mugId)
-                } catch (e: ResourceNotFoundException) {
+                } catch (_: ResourceNotFoundException) {
                     throw BadRequestException("Mug not found or unavailable")
                 }
 
@@ -367,7 +367,6 @@ class PdfGenerationServiceImpl(
     }
 
     private fun createOrderPage(
-        document: Document,
         writer: PdfWriter,
         orderData: OrderPdfData,
         orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData,
@@ -388,9 +387,7 @@ class PdfGenerationServiceImpl(
                 orderData.orderNumber ?: "UNKNOWN",
                 pageNumber,
                 totalPages,
-                itemPageWidth,
                 itemPageHeight,
-                itemMargin,
             )
 
             // Add product information on the right side
@@ -399,7 +396,6 @@ class PdfGenerationServiceImpl(
                 orderItem,
                 itemPageWidth,
                 itemPageHeight,
-                itemMargin,
             )
 
             // Add product image (centered)
@@ -454,9 +450,7 @@ class PdfGenerationServiceImpl(
         orderNumber: String,
         pageNumber: Int,
         totalPages: Int,
-        pageWidth: Float,
         pageHeight: Float,
-        margin: Float,
     ) {
         val baseFont = BaseFont.createFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED)
         val fontSize = HEADER_FONT_SIZE
@@ -468,11 +462,11 @@ class PdfGenerationServiceImpl(
         contentByte.beginText()
         contentByte.setFontAndSize(baseFont, fontSize)
         contentByte.showTextAligned(
-            PdfContentByte.ALIGN_CENTER,  // Center alignment
-            headerText,                    // The text
-            15f,                           // x position (distance from left edge)
-            pageHeight / 2,               // y position (center of page)
-            90f                           // 90-degree rotation
+            PdfContentByte.ALIGN_CENTER, // Center alignment
+            headerText, // The text
+            15f, // x position (half font size + small offset for better visual centering)
+            pageHeight / 2, // y position (center of page)
+            90f, // 90-degree rotation
         )
         contentByte.endText()
     }
@@ -482,7 +476,6 @@ class PdfGenerationServiceImpl(
         orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData,
         pageWidth: Float,
         pageHeight: Float,
-        margin: Float,
     ) {
         val baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED)
         val fontSize = HEADER_FONT_SIZE
@@ -511,11 +504,11 @@ class PdfGenerationServiceImpl(
         contentByte.beginText()
         contentByte.setFontAndSize(baseFont, fontSize)
         contentByte.showTextAligned(
-            PdfContentByte.ALIGN_CENTER,  // Center alignment
-            line,                         // The text
-            pageWidth - 5f,              // x position (distance from right edge)
-            pageHeight / 2,              // y position (center of page)
-            90f                          // 90-degree rotation
+            PdfContentByte.ALIGN_CENTER, // Center alignment
+            line, // The text
+            pageWidth - 5f, // x position (distance from right edge)
+            pageHeight / 2, // y position (center of page)
+            90f, // 90-degree rotation
         )
         contentByte.endText()
     }

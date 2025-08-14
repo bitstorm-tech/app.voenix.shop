@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.supplier
 
-import com.jotoai.voenix.shop.supplier.api.SupplierFacade
-import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
+import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
 import com.jotoai.voenix.shop.supplier.api.exceptions.DuplicateSupplierException
 import org.assertj.core.api.Assertions.assertThat
@@ -16,15 +15,12 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 class SupplierModuleIntegrationTest {
     @Autowired
-    private lateinit var supplierFacade: SupplierFacade
-
-    @Autowired
-    private lateinit var supplierQueryService: SupplierQueryService
+    private lateinit var supplierService: SupplierService
 
     @Test
     fun `should expose correct public interfaces`() {
         // Given - initial state
-        val initialSuppliers = supplierQueryService.getAllSuppliers()
+        val initialSuppliers = supplierService.getAllSuppliers()
 
         // When - creating a new supplier
         val createRequest =
@@ -45,7 +41,7 @@ class SupplierModuleIntegrationTest {
                 website = "https://testsupplier.com",
             )
 
-        val createdSupplier = supplierFacade.createSupplier(createRequest)
+        val createdSupplier = supplierService.createSupplier(createRequest)
 
         // Then - verify creation
         assertThat(createdSupplier.name).isEqualTo("Test Supplier Ltd.")
@@ -55,23 +51,23 @@ class SupplierModuleIntegrationTest {
         assertThat(createdSupplier.website).isEqualTo("https://testsupplier.com")
 
         // And - verify query operations
-        val allSuppliers = supplierQueryService.getAllSuppliers()
+        val allSuppliers = supplierService.getAllSuppliers()
         assertThat(allSuppliers).hasSize(initialSuppliers.size + 1)
 
-        val retrievedSupplier = supplierQueryService.getSupplierById(createdSupplier.id)
+        val retrievedSupplier = supplierService.getSupplierById(createdSupplier.id)
         assertThat(retrievedSupplier).isEqualTo(createdSupplier)
 
         // And - verify SPI operations
-        assertThat(supplierQueryService.getSupplierById(createdSupplier.id)).isEqualTo(createdSupplier)
-        assertThat(supplierQueryService.existsById(createdSupplier.id)).isTrue()
+        assertThat(supplierService.getSupplierById(createdSupplier.id)).isEqualTo(createdSupplier)
+        assertThat(supplierService.existsById(createdSupplier.id)).isTrue()
 
         // When - deleting the supplier
-        supplierFacade.deleteSupplier(createdSupplier.id)
+        supplierService.deleteSupplier(createdSupplier.id)
 
         // Then - verify deletion
-        val finalSuppliers = supplierQueryService.getAllSuppliers()
+        val finalSuppliers = supplierService.getAllSuppliers()
         assertThat(finalSuppliers).hasSize(initialSuppliers.size)
-        assertThat(supplierQueryService.existsById(createdSupplier.id)).isFalse()
+        assertThat(supplierService.existsById(createdSupplier.id)).isFalse()
     }
 
     @Test
@@ -95,14 +91,14 @@ class SupplierModuleIntegrationTest {
                 website = null,
             )
 
-        val createdSupplier = supplierFacade.createSupplier(createRequest)
+        val createdSupplier = supplierService.createSupplier(createRequest)
 
         // When - trying to create another supplier with same name
         val duplicateNameRequest = createRequest.copy(email = "different@test.com")
 
         // Then - should throw exception
         try {
-            supplierFacade.createSupplier(duplicateNameRequest)
+            supplierService.createSupplier(duplicateNameRequest)
             throw AssertionError("Should have thrown DuplicateSupplierException for duplicate name")
         } catch (e: DuplicateSupplierException) {
             assertThat(e.message).contains("Supplier with name")
@@ -113,13 +109,13 @@ class SupplierModuleIntegrationTest {
 
         // Then - should throw exception
         try {
-            supplierFacade.createSupplier(duplicateEmailRequest)
+            supplierService.createSupplier(duplicateEmailRequest)
             throw AssertionError("Should have thrown DuplicateSupplierException for duplicate email")
         } catch (e: DuplicateSupplierException) {
             assertThat(e.message).contains("Supplier with email")
         }
 
         // Cleanup
-        supplierFacade.deleteSupplier(createdSupplier.id)
+        supplierService.deleteSupplier(createdSupplier.id)
     }
 }

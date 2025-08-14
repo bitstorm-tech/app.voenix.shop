@@ -24,12 +24,12 @@ import com.jotoai.voenix.shop.order.internal.entity.OrderItem
 import com.jotoai.voenix.shop.order.internal.repository.OrderRepository
 import com.jotoai.voenix.shop.user.api.UserQueryService
 import jakarta.persistence.EntityManager
-import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Service
 class OrderServiceImpl(
@@ -352,9 +352,7 @@ class OrderServiceImpl(
     /**
      * Calculates shipping amount ($4.99 flat rate for now)
      */
-    private fun calculateShipping(cart: CartOrderInfo): Long {
-        return if (cart.isEmpty) 0L else SHIPPING_RATE_CENTS
-    }
+    private fun calculateShipping(cart: CartOrderInfo): Long = if (cart.isEmpty) 0L else SHIPPING_RATE_CENTS
 
     companion object {
         private const val TAX_RATE = 0.08 // 8%

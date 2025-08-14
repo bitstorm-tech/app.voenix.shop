@@ -30,7 +30,7 @@ import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepos
 import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRepository
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
+import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.vat.api.VatQueryService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -44,7 +44,7 @@ class ArticleServiceImpl(
     private val articleShirtVariantRepository: ShirtArticleVariantRepository,
     private val articleCategoryRepository: ArticleCategoryRepository,
     private val articleSubCategoryRepository: ArticleSubCategoryRepository,
-    private val supplierQueryService: SupplierQueryService,
+    private val supplierService: SupplierService,
     private val costCalculationRepository: CostCalculationRepository,
     private val vatQueryService: VatQueryService,
     private val mugDetailsService: MugDetailsService,
@@ -119,7 +119,7 @@ class ArticleServiceImpl(
 
         // Validate supplier exists if provided
         request.supplierId?.let { supplierId ->
-            if (!supplierQueryService.existsById(supplierId)) {
+            if (!supplierService.existsById(supplierId)) {
                 throw ArticleNotFoundException("Supplier not found with id: $supplierId")
             }
         }
@@ -202,7 +202,7 @@ class ArticleServiceImpl(
 
         // Validate supplier exists if provided
         request.supplierId?.let { supplierId ->
-            if (!supplierQueryService.existsById(supplierId)) {
+            if (!supplierService.existsById(supplierId)) {
                 throw ArticleNotFoundException("Supplier not found with id: $supplierId")
             }
         }
@@ -323,7 +323,7 @@ class ArticleServiceImpl(
             subcategoryId = article.subcategory?.id,
             subcategoryName = article.subcategory?.name,
             supplierId = article.supplierId,
-            supplierName = article.supplierId?.let { supplierQueryService.getSupplierById(it)?.name },
+            supplierName = article.supplierId?.let { supplierService.getSupplierById(it).name },
             supplierArticleName = article.supplierArticleName,
             supplierArticleNumber = article.supplierArticleNumber,
             mugVariants =
@@ -578,7 +578,7 @@ class ArticleServiceImpl(
                     subcategoryId = a.subcategory?.id,
                     subcategoryName = a.subcategory?.name,
                     supplierId = a.supplierId,
-                    supplierName = a.supplierId?.let { supplierQueryService.getSupplierById(it)?.name },
+                    supplierName = a.supplierId?.let { supplierService.getSupplierById(it).name },
                     supplierArticleName = a.supplierArticleName,
                     supplierArticleNumber = a.supplierArticleNumber,
                     mugVariants = null,

@@ -38,7 +38,6 @@ class AuthServiceImpl(
     private val securityContextRepository: SecurityContextRepository,
     private val passwordEncoder: PasswordEncoder,
 ) : AuthService {
-
     @Transactional
     override fun login(
         loginRequest: LoginRequest,
@@ -82,10 +81,10 @@ class AuthServiceImpl(
     override fun logout(request: HttpServletRequest) {
         // Clear security context from thread-local storage
         SecurityContextHolder.clearContext()
-        
+
         // Invalidate the HTTP session if it exists
         request.getSession(false)?.invalidate()
-        
+
         // Note: SecurityContextRepository clearing needs HttpServletResponse
         // which is not available in current method signature.
         // This would require updating the interface to include response parameter.

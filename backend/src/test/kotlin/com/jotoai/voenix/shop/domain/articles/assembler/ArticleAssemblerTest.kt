@@ -11,7 +11,7 @@ import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleSubCateg
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
-import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
+import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -28,7 +28,7 @@ import java.time.OffsetDateTime
 class ArticleAssemblerTest {
     private lateinit var mugArticleVariantAssembler: MugArticleVariantAssembler
     private lateinit var shirtArticleVariantAssembler: ShirtArticleVariantAssembler
-    private lateinit var supplierQueryService: SupplierQueryService
+    private lateinit var supplierService: SupplierService
     private lateinit var assembler: ArticleAssembler
 
     private lateinit var testCategory: ArticleCategory
@@ -39,8 +39,8 @@ class ArticleAssemblerTest {
     fun setUp() {
         mugArticleVariantAssembler = mock(MugArticleVariantAssembler::class.java)
         shirtArticleVariantAssembler = mock(ShirtArticleVariantAssembler::class.java)
-        supplierQueryService = mock(SupplierQueryService::class.java)
-        assembler = ArticleAssembler(mugArticleVariantAssembler, shirtArticleVariantAssembler, supplierQueryService)
+        supplierService = mock(SupplierService::class.java)
+        assembler = ArticleAssembler(mugArticleVariantAssembler, shirtArticleVariantAssembler, supplierService)
 
         // Setup test data
         testCategory =
@@ -111,7 +111,7 @@ class ArticleAssemblerTest {
 
         `when`(mugArticleVariantAssembler.toDto(testMugVariant))
             .thenReturn(expectedMugVariantDto)
-        `when`(supplierQueryService.getSupplierById(1L))
+        `when`(supplierService.getSupplierById(1L))
             .thenReturn(
                 SupplierDto(
                     id = 1L,
@@ -204,7 +204,7 @@ class ArticleAssemblerTest {
 
         `when`(shirtArticleVariantAssembler.toDto(testShirtVariant))
             .thenReturn(expectedShirtVariantDto)
-        `when`(supplierQueryService.getSupplierById(1L))
+        `when`(supplierService.getSupplierById(1L))
             .thenReturn(
                 SupplierDto(
                     id = 1L,
@@ -632,7 +632,7 @@ class ArticleAssemblerTest {
             )
 
         // Mock the supplier query
-        `when`(supplierQueryService.getSupplierById(777L))
+        `when`(supplierService.getSupplierById(777L))
             .thenReturn(
                 SupplierDto(
                     id = 777L,

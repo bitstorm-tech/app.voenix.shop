@@ -3,7 +3,7 @@ package com.jotoai.voenix.shop.article.internal.assembler
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.article.internal.entity.Article
-import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
+import com.jotoai.voenix.shop.supplier.api.SupplierService
 import org.springframework.stereotype.Component
 
 /**
@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component
 class ArticleAssembler(
     private val mugArticleVariantAssembler: MugArticleVariantAssembler,
     private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
-    private val supplierQueryService: SupplierQueryService,
+    private val supplierService: SupplierService,
 ) {
     /**
      * Converts an Article entity to its DTO representation.
@@ -39,7 +39,7 @@ class ArticleAssembler(
             subcategoryId = entity.subcategory?.id,
             subcategoryName = entity.subcategory?.name,
             supplierId = entity.supplierId,
-            supplierName = entity.supplierId?.let { supplierQueryService.getSupplierById(it)?.name },
+            supplierName = entity.supplierId?.let { supplierService.getSupplierById(it).name },
             supplierArticleName = entity.supplierArticleName,
             supplierArticleNumber = entity.supplierArticleNumber,
             mugVariants =

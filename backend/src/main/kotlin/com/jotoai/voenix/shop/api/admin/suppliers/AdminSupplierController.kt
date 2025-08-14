@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.api.admin.suppliers
 
-import com.jotoai.voenix.shop.supplier.api.SupplierFacade
-import com.jotoai.voenix.shop.supplier.api.SupplierQueryService
+import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
 import com.jotoai.voenix.shop.supplier.api.dto.UpdateSupplierRequest
@@ -22,22 +21,21 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/suppliers")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminSupplierController(
-    private val supplierQueryService: SupplierQueryService,
-    private val supplierFacade: SupplierFacade,
+    private val supplierService: SupplierService,
 ) {
     @GetMapping
-    fun getAllSuppliers(): ResponseEntity<List<SupplierDto>> = ResponseEntity.ok(supplierQueryService.getAllSuppliers())
+    fun getAllSuppliers(): ResponseEntity<List<SupplierDto>> = ResponseEntity.ok(supplierService.getAllSuppliers())
 
     @GetMapping("/{id}")
     fun getSupplierById(
         @PathVariable id: Long,
-    ): ResponseEntity<SupplierDto> = ResponseEntity.ok(supplierQueryService.getSupplierById(id))
+    ): ResponseEntity<SupplierDto> = ResponseEntity.ok(supplierService.getSupplierById(id))
 
     @PostMapping
     fun createSupplier(
         @Valid @RequestBody request: CreateSupplierRequest,
     ): ResponseEntity<SupplierDto> {
-        val supplier = supplierFacade.createSupplier(request)
+        val supplier = supplierService.createSupplier(request)
         return ResponseEntity.status(HttpStatus.CREATED).body(supplier)
     }
 
@@ -45,13 +43,13 @@ class AdminSupplierController(
     fun updateSupplier(
         @PathVariable id: Long,
         @Valid @RequestBody request: UpdateSupplierRequest,
-    ): ResponseEntity<SupplierDto> = ResponseEntity.ok(supplierFacade.updateSupplier(id, request))
+    ): ResponseEntity<SupplierDto> = ResponseEntity.ok(supplierService.updateSupplier(id, request))
 
     @DeleteMapping("/{id}")
     fun deleteSupplier(
         @PathVariable id: Long,
     ): ResponseEntity<Void> {
-        supplierFacade.deleteSupplier(id)
+        supplierService.deleteSupplier(id)
         return ResponseEntity.noContent().build()
     }
 }

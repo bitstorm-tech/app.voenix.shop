@@ -3,8 +3,7 @@
  * <p>
  * This module provides:
  * <ul>
- *   <li>Supplier CRUD operations through {@link com.jotoai.voenix.shop.supplier.api.SupplierFacade}</li>
- *   <li>Supplier query operations and data access through {@link com.jotoai.voenix.shop.supplier.api.SupplierQueryService}</li>
+ *   <li>Unified supplier operations (both read and write) through {@link com.jotoai.voenix.shop.supplier.api.SupplierService}</li>
  * </ul>
  * <p>
  * Named interfaces:
