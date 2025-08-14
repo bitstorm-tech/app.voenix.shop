@@ -4,19 +4,17 @@
  */
 
 package com.jotoai.voenix.shop.api.public.pdf
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
-
+import com.jotoai.voenix.shop.pdf.api.PublicPdfService
+import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
 import jakarta.validation.Valid
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import com.jotoai.voenix.shop.pdf.api.PublicPdfService
-import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/public/pdf")

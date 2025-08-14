@@ -8,12 +8,6 @@ import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.pdf.api.OrderPdfService
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
 import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
-import java.awt.image.BufferedImage
-import java.io.ByteArrayOutputStream
-import java.io.IOException
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import javax.imageio.ImageIO
 import com.lowagie.text.Document
 import com.lowagie.text.Font
 import com.lowagie.text.Image
@@ -24,6 +18,12 @@ import com.lowagie.text.pdf.PdfWriter
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
+import java.awt.image.BufferedImage
+import java.io.ByteArrayOutputStream
+import java.io.IOException
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import javax.imageio.ImageIO
 
 /**
  * Service responsible for generating PDF documents for orders.
@@ -44,7 +44,7 @@ class OrderPdfServiceImpl(
 
         // Layout constants
         private const val QR_CODE_SIZE_POINTS = 40f
-        
+
         // Text positioning constants
         private const val HEADER_MARGIN_FROM_EDGE = 15f
         private const val HEADER_TEXT_OFFSET_FROM_TOP = 5f
@@ -96,7 +96,7 @@ class OrderPdfServiceImpl(
     override fun generateOrderPdf(orderData: OrderPdfData): ByteArray {
         logger.info(
             "Generating PDF for order ${orderData.orderNumber} with " +
-                    "${orderData.getTotalItemCount()} total items",
+                "${orderData.getTotalItemCount()} total items",
         )
 
         try {
@@ -104,10 +104,10 @@ class OrderPdfServiceImpl(
             val document = Document()
             val writer = PdfWriter.getInstance(document, outputStream)
             document.open()
-            
+
             var pageNumber = 1
             val totalPages = orderData.getTotalItemCount()
-            
+
             // Generate pages for each item quantity
             orderData.items.forEach { orderItem ->
                 repeat(orderItem.quantity) {
@@ -118,7 +118,7 @@ class OrderPdfServiceImpl(
                     pageNumber++
                 }
             }
-            
+
             document.close()
             return outputStream.toByteArray()
         } catch (e: IOException) {
@@ -148,10 +148,10 @@ class OrderPdfServiceImpl(
         val itemPageWidth = getPageWidth(orderItem)
         val itemPageHeight = getPageHeight(orderItem)
         val itemMargin = getMargin(orderItem)
-        
+
         // Set page size for current page
         document.setPageSize(Rectangle(itemPageWidth, itemPageHeight))
-        
+
         try {
             val contentByte = writer.directContent
             // Add header with order number and page info
@@ -164,7 +164,7 @@ class OrderPdfServiceImpl(
                 itemPageHeight,
                 itemMargin,
             )
-            
+
             // Add product information on the right side
             addProductInfo(
                 contentByte,
@@ -173,7 +173,7 @@ class OrderPdfServiceImpl(
                 itemPageHeight,
                 itemMargin,
             )
-            
+
             // Add product image (centered)
             addProductImage(
                 contentByte,
@@ -183,7 +183,7 @@ class OrderPdfServiceImpl(
                 itemPageHeight,
                 itemMargin,
             )
-            
+
             // Add QR code in bottom left
             addQrCode(contentByte, orderData.id.toString(), itemMargin)
         } catch (e: IOException) {
@@ -233,7 +233,7 @@ class OrderPdfServiceImpl(
     /**
      * Adds order number and page information
      * Text is rotated 90 degrees clockwise and positioned at the top-left corner
-     * 
+     *
      * Positioning logic:
      * - PDFBox origin (0,0) is at bottom-left
      * - After 90° clockwise rotation, text flows downward (in visual coordinates)
@@ -251,27 +251,27 @@ class OrderPdfServiceImpl(
     ) {
         val baseFont = BaseFont.createFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED)
         val fontSize = HEADER_FONT_SIZE
-        
+
         // Create the combined text on one line
         val headerText = "$orderNumber ($pageNumber/$totalPages)"
         val textWidth = baseFont.getWidthPoint(headerText, fontSize)
-        
+
         // Save the current graphics state
         contentByte.saveState()
-        
+
         // Position for the rotated text at top-left corner
         // X: Left margin + offset from edge
         val xPosition = margin + HEADER_MARGIN_FROM_EDGE
         // Y: Top of page minus offset - after 90° rotation, text flows downward
         val yPosition = pageHeight - margin - HEADER_TEXT_OFFSET_FROM_TOP
-        
+
         // Set font and move to position
         contentByte.beginText()
         contentByte.setFontAndSize(baseFont, fontSize)
         contentByte.setTextMatrix(0f, 1f, -1f, 0f, xPosition, yPosition) // 90 degree rotation
         contentByte.showText(headerText)
         contentByte.endText()
-        
+
         // Restore the graphics state
         contentByte.restoreState()
     }
@@ -279,7 +279,7 @@ class OrderPdfServiceImpl(
     /**
      * Adds product information (supplier mug name, supplier article number, variant name)
      * Text is rotated 90 degrees clockwise and positioned at the top-right corner
-     * 
+     *
      * Positioning logic:
      * - PDFBox origin (0,0) is at bottom-left
      * - After 90° clockwise rotation, text flows downward (in visual coordinates)
@@ -295,44 +295,44 @@ class OrderPdfServiceImpl(
     ) {
         val baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED)
         val fontSize = HEADER_FONT_SIZE
-        
+
         // Build product info text lines
         val productInfoLines = mutableListOf<String>()
-        
+
         orderItem.article.supplierArticleName?.let { name ->
             productInfoLines.add(name)
         }
-        
+
         orderItem.article.supplierArticleNumber?.let { number ->
             productInfoLines.add(number)
         }
-        
+
         orderItem.variantName?.let { variant ->
             productInfoLines.add(variant)
         }
-        
+
         if (productInfoLines.isEmpty()) return
-        
+
         // Combine all product info into one line
         val line = productInfoLines.joinToString(" | ")
         val textWidth = baseFont.getWidthPoint(line, fontSize)
-        
+
         // Save the current graphics state
         contentByte.saveState()
-        
+
         // Position for the rotated text at top-right corner
         // X: Right margin - offset from edge
         val xPosition = pageWidth - margin - HEADER_MARGIN_FROM_EDGE
         // Y: Top of page minus offset minus text width (since text flows downward after rotation)
         val yPosition = pageHeight - margin - PRODUCT_INFO_TEXT_OFFSET_FROM_TOP - textWidth
-        
+
         // Set font and move to position with 90 degree rotation
         contentByte.beginText()
         contentByte.setFontAndSize(baseFont, fontSize)
         contentByte.setTextMatrix(0f, 1f, -1f, 0f, xPosition, yPosition) // 90 degree rotation
         contentByte.showText(line)
         contentByte.endText()
-        
+
         // Restore the graphics state
         contentByte.restoreState()
     }
@@ -358,14 +358,14 @@ class OrderPdfServiceImpl(
                         } catch (e: IOException) {
                             logger.warn(
                                 "Could not load generated image ${orderItem.generatedImageFilename} " +
-                                        "for order ${orderData.orderNumber}, using placeholder",
+                                    "for order ${orderData.orderNumber}, using placeholder",
                                 e,
                             )
                             createPlaceholderImage()
                         } catch (e: IllegalArgumentException) {
                             logger.warn(
                                 "Invalid image filename ${orderItem.generatedImageFilename} " +
-                                        "for order ${orderData.orderNumber}, using placeholder",
+                                    "for order ${orderData.orderNumber}, using placeholder",
                                 e,
                             )
                             createPlaceholderImage()
@@ -380,7 +380,7 @@ class OrderPdfServiceImpl(
 
             // Create PDF image object
             val pdfImage = Image.getInstance(imageData)
-            
+
             // Use exact print template dimensions from MugArticleDetails
             // Never scale or correct the image size - use exact dimensions from database
             val imageWidthMm =
@@ -393,28 +393,28 @@ class OrderPdfServiceImpl(
                     ?.printTemplateHeightMm
                     ?.toFloat()
                     ?: ((pageHeight / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)) - DEFAULT_IMAGE_MARGIN_MM)
-            
+
             // Convert exact dimensions to points (no scaling or aspect ratio correction)
             val imageWidthPt = imageWidthMm * MM_TO_POINTS
             val imageHeightPt = imageHeightMm * MM_TO_POINTS
-            
+
             // Scale and position image
             pdfImage.scaleAbsolute(imageWidthPt, imageHeightPt)
-            
+
             // Center the image on the page using exact dimensions
             val xPosition = (pageWidth - imageWidthPt) / 2
             val yPosition = (pageHeight - imageHeightPt) / 2
-            
+
             pdfImage.setAbsolutePosition(xPosition, yPosition)
             contentByte.addImage(pdfImage)
 
             logger.debug(
                 "Added product image with exact dimensions ${imageWidthPt}x$imageHeightPt points " +
-                        "at position ($xPosition, $yPosition)",
+                    "at position ($xPosition, $yPosition)",
             )
             logger.debug(
                 "Using exact print template dimensions: " +
-                        "${imageWidthMm}mm x ${imageHeightMm}mm from MugArticleDetails",
+                    "${imageWidthMm}mm x ${imageHeightMm}mm from MugArticleDetails",
             )
         } catch (e: IOException) {
             logger.error("I/O error adding product image for order item ${orderItem.id}", e)
@@ -462,11 +462,11 @@ class OrderPdfServiceImpl(
 
             val qrImage = Image.getInstance(qrByteArray.toByteArray())
             qrImage.scaleAbsolute(QR_CODE_SIZE_POINTS, QR_CODE_SIZE_POINTS)
-            
+
             // Position QR code in bottom left corner
             val xPosition = margin
             val yPosition = margin
-            
+
             qrImage.setAbsolutePosition(xPosition, yPosition)
             contentByte.addImage(qrImage)
 
@@ -562,7 +562,7 @@ class OrderPdfServiceImpl(
             val baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED)
             contentByte.beginText()
             contentByte.setFontAndSize(baseFont, PLACEHOLDER_FONT_SIZE)
-            
+
             if (x == pageWidth / 2) {
                 // Center the text
                 val textWidth = baseFont.getWidthPoint(text, PLACEHOLDER_FONT_SIZE)
@@ -570,7 +570,7 @@ class OrderPdfServiceImpl(
             } else {
                 contentByte.moveText(x, y)
             }
-            
+
             contentByte.showText(text)
             contentByte.endText()
         } catch (e: IOException) {

@@ -13,12 +13,12 @@ import com.jotoai.voenix.shop.pdf.api.dto.PdfResponse
 import com.jotoai.voenix.shop.pdf.api.dto.PdfSize
 import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
 import com.jotoai.voenix.shop.pdf.internal.config.PdfQrProperties
-import jakarta.annotation.PostConstruct
 import com.lowagie.text.Document
 import com.lowagie.text.Image
 import com.lowagie.text.Rectangle
 import com.lowagie.text.pdf.PdfContentByte
 import com.lowagie.text.pdf.PdfWriter
+import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -109,14 +109,14 @@ class PdfServiceImpl(
             val outputStream = ByteArrayOutputStream()
             val document = Document(Rectangle(pdfSize.width, pdfSize.height))
             val writer = PdfWriter.getInstance(document, outputStream)
-            
+
             document.open()
             val contentByte = writer.directContent
-            
+
             // Generate QR code URL pointing to the article
             val qrUrl = pdfQrProperties.generateQrUrl("/articles/${request.articleId}")
             addQrCode(contentByte, qrUrl, pdfSize)
-            
+
             addCenteredImage(
                 contentByte,
                 imageData,
@@ -124,7 +124,7 @@ class PdfServiceImpl(
                 mugDetails.printTemplateHeightMm.toFloat(),
                 pdfSize,
             )
-            
+
             document.close()
             return outputStream.toByteArray()
         } catch (e: PdfGenerationException) {
@@ -180,10 +180,10 @@ class PdfServiceImpl(
 
             val qrImage = Image.getInstance(qrByteArray.toByteArray())
             qrImage.scaleAbsolute(QR_CODE_SIZE_POINTS, QR_CODE_SIZE_POINTS)
-            
+
             val qrX = pdfSize.margin
             val qrY = pdfSize.height - pdfSize.margin - QR_CODE_SIZE_POINTS
-            
+
             qrImage.setAbsolutePosition(qrX, qrY)
             contentByte.addImage(qrImage)
             logger.debug("QR code placed at position ({}, {})", qrX, qrY)
@@ -203,15 +203,15 @@ class PdfServiceImpl(
     ) {
         try {
             val image = Image.getInstance(imageData)
-            
+
             val imageWidthPoints = imageWidthMm * MM_TO_POINTS
             val imageHeightPoints = imageHeightMm * MM_TO_POINTS
-            
+
             image.scaleAbsolute(imageWidthPoints, imageHeightPoints)
-            
+
             val x = (pdfSize.width - imageWidthPoints) / 2
             val y = (pdfSize.height - imageHeightPoints) / 2
-            
+
             image.setAbsolutePosition(x, y)
             contentByte.addImage(image)
             logger.debug(
