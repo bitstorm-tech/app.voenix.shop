@@ -58,7 +58,10 @@
       "Bash(echo:*)",
       "Bash(curl:*)",
       "Bash(touch:*)",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "WebSearch",
+      "WebFetch(domain:javadoc.io)",
+      "Bash(git log:*)"
     ],
     "deny": []
   }
