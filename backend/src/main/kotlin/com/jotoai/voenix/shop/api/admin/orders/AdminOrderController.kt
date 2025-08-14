@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.api.admin.orders
 
-import com.jotoai.voenix.shop.order.api.AdminOrderFacade
+import com.jotoai.voenix.shop.order.api.OrderService
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
 import com.jotoai.voenix.shop.order.api.enums.OrderStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -19,7 +19,7 @@ import java.util.UUID
 @RequestMapping("/api/admin/orders")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminOrderController(
-    private val adminOrderFacade: AdminOrderFacade,
+    private val orderService: OrderService,
 ) {
     /**
      * Updates the status of an order.
@@ -29,7 +29,7 @@ class AdminOrderController(
     fun updateOrderStatus(
         @PathVariable orderId: UUID,
         @RequestBody request: UpdateOrderStatusRequest,
-    ): OrderDto = adminOrderFacade.updateOrderStatus(orderId, request.status)
+    ): OrderDto = orderService.updateOrderStatus(orderId, request.status)
 }
 
 /**
