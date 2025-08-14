@@ -37,4 +37,14 @@ interface MugArticleVariantRepository : JpaRepository<MugArticleVariant, Long> {
     fun countDefaultVariantsForArticle(
         @Param("articleId") articleId: Long,
     ): Long
+
+    @Query("SELECT v FROM MugArticleVariant v WHERE v.article.id = :articleId AND v.active = true")
+    fun findActiveByArticleId(
+        @Param("articleId") articleId: Long,
+    ): List<MugArticleVariant>
+
+    @Query("SELECT v FROM MugArticleVariant v JOIN FETCH v.article WHERE v.article.id = :articleId AND v.active = true")
+    fun findActiveByArticleIdWithArticle(
+        @Param("articleId") articleId: Long,
+    ): List<MugArticleVariant>
 }

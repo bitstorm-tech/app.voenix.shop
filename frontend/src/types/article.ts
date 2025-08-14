@@ -11,6 +11,7 @@ export interface ArticleMugVariant {
   exampleImageUrl?: string | null;
   articleVariantNumber?: string;
   isDefault: boolean;
+  active: boolean;
   exampleImageFilename?: string | null;
   createdAt?: string;
   updatedAt?: string;
@@ -99,6 +100,7 @@ export interface CreateArticleMugVariantRequest {
   name: string;
   articleVariantNumber?: string;
   isDefault?: boolean;
+  active?: boolean;
 }
 
 export interface CreateArticleShirtVariantRequest {

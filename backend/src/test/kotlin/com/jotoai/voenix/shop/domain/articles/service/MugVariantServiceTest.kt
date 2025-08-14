@@ -108,6 +108,7 @@ class MugVariantServiceTest {
                 exampleImageUrl = null,
                 articleVariantNumber = request.articleVariantNumber,
                 isDefault = true,
+                active = true,
                 createdAt = null,
                 updatedAt = null,
             )
@@ -171,6 +172,7 @@ class MugVariantServiceTest {
                 exampleImageUrl = null,
                 articleVariantNumber = request.articleVariantNumber,
                 isDefault = true,
+                active = true,
                 createdAt = null,
                 updatedAt = null,
             )
@@ -221,6 +223,7 @@ class MugVariantServiceTest {
                 exampleImageUrl = null,
                 articleVariantNumber = request.articleVariantNumber,
                 isDefault = true,
+                active = true,
                 createdAt = null,
                 updatedAt = null,
             )

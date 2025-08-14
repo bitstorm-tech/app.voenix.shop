@@ -34,6 +34,8 @@ class MugArticleVariant(
     var articleVariantNumber: String? = null,
     @Column(name = "is_default", nullable = false)
     var isDefault: Boolean = false,
+    @Column(nullable = false)
+    var active: Boolean = true,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     var createdAt: OffsetDateTime? = null,

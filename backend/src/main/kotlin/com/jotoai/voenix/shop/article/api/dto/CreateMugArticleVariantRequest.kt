@@ -16,4 +16,5 @@ data class CreateMugArticleVariantRequest(
     @field:Size(max = 100, message = "Article variant number must not exceed 100 characters")
     val articleVariantNumber: String? = null,
     val isDefault: Boolean = false,
+    val active: Boolean = true,
 )

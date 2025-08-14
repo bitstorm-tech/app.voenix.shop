@@ -50,6 +50,7 @@ class MugVariantServiceImpl(
                 name = request.name,
                 articleVariantNumber = request.articleVariantNumber,
                 isDefault = shouldBeDefault,
+                active = request.active,
             )
 
         val savedVariant = mugVariantRepository.save(variant)
@@ -97,6 +98,7 @@ class MugVariantServiceImpl(
             name = request.name
             articleVariantNumber = request.articleVariantNumber
             isDefault = request.isDefault
+            active = request.active
         }
 
         val savedVariant = mugVariantRepository.save(variant)

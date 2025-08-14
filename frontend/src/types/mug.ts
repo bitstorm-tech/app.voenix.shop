@@ -46,6 +46,7 @@ export interface MugVariant {
   exampleImageUrl: string;
   supplierArticleNumber?: string;
   isDefault: boolean;
+  active: boolean;
   exampleImageFilename?: string;
   createdAt?: string;
   updatedAt?: string;

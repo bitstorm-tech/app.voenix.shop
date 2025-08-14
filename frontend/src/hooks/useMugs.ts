@@ -5,8 +5,11 @@ import { useMemo } from 'react';
 
 // Helper function to convert backend Mug to frontend MugOption
 const mapMugToOption = (mug: Mug): MugOption => {
-  // Find the default variant to use its image if available
-  const defaultVariant = mug.variants?.find((v) => v.isDefault) || mug.variants?.[0];
+  // Filter out inactive variants for customer view
+  const activeVariants = mug.variants?.filter((v) => v.active !== false) || [];
+  
+  // Find the default variant from active variants, or use the first active variant
+  const defaultVariant = activeVariants.find((v) => v.isDefault) || activeVariants[0];
   const variantImage = defaultVariant?.exampleImageUrl || mug.image;
 
   return {
@@ -23,13 +26,14 @@ const mapMugToOption = (mug: Mug): MugOption => {
     print_template_height_mm: mug.printTemplateHeightMm,
     filling_quantity: mug.fillingQuantity,
     dishwasher_safe: mug.dishwasherSafe,
-    variants: mug.variants?.map((v) => ({
+    variants: activeVariants.map((v) => ({
       id: v.id,
       mugId: v.mugId,
       colorCode: v.colorCode,
       exampleImageUrl: v.exampleImageUrl,
       supplierArticleNumber: v.supplierArticleNumber ?? null,
       isDefault: v.isDefault,
+      active: v.active,
       exampleImageFilename: v.exampleImageFilename ?? null,
     })),
   };

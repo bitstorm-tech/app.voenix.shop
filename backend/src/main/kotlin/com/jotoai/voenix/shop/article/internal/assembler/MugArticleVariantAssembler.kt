@@ -34,6 +34,7 @@ class MugArticleVariantAssembler(
                 },
             articleVariantNumber = entity.articleVariantNumber,
             isDefault = entity.isDefault,
+            active = entity.active,
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,
         )

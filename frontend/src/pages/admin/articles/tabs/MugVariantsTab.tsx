@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { articlesApi } from '@/lib/api';
+import { cn } from '@/lib/utils';
 import type { ArticleMugVariant, CreateArticleMugVariantRequest } from '@/types/article';
 import { Edit, Image as ImageIcon, Plus, Trash2, Upload, X } from 'lucide-react';
 import { useRef, useState } from 'react';
@@ -39,6 +40,7 @@ export default function MugVariantsTab({
     name: '',
     articleVariantNumber: '',
     isDefault: false,
+    active: true,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
@@ -218,6 +220,7 @@ export default function MugVariantsTab({
       name: variant.name,
       articleVariantNumber: variant.articleVariantNumber || '',
       isDefault: variant.isDefault || false,
+      active: variant.active ?? true,
     });
     setImageRemoved(false);
 
@@ -240,6 +243,7 @@ export default function MugVariantsTab({
       name: variant.name,
       articleVariantNumber: variant.articleVariantNumber || '',
       isDefault: variant.isDefault || false,
+      active: variant.active ?? true,
     });
     setImageRemoved(false);
   };
@@ -255,6 +259,7 @@ export default function MugVariantsTab({
       name: '',
       articleVariantNumber: '',
       isDefault: false,
+      active: true,
     });
     handleRemoveImage();
   };
@@ -313,6 +318,7 @@ export default function MugVariantsTab({
           name: newVariant.name,
           articleVariantNumber: newVariant.articleVariantNumber,
           isDefault: newVariant.isDefault,
+          active: newVariant.active,
         };
 
         response = await articlesApi.updateMugVariant(editingVariantId, updateRequest);
@@ -543,6 +549,20 @@ export default function MugVariantsTab({
             </div>
 
             <div className="space-y-2">
+              <Label>Active Status</Label>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="active-variant"
+                  checked={newVariant.active ?? true}
+                  onCheckedChange={(checked) => setNewVariant({ ...newVariant, active: checked === true })}
+                />
+                <Label htmlFor="active-variant" className="cursor-pointer text-sm font-normal">
+                  Variant is active and visible to customers
+                </Label>
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <Label>Example Image</Label>
               <div className="space-y-2">
                 {imagePreviewUrl && !showCropper ? (
@@ -601,14 +621,30 @@ export default function MugVariantsTab({
                   <TableHead>Inside Color</TableHead>
                   <TableHead>Outside Color</TableHead>
                   <TableHead>Default</TableHead>
+                  <TableHead>Active</TableHead>
                   <TableHead>Example Image</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {variants.map((variant) => (
-                  <TableRow key={variant.id} className={editingVariantId === variant.id ? 'bg-blue-50' : ''}>
-                    <TableCell className="font-medium">{variant.name}</TableCell>
+                  <TableRow 
+                    key={variant.id} 
+                    className={cn(
+                      editingVariantId === variant.id ? 'bg-blue-50' : '',
+                      !variant.active ? 'opacity-60 bg-gray-50' : ''
+                    )}
+                  >
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {variant.name}
+                        {!variant.active && (
+                          <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                            Inactive
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{variant.articleVariantNumber || '-'}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -626,6 +662,17 @@ export default function MugVariantsTab({
                       {variant.isDefault && (
                         <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
                           Default
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {variant.active ? (
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                          Active
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
+                          Inactive
                         </span>
                       )}
                     </TableCell>
@@ -666,14 +713,30 @@ export default function MugVariantsTab({
                   <TableHead>Inside Color</TableHead>
                   <TableHead>Outside Color</TableHead>
                   <TableHead>Default</TableHead>
+                  <TableHead>Active</TableHead>
                   <TableHead>Example Image</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {temporaryVariants.map((variant, index) => (
-                  <TableRow key={index} className={editingTemporaryIndex === index ? 'bg-blue-50' : ''}>
-                    <TableCell className="font-medium">{variant.name}</TableCell>
+                  <TableRow 
+                    key={index} 
+                    className={cn(
+                      editingTemporaryIndex === index ? 'bg-blue-50' : '',
+                      variant.active === false ? 'opacity-60 bg-gray-50' : ''
+                    )}
+                  >
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {variant.name}
+                        {variant.active === false && (
+                          <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                            Inactive
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>{variant.articleVariantNumber || '-'}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
@@ -691,6 +754,17 @@ export default function MugVariantsTab({
                       {variant.isDefault && (
                         <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
                           Default
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      {variant.active !== false ? (
+                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                          Active
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
+                          Inactive
                         </span>
                       )}
                     </TableCell>

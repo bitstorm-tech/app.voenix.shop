@@ -9,6 +9,7 @@ data class PublicMugVariantDto(
     val exampleImageUrl: String?,
     val articleVariantNumber: String?,
     val isDefault: Boolean,
+    val active: Boolean,
     val exampleImageFilename: String?,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,

@@ -105,6 +105,7 @@ class ArticleAssemblerTest {
                 exampleImageUrl = null,
                 articleVariantNumber = null,
                 isDefault = true,
+                active = true,
                 createdAt = null,
                 updatedAt = null,
             )
@@ -455,6 +456,7 @@ class ArticleAssemblerTest {
                 exampleImageUrl = null,
                 articleVariantNumber = null,
                 isDefault = true,
+                active = true,
                 createdAt = null,
                 updatedAt = null,
             )
@@ -469,6 +471,7 @@ class ArticleAssemblerTest {
                 exampleImageUrl = null,
                 articleVariantNumber = null,
                 isDefault = false,
+                active = true,
                 createdAt = null,
                 updatedAt = null,
             )

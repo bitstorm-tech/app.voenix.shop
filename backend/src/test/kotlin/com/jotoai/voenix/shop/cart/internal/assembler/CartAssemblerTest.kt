@@ -533,6 +533,7 @@ class CartAssemblerTest {
             exampleImageUrl = null,
             articleVariantNumber = "VAR-$id",
             isDefault = colorCode == "WHITE",
+            active = true,
             createdAt = OffsetDateTime.now(),
             updatedAt = OffsetDateTime.now(),
         )

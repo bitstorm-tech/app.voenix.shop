@@ -8,6 +8,7 @@ export interface MugVariant {
   exampleImageUrl: string | null;
   supplierArticleNumber: string | null;
   isDefault: boolean;
+  active: boolean;
   exampleImageFilename: string | null;
 }
 

@@ -11,6 +11,7 @@ data class MugArticleVariantDto(
     val exampleImageUrl: String?,
     val articleVariantNumber: String?,
     val isDefault: Boolean,
+    val active: Boolean,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,
 )

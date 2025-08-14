@@ -508,8 +508,11 @@ class ArticleServiceImpl(
             // Get mug details
             val mugDetails = mugDetailsService.findByArticleId(article.id!!)
 
-            // Get default variant for image
-            val defaultVariant = article.mugVariants.find { it.isDefault } ?: article.mugVariants.firstOrNull()
+            // Filter only active variants
+            val activeVariants = article.mugVariants.filter { it.active }
+            
+            // Get default variant for image from active variants only
+            val defaultVariant = activeVariants.find { it.isDefault } ?: activeVariants.firstOrNull()
 
             // Convert price from cents to euros (assuming salesTotalGross is in cents)
             val price =
@@ -518,9 +521,9 @@ class ArticleServiceImpl(
                     ?.toDouble()
                     ?.div(CENTS_TO_EUROS) ?: 0.0
 
-            // Map mug variants to public DTOs
+            // Map active mug variants to public DTOs
             val publicVariants =
-                article.mugVariants.map { variant ->
+                activeVariants.map { variant ->
                     PublicMugVariantDto(
                         id = variant.id!!,
                         mugId = article.id,
@@ -531,6 +534,7 @@ class ArticleServiceImpl(
                             },
                         articleVariantNumber = variant.articleVariantNumber,
                         isDefault = variant.isDefault,
+                        active = variant.active,
                         exampleImageFilename = variant.exampleImageFilename,
                         createdAt = variant.createdAt,
                         updatedAt = variant.updatedAt,
