@@ -76,10 +76,7 @@ class PdfGenerationServiceImpl(
         // Image format constants
         private const val IMAGE_FORMAT_PNG = "PNG"
 
-        // Order PDF layout constants
-        private const val HEADER_MARGIN_FROM_EDGE = 15f
-        private const val HEADER_TEXT_OFFSET_FROM_TOP = 5f
-        private const val PRODUCT_INFO_TEXT_OFFSET_FROM_TOP = 5f
+        // Order PDF layout constants - removed unused positioning constants
 
         // Font settings
         private const val HEADER_FONT_SIZE = 14f
@@ -467,22 +464,17 @@ class PdfGenerationServiceImpl(
         // Create the combined text on one line
         val headerText = "$orderNumber ($pageNumber/$totalPages)"
 
-        // Save the current graphics state
-        contentByte.saveState()
-
-        // Position for the rotated text at top-left corner
-        val xPosition = margin + HEADER_MARGIN_FROM_EDGE
-        val yPosition = pageHeight - margin - HEADER_TEXT_OFFSET_FROM_TOP
-
-        // Set font and move to position
+        // Use showTextAligned for proper rotated text positioning
         contentByte.beginText()
         contentByte.setFontAndSize(baseFont, fontSize)
-        contentByte.setTextMatrix(0f, 1f, -1f, 0f, xPosition, yPosition) // 90 degree rotation
-        contentByte.showText(headerText)
+        contentByte.showTextAligned(
+            PdfContentByte.ALIGN_CENTER,  // Center alignment
+            headerText,                    // The text
+            15f,                           // x position (distance from left edge)
+            pageHeight / 2,               // y position (center of page)
+            90f                           // 90-degree rotation
+        )
         contentByte.endText()
-
-        // Restore the graphics state
-        contentByte.restoreState()
     }
 
     private fun addProductInfo(
@@ -514,24 +506,18 @@ class PdfGenerationServiceImpl(
 
         // Combine all product info into one line
         val line = productInfoLines.joinToString(" | ")
-        val textWidth = baseFont.getWidthPoint(line, fontSize)
 
-        // Save the current graphics state
-        contentByte.saveState()
-
-        // Position for the rotated text at top-right corner
-        val xPosition = pageWidth - margin - HEADER_MARGIN_FROM_EDGE
-        val yPosition = pageHeight - margin - PRODUCT_INFO_TEXT_OFFSET_FROM_TOP - textWidth
-
-        // Set font and move to position with 90 degree rotation
+        // Use showTextAligned for proper rotated text positioning at right edge
         contentByte.beginText()
         contentByte.setFontAndSize(baseFont, fontSize)
-        contentByte.setTextMatrix(0f, 1f, -1f, 0f, xPosition, yPosition) // 90 degree rotation
-        contentByte.showText(line)
+        contentByte.showTextAligned(
+            PdfContentByte.ALIGN_CENTER,  // Center alignment
+            line,                         // The text
+            pageWidth - 5f,              // x position (distance from right edge)
+            pageHeight / 2,              // y position (center of page)
+            90f                          // 90-degree rotation
+        )
         contentByte.endText()
-
-        // Restore the graphics state
-        contentByte.restoreState()
     }
 
     private fun addProductImage(
