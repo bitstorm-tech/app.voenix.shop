@@ -1,4 +1,3 @@
-import ImageCropper from '@/components/editor/components/shared/ImageCropper';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -11,9 +10,8 @@ import { articlesApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { ArticleMugVariant, CreateArticleMugVariantRequest } from '@/types/article';
 import { Copy, Edit, Image as ImageIcon, Plus, Trash2, Upload, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
-import { type PixelCrop } from 'react-image-crop';
-import 'react-image-crop/dist/ReactCrop.css';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import Cropper from 'react-easy-crop';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -48,10 +46,13 @@ export default function MugVariantsTab({
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
-  const [cropData, setCropData] = useState<PixelCrop | null>(null);
-  const [imageDimensions, setImageDimensions] = useState<{
-    natural: { width: number; height: number };
-    displayed: { width: number; height: number };
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -68,11 +69,7 @@ export default function MugVariantsTab({
     setVariants(initialVariants);
   }, [initialVariants]);
 
-  const createCroppedImage = async (
-    imageUrl: string,
-    crop: PixelCrop,
-    dimensions: { natural: { width: number; height: number }; displayed: { width: number; height: number } },
-  ): Promise<string> => {
+  const createCroppedImage = async (imageUrl: string, cropArea: { x: number; y: number; width: number; height: number }): Promise<string> => {
     return new Promise((resolve, reject) => {
       const image = new Image();
       image.crossOrigin = 'anonymous';
@@ -86,22 +83,10 @@ export default function MugVariantsTab({
           return;
         }
 
-        // Calculate the scale factor between displayed and natural dimensions
-        const scaleX = dimensions.natural.width / dimensions.displayed.width;
-        const scaleY = dimensions.natural.height / dimensions.displayed.height;
+        canvas.width = cropArea.width;
+        canvas.height = cropArea.height;
 
-        // Scale crop coordinates to match natural image dimensions
-        const scaledCrop = {
-          x: crop.x * scaleX,
-          y: crop.y * scaleY,
-          width: crop.width * scaleX,
-          height: crop.height * scaleY,
-        };
-
-        canvas.width = scaledCrop.width;
-        canvas.height = scaledCrop.height;
-
-        ctx.drawImage(image, scaledCrop.x, scaledCrop.y, scaledCrop.width, scaledCrop.height, 0, 0, scaledCrop.width, scaledCrop.height);
+        ctx.drawImage(image, cropArea.x, cropArea.y, cropArea.width, cropArea.height, 0, 0, cropArea.width, cropArea.height);
         canvas.toBlob(
           (blob) => {
             if (blob) {
@@ -150,6 +135,9 @@ export default function MugVariantsTab({
     setImageFile(file);
     setOriginalImageUrl(blobUrl);
     setImagePreviewUrl(blobUrl);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
     setShowCropper(true);
 
     if (fileInputRef.current) {
@@ -157,18 +145,21 @@ export default function MugVariantsTab({
     }
   };
 
-  const handleCropComplete = (
-    crop: PixelCrop,
-    dimensions: { natural: { width: number; height: number }; displayed: { width: number; height: number } },
-  ) => {
-    setCropData(crop);
-    setImageDimensions(dimensions);
-  };
+  const handleCropComplete = useCallback(
+    (
+      _croppedArea: { x: number; y: number; width: number; height: number },
+      croppedAreaPixels: { x: number; y: number; width: number; height: number },
+    ) => {
+      setCroppedAreaPixels(croppedAreaPixels);
+    },
+    [],
+  );
 
   const handleCropCancel = () => {
     setShowCropper(false);
-    setCropData(null);
-    setImageDimensions(null);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
     if (imagePreviewUrl) {
       URL.revokeObjectURL(imagePreviewUrl);
     }
@@ -181,10 +172,10 @@ export default function MugVariantsTab({
   };
 
   const handleCropConfirm = async () => {
-    if (cropData && imageDimensions && originalImageUrl) {
+    if (croppedAreaPixels && originalImageUrl) {
       try {
         // Create cropped image preview
-        const croppedUrl = await createCroppedImage(originalImageUrl, cropData, imageDimensions);
+        const croppedUrl = await createCroppedImage(originalImageUrl, croppedAreaPixels);
 
         // Update the preview URL to show the cropped version
         if (imagePreviewUrl && imagePreviewUrl !== originalImageUrl) {
@@ -209,8 +200,9 @@ export default function MugVariantsTab({
     setImagePreviewUrl(null);
     setOriginalImageUrl(null);
     setImageFile(null);
-    setCropData(null);
-    setImageDimensions(null);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+    setCroppedAreaPixels(null);
     // Mark the existing image for removal but keep the URL reference
     if (existingImageUrl) {
       setImageRemoved(true);
@@ -347,39 +339,13 @@ export default function MugVariantsTab({
       }
 
       // Upload image if a new file was selected
-      if (imageFile && response.id && cropData) {
+      if (imageFile && response.id && croppedAreaPixels) {
         try {
-          // Calculate the scaling factor if we have image dimensions
-          let scaledCropData = cropData;
-          if (imageDimensions) {
-            // Calculate scale factors from stored dimensions
-            const scaleX = imageDimensions.natural.width / imageDimensions.displayed.width;
-            const scaleY = imageDimensions.natural.height / imageDimensions.displayed.height;
-
-            // Scale the crop coordinates to match the original image dimensions
-            scaledCropData = {
-              x: cropData.x * scaleX,
-              y: cropData.y * scaleY,
-              width: cropData.width * scaleX,
-              height: cropData.height * scaleY,
-              unit: 'px' as const,
-            };
-
-            console.log('Image crop scaling:', {
-              cropData,
-              scaledCropData,
-              natural: imageDimensions.natural,
-              displayed: imageDimensions.displayed,
-              scaleX,
-              scaleY,
-            });
-          }
-
           const imageResponse = await articlesApi.uploadMugVariantImage(response.id, imageFile, {
-            x: scaledCropData.x,
-            y: scaledCropData.y,
-            width: scaledCropData.width,
-            height: scaledCropData.height,
+            x: croppedAreaPixels.x,
+            y: croppedAreaPixels.y,
+            width: croppedAreaPixels.width,
+            height: croppedAreaPixels.height,
           });
           // Update the response with the data returned from the backend
           response.exampleImageFilename = imageResponse.exampleImageFilename;
@@ -417,7 +383,6 @@ export default function MugVariantsTab({
       }
 
       handleCancelEdit();
-      setImageDimensions(null);
     } catch (error) {
       console.error(isEditing ? 'Error updating variant:' : 'Error adding variant:', error);
       toast.error(isEditing ? 'Failed to update variant' : 'Failed to add variant');
@@ -498,14 +463,23 @@ export default function MugVariantsTab({
                 </Button>
               </div>
               <div className="mb-4">
-                <ImageCropper
-                  imageUrl={originalImageUrl}
-                  onCropComplete={handleCropComplete}
-                  aspect={1}
-                  showGrid={true}
-                  title="Crop your variant image"
-                  description="Select the area you want to use for the variant thumbnail"
-                />
+                <div className="mb-4 text-center">
+                  <h3 className="text-lg font-semibold">Crop your variant image</h3>
+                  <p className="text-sm text-gray-600">Select the area you want to use for the variant thumbnail</p>
+                </div>
+                <div className="relative h-96">
+                  <Cropper
+                    image={originalImageUrl}
+                    crop={crop}
+                    zoom={zoom}
+                    aspect={1}
+                    onCropChange={setCrop}
+                    onCropComplete={handleCropComplete}
+                    onZoomChange={setZoom}
+                    showGrid={true}
+                    cropShape="rect"
+                  />
+                </div>
               </div>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={handleCropCancel}>

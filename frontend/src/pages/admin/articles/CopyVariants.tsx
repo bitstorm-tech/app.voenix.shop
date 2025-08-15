@@ -2,15 +2,15 @@ import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { articleKeys } from '@/hooks/queries/useArticles';
 import { articlesApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { MugWithVariantsSummary } from '@/types/copyVariants';
+import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, ArrowLeft, Copy, Image as ImageIcon, Loader2, Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useQueryClient } from '@tanstack/react-query';
-import { articleKeys } from '@/hooks/queries/useArticles';
 
 export default function CopyVariants() {
   const { id } = useParams<{ id: string }>();
@@ -97,10 +97,10 @@ export default function CopyVariants() {
     try {
       const copiedVariants = await articlesApi.copyVariants(currentMugId, variantIds);
       toast.success(`Successfully copied ${copiedVariants.length} variant${copiedVariants.length !== 1 ? 's' : ''}`);
-      
+
       // Invalidate the article cache to ensure fresh data is loaded
       queryClient.invalidateQueries({ queryKey: articleKeys.detail(currentMugId) });
-      
+
       navigate(`/admin/articles/${currentMugId}/edit`, { state: { activeTab: 'variants' } });
     } catch (error) {
       console.error('Error copying variants:', error);
