@@ -44,7 +44,9 @@ export function useMugs() {
 
   const mugs = useMemo(() => {
     if (data && Array.isArray(data)) {
-      return data.map(mapMugToOption);
+      return data
+        .map(mapMugToOption)
+        .filter((mug) => mug.variants && mug.variants.length > 0);
     }
     // Return empty array if there's an error or no data
     return [];

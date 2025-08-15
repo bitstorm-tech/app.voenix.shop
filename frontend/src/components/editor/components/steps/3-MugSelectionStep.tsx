@@ -132,8 +132,8 @@ export default function MugSelectionStep() {
                   )}
                 </div>
 
-                {/* Variant color swatches - show for all mugs with multiple variants */}
-                {mug.variants && mug.variants.length > 1 && (
+                {/* Variant color swatches - show for all mugs with variants */}
+                {mug.variants && mug.variants.length >= 1 && (
                   <div className="mb-3">
                     <p className="mb-1.5 text-xs font-medium text-gray-700">Color Options:</p>
                     <div className="flex flex-wrap gap-2">
