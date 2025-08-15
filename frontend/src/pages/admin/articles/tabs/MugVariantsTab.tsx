@@ -11,7 +11,7 @@ import { articlesApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { ArticleMugVariant, CreateArticleMugVariantRequest } from '@/types/article';
 import { Copy, Edit, Image as ImageIcon, Plus, Trash2, Upload, X } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { useNavigate } from 'react-router-dom';
@@ -62,6 +62,11 @@ export default function MugVariantsTab({
   const [editingTemporaryIndex, setEditingTemporaryIndex] = useState<number | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [imageRemoved, setImageRemoved] = useState(false);
+
+  // Sync local state with prop changes (important for when variants are copied or refetched)
+  useEffect(() => {
+    setVariants(initialVariants);
+  }, [initialVariants]);
 
   const createCroppedImage = async (
     imageUrl: string,

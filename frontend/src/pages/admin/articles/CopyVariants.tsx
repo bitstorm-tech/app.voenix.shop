@@ -9,10 +9,13 @@ import { AlertCircle, ArrowLeft, Copy, Image as ImageIcon, Loader2, Search } fro
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
+import { articleKeys } from '@/hooks/queries/useArticles';
 
 export default function CopyVariants() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const currentMugId = id ? parseInt(id) : undefined;
 
   const [mugs, setMugs] = useState<MugWithVariantsSummary[]>([]);
@@ -94,6 +97,10 @@ export default function CopyVariants() {
     try {
       const copiedVariants = await articlesApi.copyVariants(currentMugId, variantIds);
       toast.success(`Successfully copied ${copiedVariants.length} variant${copiedVariants.length !== 1 ? 's' : ''}`);
+      
+      // Invalidate the article cache to ensure fresh data is loaded
+      queryClient.invalidateQueries({ queryKey: articleKeys.detail(currentMugId) });
+      
       navigate(`/admin/articles/${currentMugId}/edit`, { state: { activeTab: 'variants' } });
     } catch (error) {
       console.error('Error copying variants:', error);

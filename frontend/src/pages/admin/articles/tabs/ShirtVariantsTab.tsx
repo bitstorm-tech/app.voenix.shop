@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { articlesApi } from '@/lib/api';
 import type { ArticleShirtVariant, CreateArticleShirtVariantRequest } from '@/types/article';
 import { Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 interface ShirtVariantsTabProps {
@@ -34,6 +34,11 @@ export default function ShirtVariantsTab({
     size: 'M',
     exampleImageFilename: '',
   });
+
+  // Sync local state with prop changes (important for when variants are copied or refetched)
+  useEffect(() => {
+    setVariants(initialVariants);
+  }, [initialVariants]);
 
   const handleAddVariant = async () => {
     if (!newVariant.color) {
