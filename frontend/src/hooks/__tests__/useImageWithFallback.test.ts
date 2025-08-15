@@ -1,4 +1,4 @@
-import { renderHook, waitFor, act } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { useImageWithFallback } from '../useImageWithFallback';
 
 // Mock Image constructor
@@ -35,9 +35,7 @@ describe('useImageWithFallback', () => {
 
   describe('Initial State', () => {
     it('should start with loading state when src is provided', () => {
-      const { result } = renderHook(() => 
-        useImageWithFallback('https://example.com/image.jpg')
-      );
+      const { result } = renderHook(() => useImageWithFallback('https://example.com/image.jpg'));
 
       expect(result.current.status).toBe('loading');
       expect(result.current.isLoading).toBe(true);
@@ -47,9 +45,7 @@ describe('useImageWithFallback', () => {
     });
 
     it('should start with error state when src is null', () => {
-      const { result } = renderHook(() => 
-        useImageWithFallback(null)
-      );
+      const { result } = renderHook(() => useImageWithFallback(null));
 
       expect(result.current.status).toBe('error');
       expect(result.current.isError).toBe(true);
@@ -57,9 +53,7 @@ describe('useImageWithFallback', () => {
     });
 
     it('should start with error state when src is undefined', () => {
-      const { result } = renderHook(() => 
-        useImageWithFallback(undefined)
-      );
+      const { result } = renderHook(() => useImageWithFallback(undefined));
 
       expect(result.current.status).toBe('error');
       expect(result.current.isError).toBe(true);
@@ -70,9 +64,7 @@ describe('useImageWithFallback', () => {
   describe('Image Loading Success', () => {
     it('should transition to loaded state on successful load', async () => {
       const onLoad = jest.fn();
-      const { result } = renderHook(() => 
-        useImageWithFallback('https://example.com/success.jpg', { onLoad })
-      );
+      const { result } = renderHook(() => useImageWithFallback('https://example.com/success.jpg', { onLoad }));
 
       expect(result.current.status).toBe('loading');
 
@@ -90,10 +82,7 @@ describe('useImageWithFallback', () => {
     });
 
     it('should handle changing src to valid image', async () => {
-      const { result, rerender } = renderHook(
-        ({ src }) => useImageWithFallback(src),
-        { initialProps: { src: null as string | null } }
-      );
+      const { result, rerender } = renderHook(({ src }) => useImageWithFallback(src), { initialProps: { src: null as string | null } });
 
       expect(result.current.status).toBe('error');
 
@@ -114,12 +103,12 @@ describe('useImageWithFallback', () => {
   describe('Image Loading Failure and Retry', () => {
     it('should retry on failure with exponential backoff', async () => {
       const onError = jest.fn();
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useImageWithFallback('https://example.com/error.jpg', {
           maxRetries: 2,
           retryDelay: 100,
-          onError
-        })
+          onError,
+        }),
       );
 
       // Initial load fails
@@ -166,17 +155,17 @@ describe('useImageWithFallback', () => {
       expect(onError).toHaveBeenCalledTimes(1);
       expect(onError).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: 'Failed to load image: https://example.com/error.jpg'
-        })
+          message: 'Failed to load image: https://example.com/error.jpg',
+        }),
       );
     });
 
     it('should allow manual retry after max retries exceeded', async () => {
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useImageWithFallback('https://example.com/error.jpg', {
           maxRetries: 1,
-          retryDelay: 50
-        })
+          retryDelay: 50,
+        }),
       );
 
       // Let automatic retries fail
@@ -199,11 +188,11 @@ describe('useImageWithFallback', () => {
 
     it('should not retry when maxRetries is 0', async () => {
       const onError = jest.fn();
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useImageWithFallback('https://example.com/error.jpg', {
           maxRetries: 0,
-          onError
-        })
+          onError,
+        }),
       );
 
       await act(async () => {
@@ -221,10 +210,10 @@ describe('useImageWithFallback', () => {
 
   describe('Preload Option', () => {
     it('should not load image when preload is false', () => {
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useImageWithFallback('https://example.com/image.jpg', {
-          preload: false
-        })
+          preload: false,
+        }),
       );
 
       expect(result.current.status).toBe('loading');
@@ -241,12 +230,12 @@ describe('useImageWithFallback', () => {
   describe('Cleanup', () => {
     it('should cleanup timeout on unmount', () => {
       const clearTimeoutSpy = jest.spyOn(global, 'clearTimeout');
-      
-      const { unmount } = renderHook(() => 
+
+      const { unmount } = renderHook(() =>
         useImageWithFallback('https://example.com/error.jpg', {
           maxRetries: 3,
-          retryDelay: 1000
-        })
+          retryDelay: 1000,
+        }),
       );
 
       // Trigger first failure to start retry timer
@@ -260,9 +249,7 @@ describe('useImageWithFallback', () => {
     });
 
     it('should cleanup image handlers on unmount', () => {
-      const { unmount, result } = renderHook(() => 
-        useImageWithFallback('https://example.com/image.jpg')
-      );
+      const { unmount, result } = renderHook(() => useImageWithFallback('https://example.com/image.jpg'));
 
       unmount();
 
@@ -272,10 +259,7 @@ describe('useImageWithFallback', () => {
     });
 
     it('should cleanup when src changes', async () => {
-      const { result, rerender } = renderHook(
-        ({ src }) => useImageWithFallback(src),
-        { initialProps: { src: 'https://example.com/image1.jpg' } }
-      );
+      const { result, rerender } = renderHook(({ src }) => useImageWithFallback(src), { initialProps: { src: 'https://example.com/image1.jpg' } });
 
       expect(result.current.status).toBe('loading');
 
@@ -297,12 +281,10 @@ describe('useImageWithFallback', () => {
 
   describe('Edge Cases', () => {
     it('should handle empty string src', () => {
-      const { result } = renderHook(() => 
-        useImageWithFallback('')
-      );
+      const { result } = renderHook(() => useImageWithFallback(''));
 
       expect(result.current.status).toBe('loading');
-      
+
       // Empty string is technically a valid src, so it attempts to load
       act(() => {
         jest.advanceTimersByTime(20);
@@ -310,10 +292,7 @@ describe('useImageWithFallback', () => {
     });
 
     it('should handle rapid src changes', async () => {
-      const { result, rerender } = renderHook(
-        ({ src }) => useImageWithFallback(src),
-        { initialProps: { src: 'https://example.com/image1.jpg' } }
-      );
+      const { result, rerender } = renderHook(({ src }) => useImageWithFallback(src), { initialProps: { src: 'https://example.com/image1.jpg' } });
 
       // Rapid changes
       rerender({ src: 'https://example.com/image2.jpg' });
@@ -333,9 +312,7 @@ describe('useImageWithFallback', () => {
     });
 
     it('should handle retry when src is null', () => {
-      const { result } = renderHook(() => 
-        useImageWithFallback(null)
-      );
+      const { result } = renderHook(() => useImageWithFallback(null));
 
       expect(result.current.status).toBe('error');
 
@@ -350,7 +327,7 @@ describe('useImageWithFallback', () => {
     it('should calculate exponential backoff correctly', async () => {
       const delays: number[] = [];
       const originalSetTimeout = globalThis.setTimeout;
-      
+
       // Spy on setTimeout to capture delays
       jest.spyOn(globalThis, 'setTimeout').mockImplementation((fn: any, delay: any) => {
         if (typeof delay === 'number' && delay > 0) {
@@ -359,11 +336,11 @@ describe('useImageWithFallback', () => {
         return originalSetTimeout(fn as any, delay);
       });
 
-      renderHook(() => 
+      renderHook(() =>
         useImageWithFallback('https://example.com/error.jpg', {
           maxRetries: 3,
-          retryDelay: 100
-        })
+          retryDelay: 100,
+        }),
       );
 
       // Let all retries happen
@@ -372,20 +349,21 @@ describe('useImageWithFallback', () => {
       });
 
       // Verify exponential backoff: 100, 200, 400
-      expect(delays).toContain(100);  // First retry: 100 * 2^0
-      expect(delays).toContain(200);  // Second retry: 100 * 2^1
-      expect(delays).toContain(400);  // Third retry: 100 * 2^2
+      expect(delays).toContain(100); // First retry: 100 * 2^0
+      expect(delays).toContain(200); // Second retry: 100 * 2^1
+      expect(delays).toContain(400); // Third retry: 100 * 2^2
     });
   });
 
   describe('Concurrent Operations', () => {
     it('should handle retry during src change', async () => {
       const { result, rerender } = renderHook(
-        ({ src }) => useImageWithFallback(src, {
-          maxRetries: 2,
-          retryDelay: 100
-        }),
-        { initialProps: { src: 'https://example.com/error.jpg' } }
+        ({ src }) =>
+          useImageWithFallback(src, {
+            maxRetries: 2,
+            retryDelay: 100,
+          }),
+        { initialProps: { src: 'https://example.com/error.jpg' } },
       );
 
       // Let it fail once
@@ -413,11 +391,11 @@ describe('useImageWithFallback', () => {
     });
 
     it('should handle manual retry during automatic retry', async () => {
-      const { result } = renderHook(() => 
+      const { result } = renderHook(() =>
         useImageWithFallback('https://example.com/error.jpg', {
           maxRetries: 3,
-          retryDelay: 1000
-        })
+          retryDelay: 1000,
+        }),
       );
 
       // Let first attempt fail

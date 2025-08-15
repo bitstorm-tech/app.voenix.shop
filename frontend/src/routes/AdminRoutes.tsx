@@ -6,6 +6,7 @@ const AdminLayout = lazy(() => import('@/components/admin/AdminLayout'));
 const ArticleCategories = lazy(() => import('@/pages/admin/ArticleCategories'));
 const Articles = lazy(() => import('@/pages/admin/Articles'));
 const NewOrEditArticle = lazy(() => import('@/pages/admin/articles/NewOrEditArticle'));
+const CopyVariants = lazy(() => import('@/pages/admin/articles/CopyVariants'));
 const CompletedOrders = lazy(() => import('@/pages/admin/CompletedOrders'));
 const Logistics = lazy(() => import('@/pages/admin/Logistics'));
 const NewOrEditArticleCategory = lazy(() => import('@/pages/admin/NewOrEditArticleCategory'));
@@ -42,6 +43,7 @@ export function AdminRoutes() {
         <Route path="articles" element={<Articles />} />
         <Route path="articles/new" element={<NewOrEditArticle />} />
         <Route path="articles/:id/edit" element={<NewOrEditArticle />} />
+        <Route path="articles/:id/copy-variants" element={<CopyVariants />} />
         <Route path="article-categories" element={<ArticleCategories />} />
         <Route path="article-categories/new" element={<NewOrEditArticleCategory />} />
         <Route path="article-categories/:id/edit" element={<NewOrEditArticleCategory />} />

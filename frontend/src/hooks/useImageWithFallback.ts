@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 interface ImageState {
   status: 'loading' | 'loaded' | 'error' | 'retrying';
@@ -14,17 +14,8 @@ interface UseImageWithFallbackOptions {
   onError?: (error: Error) => void;
 }
 
-export function useImageWithFallback(
-  src: string | null | undefined,
-  options: UseImageWithFallbackOptions = {}
-) {
-  const {
-    maxRetries = 3,
-    retryDelay = 1000,
-    preload = true,
-    onLoad,
-    onError,
-  } = options;
+export function useImageWithFallback(src: string | null | undefined, options: UseImageWithFallbackOptions = {}) {
+  const { maxRetries = 3, retryDelay = 1000, preload = true, onLoad, onError } = options;
 
   const [state, setState] = useState<ImageState>({
     status: src ? 'loading' : 'error',
@@ -45,53 +36,56 @@ export function useImageWithFallback(
     }
   }, []);
 
-  const loadImage = useCallback((imageSrc: string, retryCount: number = 0) => {
-    cleanup();
+  const loadImage = useCallback(
+    (imageSrc: string, retryCount: number = 0) => {
+      cleanup();
 
-    const img = new Image();
-    imgRef.current = img;
+      const img = new Image();
+      imgRef.current = img;
 
-    img.onload = () => {
-      setState({
-        status: 'loaded',
-        retryCount,
-      });
-      onLoad?.();
-    };
-
-    img.onerror = () => {
-      const error = new Error(`Failed to load image: ${imageSrc}`);
-      
-      if (retryCount < maxRetries) {
+      img.onload = () => {
         setState({
-          status: 'retrying',
-          error,
-          retryCount: retryCount + 1,
-        });
-
-        // Exponential backoff: delay * (2 ^ retryCount)
-        const delay = retryDelay * Math.pow(2, retryCount);
-        
-        retryTimeoutRef.current = setTimeout(() => {
-          loadImage(imageSrc, retryCount + 1);
-        }, delay);
-      } else {
-        setState({
-          status: 'error',
-          error,
+          status: 'loaded',
           retryCount,
         });
-        onError?.(error);
-      }
-    };
+        onLoad?.();
+      };
 
-    // Start loading the image
-    img.src = imageSrc;
-  }, [maxRetries, retryDelay, onLoad, onError, cleanup]);
+      img.onerror = () => {
+        const error = new Error(`Failed to load image: ${imageSrc}`);
+
+        if (retryCount < maxRetries) {
+          setState({
+            status: 'retrying',
+            error,
+            retryCount: retryCount + 1,
+          });
+
+          // Exponential backoff: delay * (2 ^ retryCount)
+          const delay = retryDelay * Math.pow(2, retryCount);
+
+          retryTimeoutRef.current = setTimeout(() => {
+            loadImage(imageSrc, retryCount + 1);
+          }, delay);
+        } else {
+          setState({
+            status: 'error',
+            error,
+            retryCount,
+          });
+          onError?.(error);
+        }
+      };
+
+      // Start loading the image
+      img.src = imageSrc;
+    },
+    [maxRetries, retryDelay, onLoad, onError, cleanup],
+  );
 
   const retry = useCallback(() => {
     if (src) {
-      setState(prev => ({
+      setState((prev) => ({
         ...prev,
         status: 'loading',
       }));

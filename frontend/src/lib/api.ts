@@ -8,9 +8,9 @@ import type {
   PaginatedResponse,
   UpdateArticleRequest,
 } from '@/types/article';
-import type { MugWithVariantsSummary } from '@/types/copyVariants';
 import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
 import type { AddToCartRequest, CartDto, CartSummaryDto, UpdateCartItemRequest } from '@/types/cart';
+import type { MugWithVariantsSummary } from '@/types/copyVariants';
 import type { Country } from '@/types/country';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';

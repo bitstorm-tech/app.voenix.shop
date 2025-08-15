@@ -1,5 +1,5 @@
-import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { CartItemImage } from '@/components/CartItemImage';
+import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Button } from '@/components/ui/Button';
 import { useSession } from '@/hooks/queries/useAuth';
 import { useCart, useRemoveCartItem, useUpdateCartItem } from '@/hooks/queries/useCart';
@@ -36,14 +36,14 @@ export default function CartPage() {
   useEffect(() => {
     if (items.length > 0) {
       const imagesToPreload = items
-        .filter(item => item.generatedImageFilename)
+        .filter((item) => item.generatedImageFilename)
         .map((item, index) => ({
           src: `/api/user/images/${item.generatedImageFilename}`,
           priority: (index < 3 ? 'high' : 'medium') as 'high' | 'medium' | 'low', // First 3 images get high priority
         }));
 
       if (imagesToPreload.length > 0) {
-        imagePreloader.preloadImages(imagesToPreload).catch(error => {
+        imagePreloader.preloadImages(imagesToPreload).catch((error) => {
           console.log('Some images failed to preload:', error);
           // Non-critical error, don't show to user
         });
@@ -181,8 +181,8 @@ export default function CartPage() {
                 return (
                   <div key={itemId} className="rounded-lg bg-white p-6 shadow-sm">
                     <div className="sm:flex sm:items-start">
-                      <CartItemImage 
-                        src={imageUrl} 
+                      <CartItemImage
+                        src={imageUrl}
                         alt={`${displayItem.name}${displayItem.variant ? ` - ${displayItem.variant.colorCode}` : ''} design preview`}
                         className="h-24 w-24 rounded-md object-cover sm:h-32 sm:w-32"
                         onLoad={() => {

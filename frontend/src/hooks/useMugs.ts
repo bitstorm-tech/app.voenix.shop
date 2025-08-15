@@ -7,7 +7,7 @@ import { useMemo } from 'react';
 const mapMugToOption = (mug: Mug): MugOption => {
   // Filter out inactive variants for customer view
   const activeVariants = mug.variants?.filter((v) => v.active !== false) || [];
-  
+
   // Find the default variant from active variants, or use the first active variant
   const defaultVariant = activeVariants.find((v) => v.isDefault) || activeVariants[0];
   const variantImage = defaultVariant?.exampleImageUrl || mug.image;
@@ -44,9 +44,7 @@ export function useMugs() {
 
   const mugs = useMemo(() => {
     if (data && Array.isArray(data)) {
-      return data
-        .map(mapMugToOption)
-        .filter((mug) => mug.variants && mug.variants.length > 0);
+      return data.map(mapMugToOption).filter((mug) => mug.variants && mug.variants.length > 0);
     }
     // Return empty array if there's an error or no data
     return [];

@@ -31,7 +31,7 @@ class ImagePreloader {
     // Sort by priority (high first, then medium, then low)
     const priorityOrder = { high: 0, medium: 1, low: 2 };
     const sortedSources = sources
-      .filter(item => item.src)
+      .filter((item) => item.src)
       .sort((a, b) => {
         const aPriority = priorityOrder[a.priority || 'medium'];
         const bPriority = priorityOrder[b.priority || 'medium'];
@@ -39,28 +39,22 @@ class ImagePreloader {
       });
 
     // Preload high priority images first
-    const highPriority = sortedSources.filter(item => (item.priority || 'medium') === 'high');
-    const mediumPriority = sortedSources.filter(item => (item.priority || 'medium') === 'medium');
-    const lowPriority = sortedSources.filter(item => (item.priority || 'medium') === 'low');
+    const highPriority = sortedSources.filter((item) => (item.priority || 'medium') === 'high');
+    const mediumPriority = sortedSources.filter((item) => (item.priority || 'medium') === 'medium');
+    const lowPriority = sortedSources.filter((item) => (item.priority || 'medium') === 'low');
 
     // Load high priority images immediately
     if (highPriority.length > 0) {
-      await Promise.allSettled(
-        highPriority.map(item => this.preloadImage(item.src))
-      );
+      await Promise.allSettled(highPriority.map((item) => this.preloadImage(item.src)));
     }
 
     // Load medium and low priority images with slight delays
     setTimeout(() => {
-      Promise.allSettled(
-        mediumPriority.map(item => this.preloadImage(item.src))
-      );
+      Promise.allSettled(mediumPriority.map((item) => this.preloadImage(item.src)));
     }, 100);
 
     setTimeout(() => {
-      Promise.allSettled(
-        lowPriority.map(item => this.preloadImage(item.src))
-      );
+      Promise.allSettled(lowPriority.map((item) => this.preloadImage(item.src)));
     }, 300);
   }
 

@@ -1,0 +1,454 @@
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Checkbox } from '@/components/ui/Checkbox';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import { articlesApi } from '@/lib/api';
+import { cn } from '@/lib/utils';
+import type { MugWithVariantsSummary } from '@/types/copyVariants';
+import { AlertCircle, ArrowLeft, Copy, Image as ImageIcon, Loader2, Search } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { toast } from 'sonner';
+
+export default function CopyVariants() {
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const currentMugId = id ? parseInt(id) : undefined;
+
+  const [mugs, setMugs] = useState<MugWithVariantsSummary[]>([]);
+  const [filteredMugs, setFilteredMugs] = useState<MugWithVariantsSummary[]>([]);
+  const [selectedVariantIds, setSelectedVariantIds] = useState<Set<number>>(new Set());
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [copying, setCopying] = useState(false);
+
+  const fetchMugsWithVariants = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await articlesApi.getVariantsCatalog(currentMugId);
+      setMugs(data);
+    } catch (err) {
+      console.error('Error fetching variants catalog:', err);
+      setError('Failed to load mugs and variants. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [currentMugId]);
+
+  useEffect(() => {
+    fetchMugsWithVariants();
+  }, [fetchMugsWithVariants]);
+
+  useEffect(() => {
+    // Filter mugs based on search term
+    if (!searchTerm.trim()) {
+      setFilteredMugs(mugs);
+    } else {
+      const filtered = mugs.filter(
+        (mug) =>
+          mug.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          mug.supplierArticleName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          mug.variants.some((variant) => variant.name.toLowerCase().includes(searchTerm.toLowerCase())),
+      );
+      setFilteredMugs(filtered);
+    }
+  }, [mugs, searchTerm]);
+
+  const handleVariantToggle = (variantId: number, checked: boolean) => {
+    const newSelected = new Set(selectedVariantIds);
+    if (checked) {
+      newSelected.add(variantId);
+    } else {
+      newSelected.delete(variantId);
+    }
+    setSelectedVariantIds(newSelected);
+  };
+
+  const handleSelectAllFromMug = (mug: MugWithVariantsSummary, selectAll: boolean) => {
+    const newSelected = new Set(selectedVariantIds);
+    mug.variants.forEach((variant) => {
+      if (selectAll) {
+        newSelected.add(variant.id);
+      } else {
+        newSelected.delete(variant.id);
+      }
+    });
+    setSelectedVariantIds(newSelected);
+  };
+
+  const handleSelectAllFromSupplier = (supplierName: string, selectAll: boolean) => {
+    const newSelected = new Set(selectedVariantIds);
+    filteredMugs
+      .filter((mug) => mug.supplierArticleName === supplierName)
+      .forEach((mug) => {
+        mug.variants.forEach((variant) => {
+          if (selectAll) {
+            newSelected.add(variant.id);
+          } else {
+            newSelected.delete(variant.id);
+          }
+        });
+      });
+    setSelectedVariantIds(newSelected);
+  };
+
+  const handleCopy = async () => {
+    if (!currentMugId) {
+      toast.error('Invalid mug ID');
+      return;
+    }
+
+    const variantIds = Array.from(selectedVariantIds);
+    if (variantIds.length === 0) {
+      toast.error('Please select at least one variant to copy');
+      return;
+    }
+
+    setCopying(true);
+    try {
+      const copiedVariants = await articlesApi.copyVariants(currentMugId, variantIds);
+      toast.success(`Successfully copied ${copiedVariants.length} variant${copiedVariants.length !== 1 ? 's' : ''}`);
+      navigate(`/admin/articles/${currentMugId}/edit`);
+    } catch (error) {
+      console.error('Error copying variants:', error);
+      toast.error('Failed to copy variants. Please try again.');
+    } finally {
+      setCopying(false);
+    }
+  };
+
+  const handleCancel = () => {
+    navigate(`/admin/articles/${currentMugId}/edit`);
+  };
+
+  const selectedCount = selectedVariantIds.size;
+  const hasVariants = mugs.some((mug) => mug.variants.length > 0);
+  const displayedMugs = filteredMugs.filter((mug) => mug.variants.length > 0);
+
+  // Group mugs by supplier for bulk actions
+  const mugsBySupplier = displayedMugs.reduce(
+    (acc, mug) => {
+      const supplier = mug.supplierArticleName || 'Unknown Supplier';
+      if (!acc[supplier]) {
+        acc[supplier] = [];
+      }
+      acc[supplier].push(mug);
+      return acc;
+    },
+    {} as Record<string, MugWithVariantsSummary[]>,
+  );
+
+  return (
+    <div className="container mx-auto space-y-6 p-6 py-6">
+      {/* Header with breadcrumb */}
+      <div className="flex items-center gap-4">
+        <Link to={`/admin/articles/${currentMugId}/edit`} className="flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900">
+          <ArrowLeft className="h-4 w-4" />
+          Back to Article
+        </Link>
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <span>/</span>
+          <span>Copy Variants</span>
+        </div>
+      </div>
+
+      {/* Page Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Copy Mug Variants</h1>
+        <p className="mt-1 text-gray-600">
+          Select variants from existing mugs to copy to the current mug. You can select individual variants or use bulk actions.
+        </p>
+      </div>
+
+      {/* Search and Filter */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Search and Filter</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+              <Input
+                placeholder="Search mugs, suppliers, or variants..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            {searchTerm && (
+              <Button variant="outline" onClick={() => setSearchTerm('')}>
+                Clear
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Main Content */}
+      <div className="space-y-6">
+        {loading && (
+          <Card>
+            <CardContent className="py-12">
+              <div className="flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin" />
+                <span className="ml-2 text-sm text-gray-600">Loading mugs and variants...</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {error && (
+          <Card>
+            <CardContent className="py-6">
+              <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                {error}
+                <Button variant="outline" size="sm" onClick={fetchMugsWithVariants} className="ml-auto">
+                  Retry
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {!loading && !error && mugs.length === 0 && (
+          <Card>
+            <CardContent className="py-12">
+              <div className="flex flex-col items-center justify-center text-center">
+                <Copy className="mb-4 h-12 w-12 text-gray-400" />
+                <h3 className="mb-2 text-lg font-medium text-gray-900">No Other Mugs Found</h3>
+                <p className="max-w-sm text-sm text-gray-600">
+                  There are no other mugs with variants available to copy from. Create some variants on other mugs first.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {!loading && !error && mugs.length > 0 && !hasVariants && (
+          <Card>
+            <CardContent className="py-12">
+              <div className="flex flex-col items-center justify-center text-center">
+                <Copy className="mb-4 h-12 w-12 text-gray-400" />
+                <h3 className="mb-2 text-lg font-medium text-gray-900">No Variants Available</h3>
+                <p className="max-w-sm text-sm text-gray-600">
+                  While there are other mugs in the system, none of them have variants to copy. Create some variants on other mugs first.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {!loading && !error && hasVariants && displayedMugs.length === 0 && searchTerm && (
+          <Card>
+            <CardContent className="py-12">
+              <div className="flex flex-col items-center justify-center text-center">
+                <Search className="mb-4 h-12 w-12 text-gray-400" />
+                <h3 className="mb-2 text-lg font-medium text-gray-900">No Results Found</h3>
+                <p className="max-w-sm text-sm text-gray-600">No mugs or variants match your search criteria. Try a different search term.</p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {!loading && !error && hasVariants && displayedMugs.length > 0 && (
+          <>
+            {/* Bulk Actions by Supplier */}
+            {Object.keys(mugsBySupplier).length > 1 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Bulk Actions by Supplier</CardTitle>
+                  <CardDescription>Select all variants from a specific supplier at once</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                    {Object.entries(mugsBySupplier).map(([supplier, supplierMugs]) => {
+                      const allVariantIds = supplierMugs.flatMap((mug) => mug.variants.map((v) => v.id));
+                      const selectedFromSupplier = allVariantIds.filter((id) => selectedVariantIds.has(id));
+                      const allSelected = selectedFromSupplier.length === allVariantIds.length;
+                      const someSelected = selectedFromSupplier.length > 0;
+
+                      return (
+                        <div key={supplier} className="flex items-center justify-between rounded-lg border p-3">
+                          <div>
+                            <div className="font-medium">{supplier}</div>
+                            <div className="text-sm text-gray-600">
+                              {allVariantIds.length} variant{allVariantIds.length !== 1 ? 's' : ''}
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={allSelected}
+                              ref={(el) => {
+                                if (el) {
+                                  const checkboxElement = el.querySelector('input[type="checkbox"]') as HTMLInputElement;
+                                  if (checkboxElement) {
+                                    checkboxElement.indeterminate = someSelected && !allSelected;
+                                  }
+                                }
+                              }}
+                              onCheckedChange={(checked) => handleSelectAllFromSupplier(supplier, checked === true)}
+                            />
+                            <Label className="cursor-pointer text-sm">Select All</Label>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Variants by Mug */}
+            <div className="space-y-4">
+              {displayedMugs.map((mug) => {
+                const mugVariantIds = mug.variants.map((v) => v.id);
+                const selectedFromMug = mugVariantIds.filter((id) => selectedVariantIds.has(id));
+                const allSelected = selectedFromMug.length === mug.variants.length;
+                const someSelected = selectedFromMug.length > 0;
+
+                return (
+                  <Card key={mug.id}>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-lg">{mug.name}</CardTitle>
+                          {mug.supplierArticleName && <CardDescription className="mt-1">Supplier: {mug.supplierArticleName}</CardDescription>}
+                          <CardDescription className="mt-1">
+                            {mug.variants.length} variant{mug.variants.length !== 1 ? 's' : ''} available
+                          </CardDescription>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`mug-${mug.id}`}
+                            checked={allSelected}
+                            ref={(el) => {
+                              if (el) {
+                                const checkboxElement = el.querySelector('input[type="checkbox"]') as HTMLInputElement;
+                                if (checkboxElement) {
+                                  checkboxElement.indeterminate = someSelected && !allSelected;
+                                }
+                              }
+                            }}
+                            onCheckedChange={(checked) => handleSelectAllFromMug(mug, checked === true)}
+                          />
+                          <label htmlFor={`mug-${mug.id}`} className="cursor-pointer text-sm font-medium">
+                            Select All
+                          </label>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
+                        {mug.variants.map((variant) => (
+                          <div
+                            key={variant.id}
+                            className={cn(
+                              'flex flex-col space-y-3 rounded-lg border p-3 transition-colors',
+                              selectedVariantIds.has(variant.id) ? 'border-blue-200 bg-blue-50' : 'border-gray-200 hover:border-gray-300',
+                              !variant.active && 'opacity-60',
+                            )}
+                          >
+                            <div className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`variant-${variant.id}`}
+                                checked={selectedVariantIds.has(variant.id)}
+                                onCheckedChange={(checked) => handleVariantToggle(variant.id, checked === true)}
+                              />
+                              <div className="min-w-0 flex-1">
+                                <div className="mb-1 flex items-center gap-2">
+                                  <label htmlFor={`variant-${variant.id}`} className="cursor-pointer truncate text-sm font-medium">
+                                    {variant.name}
+                                  </label>
+                                  {!variant.active && (
+                                    <span className="inline-flex items-center rounded-full bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600">
+                                      Inactive
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1">
+                                <div
+                                  className="h-3 w-3 flex-shrink-0 rounded border border-gray-300"
+                                  style={{ backgroundColor: variant.insideColorCode }}
+                                  title={`Inside: ${variant.insideColorCode}`}
+                                />
+                                <div
+                                  className="h-3 w-3 flex-shrink-0 rounded border border-gray-300"
+                                  style={{ backgroundColor: variant.outsideColorCode }}
+                                  title={`Outside: ${variant.outsideColorCode}`}
+                                />
+                              </div>
+                              {variant.articleVariantNumber && <span className="truncate text-xs text-gray-500">{variant.articleVariantNumber}</span>}
+                            </div>
+                            {variant.exampleImageUrl ? (
+                              <img
+                                src={variant.exampleImageUrl}
+                                alt={`${variant.name} example`}
+                                className="h-16 w-full rounded border object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-16 w-full items-center justify-center rounded border bg-gray-100">
+                                <ImageIcon className="h-6 w-6 text-gray-400" />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Fixed Footer with Actions */}
+      {hasVariants && displayedMugs.length > 0 && (
+        <div className="fixed right-0 bottom-0 left-0 z-10 border-t bg-white shadow-lg">
+          <div className="container mx-auto px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-gray-600">
+                {selectedCount > 0 ? (
+                  <span>
+                    {selectedCount} variant{selectedCount !== 1 ? 's' : ''} selected
+                  </span>
+                ) : (
+                  <span>No variants selected</span>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <Button variant="outline" onClick={handleCancel} disabled={copying}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCopy} disabled={selectedCount === 0 || copying} className="min-w-[140px]">
+                  {copying ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Copying...
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy {selectedCount > 0 ? `${selectedCount} ` : ''}Variant{selectedCount !== 1 ? 's' : ''}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bottom padding to account for fixed footer */}
+      {hasVariants && displayedMugs.length > 0 && <div className="h-20" />}
+    </div>
+  );
+}

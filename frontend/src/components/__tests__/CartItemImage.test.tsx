@@ -1,6 +1,6 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { CartItemImage } from '../CartItemImage';
 import { useImageWithFallback } from '@/hooks/useImageWithFallback';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { CartItemImage } from '../CartItemImage';
 
 // Mock the useImageWithFallback hook
 jest.mock('@/hooks/useImageWithFallback');
@@ -8,13 +8,17 @@ jest.mock('@/hooks/useImageWithFallback');
 // Mock the UI components
 jest.mock('../ImageSkeleton', () => ({
   ImageSkeleton: ({ className }: { className?: string }) => (
-    <div data-testid="image-skeleton" className={className}>Loading...</div>
+    <div data-testid="image-skeleton" className={className}>
+      Loading...
+    </div>
   ),
 }));
 
 jest.mock('../ui/Button', () => ({
   Button: ({ children, onClick, ...props }: any) => (
-    <button onClick={onClick} {...props}>{children}</button>
+    <button onClick={onClick} {...props}>
+      {children}
+    </button>
   ),
 }));
 
@@ -58,12 +62,7 @@ describe('CartItemImage', () => {
         retry: mockRetry,
       });
 
-      render(
-        <CartItemImage 
-          {...defaultProps} 
-          className="custom-size-class rounded-lg"
-        />
-      );
+      render(<CartItemImage {...defaultProps} className="custom-size-class rounded-lg" />);
 
       const skeleton = screen.getByTestId('image-skeleton');
       expect(skeleton).toHaveClass('custom-size-class rounded-lg');
@@ -150,7 +149,7 @@ describe('CartItemImage', () => {
   describe('Success State', () => {
     it('should display image when loaded successfully', () => {
       const onLoad = jest.fn();
-      
+
       (useImageWithFallback as jest.Mock).mockReturnValue({
         status: 'loaded',
         error: null,
@@ -162,12 +161,7 @@ describe('CartItemImage', () => {
         isRetrying: false,
       });
 
-      render(
-        <CartItemImage 
-          {...defaultProps} 
-          onLoad={onLoad}
-        />
-      );
+      render(<CartItemImage {...defaultProps} onLoad={onLoad} />);
 
       const image = screen.getByRole('img');
       expect(image).toBeInTheDocument();
@@ -186,12 +180,7 @@ describe('CartItemImage', () => {
         retry: mockRetry,
       });
 
-      render(
-        <CartItemImage 
-          {...defaultProps} 
-          className="w-32 h-32 rounded-full"
-        />
-      );
+      render(<CartItemImage {...defaultProps} className="h-32 w-32 rounded-full" />);
 
       const image = screen.getByRole('img');
       expect(image).toHaveClass('w-32 h-32 rounded-full transition-opacity duration-300');
@@ -199,7 +188,7 @@ describe('CartItemImage', () => {
 
     it('should call onLoad when image loads', () => {
       const onLoad = jest.fn();
-      
+
       (useImageWithFallback as jest.Mock).mockReturnValue({
         status: 'loaded',
         isLoading: false,
@@ -209,12 +198,7 @@ describe('CartItemImage', () => {
         retry: mockRetry,
       });
 
-      render(
-        <CartItemImage 
-          {...defaultProps} 
-          onLoad={onLoad}
-        />
-      );
+      render(<CartItemImage {...defaultProps} onLoad={onLoad} />);
 
       const image = screen.getByRole('img');
       fireEvent.load(image);
@@ -225,7 +209,7 @@ describe('CartItemImage', () => {
     it('should call onError when image fails to display', () => {
       const onError = jest.fn();
       const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-      
+
       (useImageWithFallback as jest.Mock).mockReturnValue({
         status: 'loaded',
         isLoading: false,
@@ -235,24 +219,16 @@ describe('CartItemImage', () => {
         retry: mockRetry,
       });
 
-      render(
-        <CartItemImage 
-          {...defaultProps} 
-          onError={onError}
-        />
-      );
+      render(<CartItemImage {...defaultProps} onError={onError} />);
 
       const image = screen.getByRole('img');
       fireEvent.error(image);
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Image load error:',
-        expect.any(Object)
-      );
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Image load error:', expect.any(Object));
       expect(onError).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: expect.stringContaining('Failed to display image')
-        })
+          message: expect.stringContaining('Failed to display image'),
+        }),
       );
 
       consoleErrorSpy.mockRestore();
@@ -272,12 +248,7 @@ describe('CartItemImage', () => {
         isRetrying: false,
       });
 
-      render(
-        <CartItemImage 
-          src={null}
-          alt="No image"
-        />
-      );
+      render(<CartItemImage src={null} alt="No image" />);
 
       // Should show error state with retry option
       expect(screen.getByText('Image error')).toBeInTheDocument();
@@ -295,12 +266,7 @@ describe('CartItemImage', () => {
         isRetrying: false,
       });
 
-      render(
-        <CartItemImage 
-          src={undefined}
-          alt="No image"
-        />
-      );
+      render(<CartItemImage src={undefined} alt="No image" />);
 
       expect(screen.getByText('Image error')).toBeInTheDocument();
     });
@@ -317,12 +283,7 @@ describe('CartItemImage', () => {
         isRetrying: false,
       });
 
-      render(
-        <CartItemImage 
-          src={null}
-          alt="No image"
-        />
-      );
+      render(<CartItemImage src={null} alt="No image" />);
 
       // When loaded but no src, should show fallback
       expect(screen.queryByRole('img')).not.toBeInTheDocument();
@@ -334,7 +295,7 @@ describe('CartItemImage', () => {
     it('should pass correct options to useImageWithFallback', () => {
       const onLoad = jest.fn();
       const onError = jest.fn();
-      
+
       (useImageWithFallback as jest.Mock).mockReturnValue({
         status: 'loading',
         isLoading: true,
@@ -344,24 +305,15 @@ describe('CartItemImage', () => {
         retry: mockRetry,
       });
 
-      render(
-        <CartItemImage 
-          {...defaultProps}
-          onLoad={onLoad}
-          onError={onError}
-        />
-      );
+      render(<CartItemImage {...defaultProps} onLoad={onLoad} onError={onError} />);
 
-      expect(useImageWithFallback).toHaveBeenCalledWith(
-        defaultProps.src,
-        {
-          maxRetries: 3,
-          retryDelay: 1000,
-          preload: true,
-          onLoad,
-          onError,
-        }
-      );
+      expect(useImageWithFallback).toHaveBeenCalledWith(defaultProps.src, {
+        maxRetries: 3,
+        retryDelay: 1000,
+        preload: true,
+        onLoad,
+        onError,
+      });
     });
   });
 
@@ -376,12 +328,7 @@ describe('CartItemImage', () => {
         retry: mockRetry,
       });
 
-      const { container } = render(
-        <CartItemImage 
-          {...defaultProps}
-          className="object-cover"
-        />
-      );
+      const { container } = render(<CartItemImage {...defaultProps} className="object-cover" />);
 
       const containerDiv = container.firstChild;
       expect(containerDiv).toHaveClass('h-24', 'w-24', 'sm:h-32', 'sm:w-32', 'rounded-md');
@@ -397,12 +344,7 @@ describe('CartItemImage', () => {
         retry: mockRetry,
       });
 
-      const { container } = render(
-        <CartItemImage 
-          {...defaultProps}
-          className="h-40 w-40 rounded-full"
-        />
-      );
+      const { container } = render(<CartItemImage {...defaultProps} className="h-40 w-40 rounded-full" />);
 
       const containerDiv = container.firstChild;
       expect(containerDiv).toHaveClass('h-40', 'w-40');
@@ -421,12 +363,7 @@ describe('CartItemImage', () => {
         retry: mockRetry,
       });
 
-      render(
-        <CartItemImage 
-          {...defaultProps}
-          alt="Custom mug with AI-generated design"
-        />
-      );
+      render(<CartItemImage {...defaultProps} alt="Custom mug with AI-generated design" />);
 
       const image = screen.getByRole('img');
       expect(image).toHaveAttribute('alt', 'Custom mug with AI-generated design');
@@ -485,13 +422,10 @@ describe('CartItemImage', () => {
 
       // Re-render with same props
       rerender(<CartItemImage {...defaultProps} />);
-      
+
       // Hook should be called again due to re-render, but with same params
       expect(mockHook).toHaveBeenCalledTimes(2);
-      expect(mockHook).toHaveBeenLastCalledWith(
-        defaultProps.src,
-        expect.any(Object)
-      );
+      expect(mockHook).toHaveBeenLastCalledWith(defaultProps.src, expect.any(Object));
     });
   });
 });

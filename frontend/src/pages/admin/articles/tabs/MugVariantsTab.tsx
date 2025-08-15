@@ -14,8 +14,8 @@ import { Copy, Edit, Image as ImageIcon, Plus, Trash2, Upload, X } from 'lucide-
 import { useRef, useState } from 'react';
 import { type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import CopyVariantsModal from '../components/CopyVariantsModal';
 
 interface MugVariantsTabProps {
   articleId?: number;
@@ -34,6 +34,7 @@ export default function MugVariantsTab({
   onDeleteTemporaryVariant,
   onUpdateTemporaryVariant,
 }: MugVariantsTabProps) {
+  const navigate = useNavigate();
   const [variants, setVariants] = useState<ArticleMugVariant[]>(initialVariants);
   const [newVariant, setNewVariant] = useState<CreateArticleMugVariantRequest>({
     insideColorCode: '#ffffff',
@@ -61,7 +62,6 @@ export default function MugVariantsTab({
   const [editingTemporaryIndex, setEditingTemporaryIndex] = useState<number | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [imageRemoved, setImageRemoved] = useState(false);
-  const [showCopyModal, setShowCopyModal] = useState(false);
 
   const createCroppedImage = async (
     imageUrl: string,
@@ -457,20 +457,12 @@ export default function MugVariantsTab({
     setIsTemporaryVariant(false);
   };
 
-  const handleCopyVariants = async (variantIds: number[]) => {
+  const handleCopyVariants = () => {
     if (!articleId) {
       toast.error('Please save the article first before copying variants');
       return;
     }
-
-    try {
-      const copiedVariants = await articlesApi.copyVariants(articleId, variantIds);
-      setVariants([...variants, ...copiedVariants]);
-      toast.success(`Successfully copied ${copiedVariants.length} variant${copiedVariants.length !== 1 ? 's' : ''}`);
-    } catch (error) {
-      console.error('Error copying variants:', error);
-      toast.error('Failed to copy variants. Please try again.');
-    }
+    navigate(`/admin/articles/${articleId}/copy-variants`);
   };
 
   return (
@@ -609,21 +601,14 @@ export default function MugVariantsTab({
             </div>
           </div>
 
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-end gap-4">
             {articleId && !(editingVariantId || editingTemporaryIndex !== null) && (
-              <Button
-                onClick={() => setShowCopyModal(true)}
-                variant="outline"
-                className="min-w-[140px]"
-              >
+              <Button onClick={handleCopyVariants} variant="outline" className="min-w-[140px]">
                 <Copy className="mr-2 h-4 w-4" />
                 Copy Variants
               </Button>
             )}
-            <div className={cn(
-              "flex gap-2",
-              !articleId || (editingVariantId || editingTemporaryIndex !== null) ? "w-full justify-end" : ""
-            )}>
+            <div className={cn('flex gap-2', !articleId || editingVariantId || editingTemporaryIndex !== null ? 'w-full justify-end' : '')}>
               {(editingVariantId || editingTemporaryIndex !== null) && (
                 <Button onClick={handleCancelEdit} variant="outline" className="min-w-[120px]">
                   Cancel
@@ -661,12 +646,9 @@ export default function MugVariantsTab({
               </TableHeader>
               <TableBody>
                 {variants.map((variant) => (
-                  <TableRow 
-                    key={variant.id} 
-                    className={cn(
-                      editingVariantId === variant.id ? 'bg-blue-50' : '',
-                      !variant.active ? 'opacity-60 bg-gray-50' : ''
-                    )}
+                  <TableRow
+                    key={variant.id}
+                    className={cn(editingVariantId === variant.id ? 'bg-blue-50' : '', !variant.active ? 'bg-gray-50 opacity-60' : '')}
                   >
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
@@ -704,9 +686,7 @@ export default function MugVariantsTab({
                           Active
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
-                          Inactive
-                        </span>
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">Inactive</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -753,12 +733,9 @@ export default function MugVariantsTab({
               </TableHeader>
               <TableBody>
                 {temporaryVariants.map((variant, index) => (
-                  <TableRow 
-                    key={index} 
-                    className={cn(
-                      editingTemporaryIndex === index ? 'bg-blue-50' : '',
-                      variant.active === false ? 'opacity-60 bg-gray-50' : ''
-                    )}
+                  <TableRow
+                    key={index}
+                    className={cn(editingTemporaryIndex === index ? 'bg-blue-50' : '', variant.active === false ? 'bg-gray-50 opacity-60' : '')}
                   >
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
@@ -796,9 +773,7 @@ export default function MugVariantsTab({
                           Active
                         </span>
                       ) : (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
-                          Inactive
-                        </span>
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">Inactive</span>
                       )}
                     </TableCell>
                     <TableCell>
@@ -823,13 +798,6 @@ export default function MugVariantsTab({
           </div>
         )}
       </CardContent>
-
-      <CopyVariantsModal
-        isOpen={showCopyModal}
-        onClose={() => setShowCopyModal(false)}
-        onCopy={handleCopyVariants}
-        currentMugId={articleId}
-      />
 
       <ConfirmationDialog
         isOpen={isDeleting}
