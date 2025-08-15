@@ -79,21 +79,6 @@ export default function CopyVariants() {
     setSelectedVariantIds(newSelected);
   };
 
-  const handleSelectAllFromSupplier = (supplierName: string, selectAll: boolean) => {
-    const newSelected = new Set(selectedVariantIds);
-    filteredMugs
-      .filter((mug) => mug.supplierArticleName === supplierName)
-      .forEach((mug) => {
-        mug.variants.forEach((variant) => {
-          if (selectAll) {
-            newSelected.add(variant.id);
-          } else {
-            newSelected.delete(variant.id);
-          }
-        });
-      });
-    setSelectedVariantIds(newSelected);
-  };
 
   const handleCopy = async () => {
     if (!currentMugId) {
@@ -128,18 +113,6 @@ export default function CopyVariants() {
   const hasVariants = mugs.some((mug) => mug.variants.length > 0);
   const displayedMugs = filteredMugs.filter((mug) => mug.variants.length > 0);
 
-  // Group mugs by supplier for bulk actions
-  const mugsBySupplier = displayedMugs.reduce(
-    (acc, mug) => {
-      const supplier = mug.supplierArticleName || 'Unknown Supplier';
-      if (!acc[supplier]) {
-        acc[supplier] = [];
-      }
-      acc[supplier].push(mug);
-      return acc;
-    },
-    {} as Record<string, MugWithVariantsSummary[]>,
-  );
 
   return (
     <div className="container mx-auto space-y-6 p-6 py-6">
@@ -233,47 +206,6 @@ export default function CopyVariants() {
 
         {!loading && !error && hasVariants && displayedMugs.length > 0 && (
           <>
-            {/* Bulk Actions by Supplier */}
-            {Object.keys(mugsBySupplier).length > 1 && (
-              <div className="border-b border-gray-200 pb-6">
-                <h3 className="mb-2 text-lg font-semibold text-gray-900">Bulk Actions by Supplier</h3>
-                <p className="mb-4 text-sm text-gray-600">Select all variants from a specific supplier at once</p>
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {Object.entries(mugsBySupplier).map(([supplier, supplierMugs]) => {
-                    const allVariantIds = supplierMugs.flatMap((mug) => mug.variants.map((v) => v.id));
-                    const selectedFromSupplier = allVariantIds.filter((id) => selectedVariantIds.has(id));
-                    const allSelected = selectedFromSupplier.length === allVariantIds.length;
-                    const someSelected = selectedFromSupplier.length > 0;
-
-                    return (
-                      <div key={supplier} className="flex items-center justify-between rounded-lg border p-3">
-                        <div>
-                          <div className="font-medium">{supplier}</div>
-                          <div className="text-sm text-gray-600">
-                            {allVariantIds.length} variant{allVariantIds.length !== 1 ? 's' : ''}
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Checkbox
-                            checked={allSelected}
-                            ref={(el) => {
-                              if (el) {
-                                const checkboxElement = el.querySelector('input[type="checkbox"]') as HTMLInputElement;
-                                if (checkboxElement) {
-                                  checkboxElement.indeterminate = someSelected && !allSelected;
-                                }
-                              }
-                            }}
-                            onCheckedChange={(checked) => handleSelectAllFromSupplier(supplier, checked === true)}
-                          />
-                          <Label className="cursor-pointer text-sm">Select All</Label>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
 
             {/* Variants by Mug */}
             <div className="space-y-6">
