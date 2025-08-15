@@ -1,7 +1,6 @@
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { articlesApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -79,7 +78,6 @@ export default function CopyVariants() {
     setSelectedVariantIds(newSelected);
   };
 
-
   const handleCopy = async () => {
     if (!currentMugId) {
       toast.error('Invalid mug ID');
@@ -113,7 +111,6 @@ export default function CopyVariants() {
   const hasVariants = mugs.some((mug) => mug.variants.length > 0);
   const displayedMugs = filteredMugs.filter((mug) => mug.variants.length > 0);
 
-
   return (
     <div className="container mx-auto space-y-6 p-6 py-6">
       {/* Header with breadcrumb */}
@@ -137,7 +134,7 @@ export default function CopyVariants() {
       </div>
 
       {/* Search and Filter */}
-      <div className="border-b border-gray-200 pb-6">
+      <div className="pb-6">
         <h2 className="mb-4 text-lg font-semibold text-gray-900">Search and Filter</h2>
         <div className="flex items-center gap-4">
           <div className="relative flex-1">
@@ -206,7 +203,6 @@ export default function CopyVariants() {
 
         {!loading && !error && hasVariants && displayedMugs.length > 0 && (
           <>
-
             {/* Variants by Mug */}
             <div className="space-y-6">
               {displayedMugs.map((mug) => {
@@ -216,7 +212,7 @@ export default function CopyVariants() {
                 const someSelected = selectedFromMug.length > 0;
 
                 return (
-                  <div key={mug.id} className="border-b border-gray-200 pb-6">
+                  <div key={mug.id} className="pb-6">
                     {/* Mug Header */}
                     <div className="mb-4 flex items-center justify-between">
                       <div>
@@ -247,79 +243,81 @@ export default function CopyVariants() {
                     </div>
 
                     {/* Variants Table */}
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-12"></TableHead>
-                          <TableHead>Variant Name</TableHead>
-                          <TableHead>Article Number</TableHead>
-                          <TableHead>Colors</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Preview</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {mug.variants.map((variant) => (
-                          <TableRow
-                            key={variant.id}
-                            data-state={selectedVariantIds.has(variant.id) ? 'selected' : undefined}
-                            className={cn(!variant.active && 'opacity-60')}
-                          >
-                            <TableCell>
-                              <Checkbox
-                                id={`variant-${variant.id}`}
-                                checked={selectedVariantIds.has(variant.id)}
-                                onCheckedChange={(checked) => handleVariantToggle(variant.id, checked === true)}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <label htmlFor={`variant-${variant.id}`} className="cursor-pointer font-medium">
-                                {variant.name}
-                              </label>
-                            </TableCell>
-                            <TableCell className="text-sm text-gray-600">{variant.articleVariantNumber || '-'}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1">
-                                <div
-                                  className="h-4 w-4 rounded border border-gray-300"
-                                  style={{ backgroundColor: variant.insideColorCode }}
-                                  title={`Inside: ${variant.insideColorCode}`}
-                                />
-                                <div
-                                  className="h-4 w-4 rounded border border-gray-300"
-                                  style={{ backgroundColor: variant.outsideColorCode }}
-                                  title={`Outside: ${variant.outsideColorCode}`}
-                                />
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {variant.active ? (
-                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                                  Active
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
-                                  Inactive
-                                </span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              {variant.exampleImageUrl ? (
-                                <img
-                                  src={variant.exampleImageUrl}
-                                  alt={`${variant.name} example`}
-                                  className="h-12 w-12 rounded border object-cover"
-                                />
-                              ) : (
-                                <div className="flex h-12 w-12 items-center justify-center rounded border bg-gray-100">
-                                  <ImageIcon className="h-4 w-4 text-gray-400" />
-                                </div>
-                              )}
-                            </TableCell>
+                    <div className="overflow-hidden rounded-lg border border-gray-200">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-12"></TableHead>
+                            <TableHead>Variant Name</TableHead>
+                            <TableHead>Article Number</TableHead>
+                            <TableHead>Colors</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Preview</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {mug.variants.map((variant) => (
+                            <TableRow
+                              key={variant.id}
+                              data-state={selectedVariantIds.has(variant.id) ? 'selected' : undefined}
+                              className={cn(!variant.active && 'opacity-60')}
+                            >
+                              <TableCell>
+                                <Checkbox
+                                  id={`variant-${variant.id}`}
+                                  checked={selectedVariantIds.has(variant.id)}
+                                  onCheckedChange={(checked) => handleVariantToggle(variant.id, checked === true)}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <label htmlFor={`variant-${variant.id}`} className="cursor-pointer font-medium">
+                                  {variant.name}
+                                </label>
+                              </TableCell>
+                              <TableCell className="text-sm text-gray-600">{variant.articleVariantNumber || '-'}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-1">
+                                  <div
+                                    className="h-4 w-4 rounded border border-gray-300"
+                                    style={{ backgroundColor: variant.insideColorCode }}
+                                    title={`Inside: ${variant.insideColorCode}`}
+                                  />
+                                  <div
+                                    className="h-4 w-4 rounded border border-gray-300"
+                                    style={{ backgroundColor: variant.outsideColorCode }}
+                                    title={`Outside: ${variant.outsideColorCode}`}
+                                  />
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {variant.active ? (
+                                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                                    Active
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                                    Inactive
+                                  </span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {variant.exampleImageUrl ? (
+                                  <img
+                                    src={variant.exampleImageUrl}
+                                    alt={`${variant.name} example`}
+                                    className="h-12 w-12 rounded border object-cover"
+                                  />
+                                ) : (
+                                  <div className="flex h-12 w-12 items-center justify-center rounded border bg-gray-100">
+                                    <ImageIcon className="h-4 w-4 text-gray-400" />
+                                  </div>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
                   </div>
                 );
               })}
