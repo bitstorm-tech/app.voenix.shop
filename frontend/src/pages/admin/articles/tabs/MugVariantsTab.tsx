@@ -473,6 +473,8 @@ export default function MugVariantsTab({
                     crop={crop}
                     zoom={zoom}
                     aspect={1}
+                    minZoom={0.5}
+                    restrictPosition={false}
                     onCropChange={setCrop}
                     onCropComplete={handleCropComplete}
                     onZoomChange={setZoom}
