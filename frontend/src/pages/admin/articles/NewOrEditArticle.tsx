@@ -4,7 +4,7 @@ import { useArticleForm } from '@/hooks/useArticleForm';
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
 import { ArrowLeft, Calculator, ChevronRight, Coffee, FileText, Layers, Loader2, Package, Save, Shirt } from 'lucide-react';
 import { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import GeneralTab from './components/GeneralTab';
 import PriceCalculationTab from './components/PriceCalculationTab';
 import VariantsTab from './components/VariantsTab';
@@ -18,6 +18,7 @@ const articleTypeIcons = {
 
 export default function NewOrEditArticle() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams();
   const articleId = id ? Number(id) : undefined;
 
@@ -39,6 +40,14 @@ export default function NewOrEditArticle() {
       resetForm();
     };
   }, [articleId, initializeForm, resetForm]);
+
+  // Set active tab from navigation state if provided
+  useEffect(() => {
+    const stateActiveTab = location.state?.activeTab;
+    if (stateActiveTab && typeof stateActiveTab === 'string') {
+      setActiveTab(stateActiveTab);
+    }
+  }, [location.state, setActiveTab]);
 
   // Loading state
   if (isLoading) {

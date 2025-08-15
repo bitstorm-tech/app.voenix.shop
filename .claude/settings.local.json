@@ -61,13 +61,17 @@
       "Bash(lsof:*)",
       "WebSearch",
       "WebFetch(domain:javadoc.io)",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_click"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "playwright"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

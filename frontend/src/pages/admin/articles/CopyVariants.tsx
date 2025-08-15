@@ -94,7 +94,7 @@ export default function CopyVariants() {
     try {
       const copiedVariants = await articlesApi.copyVariants(currentMugId, variantIds);
       toast.success(`Successfully copied ${copiedVariants.length} variant${copiedVariants.length !== 1 ? 's' : ''}`);
-      navigate(`/admin/articles/${currentMugId}/edit`);
+      navigate(`/admin/articles/${currentMugId}/edit`, { state: { activeTab: 'variants' } });
     } catch (error) {
       console.error('Error copying variants:', error);
       toast.error('Failed to copy variants. Please try again.');
@@ -104,7 +104,7 @@ export default function CopyVariants() {
   };
 
   const handleCancel = () => {
-    navigate(`/admin/articles/${currentMugId}/edit`);
+    navigate(`/admin/articles/${currentMugId}/edit`, { state: { activeTab: 'variants' } });
   };
 
   const selectedCount = selectedVariantIds.size;
