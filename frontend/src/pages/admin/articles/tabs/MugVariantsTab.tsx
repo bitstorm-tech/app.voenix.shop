@@ -472,6 +472,7 @@ export default function MugVariantsTab({
                   <Cropper
                     image={originalImageUrl}
                     crop={crop}
+                    cropSize={{ width: 300, height: 300 }}
                     zoom={zoom}
                     aspect={1}
                     minZoom={0.5}
