@@ -214,32 +214,9 @@ export default function CopyVariants() {
                 return (
                   <div key={mug.id} className="pb-6">
                     {/* Mug Header */}
-                    <div className="mb-4 flex items-center justify-between">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{mug.name}</h3>
-                        {mug.supplierArticleName && <p className="mt-1 text-sm text-gray-600">Supplier: {mug.supplierArticleName}</p>}
-                        <p className="mt-1 text-sm text-gray-600">
-                          {mug.variants.length} variant{mug.variants.length !== 1 ? 's' : ''} available
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`mug-${mug.id}`}
-                          checked={allSelected}
-                          ref={(el) => {
-                            if (el) {
-                              const checkboxElement = el.querySelector('input[type="checkbox"]') as HTMLInputElement;
-                              if (checkboxElement) {
-                                checkboxElement.indeterminate = someSelected && !allSelected;
-                              }
-                            }
-                          }}
-                          onCheckedChange={(checked) => handleSelectAllFromMug(mug, checked === true)}
-                        />
-                        <label htmlFor={`mug-${mug.id}`} className="cursor-pointer text-sm font-medium">
-                          Select All
-                        </label>
-                      </div>
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">{mug.name}</h3>
+                      {mug.supplierArticleName && <p className="mt-1 text-sm text-gray-600">Supplier: {mug.supplierArticleName}</p>}
                     </div>
 
                     {/* Variants Table */}
@@ -247,7 +224,23 @@ export default function CopyVariants() {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead className="w-12"></TableHead>
+                            <TableHead className="w-12">
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`mug-${mug.id}`}
+                                  checked={allSelected}
+                                  ref={(el) => {
+                                    if (el) {
+                                      const checkboxElement = el.querySelector('input[type="checkbox"]') as HTMLInputElement;
+                                      if (checkboxElement) {
+                                        checkboxElement.indeterminate = someSelected && !allSelected;
+                                      }
+                                    }
+                                  }}
+                                  onCheckedChange={(checked) => handleSelectAllFromMug(mug, checked === true)}
+                                />
+                              </div>
+                            </TableHead>
                             <TableHead>Variant Name</TableHead>
                             <TableHead>Article Number</TableHead>
                             <TableHead>Colors</TableHead>
