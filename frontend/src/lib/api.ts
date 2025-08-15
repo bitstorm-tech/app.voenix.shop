@@ -8,6 +8,7 @@ import type {
   PaginatedResponse,
   UpdateArticleRequest,
 } from '@/types/article';
+import type { MugWithVariantsSummary } from '@/types/copyVariants';
 import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
 import type { AddToCartRequest, CartDto, CartSummaryDto, UpdateCartItemRequest } from '@/types/cart';
 import type { Country } from '@/types/country';
@@ -241,6 +242,13 @@ export const articlesApi = {
     return handleResponse<ArticleMugVariant>(response); // Return proper type matching backend response
   },
   removeMugVariantImage: (variantId: number) => api.delete<ArticleMugVariant>(`/admin/articles/mugs/variants/${variantId}/image`),
+  // Copy variant functionality
+  getVariantsCatalog: (excludeMugId?: number): Promise<MugWithVariantsSummary[]> => {
+    const queryParams = excludeMugId ? `?excludeMugId=${excludeMugId}` : '';
+    return api.get<MugWithVariantsSummary[]>(`/admin/articles/mugs/variants-catalog${queryParams}`);
+  },
+  copyVariants: (mugId: number, variantIds: number[]): Promise<ArticleMugVariant[]> =>
+    api.post<ArticleMugVariant[]>(`/admin/articles/mugs/${mugId}/copy-variants`, { variantIds }),
   // Shirt variant management
   createShirtVariant: (articleId: number, data: CreateArticleShirtVariantRequest) =>
     api.post<ArticleShirtVariant>(`/admin/articles/shirts/${articleId}/variants`, data),

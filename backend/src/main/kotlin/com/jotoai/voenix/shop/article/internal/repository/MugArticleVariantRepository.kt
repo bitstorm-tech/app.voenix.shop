@@ -47,4 +47,9 @@ interface MugArticleVariantRepository : JpaRepository<MugArticleVariant, Long> {
     fun findActiveByArticleIdWithArticle(
         @Param("articleId") articleId: Long,
     ): List<MugArticleVariant>
+
+    @Query("SELECT v FROM MugArticleVariant v JOIN FETCH v.article WHERE v.id IN :variantIds")
+    fun findByIdInWithArticle(
+        @Param("variantIds") variantIds: List<Long>,
+    ): List<MugArticleVariant>
 }

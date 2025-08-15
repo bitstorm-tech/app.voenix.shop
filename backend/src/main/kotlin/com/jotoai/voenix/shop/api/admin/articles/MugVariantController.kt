@@ -1,7 +1,9 @@
 package com.jotoai.voenix.shop.api.admin.articles
 
+import com.jotoai.voenix.shop.article.api.dto.CopyVariantsRequest
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
 import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
@@ -108,5 +110,24 @@ class MugVariantController(
         logger.info("Deleting image for variant $variantId")
         val updatedVariant = mugVariantFacade.removeExampleImage(variantId)
         return ResponseEntity.ok(updatedVariant)
+    }
+
+    @GetMapping("/variants-catalog")
+    fun getVariantsCatalog(
+        @RequestParam(required = false) excludeMugId: Long?,
+    ): ResponseEntity<List<MugWithVariantsSummaryDto>> {
+        logger.info("Fetching variants catalog, excluding mug ID: $excludeMugId")
+        val catalog = mugVariantQueryService.findAllMugsWithVariants(excludeMugId)
+        return ResponseEntity.ok(catalog)
+    }
+
+    @PostMapping("/{mugId}/copy-variants")
+    fun copyVariants(
+        @PathVariable mugId: Long,
+        @Valid @RequestBody request: CopyVariantsRequest,
+    ): ResponseEntity<List<MugArticleVariantDto>> {
+        logger.info("Copying ${request.variantIds.size} variants to mug $mugId")
+        val copiedVariants = mugVariantFacade.copyVariants(mugId, request)
+        return ResponseEntity.status(HttpStatus.CREATED).body(copiedVariants)
     }
 }

@@ -10,11 +10,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { articlesApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import type { ArticleMugVariant, CreateArticleMugVariantRequest } from '@/types/article';
-import { Edit, Image as ImageIcon, Plus, Trash2, Upload, X } from 'lucide-react';
+import { Copy, Edit, Image as ImageIcon, Plus, Trash2, Upload, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { toast } from 'sonner';
+import CopyVariantsModal from '../components/CopyVariantsModal';
 
 interface MugVariantsTabProps {
   articleId?: number;
@@ -60,6 +61,7 @@ export default function MugVariantsTab({
   const [editingTemporaryIndex, setEditingTemporaryIndex] = useState<number | null>(null);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [imageRemoved, setImageRemoved] = useState(false);
+  const [showCopyModal, setShowCopyModal] = useState(false);
 
   const createCroppedImage = async (
     imageUrl: string,
@@ -455,6 +457,22 @@ export default function MugVariantsTab({
     setIsTemporaryVariant(false);
   };
 
+  const handleCopyVariants = async (variantIds: number[]) => {
+    if (!articleId) {
+      toast.error('Please save the article first before copying variants');
+      return;
+    }
+
+    try {
+      const copiedVariants = await articlesApi.copyVariants(articleId, variantIds);
+      setVariants([...variants, ...copiedVariants]);
+      toast.success(`Successfully copied ${copiedVariants.length} variant${copiedVariants.length !== 1 ? 's' : ''}`);
+    } catch (error) {
+      console.error('Error copying variants:', error);
+      toast.error('Failed to copy variants. Please try again.');
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -591,22 +609,37 @@ export default function MugVariantsTab({
             </div>
           </div>
 
-          <div className="flex justify-end gap-2">
-            {(editingVariantId || editingTemporaryIndex !== null) && (
-              <Button onClick={handleCancelEdit} variant="outline" className="min-w-[120px]">
-                Cancel
+          <div className="flex justify-between items-center">
+            {articleId && !(editingVariantId || editingTemporaryIndex !== null) && (
+              <Button
+                onClick={() => setShowCopyModal(true)}
+                variant="outline"
+                className="min-w-[140px]"
+              >
+                <Copy className="mr-2 h-4 w-4" />
+                Copy Variants
               </Button>
             )}
-            <Button onClick={handleAddOrUpdateVariant} className="min-w-[120px]">
-              {editingVariantId || editingTemporaryIndex !== null ? (
-                <>Update Variant</>
-              ) : (
-                <>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Variant
-                </>
+            <div className={cn(
+              "flex gap-2",
+              !articleId || (editingVariantId || editingTemporaryIndex !== null) ? "w-full justify-end" : ""
+            )}>
+              {(editingVariantId || editingTemporaryIndex !== null) && (
+                <Button onClick={handleCancelEdit} variant="outline" className="min-w-[120px]">
+                  Cancel
+                </Button>
               )}
-            </Button>
+              <Button onClick={handleAddOrUpdateVariant} className="min-w-[120px]">
+                {editingVariantId || editingTemporaryIndex !== null ? (
+                  <>Update Variant</>
+                ) : (
+                  <>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Variant
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -790,6 +823,13 @@ export default function MugVariantsTab({
           </div>
         )}
       </CardContent>
+
+      <CopyVariantsModal
+        isOpen={showCopyModal}
+        onClose={() => setShowCopyModal(false)}
+        onCopy={handleCopyVariants}
+        currentMugId={articleId}
+      />
 
       <ConfirmationDialog
         isOpen={isDeleting}

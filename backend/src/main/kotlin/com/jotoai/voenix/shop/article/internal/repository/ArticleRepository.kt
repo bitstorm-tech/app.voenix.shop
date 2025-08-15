@@ -87,4 +87,18 @@ interface ArticleRepository : JpaRepository<Article, Long> {
     fun findAllActiveMugsWithDetails(
         @Param("articleType") articleType: ArticleType,
     ): List<Article>
+
+    @Query(
+        """
+        SELECT a FROM Article a 
+        LEFT JOIN FETCH a.mugVariants v
+        WHERE a.articleType = :articleType
+        AND (:excludeId IS NULL OR a.id != :excludeId)
+        ORDER BY a.name ASC
+    """,
+    )
+    fun findAllMugsWithVariants(
+        @Param("articleType") articleType: ArticleType,
+        @Param("excludeId") excludeId: Long?,
+    ): List<Article>
 }

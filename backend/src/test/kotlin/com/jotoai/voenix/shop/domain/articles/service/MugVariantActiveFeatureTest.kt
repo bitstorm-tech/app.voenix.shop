@@ -6,6 +6,7 @@ import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
+import com.jotoai.voenix.shop.article.internal.assembler.MugWithVariantsSummaryAssembler
 import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
@@ -34,6 +35,7 @@ class MugVariantActiveFeatureTest {
     private lateinit var mugVariantRepository: MugArticleVariantRepository
     private lateinit var imageStorageService: ImageStorageServiceImpl
     private lateinit var mugArticleVariantAssembler: MugArticleVariantAssembler
+    private lateinit var mugWithVariantsSummaryAssembler: MugWithVariantsSummaryAssembler
     private lateinit var mugVariantService: MugVariantServiceImpl
     private lateinit var mugDetailsService: MugDetailsService
 
@@ -46,13 +48,15 @@ class MugVariantActiveFeatureTest {
         mugVariantRepository = mock(MugArticleVariantRepository::class.java)
         imageStorageService = mock(ImageStorageServiceImpl::class.java)
         mugArticleVariantAssembler = mock(MugArticleVariantAssembler::class.java)
+        mugWithVariantsSummaryAssembler = mock(MugWithVariantsSummaryAssembler::class.java)
         mugDetailsService = mock(MugDetailsService::class.java)
         
         mugVariantService = MugVariantServiceImpl(
             articleRepository,
             mugVariantRepository,
             imageStorageService,
-            mugArticleVariantAssembler
+            mugArticleVariantAssembler,
+            mugWithVariantsSummaryAssembler
         )
 
         // Setup test data
@@ -438,7 +442,7 @@ class MugVariantActiveFeatureTest {
                 active = false
             )
 
-            testArticle.mugVariants = mutableSetOf(inactiveVariant1, inactiveVariant2)
+            testArticle.mugVariants = mutableListOf(inactiveVariant1, inactiveVariant2)
 
             // When filtering active variants
             val activeVariants = testArticle.mugVariants.filter { it.active }

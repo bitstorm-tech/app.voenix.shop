@@ -5,6 +5,7 @@ import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
+import com.jotoai.voenix.shop.article.internal.assembler.MugWithVariantsSummaryAssembler
 import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
@@ -29,6 +30,7 @@ class MugVariantServiceTest {
     private lateinit var mugVariantRepository: MugArticleVariantRepository
     private lateinit var imageStorageService: ImageStorageServiceImpl
     private lateinit var mugArticleVariantAssembler: MugArticleVariantAssembler
+    private lateinit var mugWithVariantsSummaryAssembler: MugWithVariantsSummaryAssembler
     private lateinit var mugVariantService: com.jotoai.voenix.shop.article.internal.service.MugVariantServiceImpl
 
     private lateinit var testArticle: Article
@@ -40,12 +42,14 @@ class MugVariantServiceTest {
         mugVariantRepository = mock(MugArticleVariantRepository::class.java)
         imageStorageService = mock(ImageStorageServiceImpl::class.java)
         mugArticleVariantAssembler = mock(MugArticleVariantAssembler::class.java)
+        mugWithVariantsSummaryAssembler = mock(MugWithVariantsSummaryAssembler::class.java)
         mugVariantService =
             com.jotoai.voenix.shop.article.internal.service.MugVariantServiceImpl(
                 articleRepository,
                 mugVariantRepository,
                 imageStorageService,
                 mugArticleVariantAssembler,
+                mugWithVariantsSummaryAssembler,
             )
 
         // Setup test data
