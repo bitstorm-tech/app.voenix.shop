@@ -23,9 +23,10 @@ npm run format           # Run code formatter
 
 - **Use frontend-expert agent** for all React/TypeScript implementations
 - Don't use `React.memo`, `useCallback` or `useMemo` since the React compiler handles these optimizations automatically
-- Run the formatter in the frontend folder for all new or changed files at the end of the implementation
+- Run the formatter, linter and type-check in the frontend folder for all new or changed files at the end of the implementation
+- The implementation is only accepted if all tests, linter and type-checks pass
 - Make all React components and web pages responsive → working on Mobile and Desktop
-- Use TypeScript strict mode - ensure proper typing for all components
+- Use TypeScript strict mode to ensure proper typing for all components
 - Validate forms with proper error handling and user feedback
 - Test admin features with different role permissions
 
