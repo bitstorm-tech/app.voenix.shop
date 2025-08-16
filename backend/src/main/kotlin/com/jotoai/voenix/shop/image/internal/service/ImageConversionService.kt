@@ -35,30 +35,50 @@ class ImageConversionService {
         cropArea: CropArea,
     ): ByteArray {
         val image = ImmutableImage.loader().fromBytes(imageBytes)
+        
+        val cropX = cropArea.x.toInt()
+        val cropY = cropArea.y.toInt()
+        val cropWidth = cropArea.width.toInt()
+        val cropHeight = cropArea.height.toInt()
 
-        require(cropArea.x >= 0 && cropArea.y >= 0) {
-            "Crop coordinates must be non-negative"
-        }
-        require(cropArea.x + cropArea.width <= image.width) {
-            "Crop area exceeds image width"
-        }
-        require(cropArea.y + cropArea.height <= image.height) {
-            "Crop area exceeds image height"
+        // Calculate the intersection between crop area and image bounds
+        val sourceX = maxOf(0, cropX)
+        val sourceY = maxOf(0, cropY)
+        val sourceWidth = minOf(image.width - sourceX, cropWidth - (sourceX - cropX))
+        val sourceHeight = minOf(image.height - sourceY, cropHeight - (sourceY - cropY))
+
+        // If there's no intersection, return a transparent image
+        if (sourceWidth <= 0 || sourceHeight <= 0) {
+            val transparentImage = ImmutableImage.create(cropWidth, cropHeight)
+            val writer: ImageWriter = PngWriter.MaxCompression
+            return transparentImage.bytes(writer)
         }
 
-        val rectangle =
-            Rectangle(
-                cropArea.x.toInt(),
-                cropArea.y.toInt(),
-                cropArea.width.toInt(),
-                cropArea.height.toInt(),
-            )
+        // Calculate where to place the cropped portion on the result canvas
+        val destX = sourceX - cropX
+        val destY = sourceY - cropY
 
-        // Crop the image and return bytes in PNG format to maintain quality
-        val croppedImage = image.subimage(rectangle)
-        // Use PNG writer to maintain image quality without compression
+        // If the crop area is entirely within the image bounds, use simple cropping
+        if (cropX >= 0 && cropY >= 0 && cropX + cropWidth <= image.width && cropY + cropHeight <= image.height) {
+            val rectangle = Rectangle(cropX, cropY, cropWidth, cropHeight)
+            val croppedImage = image.subimage(rectangle)
+            val writer: ImageWriter = PngWriter.MaxCompression
+            return croppedImage.bytes(writer)
+        }
+
+        // Create a transparent canvas for the final result
+        val resultImage = ImmutableImage.create(cropWidth, cropHeight)
+        
+        // Extract the portion of the source image that intersects with the crop area
+        val sourceRectangle = Rectangle(sourceX, sourceY, sourceWidth, sourceHeight)
+        val sourcePortion = image.subimage(sourceRectangle)
+        
+        // Overlay the source portion onto the transparent canvas at the correct position
+        val finalImage = resultImage.overlay(sourcePortion, destX, destY)
+        
+        // Use PNG writer to maintain transparency
         val writer: ImageWriter = PngWriter.MaxCompression
-        return croppedImage.bytes(writer)
+        return finalImage.bytes(writer)
     }
 
     fun getImageDimensions(imageBytes: ByteArray): ImageDimensions {

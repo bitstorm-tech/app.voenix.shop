@@ -551,10 +551,18 @@ class ImageStorageServiceImpl(
     ): ByteArray {
         // Get original image dimensions for logging
         val originalImage = imageConversionService.getImageDimensions(imageBytes)
+        
+        // Check if transparent padding will be applied
+        val hasNegativeCoords = cropArea.x < 0 || cropArea.y < 0
+        val exceedsImageBounds = cropArea.x + cropArea.width > originalImage.width || 
+                                cropArea.y + cropArea.height > originalImage.height
+        val requiresPadding = hasNegativeCoords || exceedsImageBounds
+        
         logger.info(
             "Applying crop - Original image: ${originalImage.width}x${originalImage.height}, " +
                 "Crop area: x=${cropArea.x}, y=${cropArea.y}, " +
-                "width=${cropArea.width}, height=${cropArea.height}",
+                "width=${cropArea.width}, height=${cropArea.height}" +
+                if (requiresPadding) " (with transparent padding)" else "",
         )
 
         val croppedBytes = imageConversionService.cropImage(imageBytes, cropArea)
