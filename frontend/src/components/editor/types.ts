@@ -5,6 +5,7 @@ export interface MugVariant {
   id: number;
   mugId: number;
   colorCode: string;
+  name: string;
   exampleImageUrl: string | null;
   supplierArticleNumber: string | null;
   isDefault: boolean;

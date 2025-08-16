@@ -43,6 +43,7 @@ export interface MugVariant {
   id: number;
   mugId: number;
   colorCode: string;
+  name: string;
   exampleImageUrl: string;
   supplierArticleNumber?: string;
   isDefault: boolean;

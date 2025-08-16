@@ -30,6 +30,7 @@ const mapMugToOption = (mug: Mug): MugOption => {
       id: v.id,
       mugId: v.mugId,
       colorCode: v.colorCode,
+      name: v.name,
       exampleImageUrl: v.exampleImageUrl,
       supplierArticleNumber: v.supplierArticleNumber ?? null,
       isDefault: v.isDefault,

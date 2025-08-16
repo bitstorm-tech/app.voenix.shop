@@ -528,6 +528,7 @@ class ArticleServiceImpl(
                         id = variant.id!!,
                         mugId = article.id,
                         colorCode = variant.outsideColorCode, // Using outside color as primary
+                        name = variant.name,
                         exampleImageUrl =
                             variant.exampleImageFilename?.let { filename ->
                                 storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)

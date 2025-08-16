@@ -4,28 +4,6 @@ import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Check, Loader2, Star } from 'lucide-react';
 
-// Helper function to get a friendly color name from hex
-function getColorName(hex: string): string {
-  const colors: Record<string, string> = {
-    '#FFFFFF': 'White',
-    '#000000': 'Black',
-    '#FF0000': 'Red',
-    '#00FF00': 'Green',
-    '#0000FF': 'Blue',
-    '#FFFF00': 'Yellow',
-    '#FF6B6B': 'Coral Red',
-    '#87CEEB': 'Sky Blue',
-    '#4B0082': 'Indigo',
-    '#800080': 'Purple',
-    '#FFC0CB': 'Pink',
-    '#FFA500': 'Orange',
-    '#808080': 'Gray',
-    '#A52A2A': 'Brown',
-  };
-
-  const normalizedHex = hex.toUpperCase();
-  return colors[normalizedHex] || hex;
-}
 
 export default function MugSelectionStep() {
   const selectedMug = useWizardStore((state) => state.selectedMug);
@@ -160,8 +138,8 @@ export default function MugSelectionStep() {
                             style={{
                               backgroundColor: variant.colorCode.startsWith('#') ? variant.colorCode : `#${variant.colorCode}`,
                             }}
-                            aria-label={`Select ${getColorName(variant.colorCode)} color`}
-                            title={getColorName(variant.colorCode)}
+                            aria-label={`Select ${variant.name} color`}
+                            title={variant.name}
                           >
                             {(isVariantSelected || showAsDefault) && (
                               <div className="absolute inset-0 flex items-center justify-center">
