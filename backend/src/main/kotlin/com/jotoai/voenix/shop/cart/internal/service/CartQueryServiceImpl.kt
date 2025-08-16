@@ -8,6 +8,7 @@ import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
 import com.jotoai.voenix.shop.cart.api.enums.CartStatus
 import com.jotoai.voenix.shop.cart.api.exceptions.CartNotFoundException
 import com.jotoai.voenix.shop.cart.internal.assembler.CartAssembler
+import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
@@ -163,8 +164,7 @@ class CartQueryServiceImpl(
         cartRepository
             .findActiveCartByUserId(userId)
             .orElseThrow {
-                com.jotoai.voenix.shop.common.exception
-                    .BadRequestException("No active cart found for user: $userId")
+                BadRequestException("No active cart found for user: $userId")
             }
 
     /**

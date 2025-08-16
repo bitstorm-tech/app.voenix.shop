@@ -7,6 +7,7 @@ import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
+import java.time.LocalDateTime
 import java.util.UUID
 
 /**
@@ -72,7 +74,7 @@ class ImageManagementService(
             val originalFilename = file.originalFilename ?: "unknown"
             val contentType = file.contentType ?: "application/octet-stream"
             val fileSize = file.size
-            val uploadedAt = java.time.LocalDateTime.now()
+            val uploadedAt = LocalDateTime.now()
 
             // Route to appropriate storage based on imageType
             val storedFilename =
@@ -437,7 +439,7 @@ class ImageManagementService(
                 imageStorageService.storeFile(file, request.imageType)
             }
 
-        return com.jotoai.voenix.shop.image.api.dto.SimpleImageDto(
+        return SimpleImageDto(
             filename = filename,
             imageType = request.imageType,
         )

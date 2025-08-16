@@ -18,6 +18,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.PasswordEncoder
@@ -292,7 +293,7 @@ class AuthServiceImpl(
      * Creates and persists an authenticated session
      */
     private fun createAuthenticatedSession(
-        authentication: org.springframework.security.core.Authentication,
+        authentication: Authentication,
         request: HttpServletRequest,
         response: HttpServletResponse,
     ): LoginResponse {

@@ -4,5 +4,5 @@ import jakarta.validation.constraints.NotEmpty
 
 data class CopyVariantsRequest(
     @field:NotEmpty(message = "At least one variant must be selected")
-    val variantIds: List<Long>
+    val variantIds: List<Long>,
 )

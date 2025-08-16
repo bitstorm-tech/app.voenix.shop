@@ -3,6 +3,8 @@ package com.jotoai.voenix.shop.article.api
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
+import com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto
+import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 
@@ -13,7 +15,7 @@ import com.jotoai.voenix.shop.article.api.enums.ArticleType
 interface ArticleQueryService {
     fun getArticlesByIds(ids: Collection<Long>): Map<Long, ArticleDto>
 
-    fun getMugVariantsByIds(ids: Collection<Long>): Map<Long, com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto>
+    fun getMugVariantsByIds(ids: Collection<Long>): Map<Long, MugArticleVariantDto>
 
     fun getCurrentGrossPrice(articleId: Long): Long
 
@@ -22,7 +24,7 @@ interface ArticleQueryService {
         variantId: Long,
     ): Boolean
 
-    fun getMugDetailsByArticleId(articleId: Long): com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto?
+    fun getMugDetailsByArticleId(articleId: Long): MugArticleDetailsDto?
 
     fun findAll(
         page: Int,

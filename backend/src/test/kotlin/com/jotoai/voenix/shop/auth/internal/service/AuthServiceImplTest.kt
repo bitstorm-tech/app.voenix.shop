@@ -9,8 +9,8 @@ import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.user.api.UserService
 import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
-import com.jotoai.voenix.shop.user.api.dto.UserAuthenticationDto
 import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
+import com.jotoai.voenix.shop.user.api.dto.UserAuthenticationDto
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -313,8 +313,8 @@ class AuthServiceImplTest {
                 id = existingUser.id,
                 email = existingUser.email,
                 passwordHash = "hashedPassword",
-                roles = setOf("USER")
-            )
+                roles = setOf("USER"),
+            ),
         )
 
         assertThrows<ResourceAlreadyExistsException> {

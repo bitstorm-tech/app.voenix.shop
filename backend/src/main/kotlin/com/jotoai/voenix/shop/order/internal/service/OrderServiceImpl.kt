@@ -1,6 +1,8 @@
 package com.jotoai.voenix.shop.order.internal.service
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.dto.ArticleDto
+import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.CartQueryService
 import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
@@ -317,8 +319,8 @@ class OrderServiceImpl(
 
     private fun toItemDto(
         entity: OrderItem,
-        articlesById: Map<Long, com.jotoai.voenix.shop.article.api.dto.ArticleDto>,
-        variantsById: Map<Long, com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto>,
+        articlesById: Map<Long, ArticleDto>,
+        variantsById: Map<Long, MugArticleVariantDto>,
         imagesById: Map<Long, GeneratedImageDto>,
     ): OrderItemDto =
         OrderItemDto(

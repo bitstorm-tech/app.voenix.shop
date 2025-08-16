@@ -11,6 +11,7 @@ import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
+import com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
 import com.jotoai.voenix.shop.pdf.api.dto.PdfSize
 import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
@@ -23,16 +24,16 @@ import com.lowagie.text.pdf.BaseFont
 import com.lowagie.text.pdf.PdfContentByte
 import com.lowagie.text.pdf.PdfWriter
 import jakarta.annotation.PostConstruct
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.imageio.ImageIO
-import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 /**
  * Consolidated PDF generation service implementation using OpenPDF library.
@@ -94,7 +95,7 @@ class PdfGenerationServiceImpl(
         private const val FALLBACK_TEXT_OFFSET = 10f
         private const val LEFT_HEADER_X_OFFSET = 15f
         private const val RIGHT_INFO_X_OFFSET = 5f
-        
+
         // Text rotation constants
         private const val TEXT_ROTATION_VERTICAL = 90f
     }
@@ -374,7 +375,7 @@ class PdfGenerationServiceImpl(
     private fun createOrderPage(
         writer: PdfWriter,
         orderData: OrderPdfData,
-        orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData,
+        orderItem: OrderItemPdfData,
         pageNumber: Int,
         totalPages: Int,
     ) {
@@ -432,19 +433,19 @@ class PdfGenerationServiceImpl(
         logger.debug("Created page $pageNumber/$totalPages for order ${orderData.orderNumber}")
     }
 
-    private fun getPageWidth(orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData): Float =
+    private fun getPageWidth(orderItem: OrderItemPdfData): Float =
         orderItem.article.mugDetails
             ?.documentFormatWidthMm
             ?.let { it * MM_TO_POINTS }
             ?: (defaultPdfWidthMm * MM_TO_POINTS)
 
-    private fun getPageHeight(orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData): Float =
+    private fun getPageHeight(orderItem: OrderItemPdfData): Float =
         orderItem.article.mugDetails
             ?.documentFormatHeightMm
             ?.let { it * MM_TO_POINTS }
             ?: (defaultPdfHeightMm * MM_TO_POINTS)
 
-    private fun getMargin(orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData): Float =
+    private fun getMargin(orderItem: OrderItemPdfData): Float =
         orderItem.article.mugDetails
             ?.documentFormatMarginBottomMm
             ?.let { it * MM_TO_POINTS }
@@ -478,7 +479,7 @@ class PdfGenerationServiceImpl(
 
     private fun addProductInfo(
         contentByte: PdfContentByte,
-        orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData,
+        orderItem: OrderItemPdfData,
         pageWidth: Float,
         pageHeight: Float,
     ) {
@@ -521,7 +522,7 @@ class PdfGenerationServiceImpl(
     private fun addProductImage(
         contentByte: PdfContentByte,
         orderData: OrderPdfData,
-        orderItem: com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData,
+        orderItem: OrderItemPdfData,
         pageWidth: Float,
         pageHeight: Float,
         margin: Float,

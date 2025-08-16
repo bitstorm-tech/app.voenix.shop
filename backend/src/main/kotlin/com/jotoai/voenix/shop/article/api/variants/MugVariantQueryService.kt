@@ -8,6 +8,6 @@ import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
  */
 interface MugVariantQueryService {
     fun findByArticleId(articleId: Long): List<MugArticleVariantDto>
-    
+
     fun findAllMugsWithVariants(excludeMugId: Long?): List<MugWithVariantsSummaryDto>
 }

@@ -35,7 +35,7 @@ class ImageConversionService {
         cropArea: CropArea,
     ): ByteArray {
         val image = ImmutableImage.loader().fromBytes(imageBytes)
-        
+
         val cropX = cropArea.x.toInt()
         val cropY = cropArea.y.toInt()
         val cropWidth = cropArea.width.toInt()
@@ -68,14 +68,14 @@ class ImageConversionService {
 
         // Create a transparent canvas for the final result
         val resultImage = ImmutableImage.create(cropWidth, cropHeight)
-        
+
         // Extract the portion of the source image that intersects with the crop area
         val sourceRectangle = Rectangle(sourceX, sourceY, sourceWidth, sourceHeight)
         val sourcePortion = image.subimage(sourceRectangle)
-        
+
         // Overlay the source portion onto the transparent canvas at the correct position
         val finalImage = resultImage.overlay(sourcePortion, destX, destY)
-        
+
         // Use PNG writer to maintain transparency
         val writer: ImageWriter = PngWriter.MaxCompression
         return finalImage.bytes(writer)

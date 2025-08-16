@@ -27,7 +27,7 @@ class MugWithVariantsSummaryAssembler(
             id = requireNotNull(entity.id) { "Article ID cannot be null when converting to DTO" },
             name = entity.name,
             supplierArticleName = entity.supplierArticleName,
-            variants = entity.mugVariants?.map { variantToSummaryDto(it) } ?: emptyList()
+            variants = entity.mugVariants?.map { variantToSummaryDto(it) } ?: emptyList(),
         )
 
     private fun variantToSummaryDto(entity: MugArticleVariant): MugArticleVariantSummaryDto =
@@ -37,9 +37,10 @@ class MugWithVariantsSummaryAssembler(
             insideColorCode = entity.insideColorCode,
             outsideColorCode = entity.outsideColorCode,
             articleVariantNumber = entity.articleVariantNumber,
-            exampleImageUrl = entity.exampleImageFilename?.let { filename ->
-                storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
-            },
-            active = entity.active
+            exampleImageUrl =
+                entity.exampleImageFilename?.let { filename ->
+                    storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
+                },
+            active = entity.active,
         )
 }

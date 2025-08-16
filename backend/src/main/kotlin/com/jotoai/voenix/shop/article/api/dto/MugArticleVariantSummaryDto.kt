@@ -7,5 +7,5 @@ data class MugArticleVariantSummaryDto(
     val outsideColorCode: String,
     val articleVariantNumber: String?,
     val exampleImageUrl: String?,
-    val active: Boolean
+    val active: Boolean,
 )

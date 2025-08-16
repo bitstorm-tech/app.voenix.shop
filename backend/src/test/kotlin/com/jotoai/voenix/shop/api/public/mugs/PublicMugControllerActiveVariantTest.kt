@@ -23,7 +23,6 @@ import java.time.OffsetDateTime
  */
 @WebMvcTest(PublicMugController::class)
 class PublicMugControllerActiveVariantTest {
-
     @Autowired
     private lateinit var mockMvc: MockMvc
 
@@ -39,118 +38,123 @@ class PublicMugControllerActiveVariantTest {
         val now = OffsetDateTime.now()
 
         // Mug with both active and inactive variants
-        testMugWithMixedVariants = PublicMugDto(
-            id = 1L,
-            name = "Premium Coffee Mug",
-            descriptionShort = "High-quality ceramic mug",
-            descriptionLong = "Dishwasher safe premium ceramic coffee mug",
-            image = "/images/mugs/premium.jpg",
-            price = 15.99,
-            heightMm = 95,
-            diameterMm = 80,
-            printTemplateWidthMm = 200,
-            printTemplateHeightMm = 90,
-            fillingQuantity = "330ml",
-            dishwasherSafe = true,
-            active = true,
-            categoryId = 1L,
-            categoryName = "Mugs",
-            subcategoryId = 2L,
-            subcategoryName = "Coffee Mugs",
-            variants = listOf(
-                PublicMugVariantDto(
-                    id = 1L,
-                    mugId = 1L,
-                    colorCode = "#FFFFFF",
-                    name = "White",
-                    exampleImageUrl = "/images/variants/white.jpg",
-                    articleVariantNumber = "PM-WHITE",
-                    isDefault = true,
-                    active = true,
-                    exampleImageFilename = "white.jpg",
-                    createdAt = now,
-                    updatedAt = now
-                ),
-                PublicMugVariantDto(
-                    id = 2L,
-                    mugId = 1L,
-                    colorCode = "#000000",
-                    name = "Black",
-                    exampleImageUrl = "/images/variants/black.jpg",
-                    articleVariantNumber = "PM-BLACK",
-                    isDefault = false,
-                    active = true,
-                    exampleImageFilename = "black.jpg",
-                    createdAt = now,
-                    updatedAt = now
-                )
-                // Note: Inactive variants should already be filtered out at service layer
-            ),
-            createdAt = now,
-            updatedAt = now
-        )
+        testMugWithMixedVariants =
+            PublicMugDto(
+                id = 1L,
+                name = "Premium Coffee Mug",
+                descriptionShort = "High-quality ceramic mug",
+                descriptionLong = "Dishwasher safe premium ceramic coffee mug",
+                image = "/images/mugs/premium.jpg",
+                price = 15.99,
+                heightMm = 95,
+                diameterMm = 80,
+                printTemplateWidthMm = 200,
+                printTemplateHeightMm = 90,
+                fillingQuantity = "330ml",
+                dishwasherSafe = true,
+                active = true,
+                categoryId = 1L,
+                categoryName = "Mugs",
+                subcategoryId = 2L,
+                subcategoryName = "Coffee Mugs",
+                variants =
+                    listOf(
+                        PublicMugVariantDto(
+                            id = 1L,
+                            mugId = 1L,
+                            colorCode = "#FFFFFF",
+                            name = "White",
+                            exampleImageUrl = "/images/variants/white.jpg",
+                            articleVariantNumber = "PM-WHITE",
+                            isDefault = true,
+                            active = true,
+                            exampleImageFilename = "white.jpg",
+                            createdAt = now,
+                            updatedAt = now,
+                        ),
+                        PublicMugVariantDto(
+                            id = 2L,
+                            mugId = 1L,
+                            colorCode = "#000000",
+                            name = "Black",
+                            exampleImageUrl = "/images/variants/black.jpg",
+                            articleVariantNumber = "PM-BLACK",
+                            isDefault = false,
+                            active = true,
+                            exampleImageFilename = "black.jpg",
+                            createdAt = now,
+                            updatedAt = now,
+                        ),
+                        // Note: Inactive variants should already be filtered out at service layer
+                    ),
+                createdAt = now,
+                updatedAt = now,
+            )
 
         // Mug with only active variants
-        testMugWithOnlyActiveVariants = PublicMugDto(
-            id = 2L,
-            name = "Travel Mug",
-            descriptionShort = "Insulated travel mug",
-            descriptionLong = "Double-wall insulated travel mug",
-            image = "/images/mugs/travel.jpg",
-            price = 24.99,
-            heightMm = 150,
-            diameterMm = 75,
-            printTemplateWidthMm = 180,
-            printTemplateHeightMm = 120,
-            fillingQuantity = "450ml",
-            dishwasherSafe = true,
-            active = true,
-            categoryId = 1L,
-            categoryName = "Mugs",
-            subcategoryId = 3L,
-            subcategoryName = "Travel Mugs",
-            variants = listOf(
-                PublicMugVariantDto(
-                    id = 3L,
-                    mugId = 2L,
-                    colorCode = "#FF0000",
-                    name = "Red",
-                    exampleImageUrl = "/images/variants/red.jpg",
-                    articleVariantNumber = "TM-RED",
-                    isDefault = true,
-                    active = true,
-                    exampleImageFilename = "red.jpg",
-                    createdAt = now,
-                    updatedAt = now
-                )
-            ),
-            createdAt = now,
-            updatedAt = now
-        )
+        testMugWithOnlyActiveVariants =
+            PublicMugDto(
+                id = 2L,
+                name = "Travel Mug",
+                descriptionShort = "Insulated travel mug",
+                descriptionLong = "Double-wall insulated travel mug",
+                image = "/images/mugs/travel.jpg",
+                price = 24.99,
+                heightMm = 150,
+                diameterMm = 75,
+                printTemplateWidthMm = 180,
+                printTemplateHeightMm = 120,
+                fillingQuantity = "450ml",
+                dishwasherSafe = true,
+                active = true,
+                categoryId = 1L,
+                categoryName = "Mugs",
+                subcategoryId = 3L,
+                subcategoryName = "Travel Mugs",
+                variants =
+                    listOf(
+                        PublicMugVariantDto(
+                            id = 3L,
+                            mugId = 2L,
+                            colorCode = "#FF0000",
+                            name = "Red",
+                            exampleImageUrl = "/images/variants/red.jpg",
+                            articleVariantNumber = "TM-RED",
+                            isDefault = true,
+                            active = true,
+                            exampleImageFilename = "red.jpg",
+                            createdAt = now,
+                            updatedAt = now,
+                        ),
+                    ),
+                createdAt = now,
+                updatedAt = now,
+            )
 
         // Edge case: Mug with no active variants (should probably not be returned)
-        testMugWithNoActiveVariants = PublicMugDto(
-            id = 3L,
-            name = "Discontinued Mug",
-            descriptionShort = "Old model",
-            descriptionLong = "This mug model has been discontinued",
-            image = "/images/mugs/discontinued.jpg",
-            price = 9.99,
-            heightMm = 90,
-            diameterMm = 85,
-            printTemplateWidthMm = 190,
-            printTemplateHeightMm = 85,
-            fillingQuantity = "300ml",
-            dishwasherSafe = false,
-            active = true,
-            categoryId = 1L,
-            categoryName = "Mugs",
-            subcategoryId = 4L,
-            subcategoryName = "Clearance",
-            variants = emptyList(), // All variants are inactive
-            createdAt = now,
-            updatedAt = now
-        )
+        testMugWithNoActiveVariants =
+            PublicMugDto(
+                id = 3L,
+                name = "Discontinued Mug",
+                descriptionShort = "Old model",
+                descriptionLong = "This mug model has been discontinued",
+                image = "/images/mugs/discontinued.jpg",
+                price = 9.99,
+                heightMm = 90,
+                diameterMm = 85,
+                printTemplateWidthMm = 190,
+                printTemplateHeightMm = 85,
+                fillingQuantity = "300ml",
+                dishwasherSafe = false,
+                active = true,
+                categoryId = 1L,
+                categoryName = "Mugs",
+                subcategoryId = 4L,
+                subcategoryName = "Clearance",
+                variants = emptyList(), // All variants are inactive
+                createdAt = now,
+                updatedAt = now,
+            )
     }
 
     @Test
@@ -161,9 +165,11 @@ class PublicMugControllerActiveVariantTest {
         `when`(articleQueryService.findPublicMugs()).thenReturn(mugs)
 
         // When & Then
-        mockMvc.perform(get("/api/mugs")
-            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk)
+        mockMvc
+            .perform(
+                get("/api/mugs")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(status().isOk)
             .andExpect(jsonPath("$").isArray)
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].id").value(1))
@@ -186,9 +192,11 @@ class PublicMugControllerActiveVariantTest {
         `when`(articleQueryService.findPublicMugs()).thenReturn(mugs)
 
         // When & Then
-        mockMvc.perform(get("/api/mugs")
-            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk)
+        mockMvc
+            .perform(
+                get("/api/mugs")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(status().isOk)
             .andExpect(jsonPath("$").isArray)
             .andExpect(jsonPath("$.length()").value(2))
             .andExpect(jsonPath("$[0].variants.length()").value(1))
@@ -202,9 +210,11 @@ class PublicMugControllerActiveVariantTest {
         `when`(articleQueryService.findPublicMugs()).thenReturn(emptyList())
 
         // When & Then
-        mockMvc.perform(get("/api/mugs")
-            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk)
+        mockMvc
+            .perform(
+                get("/api/mugs")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(status().isOk)
             .andExpect(jsonPath("$").isArray)
             .andExpect(jsonPath("$.length()").value(0))
     }
@@ -217,9 +227,11 @@ class PublicMugControllerActiveVariantTest {
         `when`(articleQueryService.findPublicMugs()).thenReturn(mugs)
 
         // When & Then
-        mockMvc.perform(get("/api/mugs")
-            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk)
+        mockMvc
+            .perform(
+                get("/api/mugs")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(status().isOk)
             .andExpect(jsonPath("$[0].variants[0].id").exists())
             .andExpect(jsonPath("$[0].variants[0].mugId").value(1))
             .andExpect(jsonPath("$[0].variants[0].colorCode").exists())
@@ -236,9 +248,11 @@ class PublicMugControllerActiveVariantTest {
         `when`(articleQueryService.findPublicMugs()).thenReturn(mugs)
 
         // When & Then
-        mockMvc.perform(get("/api/mugs")
-            .contentType(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk)
+        mockMvc
+            .perform(
+                get("/api/mugs")
+                    .contentType(MediaType.APPLICATION_JSON),
+            ).andExpect(status().isOk)
             .andExpect(jsonPath("$[0].variants[?(@.isDefault == true)].active").value(true))
     }
 
@@ -247,12 +261,13 @@ class PublicMugControllerActiveVariantTest {
     fun serviceLayerFiltering_IsTransparent() {
         // This test verifies that the controller doesn't need to know about
         // active/inactive filtering - it's handled at the service layer
-        
+
         // Given
         `when`(articleQueryService.findPublicMugs()).thenReturn(listOf(testMugWithMixedVariants))
 
         // When
-        mockMvc.perform(get("/api/mugs"))
+        mockMvc
+            .perform(get("/api/mugs"))
             .andExpect(status().isOk)
 
         // Then

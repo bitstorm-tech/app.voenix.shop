@@ -10,7 +10,6 @@ import com.jotoai.voenix.shop.vat.api.dto.ValueAddedTaxDto
  * It serves as the primary API for both internal module operations and external module access to VAT functionality.
  */
 interface VatService {
-    // Query operations
     /**
      * Retrieves all VAT configurations.
      */
@@ -37,7 +36,6 @@ interface VatService {
      */
     fun existsById(id: Long): Boolean
 
-    // Command operations
     /**
      * Creates a new VAT configuration.
      */

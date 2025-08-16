@@ -11,6 +11,7 @@ import com.jotoai.voenix.shop.cart.api.exceptions.CartItemNotFoundException
 import com.jotoai.voenix.shop.cart.api.exceptions.CartNotFoundException
 import com.jotoai.voenix.shop.cart.api.exceptions.CartOperationException
 import com.jotoai.voenix.shop.cart.internal.assembler.CartAssembler
+import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.entity.CartItem
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
@@ -411,8 +412,8 @@ class CartFacadeImpl(
     }
 
     private fun saveCartWithOptimisticLocking(
-        cart: com.jotoai.voenix.shop.cart.internal.entity.Cart,
-    ): com.jotoai.voenix.shop.cart.internal.entity.Cart =
+        cart: Cart,
+    ): Cart =
         try {
             cartRepository.save(cart)
         } catch (e: OptimisticLockingFailureException) {

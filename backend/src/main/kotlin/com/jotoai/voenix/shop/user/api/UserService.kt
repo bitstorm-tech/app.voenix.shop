@@ -1,5 +1,7 @@
 package com.jotoai.voenix.shop.user.api
 
+import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.user.api.dto.BulkCreateUsersRequest
 import com.jotoai.voenix.shop.user.api.dto.BulkDeleteUsersRequest
 import com.jotoai.voenix.shop.user.api.dto.BulkOperationResult
@@ -26,10 +28,10 @@ data class PasswordValidationResult(
 /**
  * Unified service for all User module operations.
  * This service combines authentication, query, command, password management, and role management operations.
- * 
+ *
  * This replaces the previous CQRS-style separation into multiple services:
  * - UserAuthenticationService
- * - UserFacade  
+ * - UserFacade
  * - UserPasswordService
  * - UserQueryService
  * - UserRoleManagementService
@@ -37,11 +39,6 @@ data class PasswordValidationResult(
  * @since 1.0
  */
 interface UserService {
-    
-    // ========================================
-    // Authentication Operations
-    // ========================================
-    
     /**
      * Loads user authentication details by email for authentication purposes.
      * Returns UserAuthenticationDto to avoid circular dependencies with auth module.
@@ -58,17 +55,13 @@ interface UserService {
      * @param password The new password (optional)
      * @param oneTimePassword The new one-time password (optional)
      * @return Updated user DTO
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      */
     fun updateUserAuthFields(
         id: Long,
         password: String? = null,
         oneTimePassword: String? = null,
     ): UserDto
-    
-    // ========================================
-    // Query Operations
-    // ========================================
 
     /**
      * Retrieves all users.
@@ -102,7 +95,7 @@ interface UserService {
      *
      * @param id The user ID
      * @return User DTO
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      */
     fun getUserById(id: Long): UserDto
 
@@ -111,7 +104,7 @@ interface UserService {
      *
      * @param email The user email
      * @return User DTO
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      */
     fun getUserByEmail(email: String): UserDto
 
@@ -138,16 +131,12 @@ interface UserService {
      */
     fun getUsersByIds(ids: List<Long>): List<UserDto>
 
-    // ========================================
-    // Command Operations (User Management)
-    // ========================================
-
     /**
      * Creates a new user.
      *
      * @param request User creation request
      * @return Created user DTO
-     * @throws com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException if email already exists
+     * @throws ResourceAlreadyExistsException if email already exists
      */
     fun createUser(request: CreateUserRequest): UserDto
 
@@ -157,8 +146,8 @@ interface UserService {
      * @param id The user ID
      * @param request User update request
      * @return Updated user DTO
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
-     * @throws com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException if email already exists
+     * @throws ResourceNotFoundException if user doesn't exist
+     * @throws ResourceAlreadyExistsException if email already exists
      */
     fun updateUser(
         id: Long,
@@ -169,7 +158,7 @@ interface UserService {
      * Soft deletes a user (marks as deleted without removing from database).
      *
      * @param id The user ID
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      */
     fun softDeleteUser(id: Long)
 
@@ -177,7 +166,7 @@ interface UserService {
      * Hard deletes a user (permanently removes from database).
      *
      * @param id The user ID
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      */
     fun deleteUser(id: Long)
 
@@ -186,13 +175,9 @@ interface UserService {
      *
      * @param id The user ID
      * @return Restored user DTO
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      */
     fun restoreUser(id: Long): UserDto
-
-    // ========================================
-    // Bulk Operations
-    // ========================================
 
     /**
      * Creates multiple users in a single operation.
@@ -218,10 +203,6 @@ interface UserService {
      */
     fun bulkDeleteUsers(request: BulkDeleteUsersRequest): BulkOperationResult<Long>
 
-    // ========================================
-    // Password Management Operations
-    // ========================================
-
     /**
      * Sets an already encoded password for a user.
      * This method should only be used with passwords that have already been hashed/encoded.
@@ -229,7 +210,7 @@ interface UserService {
      * @param userId The ID of the user
      * @param encodedPassword The already encoded password
      * @return Updated user DTO
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      */
     fun setEncodedPassword(
         userId: Long,
@@ -251,7 +232,7 @@ interface UserService {
      * @param currentPassword The current password (raw)
      * @param newPassword The new password (raw)
      * @return Updated user DTO
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      * @throws IllegalArgumentException if current password is incorrect or new password doesn't meet requirements
      */
     fun changePassword(
@@ -267,7 +248,7 @@ interface UserService {
      * @param userId The ID of the user
      * @param newPassword The new password (raw)
      * @return Updated user DTO
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      * @throws IllegalArgumentException if new password doesn't meet requirements
      */
     fun resetPassword(
@@ -281,24 +262,20 @@ interface UserService {
      * @param userId The ID of the user
      * @param rawPassword The raw password to verify
      * @return true if the password matches, false otherwise
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      */
     fun verifyPassword(
         userId: Long,
         rawPassword: String,
     ): Boolean
 
-    // ========================================
-    // Role Management Operations
-    // ========================================
-
     /**
      * Assigns roles to a user by role names.
      *
      * @param userId The ID of the user to assign roles to
      * @param roleNames Set of role names to assign to the user
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
-     * @throws com.jotoai.voenix.shop.common.exception.ResourceNotFoundException if any role doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if any role doesn't exist
      */
     fun assignRoles(
         userId: Long,
@@ -310,7 +287,7 @@ interface UserService {
      *
      * @param userId The ID of the user to remove roles from
      * @param roleNames Set of role names to remove from the user
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      */
     fun removeRoles(
         userId: Long,
@@ -322,7 +299,7 @@ interface UserService {
      *
      * @param userId The ID of the user
      * @return Set of role names assigned to the user
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      */
     fun getUserRoles(userId: Long): Set<String>
 
@@ -331,8 +308,8 @@ interface UserService {
      *
      * @param userId The ID of the user
      * @param roleNames Set of role names to set for the user
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
-     * @throws com.jotoai.voenix.shop.common.exception.ResourceNotFoundException if any role doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if any role doesn't exist
      */
     fun setUserRoles(
         userId: Long,
@@ -345,7 +322,7 @@ interface UserService {
      * @param userId The ID of the user
      * @param roleName The name of the role to check
      * @return true if the user has the role, false otherwise
-     * @throws com.jotoai.voenix.shop.user.api.exceptions.UserNotFoundException if user doesn't exist
+     * @throws ResourceNotFoundException if user doesn't exist
      */
     fun userHasRole(
         userId: Long,

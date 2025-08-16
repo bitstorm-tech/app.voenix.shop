@@ -3,6 +3,8 @@ package com.jotoai.voenix.shop.article.internal.service
 import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
+import com.jotoai.voenix.shop.article.api.variants.ShirtVariantFacade
+import com.jotoai.voenix.shop.article.api.variants.ShirtVariantQueryService
 import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
@@ -20,8 +22,8 @@ class ShirtVariantServiceImpl(
     private val shirtVariantRepository: ShirtArticleVariantRepository,
     private val imageStorageService: ImageStorageService,
     private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
-) : com.jotoai.voenix.shop.article.api.variants.ShirtVariantQueryService,
-    com.jotoai.voenix.shop.article.api.variants.ShirtVariantFacade {
+) : ShirtVariantQueryService,
+    ShirtVariantFacade {
     companion object {
         private val logger = LoggerFactory.getLogger(ShirtVariantServiceImpl::class.java)
     }

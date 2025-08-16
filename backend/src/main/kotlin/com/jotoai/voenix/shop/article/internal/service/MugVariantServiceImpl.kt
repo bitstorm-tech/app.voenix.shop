@@ -6,6 +6,8 @@ import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
+import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
+import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.MugWithVariantsSummaryAssembler
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
@@ -24,8 +26,8 @@ class MugVariantServiceImpl(
     private val imageStorageService: ImageStorageServiceImpl,
     private val mugArticleVariantAssembler: MugArticleVariantAssembler,
     private val mugWithVariantsSummaryAssembler: MugWithVariantsSummaryAssembler,
-) : com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService,
-    com.jotoai.voenix.shop.article.api.variants.MugVariantFacade {
+) : MugVariantQueryService,
+    MugVariantFacade {
     companion object {
         private val logger = LoggerFactory.getLogger(MugVariantServiceImpl::class.java)
     }
@@ -200,11 +202,15 @@ class MugVariantServiceImpl(
     }
 
     @Transactional
-    override fun copyVariants(targetMugId: Long, request: CopyVariantsRequest): List<MugArticleVariantDto> {
+    override fun copyVariants(
+        targetMugId: Long,
+        request: CopyVariantsRequest,
+    ): List<MugArticleVariantDto> {
         // Validate target mug exists
-        val targetArticle = articleRepository.findById(targetMugId).orElse(null)
-            ?: throw ArticleNotFoundException("Target mug not found with id: $targetMugId")
-        
+        val targetArticle =
+            articleRepository.findById(targetMugId).orElse(null)
+                ?: throw ArticleNotFoundException("Target mug not found with id: $targetMugId")
+
         if (targetArticle.articleType != ArticleType.MUG) {
             throw BadRequestException("Target article must be of type MUG")
         }
@@ -222,24 +228,26 @@ class MugVariantServiceImpl(
         val hasExistingDefault = existingVariants.any { it.isDefault }
 
         // Copy variants
-        val copiedVariants = sourceVariants.map { sourceVariant ->
-            val newVariant = MugArticleVariant(
-                article = targetArticle,
-                insideColorCode = sourceVariant.insideColorCode,
-                outsideColorCode = sourceVariant.outsideColorCode,
-                name = sourceVariant.name,
-                articleVariantNumber = sourceVariant.articleVariantNumber,
-                // Never copy the isDefault flag - only set as default if there are no existing variants
-                isDefault = !hasExistingDefault && existingVariants.isEmpty() && sourceVariant == sourceVariants.first(),
-                active = sourceVariant.active,
-                // Do not copy the image - only copy variant attributes
-                exampleImageFilename = null
-            )
-            mugVariantRepository.save(newVariant)
-        }
+        val copiedVariants =
+            sourceVariants.map { sourceVariant ->
+                val newVariant =
+                    MugArticleVariant(
+                        article = targetArticle,
+                        insideColorCode = sourceVariant.insideColorCode,
+                        outsideColorCode = sourceVariant.outsideColorCode,
+                        name = sourceVariant.name,
+                        articleVariantNumber = sourceVariant.articleVariantNumber,
+                        // Never copy the isDefault flag - only set as default if there are no existing variants
+                        isDefault = !hasExistingDefault && existingVariants.isEmpty() && sourceVariant == sourceVariants.first(),
+                        active = sourceVariant.active,
+                        // Do not copy the image - only copy variant attributes
+                        exampleImageFilename = null,
+                    )
+                mugVariantRepository.save(newVariant)
+            }
 
         logger.info("Copied ${copiedVariants.size} variants to mug $targetMugId")
-        
+
         return copiedVariants.map { mugArticleVariantAssembler.toDto(it) }
     }
 }

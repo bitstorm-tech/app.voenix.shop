@@ -5,6 +5,7 @@ import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
 import com.jotoai.voenix.shop.config.TestDataConfig
 import com.jotoai.voenix.shop.config.TestSecurityConfig
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository
+import jakarta.persistence.EntityManager
 import jakarta.servlet.http.Cookie
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.TestInstance
@@ -41,7 +42,7 @@ abstract class AbstractSecurityTest {
     protected lateinit var passwordEncoder: PasswordEncoder
 
     @Autowired
-    protected lateinit var entityManager: jakarta.persistence.EntityManager
+    protected lateinit var entityManager: EntityManager
 
     protected var adminSession: MockHttpSession? = null
     protected var userSession: MockHttpSession? = null

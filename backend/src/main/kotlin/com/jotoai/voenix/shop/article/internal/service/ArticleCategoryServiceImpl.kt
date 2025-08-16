@@ -1,5 +1,7 @@
 package com.jotoai.voenix.shop.article.internal.service
 
+import com.jotoai.voenix.shop.article.api.categories.ArticleCategoryFacade
+import com.jotoai.voenix.shop.article.api.categories.ArticleCategoryQueryService
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
 import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleCategoryRequest
 import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleCategoryRequest
@@ -13,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class ArticleCategoryServiceImpl(
     private val articleCategoryRepository: ArticleCategoryRepository,
-) : com.jotoai.voenix.shop.article.api.categories.ArticleCategoryQueryService,
-    com.jotoai.voenix.shop.article.api.categories.ArticleCategoryFacade {
+) : ArticleCategoryQueryService,
+    ArticleCategoryFacade {
     override fun getAllCategories(): List<ArticleCategoryDto> = articleCategoryRepository.findAll().map { it.toDto() }
 
     override fun getCategoryById(id: Long): ArticleCategoryDto =

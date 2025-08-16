@@ -26,6 +26,9 @@ interface MugVariantFacade {
     ): MugArticleVariantDto
 
     fun removeExampleImage(variantId: Long): MugArticleVariantDto
-    
-    fun copyVariants(targetMugId: Long, request: CopyVariantsRequest): List<MugArticleVariantDto>
+
+    fun copyVariants(
+        targetMugId: Long,
+        request: CopyVariantsRequest,
+    ): List<MugArticleVariantDto>
 }

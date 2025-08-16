@@ -4,5 +4,5 @@ data class MugWithVariantsSummaryDto(
     val id: Long,
     val name: String,
     val supplierArticleName: String?,
-    val variants: List<MugArticleVariantSummaryDto>
+    val variants: List<MugArticleVariantSummaryDto>,
 )

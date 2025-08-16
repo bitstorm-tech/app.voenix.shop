@@ -14,14 +14,14 @@ import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserService
 import jakarta.servlet.http.HttpServletRequest
-import java.io.IOException
-import java.time.LocalDateTime
-import java.util.*
 import org.slf4j.LoggerFactory
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
+import java.time.LocalDateTime
+import java.util.*
 
 /**
  * Consolidated implementation of ImageGenerationService that handles both public and user image generation.

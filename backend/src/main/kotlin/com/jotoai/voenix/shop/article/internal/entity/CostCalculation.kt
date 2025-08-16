@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.entity
 
+import com.jotoai.voenix.shop.article.api.dto.CostCalculationDto
 import com.jotoai.voenix.shop.article.api.enums.CalculationMode
 import com.jotoai.voenix.shop.article.api.enums.PurchaseActiveRow
 import com.jotoai.voenix.shop.article.api.enums.SalesActiveRow
@@ -104,7 +105,7 @@ class CostCalculation(
     var updatedAt: OffsetDateTime? = null,
 ) {
     fun toDto() =
-        com.jotoai.voenix.shop.article.api.dto.CostCalculationDto(
+        CostCalculationDto(
             id = requireNotNull(this.id) { "CostCalculation ID cannot be null when converting to DTO" },
             articleId = requireNotNull(this.article.id) { "Article ID cannot be null when converting to DTO" },
             purchasePriceNet = this.purchasePriceNet,

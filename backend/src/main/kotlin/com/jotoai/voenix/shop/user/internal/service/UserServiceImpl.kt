@@ -29,7 +29,7 @@ import java.time.OffsetDateTime
 
 /**
  * Unified implementation of UserService that combines all user-related operations.
- * 
+ *
  * This implementation combines functionality from the following services:
  * - UserAuthServiceImpl (authentication operations)
  * - UserCommandService (command operations / user management)
@@ -44,7 +44,6 @@ class UserServiceImpl(
     private val roleRepository: RoleRepository,
     private val passwordEncoder: PasswordEncoder,
 ) : UserService {
-
     companion object {
         private const val MIN_PASSWORD_LENGTH = 8
         private const val MAX_PASSWORD_LENGTH = 128
