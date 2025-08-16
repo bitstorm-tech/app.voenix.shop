@@ -39,7 +39,7 @@ export interface OrderItemDto {
   generatedImageId?: number;
   generatedImageFilename?: string;
   promptId?: number;
-  customData: Record<string, any>;
+  customData: Record<string, unknown>;
   createdAt: string;
 }
 
@@ -66,6 +66,6 @@ export interface OrderDto {
 }
 
 // API response types
-export interface CreateOrderResponse extends OrderDto {}
+export type CreateOrderResponse = OrderDto;
 
 export type GetOrdersResponse = PaginatedResponse<OrderDto>;

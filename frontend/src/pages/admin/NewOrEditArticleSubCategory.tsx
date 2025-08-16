@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/Textarea';
 import type { CreateArticleSubCategoryRequest, UpdateArticleSubCategoryRequest } from '@/lib/api';
 import { articleCategoriesApi, articleSubCategoriesApi } from '@/lib/api';
 import type { ArticleCategory } from '@/types/mug';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditArticleSubCategory() {
@@ -25,16 +25,7 @@ export default function NewOrEditArticleSubCategory() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchCategories();
-    if (isEditing) {
-      fetchArticleSubCategory();
-    } else {
-      setInitialLoading(false);
-    }
-  }, [id]);
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const data = await articleCategoriesApi.getAll();
       setCategories(data);
@@ -42,9 +33,9 @@ export default function NewOrEditArticleSubCategory() {
       console.error('Error fetching article categories:', error);
       setError('Failed to load article categories');
     }
-  };
+  }, []);
 
-  const fetchArticleSubCategory = async () => {
+  const fetchArticleSubCategory = useCallback(async () => {
     if (!id) return;
 
     try {
@@ -61,7 +52,17 @@ export default function NewOrEditArticleSubCategory() {
     } finally {
       setInitialLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchCategories();
+    if (isEditing) {
+      fetchArticleSubCategory();
+    } else {
+      setInitialLoading(false);
+    }
+  }, [fetchCategories, fetchArticleSubCategory, isEditing]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -8,7 +8,7 @@ import type { CreatePromptSlotVariantRequest, UpdatePromptSlotVariantRequest } f
 import { imagesApi, promptSlotTypesApi, promptSlotVariantsApi } from '@/lib/api';
 import type { PromptSlotType } from '@/types/promptSlotVariant';
 import { Trash2, Upload } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditPromptSlotVariant() {
@@ -32,25 +32,7 @@ export default function NewOrEditPromptSlotVariant() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const blobUrlRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    fetchPromptSlotTypes();
-    if (isEditing) {
-      fetchSlot();
-    } else {
-      setInitialLoading(false);
-    }
-  }, [id]);
-
-  // Cleanup blob URLs
-  useEffect(() => {
-    return () => {
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current);
-      }
-    };
-  }, []);
-
-  const fetchPromptSlotTypes = async () => {
+  const fetchPromptSlotTypes = useCallback(async () => {
     try {
       const data = await promptSlotTypesApi.getAll();
       setPromptSlotTypes(data);
@@ -58,9 +40,9 @@ export default function NewOrEditPromptSlotVariant() {
       console.error('Error fetching prompt slot types:', error);
       setError('Failed to load prompt slot types');
     }
-  };
+  }, []);
 
-  const fetchSlot = async () => {
+  const fetchSlot = useCallback(async () => {
     if (!id) return;
 
     try {
@@ -82,7 +64,26 @@ export default function NewOrEditPromptSlotVariant() {
     } finally {
       setInitialLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchPromptSlotTypes();
+    if (isEditing) {
+      fetchSlot();
+    } else {
+      setInitialLoading(false);
+    }
+  }, [fetchPromptSlotTypes, fetchSlot, isEditing]);
+
+  // Cleanup blob URLs
+  useEffect(() => {
+    return () => {
+      if (blobUrlRef.current) {
+        URL.revokeObjectURL(blobUrlRef.current);
+      }
+    };
+  }, []);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

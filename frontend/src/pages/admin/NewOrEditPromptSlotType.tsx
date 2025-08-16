@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import type { CreatePromptSlotTypeRequest, UpdatePromptSlotTypeRequest } from '@/lib/api';
 import { promptSlotTypesApi } from '@/lib/api';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditPromptSlotType() {
@@ -21,16 +21,7 @@ export default function NewOrEditPromptSlotType() {
   const [error, setError] = useState<string | null>(null);
   const [nextPosition, setNextPosition] = useState<number>(0);
 
-  useEffect(() => {
-    if (isEditing) {
-      fetchPromptSlotType();
-    } else {
-      // For new prompt slot types, fetch all to determine next position
-      fetchNextPosition();
-    }
-  }, [id]);
-
-  const fetchNextPosition = async () => {
+  const fetchNextPosition = useCallback(async () => {
     try {
       setInitialLoading(true);
       const allPromptSlotTypes = await promptSlotTypesApi.getAll();
@@ -44,9 +35,9 @@ export default function NewOrEditPromptSlotType() {
     } finally {
       setInitialLoading(false);
     }
-  };
+  }, []);
 
-  const fetchPromptSlotType = async () => {
+  const fetchPromptSlotType = useCallback(async () => {
     if (!id) return;
 
     try {
@@ -62,7 +53,17 @@ export default function NewOrEditPromptSlotType() {
     } finally {
       setInitialLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (isEditing) {
+      fetchPromptSlotType();
+    } else {
+      // For new prompt slot types, fetch all to determine next position
+      fetchNextPosition();
+    }
+  }, [fetchPromptSlotType, fetchNextPosition, isEditing]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

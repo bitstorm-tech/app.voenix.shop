@@ -5,7 +5,7 @@ import { useSession } from '@/hooks/queries/useAuth';
 import { useCart, useRemoveCartItem, useUpdateCartItem } from '@/hooks/queries/useCart';
 import { imagePreloader } from '@/lib/imagePreloader';
 import { Minus, Plus, RefreshCw, ShoppingBag, Trash2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function CartPage() {
@@ -28,7 +28,7 @@ export default function CartPage() {
   const [updatingItems, setUpdatingItems] = useState<Set<number>>(new Set());
 
   // Only show cart for authenticated users
-  const items = cartData?.items || [];
+  const items = useMemo(() => cartData?.items || [], [cartData?.items]);
   const totalItems = cartData?.totalItemCount || 0;
   const totalPrice = (cartData?.totalPrice || 0) / 100; // Convert cents to dollars
 

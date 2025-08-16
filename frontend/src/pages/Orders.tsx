@@ -172,7 +172,7 @@ export default function OrdersPage() {
           <div className="py-12 text-center">
             <ShoppingBag className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-4 text-lg font-medium text-gray-900">No orders yet</h3>
-            <p className="mt-2 text-gray-600">When you place orders, they'll appear here.</p>
+            <p className="mt-2 text-gray-600">When you place orders, they&apos;ll appear here.</p>
             <Button asChild className="mt-6">
               <Link to="/">Start Shopping</Link>
             </Button>

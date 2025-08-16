@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { Code, Loader2, Upload } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 type Background = 'auto' | 'transparent' | 'opaque';
 type Quality = 'low' | 'medium' | 'high';
@@ -47,9 +47,9 @@ export default function PromptTester() {
     size: '1024x1024',
   });
 
-  const setData = <K extends keyof typeof data>(key: K, value: (typeof data)[K]) => {
+  const setData = useCallback(<K extends keyof typeof data>(key: K, value: (typeof data)[K]) => {
     setDataState((prev) => ({ ...prev, [key]: value }));
-  };
+  }, []);
 
   // Load master prompt from localStorage on mount
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function PromptTester() {
     if (storedMasterPrompt) {
       setData('masterPrompt', storedMasterPrompt);
     }
-  }, []);
+  }, [setData]);
 
   // Save master prompt to localStorage whenever it changes
   useEffect(() => {

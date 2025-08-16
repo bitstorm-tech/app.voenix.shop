@@ -12,7 +12,7 @@ import { imagesApi, promptCategoriesApi, promptsApi, promptSubCategoriesApi } fr
 import { generatePromptNumber, getArticleNumberPlaceholder } from '@/lib/articleNumberUtils';
 import type { PromptCategory, PromptSubCategory } from '@/types/prompt';
 import { Upload, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditPrompt() {
@@ -39,25 +39,7 @@ export default function NewOrEditPrompt() {
   const [exampleImageFile, setExampleImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    fetchCategories();
-    if (isEditing) {
-      fetchPrompt();
-    } else {
-      setInitialLoading(false);
-    }
-  }, [id]);
-
-  // Cleanup blob URLs on unmount
-  useEffect(() => {
-    return () => {
-      if (exampleImageUrl && exampleImageUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(exampleImageUrl);
-      }
-    };
-  }, [exampleImageUrl]);
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const data = await promptCategoriesApi.getAll();
       setCategories(data);
@@ -65,9 +47,9 @@ export default function NewOrEditPrompt() {
       console.error('Error fetching categories:', error);
       setError('Failed to load categories');
     }
-  };
+  }, []);
 
-  const fetchPrompt = async () => {
+  const fetchPrompt = useCallback(async () => {
     if (!id) return;
 
     try {
@@ -105,7 +87,26 @@ export default function NewOrEditPrompt() {
     } finally {
       setInitialLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchCategories();
+    if (isEditing) {
+      fetchPrompt();
+    } else {
+      setInitialLoading(false);
+    }
+  }, [fetchCategories, fetchPrompt, isEditing]);
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      if (exampleImageUrl && exampleImageUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(exampleImageUrl);
+      }
+    };
+  }, [exampleImageUrl]);
+
 
   const fetchSubcategories = async (categoryId: number) => {
     if (!categoryId) {

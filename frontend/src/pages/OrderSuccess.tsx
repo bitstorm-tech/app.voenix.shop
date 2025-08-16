@@ -99,7 +99,7 @@ export default function OrderSuccessPage() {
             <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
           <h1 className="mt-4 text-2xl font-bold text-gray-900 sm:text-3xl">Order confirmed!</h1>
-          <p className="mt-2 text-gray-600">Thank you for your order. We've received your order and will begin processing it shortly.</p>
+          <p className="mt-2 text-gray-600">Thank you for your order. We&apos;ve received your order and will begin processing it shortly.</p>
         </div>
 
         {/* Order Details Card */}
@@ -290,9 +290,9 @@ export default function OrderSuccessPage() {
 
         {/* What's Next */}
         <div className="mt-8 rounded-lg bg-blue-50 p-6">
-          <h2 className="mb-2 text-lg font-semibold text-blue-900">What's next?</h2>
+          <h2 className="mb-2 text-lg font-semibold text-blue-900">What&apos;s next?</h2>
           <p className="text-sm text-blue-800">
-            We'll send you an email confirmation with your order details and tracking information once your order ships. You can check your order
+            We&apos;ll send you an email confirmation with your order details and tracking information once your order ships. You can check your order
             status anytime by visiting your order history.
           </p>
         </div>

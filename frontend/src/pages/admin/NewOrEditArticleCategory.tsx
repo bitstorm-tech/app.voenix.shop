@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/Label';
 import { Textarea } from '@/components/ui/Textarea';
 import type { CreateArticleCategoryRequest, UpdateArticleCategoryRequest } from '@/lib/api';
 import { articleCategoriesApi } from '@/lib/api';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditArticleCategory() {
@@ -21,15 +21,7 @@ export default function NewOrEditArticleCategory() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isEditing) {
-      fetchArticleCategory();
-    } else {
-      setInitialLoading(false);
-    }
-  }, [id]);
-
-  const fetchArticleCategory = async () => {
+  const fetchArticleCategory = useCallback(async () => {
     if (!id) return;
 
     try {
@@ -45,7 +37,15 @@ export default function NewOrEditArticleCategory() {
     } finally {
       setInitialLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (isEditing) {
+      fetchArticleCategory();
+    } else {
+      setInitialLoading(false);
+    }
+  }, [fetchArticleCategory, isEditing]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

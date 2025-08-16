@@ -15,7 +15,7 @@ jest.mock('../ImageSkeleton', () => ({
 }));
 
 jest.mock('../ui/Button', () => ({
-  Button: ({ children, onClick, ...props }: any) => (
+  Button: ({ children, onClick, ...props }: React.ComponentProps<'button'>) => (
     <button onClick={onClick} {...props}>
       {children}
     </button>

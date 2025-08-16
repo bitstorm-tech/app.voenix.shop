@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useVats } from '@/hooks/queries/useVat';
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 export default function PriceCalculationTab() {
   const { data: vats = [] } = useVats();
@@ -26,19 +26,19 @@ export default function PriceCalculationTab() {
     setSalesCalculationMode,
   } = useArticleFormStore();
 
-  const handlePurchaseVatRateChange = (vatRateId: string) => {
+  const handlePurchaseVatRateChange = useCallback((vatRateId: string) => {
     const selectedVat = vats.find((v) => v.id.toString() === vatRateId);
     if (selectedVat) {
       updatePurchaseVatRate(selectedVat.percent, selectedVat.id);
     }
-  };
+  }, [vats, updatePurchaseVatRate]);
 
-  const handleSalesVatRateChange = (vatRateId: string) => {
+  const handleSalesVatRateChange = useCallback((vatRateId: string) => {
     const selectedVat = vats.find((v) => v.id.toString() === vatRateId);
     if (selectedVat) {
       updateSalesVatRate(selectedVat.percent, selectedVat.id);
     }
-  };
+  }, [vats, updateSalesVatRate]);
 
   // Auto-select default VAT when component loads or when VATs change
   useEffect(() => {
@@ -54,7 +54,7 @@ export default function PriceCalculationTab() {
         }
       }
     }
-  }, [vats]);
+  }, [vats, costCalculation.purchaseVatRateId, costCalculation.salesVatRateId, updatePurchaseVatRate, updateSalesVatRate]);
 
   return (
     <div className="space-y-6">

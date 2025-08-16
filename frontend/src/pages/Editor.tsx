@@ -26,7 +26,7 @@ export default function Editor() {
     if (hasPreservedState()) {
       restoreState();
     }
-  }, []);
+  }, [hasPreservedState, restoreState]);
 
   if (promptsLoading || sessionLoading) {
     return (

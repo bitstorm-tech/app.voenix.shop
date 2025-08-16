@@ -20,7 +20,7 @@ class MockImage {
 }
 
 // Replace global Image with MockImage
-(globalThis as any).Image = MockImage;
+(globalThis as typeof globalThis & { Image: typeof MockImage }).Image = MockImage;
 
 describe('useImageWithFallback', () => {
   beforeEach(() => {
@@ -329,11 +329,11 @@ describe('useImageWithFallback', () => {
       const originalSetTimeout = globalThis.setTimeout;
 
       // Spy on setTimeout to capture delays
-      jest.spyOn(globalThis, 'setTimeout').mockImplementation((fn: any, delay: any) => {
+      jest.spyOn(globalThis, 'setTimeout').mockImplementation((fn: TimerHandler, delay: number | undefined) => {
         if (typeof delay === 'number' && delay > 0) {
           delays.push(delay);
         }
-        return originalSetTimeout(fn as any, delay);
+        return originalSetTimeout(fn, delay);
       });
 
       renderHook(() =>
