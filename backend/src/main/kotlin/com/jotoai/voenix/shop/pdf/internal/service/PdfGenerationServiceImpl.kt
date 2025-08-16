@@ -92,6 +92,11 @@ class PdfGenerationServiceImpl(
 
         // Text positioning
         private const val FALLBACK_TEXT_OFFSET = 10f
+        private const val LEFT_HEADER_X_OFFSET = 15f
+        private const val RIGHT_INFO_X_OFFSET = 5f
+        
+        // Text rotation constants
+        private const val TEXT_ROTATION_VERTICAL = 90f
     }
 
     @PostConstruct
@@ -464,9 +469,9 @@ class PdfGenerationServiceImpl(
         contentByte.showTextAligned(
             PdfContentByte.ALIGN_CENTER, // Center alignment
             headerText, // The text
-            15f, // x position (half font size + small offset for better visual centering)
+            LEFT_HEADER_X_OFFSET, // x position (half font size + small offset for better visual centering)
             pageHeight / 2, // y position (center of page)
-            90f, // 90-degree rotation
+            TEXT_ROTATION_VERTICAL, // 90-degree rotation
         )
         contentByte.endText()
     }
@@ -506,9 +511,9 @@ class PdfGenerationServiceImpl(
         contentByte.showTextAligned(
             PdfContentByte.ALIGN_CENTER, // Center alignment
             line, // The text
-            pageWidth - 5f, // x position (distance from right edge)
+            pageWidth - RIGHT_INFO_X_OFFSET, // x position (distance from right edge)
             pageHeight / 2, // y position (center of page)
-            90f, // 90-degree rotation
+            TEXT_ROTATION_VERTICAL, // 90-degree rotation
         )
         contentByte.endText()
     }
@@ -527,7 +532,7 @@ class PdfGenerationServiceImpl(
                 when {
                     orderItem.generatedImageFilename != null -> {
                         try {
-                            imageAccessService.getImageData(orderItem.generatedImageFilename!!, orderData.userId).first
+                            imageAccessService.getImageData(orderItem.generatedImageFilename, orderData.userId).first
                         } catch (e: IOException) {
                             logger.warn(
                                 "Could not load generated image ${orderItem.generatedImageFilename} " +
