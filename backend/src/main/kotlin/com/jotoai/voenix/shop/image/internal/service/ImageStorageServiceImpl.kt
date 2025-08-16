@@ -145,7 +145,11 @@ class ImageStorageServiceImpl(
         imageType: ImageType,
         cropArea: CropArea? = null,
     ): String {
-        logger.debug("Starting file storage with cropping - Type: {}, Original filename: {}", imageType, file.originalFilename)
+        logger.debug(
+            "Starting file storage with cropping - Type: {}, Original filename: {}",
+            imageType,
+            file.originalFilename
+        )
 
         validateFile(file, imageType.maxFileSize, imageType.allowedContentTypes.toSet())
 

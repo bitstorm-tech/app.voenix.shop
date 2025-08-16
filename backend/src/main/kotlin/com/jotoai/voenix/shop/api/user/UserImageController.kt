@@ -50,7 +50,8 @@ class UserImageController(
         val response = imageGenerationService.generateUserImageWithIds(promptId, uploadedImage.uuid, user.id)
 
         logger.info(
-            "Generated ${response.generatedImageIds.size} images with IDs: ${response.generatedImageIds} for user ${user.id}",
+            "Generated ${response.generatedImageIds.size} images with IDs: " +
+                "${response.generatedImageIds} for user ${user.id}",
         )
 
         return response

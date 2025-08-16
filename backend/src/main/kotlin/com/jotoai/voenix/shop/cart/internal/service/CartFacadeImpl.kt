@@ -73,7 +73,8 @@ class CartFacadeImpl(
         // Validate generated image if provided
         request.generatedImageId?.let { imageId ->
             logger.debug(
-                "Validating generated image for cart operation: userId={}, generatedImageId={}, articleId={}, variantId={}",
+                "Validating generated image for cart operation: userId={}, generatedImageId={}, " +
+                    "articleId={}, variantId={}",
                 userId,
                 imageId,
                 request.articleId,
@@ -133,7 +134,8 @@ class CartFacadeImpl(
         val savedCart = saveCartWithOptimisticLocking(cart)
 
         logger.info(
-            "Successfully added item to cart: userId={}, articleId={}, variantId={}, quantity={}, generatedImageId={}, promptId={}, hasCustomData={}",
+            "Successfully added item to cart: userId={}, articleId={}, variantId={}, quantity={}, " +
+                "generatedImageId={}, promptId={}, hasCustomData={}",
             userId,
             request.articleId,
             request.variantId,
@@ -183,7 +185,8 @@ class CartFacadeImpl(
 
             if (!imageQueryService.validateGeneratedImageOwnership(imageId, userId)) {
                 logger.warn(
-                    "Generated image validation failed during cart update: userId={}, itemId={}, generatedImageId={}, reason=ownership_check_failed",
+                    "Generated image validation failed during cart update: userId={}, itemId={}, " +
+                        "generatedImageId={}, reason=ownership_check_failed",
                     userId,
                     itemId,
                     imageId,
@@ -220,7 +223,8 @@ class CartFacadeImpl(
         val savedCart = saveCartWithOptimisticLocking(cart)
 
         logger.info(
-            "Successfully updated cart item: userId={}, itemId={}, quantity={}, generatedImageId={}, promptId={}, hasCustomData={}",
+            "Successfully updated cart item: userId={}, itemId={}, quantity={}, " +
+                "generatedImageId={}, promptId={}, hasCustomData={}",
             userId,
             itemId,
             request.quantity,
@@ -249,7 +253,8 @@ class CartFacadeImpl(
         val itemToRemove = cart.items.find { it.id == itemId }
         itemToRemove?.let { item ->
             logger.debug(
-                "Removing cart item: userId={}, itemId={}, articleId={}, variantId={}, generatedImageId={}, promptId={}",
+                "Removing cart item: userId={}, itemId={}, articleId={}, variantId={}, " +
+                    "generatedImageId={}, promptId={}",
                 userId,
                 itemId,
                 item.articleId,

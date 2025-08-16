@@ -233,7 +233,10 @@ class ImageGenerationServiceImpl(
         uploadedImageUuid: UUID,
         userId: Long,
     ): PublicImageGenerationResponse {
-        logger.info("Processing user image generation with IDs for user $userId with uploaded image UUID: $uploadedImageUuid")
+        logger.info(
+            "Processing user image generation with IDs for user $userId " +
+                "with uploaded image UUID: $uploadedImageUuid"
+        )
 
         // Retrieve the uploaded image entity
         val uploadedImage = imageStorageServiceImpl.getUploadedImageByUuid(uploadedImageUuid, userId)
@@ -270,7 +273,10 @@ class ImageGenerationServiceImpl(
                         promptId = promptId,
                         generationNumber = index + 1,
                     )
-                logger.info("Saved generated image to database with ID: ${generatedImage.id}, filename: ${generatedImage.filename}")
+                logger.info(
+                    "Saved generated image to database with ID: ${generatedImage.id}, " +
+                        "filename: ${generatedImage.filename}"
+                )
                 generatedImage
             }
 
@@ -288,7 +294,10 @@ class ImageGenerationServiceImpl(
         generatedImages.forEachIndexed { index, img ->
             logger.info("Image $index: ID=${img.id}, filename=${img.filename}")
         }
-        logger.info("Successfully generated ${generatedImages.size} images with IDs $generatedImageIds for user $userId")
+        logger.info(
+            "Successfully generated ${generatedImages.size} images with IDs $generatedImageIds " +
+                "for user $userId"
+        )
 
         return PublicImageGenerationResponse(
             imageUrls = imageUrls,

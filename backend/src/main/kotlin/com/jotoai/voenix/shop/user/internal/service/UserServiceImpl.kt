@@ -105,7 +105,8 @@ class UserServiceImpl(
 
     override fun getAllUsers(): List<UserDto> = userRepository.findAllActive().map { it.toDto() }
 
-    override fun getAllUsers(pageable: Pageable): Page<UserDto> = userRepository.findAllActive(pageable).map { it.toDto() }
+    override fun getAllUsers(pageable: Pageable): Page<UserDto> =
+        userRepository.findAllActive(pageable).map { it.toDto() }
 
     override fun searchUsers(
         criteria: UserSearchCriteria,

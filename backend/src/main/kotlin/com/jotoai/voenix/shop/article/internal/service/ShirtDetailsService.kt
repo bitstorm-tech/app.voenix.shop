@@ -14,7 +14,8 @@ class ShirtDetailsService(
     private val shirtDetailsRepository: ShirtArticleDetailsRepository,
 ) {
     @Transactional(readOnly = true)
-    fun findByArticleId(articleId: Long): ShirtArticleDetailsDto? = shirtDetailsRepository.findByArticleId(articleId)?.toDto()
+    fun findByArticleId(articleId: Long): ShirtArticleDetailsDto? =
+        shirtDetailsRepository.findByArticleId(articleId)?.toDto()
 
     @Transactional
     fun create(

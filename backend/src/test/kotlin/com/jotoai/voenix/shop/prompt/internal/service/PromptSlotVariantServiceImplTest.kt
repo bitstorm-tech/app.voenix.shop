@@ -401,7 +401,9 @@ class PromptSlotVariantServiceImplTest {
             whenever(promptSlotVariantRepository.existsByNameAndIdNot("Updated Name", 1L)).thenReturn(false)
             whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
             whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
-            whenever(imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)).thenReturn(true)
+            whenever(
+                imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+            ).thenReturn(true)
 
             // When
             val result = service.updateSlotVariant(1L, request)
@@ -467,7 +469,9 @@ class PromptSlotVariantServiceImplTest {
             whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
             whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
             whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
-            whenever(imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)).thenReturn(true)
+            whenever(
+                imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+            ).thenReturn(true)
 
             // When
             val result = service.updateSlotVariant(1L, request)
@@ -531,7 +535,9 @@ class PromptSlotVariantServiceImplTest {
                 )
 
             whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
-            whenever(imageStorageService.deleteFile("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)).thenReturn(true)
+            whenever(
+                imageStorageService.deleteFile("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+            ).thenReturn(true)
 
             // When
             service.deleteSlotVariant(1L)

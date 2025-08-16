@@ -621,7 +621,12 @@ class PdfGenerationServiceImpl(
     ) {
         try {
             val qrCodeWriter = QRCodeWriter()
-            val bitMatrix = qrCodeWriter.encode(orderId, BarcodeFormat.QR_CODE, ORDER_QR_SIZE_PIXELS, ORDER_QR_SIZE_PIXELS)
+            val bitMatrix = qrCodeWriter.encode(
+                orderId,
+                BarcodeFormat.QR_CODE,
+                ORDER_QR_SIZE_PIXELS,
+                ORDER_QR_SIZE_PIXELS
+            )
 
             val bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix)
             val qrByteArray = ByteArrayOutputStream()

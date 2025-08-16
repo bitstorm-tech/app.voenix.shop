@@ -238,7 +238,8 @@ class MugVariantServiceImpl(
                         name = sourceVariant.name,
                         articleVariantNumber = sourceVariant.articleVariantNumber,
                         // Never copy the isDefault flag - only set as default if there are no existing variants
-                        isDefault = !hasExistingDefault && existingVariants.isEmpty() && sourceVariant == sourceVariants.first(),
+                        isDefault = !hasExistingDefault && existingVariants.isEmpty() &&
+                            sourceVariant == sourceVariants.first(),
                         active = sourceVariant.active,
                         // Do not copy the image - only copy variant attributes
                         exampleImageFilename = null,
