@@ -26,19 +26,25 @@ export default function PriceCalculationTab() {
     setSalesCalculationMode,
   } = useArticleFormStore();
 
-  const handlePurchaseVatRateChange = useCallback((vatRateId: string) => {
-    const selectedVat = vats.find((v) => v.id.toString() === vatRateId);
-    if (selectedVat) {
-      updatePurchaseVatRate(selectedVat.percent, selectedVat.id);
-    }
-  }, [vats, updatePurchaseVatRate]);
+  const handlePurchaseVatRateChange = useCallback(
+    (vatRateId: string) => {
+      const selectedVat = vats.find((v) => v.id.toString() === vatRateId);
+      if (selectedVat) {
+        updatePurchaseVatRate(selectedVat.percent, selectedVat.id);
+      }
+    },
+    [vats, updatePurchaseVatRate],
+  );
 
-  const handleSalesVatRateChange = useCallback((vatRateId: string) => {
-    const selectedVat = vats.find((v) => v.id.toString() === vatRateId);
-    if (selectedVat) {
-      updateSalesVatRate(selectedVat.percent, selectedVat.id);
-    }
-  }, [vats, updateSalesVatRate]);
+  const handleSalesVatRateChange = useCallback(
+    (vatRateId: string) => {
+      const selectedVat = vats.find((v) => v.id.toString() === vatRateId);
+      if (selectedVat) {
+        updateSalesVatRate(selectedVat.percent, selectedVat.id);
+      }
+    },
+    [vats, updateSalesVatRate],
+  );
 
   // Auto-select default VAT when component loads or when VATs change
   useEffect(() => {

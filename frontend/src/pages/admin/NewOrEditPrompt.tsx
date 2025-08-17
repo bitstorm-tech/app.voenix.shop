@@ -107,7 +107,6 @@ export default function NewOrEditPrompt() {
     };
   }, [exampleImageUrl]);
 
-
   const fetchSubcategories = async (categoryId: number) => {
     if (!categoryId) {
       setSubcategories([]);

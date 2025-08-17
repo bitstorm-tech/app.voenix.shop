@@ -84,7 +84,6 @@ export default function NewOrEditPromptSlotVariant() {
     };
   }, []);
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

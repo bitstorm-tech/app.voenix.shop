@@ -64,7 +64,6 @@ export default function NewOrEditPromptSlotType() {
     }
   }, [fetchPromptSlotType, fetchNextPosition, isEditing]);
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

@@ -1,3 +1,8 @@
+/**
+ * @deprecated This component is deprecated and will be removed in a future version.
+ * Use react-easy-crop directly with modal interface instead, as implemented in MugVariantsTab.
+ * See ImageUploadStep for the new implementation pattern.
+ */
 import { useRef, useState } from 'react';
 import ReactCrop, { centerCrop, makeAspectCrop, type Crop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';

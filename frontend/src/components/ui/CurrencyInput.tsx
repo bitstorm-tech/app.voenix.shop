@@ -24,17 +24,20 @@ export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
     const [userSeparator, setUserSeparator] = useState<'.' | ','>(getLocaleSeparator());
 
     // Format number for display
-    const formatNumber = useCallback((num: number | undefined, separator?: '.' | ','): string => {
-      // Handle undefined or null values
-      if (num === undefined || num === null) {
-        return '0' + (separator === ',' ? ',' : '.') + '0'.repeat(decimalPlaces);
-      }
-      const formatted = num.toFixed(decimalPlaces);
-      if (separator === ',') {
-        return formatted.replace('.', ',');
-      }
-      return formatted;
-    }, [decimalPlaces]);
+    const formatNumber = useCallback(
+      (num: number | undefined, separator?: '.' | ','): string => {
+        // Handle undefined or null values
+        if (num === undefined || num === null) {
+          return '0' + (separator === ',' ? ',' : '.') + '0'.repeat(decimalPlaces);
+        }
+        const formatted = num.toFixed(decimalPlaces);
+        if (separator === ',') {
+          return formatted.replace('.', ',');
+        }
+        return formatted;
+      },
+      [decimalPlaces],
+    );
 
     // Parse user input to number
     const parseInput = (input: string): number | null => {

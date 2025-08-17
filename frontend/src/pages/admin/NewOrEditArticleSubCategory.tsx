@@ -63,7 +63,6 @@ export default function NewOrEditArticleSubCategory() {
     }
   }, [fetchCategories, fetchArticleSubCategory, isEditing]);
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 

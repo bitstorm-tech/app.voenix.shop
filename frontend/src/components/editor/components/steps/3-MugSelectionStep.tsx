@@ -4,7 +4,6 @@ import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Check, Loader2, Star } from 'lucide-react';
 
-
 export default function MugSelectionStep() {
   const selectedMug = useWizardStore((state) => state.selectedMug);
   const selectedVariant = useWizardStore((state) => state.selectedVariant);
