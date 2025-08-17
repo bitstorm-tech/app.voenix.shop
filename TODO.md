@@ -1,11 +1,15 @@
 ## Todo
 - [ ] Admin: empty number inputs with placeholder instead of 0
 - [ ] Admin: show prompt slots like mug variant as accordion
+- [ ] Backend: access hot folder
+- [ ] Editor: add text to the generated image
 - [ ] Editor: correct cropping for uploaded and generated images
 - [ ] Editor: mug selection: variant name behind mug name
 - [ ] Editor: the white checkmark for the color selection is not visible in some cases
 - [ ] Editor: traffic light system for uploaded image qualities
 - [ ] System: add stripe payment
+- [ ] System: credit system
+- [ ] System: standard images
 - [ ] Testing: replace mockito with mockk
 - [ ] User: reuse uploaded and generated images
 
