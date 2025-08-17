@@ -3,16 +3,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/Checkbox';
 import { ColorPicker } from '@/components/ui/ColorPicker';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
+import ImageCroppingDialog from '@/components/ui/ImageCroppingDialog';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
-import { Slider } from '@/components/ui/Slider';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { articlesApi } from '@/lib/api';
+import type { CropArea } from '@/lib/image-utils';
 import { cn } from '@/lib/utils';
 import type { ArticleMugVariant, CreateArticleMugVariantRequest } from '@/types/article';
 import { Copy, Edit, Image as ImageIcon, Plus, Trash2, Upload, X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import Cropper from 'react-easy-crop';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -47,14 +47,7 @@ export default function MugVariantsTab({
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteVariantId, setDeleteVariantId] = useState<number | null>(null);
@@ -69,46 +62,6 @@ export default function MugVariantsTab({
   useEffect(() => {
     setVariants(initialVariants);
   }, [initialVariants]);
-
-  const createCroppedImage = async (imageUrl: string, cropArea: { x: number; y: number; width: number; height: number }): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const image = new Image();
-      image.crossOrigin = 'anonymous';
-
-      image.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-
-        if (!ctx) {
-          reject(new Error('Failed to get canvas context'));
-          return;
-        }
-
-        canvas.width = cropArea.width;
-        canvas.height = cropArea.height;
-
-        ctx.drawImage(image, cropArea.x, cropArea.y, cropArea.width, cropArea.height, 0, 0, cropArea.width, cropArea.height);
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              const croppedUrl = URL.createObjectURL(blob);
-              resolve(croppedUrl);
-            } else {
-              reject(new Error('Failed to create blob from canvas'));
-            }
-          },
-          'image/jpeg',
-          0.9,
-        );
-      };
-
-      image.onerror = () => {
-        reject(new Error('Failed to load image'));
-      };
-
-      image.src = imageUrl;
-    });
-  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -136,8 +89,6 @@ export default function MugVariantsTab({
     setImageFile(file);
     setOriginalImageUrl(blobUrl);
     setImagePreviewUrl(blobUrl);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
     setCroppedAreaPixels(null);
     setShowCropper(true);
 
@@ -146,20 +97,8 @@ export default function MugVariantsTab({
     }
   };
 
-  const handleCropComplete = useCallback(
-    (
-      _croppedArea: { x: number; y: number; width: number; height: number },
-      croppedAreaPixels: { x: number; y: number; width: number; height: number },
-    ) => {
-      setCroppedAreaPixels(croppedAreaPixels);
-    },
-    [],
-  );
-
   const handleCropCancel = () => {
     setShowCropper(false);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
     setCroppedAreaPixels(null);
     if (imagePreviewUrl) {
       URL.revokeObjectURL(imagePreviewUrl);
@@ -172,23 +111,18 @@ export default function MugVariantsTab({
     setImageFile(null);
   };
 
-  const handleCropConfirm = async () => {
-    if (croppedAreaPixels && originalImageUrl) {
-      try {
-        // Create cropped image preview
-        const croppedUrl = await createCroppedImage(originalImageUrl, croppedAreaPixels);
-
-        // Update the preview URL to show the cropped version
-        if (imagePreviewUrl && imagePreviewUrl !== originalImageUrl) {
-          URL.revokeObjectURL(imagePreviewUrl);
-        }
-        setImagePreviewUrl(croppedUrl);
-      } catch (error) {
-        console.error('Failed to create cropped preview:', error);
-        toast.error('Failed to create image preview');
+  const handleCropConfirm = async (croppedImageUrl: string, croppedAreaPixels: CropArea) => {
+    try {
+      // Update the preview URL to show the cropped version
+      if (imagePreviewUrl && imagePreviewUrl !== originalImageUrl) {
+        URL.revokeObjectURL(imagePreviewUrl);
       }
+      setImagePreviewUrl(croppedImageUrl);
+      setCroppedAreaPixels(croppedAreaPixels);
+    } catch (error) {
+      console.error('Failed to process cropped image:', error);
+      toast.error('Failed to process cropped image');
     }
-    setShowCropper(false);
   };
 
   const handleRemoveImage = () => {
@@ -201,8 +135,6 @@ export default function MugVariantsTab({
     setImagePreviewUrl(null);
     setOriginalImageUrl(null);
     setImageFile(null);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
     setCroppedAreaPixels(null);
     // Mark the existing image for removal but keep the URL reference
     if (existingImageUrl) {
@@ -453,55 +385,15 @@ export default function MugVariantsTab({
           </div>
         )}
 
-        {/* Image Cropper Modal */}
-        {showCropper && originalImageUrl && (
-          <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
-            <div className="w-full max-w-2xl rounded-lg bg-white p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold">Crop Image</h3>
-                <Button variant="ghost" size="sm" onClick={handleCropCancel}>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="mb-4">
-                <div className="mb-4 text-center">
-                  <h3 className="text-lg font-semibold">Crop your variant image</h3>
-                  <p className="text-sm text-gray-600">Select the area you want to use for the variant thumbnail</p>
-                </div>
-                <div className="relative h-96">
-                  <Cropper
-                    image={originalImageUrl}
-                    crop={crop}
-                    cropSize={{ width: 300, height: 300 }}
-                    zoom={zoom}
-                    aspect={1}
-                    minZoom={0.5}
-                    restrictPosition={false}
-                    onCropChange={setCrop}
-                    onCropComplete={handleCropComplete}
-                    onZoomChange={setZoom}
-                    showGrid={true}
-                    cropShape="rect"
-                  />
-                </div>
-                <div className="mt-4 space-y-2">
-                  <Label className="text-sm font-medium text-gray-700">Zoom: {Math.round(zoom * 100)}%</Label>
-                  <Slider value={[zoom]} onValueChange={(values) => setZoom(values[0])} min={0.5} max={3} step={0.1} className="w-full" />
-                  <div className="flex justify-between text-xs text-gray-500">
-                    <span>50%</span>
-                    <span>300%</span>
-                  </div>
-                </div>
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline" onClick={handleCropCancel}>
-                  Cancel
-                </Button>
-                <Button onClick={handleCropConfirm}>Confirm Crop</Button>
-              </div>
-            </div>
-          </div>
-        )}
+        <ImageCroppingDialog
+          open={showCropper && !!originalImageUrl}
+          onOpenChange={(open) => !open && handleCropCancel()}
+          srcImage={originalImageUrl || ''}
+          aspectRatio={1}
+          onConfirm={handleCropConfirm}
+          title="Crop your variant image"
+          description="Select the area you want to use for the variant thumbnail"
+        />
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

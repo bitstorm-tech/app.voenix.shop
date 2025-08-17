@@ -1,12 +1,10 @@
 import { Button } from '@/components/ui/Button';
-import { Label } from '@/components/ui/Label';
-import { Slider } from '@/components/ui/Slider';
-import { cleanupBlobUrls, createCroppedImage, isValidImageFile, isValidImageSize } from '@/lib/image-utils';
+import ImageCroppingDialog from '@/components/ui/ImageCroppingDialog';
+import { cleanupBlobUrls, isValidImageFile, isValidImageSize, type CropArea } from '@/lib/image-utils';
 import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Upload, X } from 'lucide-react';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import Cropper from 'react-easy-crop';
+import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function ImageUploadStep() {
@@ -16,16 +14,7 @@ export default function ImageUploadStep() {
   const uploadedImageUrl = useWizardStore((state) => state.uploadedImageUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // New state for react-easy-crop
   const [showCropper, setShowCropper] = useState(false);
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<{
-    x: number;
-    y: number;
-    width: number;
-    height: number;
-  } | null>(null);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -46,9 +35,6 @@ export default function ImageUploadStep() {
     const blobUrl = URL.createObjectURL(file);
     setImageFile(file);
     setOriginalImageUrl(blobUrl);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
     setShowCropper(true);
   };
 
@@ -78,63 +64,43 @@ export default function ImageUploadStep() {
     handleFileUpload(file);
   };
 
-  const handleCropComplete = useCallback(
-    (
-      _croppedArea: { x: number; y: number; width: number; height: number },
-      croppedAreaPixels: { x: number; y: number; width: number; height: number },
-    ) => {
-      setCroppedAreaPixels(croppedAreaPixels);
-    },
-    [],
-  );
-
   const handleCropCancel = () => {
     setShowCropper(false);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
     cleanupBlobUrls([originalImageUrl]);
     setOriginalImageUrl(null);
     setImageFile(null);
   };
 
-  const handleCropConfirm = async () => {
-    if (croppedAreaPixels && originalImageUrl && imageFile) {
+  const handleCropConfirm = async (croppedImageUrl: string, croppedAreaPixels: CropArea) => {
+    if (imageFile) {
       try {
-        // Create cropped image preview
-        const croppedUrl = await createCroppedImage(originalImageUrl, croppedAreaPixels);
-
         // Upload image to the store
-        uploadImage(imageFile, croppedUrl);
+        uploadImage(imageFile, croppedImageUrl);
 
         // Pass the crop data to the store
         cropImage({
-          crop: { x: crop.x, y: crop.y },
-          zoom,
+          crop: { x: 0, y: 0 }, // Reset crop position since we have the final cropped image
+          zoom: 1,
           croppedAreaPixels,
         });
 
-        // Clean up original image URL but keep the cropped one
-        if (originalImageUrl !== croppedUrl) {
+        // Clean up original image URL
+        if (originalImageUrl) {
           URL.revokeObjectURL(originalImageUrl);
         }
         setOriginalImageUrl(null);
         setImageFile(null);
       } catch (error) {
-        console.error('Failed to create cropped preview:', error);
-        toast.error('Failed to create image preview');
+        console.error('Failed to process cropped image:', error);
+        toast.error('Failed to process image');
       }
     }
-    setShowCropper(false);
   };
 
   const handleRemoveImage = () => {
     cleanupBlobUrls([originalImageUrl, uploadedImageUrl]);
     setOriginalImageUrl(null);
     setImageFile(null);
-    setCrop({ x: 0, y: 0 });
-    setZoom(1);
-    setCroppedAreaPixels(null);
     removeImage();
   };
 
@@ -147,55 +113,15 @@ export default function ImageUploadStep() {
 
   return (
     <>
-      {/* Image Cropper Modal */}
-      {showCropper && originalImageUrl && (
-        <div className="bg-opacity-50 fixed inset-0 z-50 flex items-center justify-center bg-black">
-          <div className="w-full max-w-2xl rounded-lg bg-white p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-semibold">Crop Image</h3>
-              <Button variant="ghost" size="sm" onClick={handleCropCancel}>
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-            <div className="mb-4">
-              <div className="mb-4 text-center">
-                <h3 className="text-lg font-semibold">Crop your image</h3>
-                <p className="text-sm text-gray-600">Select the area you want to use for your mug design</p>
-              </div>
-              <div className="relative h-96">
-                <Cropper
-                  image={originalImageUrl}
-                  crop={crop}
-                  cropSize={{ width: 300, height: 300 }}
-                  zoom={zoom}
-                  aspect={1}
-                  minZoom={0.5}
-                  restrictPosition={false}
-                  onCropChange={setCrop}
-                  onCropComplete={handleCropComplete}
-                  onZoomChange={setZoom}
-                  showGrid={true}
-                  cropShape="rect"
-                />
-              </div>
-              <div className="mt-4 space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Zoom: {Math.round(zoom * 100)}%</Label>
-                <Slider value={[zoom]} onValueChange={(values) => setZoom(values[0])} min={0.5} max={3} step={0.1} className="w-full" />
-                <div className="flex justify-between text-xs text-gray-500">
-                  <span>50%</span>
-                  <span>300%</span>
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={handleCropCancel}>
-                Cancel
-              </Button>
-              <Button onClick={handleCropConfirm}>Confirm Crop</Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ImageCroppingDialog
+        open={showCropper && !!originalImageUrl}
+        onOpenChange={(open) => !open && handleCropCancel()}
+        srcImage={originalImageUrl || ''}
+        aspectRatio={1}
+        onConfirm={handleCropConfirm}
+        title="Crop your image"
+        description="Select the area you want to use for your mug design"
+      />
 
       {!uploadedImageUrl ? (
         <div className="flex flex-col items-center justify-center space-y-4">
