@@ -15,7 +15,7 @@ import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -29,7 +29,7 @@ class MugVariantServiceImpl(
 ) : MugVariantQueryService,
     MugVariantFacade {
     companion object {
-        private val logger = LoggerFactory.getLogger(MugVariantServiceImpl::class.java)
+        private val logger = KotlinLogging.logger {}
     }
 
     @Transactional
@@ -62,7 +62,7 @@ class MugVariantServiceImpl(
             )
 
         val savedVariant = mugVariantRepository.save(variant)
-        logger.debug("Created mug variant ${savedVariant.id} for article $articleId with isDefault=$shouldBeDefault")
+        logger.debug { "Created mug variant ${savedVariant.id} for article $articleId with isDefault=$shouldBeDefault" }
 
         return mugArticleVariantAssembler.toDto(savedVariant)
     }
@@ -96,7 +96,7 @@ class MugVariantServiceImpl(
                 val newDefault = otherVariants.first()
                 newDefault.isDefault = true
                 mugVariantRepository.save(newDefault)
-                logger.debug("Assigned default to variant ${newDefault.id} as variant $variantId is no longer default")
+                logger.debug { "Assigned default to variant ${newDefault.id} as variant $variantId is no longer default" }
             }
         }
 
@@ -110,7 +110,7 @@ class MugVariantServiceImpl(
         }
 
         val savedVariant = mugVariantRepository.save(variant)
-        logger.debug("Updated mug variant $variantId with isDefault=${request.isDefault}")
+        logger.debug { "Updated mug variant $variantId with isDefault=${request.isDefault}" }
 
         return mugArticleVariantAssembler.toDto(savedVariant)
     }
@@ -129,7 +129,7 @@ class MugVariantServiceImpl(
             try {
                 imageStorageService.deleteMugVariantImage(filename)
             } catch (e: Exception) {
-                logger.warn("Failed to delete mug variant example image during variant deletion: $filename", e)
+                logger.warn(e) { "Failed to delete mug variant example image during variant deletion: $filename" }
             }
         }
 
@@ -164,9 +164,9 @@ class MugVariantServiceImpl(
             if (oldFilename != filename) {
                 try {
                     imageStorageService.deleteMugVariantImage(oldFilename)
-                    logger.debug("Deleted old mug variant image: $oldFilename")
+                    logger.debug { "Deleted old mug variant image: $oldFilename" }
                 } catch (e: Exception) {
-                    logger.warn("Failed to delete old mug variant image: $oldFilename", e)
+                    logger.warn(e) { "Failed to delete old mug variant image: $oldFilename" }
                 }
             }
         }
@@ -186,7 +186,7 @@ class MugVariantServiceImpl(
             try {
                 imageStorageService.deleteMugVariantImage(filename)
             } catch (e: Exception) {
-                logger.warn("Failed to delete mug variant example image: $filename", e)
+                logger.warn(e) { "Failed to delete mug variant example image: $filename" }
             }
         }
 
@@ -247,7 +247,7 @@ class MugVariantServiceImpl(
                 mugVariantRepository.save(newVariant)
             }
 
-        logger.info("Copied ${copiedVariants.size} variants to mug $targetMugId")
+        logger.info { "Copied ${copiedVariants.size} variants to mug $targetMugId" }
 
         return copiedVariants.map { mugArticleVariantAssembler.toDto(it) }
     }

@@ -14,7 +14,7 @@ import com.jotoai.voenix.shop.prompt.api.exceptions.PromptNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.IOException
@@ -30,7 +30,7 @@ class PromptServiceImpl(
 ) : PromptFacade,
     PromptQueryService {
     companion object {
-        private val logger = LoggerFactory.getLogger(PromptServiceImpl::class.java)
+        private val logger = KotlinLogging.logger {}
     }
 
     override fun getAllPrompts(): List<PromptDto> =
@@ -118,7 +118,7 @@ class PromptServiceImpl(
                 try {
                     imageStorageService.deleteFile(oldFilename, ImageType.PROMPT_EXAMPLE)
                 } catch (e: IOException) {
-                    logger.warn("Failed to delete old prompt example image: $oldFilename", e)
+                    logger.warn(e) { "Failed to delete old prompt example image: $oldFilename" }
                 }
             }
             prompt.exampleImageFilename = newFilename
@@ -157,7 +157,7 @@ class PromptServiceImpl(
             try {
                 imageStorageService.deleteFile(filename, ImageType.PROMPT_EXAMPLE)
             } catch (e: IOException) {
-                logger.warn("Failed to delete prompt example image during prompt deletion: $filename", e)
+                logger.warn(e) { "Failed to delete prompt example image during prompt deletion: $filename" }
             }
         }
 

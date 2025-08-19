@@ -14,7 +14,7 @@ import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserService
 import jakarta.servlet.http.HttpServletRequest
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -40,7 +40,7 @@ class ImageGenerationServiceImpl(
     private val request: HttpServletRequest,
 ) : ImageGenerationService {
     companion object {
-        private val logger = LoggerFactory.getLogger(ImageGenerationServiceImpl::class.java)
+        private val logger = KotlinLogging.logger {}
 
         // File validation constants
         private const val MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -59,7 +59,7 @@ class ImageGenerationServiceImpl(
         ipAddress: String,
         imageFile: MultipartFile,
     ): PublicImageGenerationResponse {
-        logger.info("Processing public image generation request for prompt ID: ${request.promptId}")
+        logger.info { "Processing public image generation request for prompt ID: ${request.promptId}" }
 
         validateImageFile(imageFile)
         checkPublicRateLimit(ipAddress)
@@ -77,7 +77,7 @@ class ImageGenerationServiceImpl(
         uploadedImageUuid: UUID?,
         userId: Long,
     ): String {
-        logger.info("Processing user image generation request for user $userId with prompt ID: $promptId")
+        logger.info { "Processing user image generation request for user $userId with prompt ID: $promptId" }
 
         requireNotNull(uploadedImageUuid) { "Uploaded image UUID is required for user image generation" }
 
@@ -99,7 +99,7 @@ class ImageGenerationServiceImpl(
         uploadedImageUuid: UUID?,
         userId: Long,
     ): PublicImageGenerationResponse {
-        logger.info("Processing user image generation with IDs request for user $userId with prompt ID: $promptId")
+        logger.info { "Processing user image generation with IDs request for user $userId with prompt ID: $promptId" }
 
         requireNotNull(uploadedImageUuid) { "Uploaded image UUID is required for user image generation" }
 
@@ -123,7 +123,7 @@ class ImageGenerationServiceImpl(
             userId != null -> isUserRateLimited(userId)
             ipAddress != null -> isPublicRateLimited(ipAddress)
             else -> {
-                logger.warn("Rate limit check called without user ID or IP address")
+                logger.warn { "Rate limit check called without user ID or IP address" }
                 true // Default to rate limited if no identifier provided
             }
         }
@@ -134,7 +134,7 @@ class ImageGenerationServiceImpl(
         ipAddress: String,
     ): PublicImageGenerationResponse {
         val openAIRequest = createOpenAIRequest(request)
-        logger.debug("Generated OpenAI request: {}", openAIRequest)
+        logger.debug { "Generated OpenAI request: $openAIRequest" }
 
         // Generate images using OpenAI service
         val imageEditResponse = openAIImageFacade.editImageBytes(imageFile, openAIRequest)
@@ -168,7 +168,7 @@ class ImageGenerationServiceImpl(
 
         val imageIds = generatedImages.mapNotNull { it.id }
 
-        logger.info("Successfully generated ${imageUrls.size} images for public user with IP: $ipAddress")
+        logger.info { "Successfully generated ${imageUrls.size} images for public user with IP: $ipAddress" }
 
         return PublicImageGenerationResponse(
             imageUrls = imageUrls,
@@ -181,7 +181,7 @@ class ImageGenerationServiceImpl(
         uploadedImageUuid: UUID,
         userId: Long,
     ): String {
-        logger.info("Processing user image generation for user $userId with uploaded image UUID: $uploadedImageUuid")
+        logger.info { "Processing user image generation for user $userId with uploaded image UUID: $uploadedImageUuid" }
 
         // Retrieve the uploaded image entity
         val uploadedImage = imageStorageServiceImpl.getUploadedImageByUuid(uploadedImageUuid, userId)
@@ -202,7 +202,7 @@ class ImageGenerationServiceImpl(
         val request = PublicImageGenerationRequest(promptId = promptId, n = 4)
         val openAIRequest = createOpenAIRequest(request)
 
-        logger.debug("Generated OpenAI request for user image: {}", openAIRequest)
+        logger.debug { "Generated OpenAI request for user image: $openAIRequest" }
 
         // Generate image using OpenAI service
         val imageEditResponse = openAIImageFacade.editImageBytes(multipartFile, openAIRequest)
@@ -223,7 +223,7 @@ class ImageGenerationServiceImpl(
             generatedImages.firstOrNull()
                 ?: throw IllegalStateException("No images were generated")
 
-        logger.info("Successfully generated ${generatedImages.size} image(s) for user $userId")
+        logger.info { "Successfully generated ${generatedImages.size} image(s) for user $userId" }
 
         return firstGeneratedImage.filename
     }
@@ -233,10 +233,10 @@ class ImageGenerationServiceImpl(
         uploadedImageUuid: UUID,
         userId: Long,
     ): PublicImageGenerationResponse {
-        logger.info(
+        logger.info {
             "Processing user image generation with IDs for user $userId " +
                 "with uploaded image UUID: $uploadedImageUuid"
-        )
+        }
 
         // Retrieve the uploaded image entity
         val uploadedImage = imageStorageServiceImpl.getUploadedImageByUuid(uploadedImageUuid, userId)
@@ -257,7 +257,7 @@ class ImageGenerationServiceImpl(
         val request = PublicImageGenerationRequest(promptId = promptId, n = 4)
         val openAIRequest = createOpenAIRequest(request)
 
-        logger.debug("Generated OpenAI request for user image with IDs: {}", openAIRequest)
+        logger.debug { "Generated OpenAI request for user image with IDs: $openAIRequest" }
 
         // Generate image using OpenAI service
         val imageEditResponse = openAIImageFacade.editImageBytes(multipartFile, openAIRequest)
@@ -265,7 +265,7 @@ class ImageGenerationServiceImpl(
         // Store each generated image and create database records
         val generatedImages =
             imageEditResponse.imageBytes.mapIndexed { index, generatedBytes ->
-                logger.info("Processing generated image ${index + 1} of ${imageEditResponse.imageBytes.size}")
+                logger.info { "Processing generated image ${index + 1} of ${imageEditResponse.imageBytes.size}" }
                 val generatedImage =
                     imageStorageServiceImpl.storeGeneratedImage(
                         imageBytes = generatedBytes,
@@ -273,10 +273,10 @@ class ImageGenerationServiceImpl(
                         promptId = promptId,
                         generationNumber = index + 1,
                     )
-                logger.info(
+                logger.info {
                     "Saved generated image to database with ID: ${generatedImage.id}, " +
                         "filename: ${generatedImage.filename}"
-                )
+                }
                 generatedImage
             }
 
@@ -290,14 +290,14 @@ class ImageGenerationServiceImpl(
         // Extract the generated image IDs
         val generatedImageIds = generatedImages.mapNotNull { it.id }
 
-        logger.info("Generated images count: ${generatedImages.size}")
+        logger.info { "Generated images count: ${generatedImages.size}" }
         generatedImages.forEachIndexed { index, img ->
-            logger.info("Image $index: ID=${img.id}, filename=${img.filename}")
+            logger.info { "Image $index: ID=${img.id}, filename=${img.filename}" }
         }
-        logger.info(
+        logger.info {
             "Successfully generated ${generatedImages.size} images with IDs $generatedImageIds " +
                 "for user $userId"
-        )
+        }
 
         return PublicImageGenerationResponse(
             imageUrls = imageUrls,
@@ -395,7 +395,7 @@ class ImageGenerationServiceImpl(
         }
 
         val timeUnit = if (rateLimitHours == 1) "hour" else "hours"
-        logger.debug("$identifier has generated $generationCount images in the last $rateLimitHours $timeUnit")
+        logger.debug { "$identifier has generated $generationCount images in the last $rateLimitHours $timeUnit" }
     }
 
     private fun <T> executeWithErrorHandling(
@@ -407,16 +407,16 @@ class ImageGenerationServiceImpl(
         } catch (e: BadRequestException) {
             throw e
         } catch (e: DataAccessException) {
-            logger.error("Database error $contextMessage", e)
+            logger.error(e) { "Database error $contextMessage" }
             throw RuntimeException("Failed to generate image. Please try again later.")
         } catch (e: IOException) {
-            logger.error("I/O error $contextMessage", e)
+            logger.error(e) { "I/O error $contextMessage" }
             throw RuntimeException("Failed to generate image. Please try again later.")
         } catch (e: IllegalStateException) {
-            logger.error("State error $contextMessage", e)
+            logger.error(e) { "State error $contextMessage" }
             throw RuntimeException("Failed to generate image. Please try again later.")
         } catch (e: IllegalArgumentException) {
-            logger.error("Argument error $contextMessage", e)
+            logger.error(e) { "Argument error $contextMessage" }
             throw RuntimeException("Failed to generate image. Please try again later.")
         }
 }

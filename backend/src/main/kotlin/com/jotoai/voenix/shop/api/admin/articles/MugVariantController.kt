@@ -9,7 +9,7 @@ import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
 import jakarta.validation.Valid
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -34,7 +34,7 @@ class MugVariantController(
     private val imageStorageService: ImageStorageServiceImpl,
 ) {
     companion object {
-        private val logger = LoggerFactory.getLogger(MugVariantController::class.java)
+        private val logger = KotlinLogging.logger {}
     }
 
     @GetMapping("/{articleId}/variants")
@@ -80,10 +80,10 @@ class MugVariantController(
         @RequestParam("cropWidth", required = false) cropWidth: Double?,
         @RequestParam("cropHeight", required = false) cropHeight: Double?,
     ): ResponseEntity<MugArticleVariantDto> {
-        logger.info(
+        logger.info {
             "Received image upload for variant $variantId - File: ${file.originalFilename}, " +
-                "Size: ${file.size} bytes, Crop params: x=$cropX, y=$cropY, width=$cropWidth, height=$cropHeight",
-        )
+                "Size: ${file.size} bytes, Crop params: x=$cropX, y=$cropY, width=$cropWidth, height=$cropHeight"
+        }
 
         // Create crop area if crop parameters are provided
         val cropArea =
@@ -99,7 +99,7 @@ class MugVariantController(
         // Update the variant with the new image filename
         val updatedVariant = mugVariantFacade.updateExampleImage(variantId, storedFilename)
 
-        logger.info("Successfully uploaded image for variant $variantId - Filename: $storedFilename")
+        logger.info { "Successfully uploaded image for variant $variantId - Filename: $storedFilename" }
         return ResponseEntity.ok(updatedVariant)
     }
 
@@ -107,7 +107,7 @@ class MugVariantController(
     fun deleteVariantImage(
         @PathVariable variantId: Long,
     ): ResponseEntity<MugArticleVariantDto> {
-        logger.info("Deleting image for variant $variantId")
+        logger.info { "Deleting image for variant $variantId" }
         val updatedVariant = mugVariantFacade.removeExampleImage(variantId)
         return ResponseEntity.ok(updatedVariant)
     }
@@ -116,7 +116,7 @@ class MugVariantController(
     fun getVariantsCatalog(
         @RequestParam(required = false) excludeMugId: Long?,
     ): ResponseEntity<List<MugWithVariantsSummaryDto>> {
-        logger.info("Fetching variants catalog, excluding mug ID: $excludeMugId")
+        logger.info { "Fetching variants catalog, excluding mug ID: $excludeMugId" }
         val catalog = mugVariantQueryService.findAllMugsWithVariants(excludeMugId)
         return ResponseEntity.ok(catalog)
     }
@@ -126,7 +126,7 @@ class MugVariantController(
         @PathVariable mugId: Long,
         @Valid @RequestBody request: CopyVariantsRequest,
     ): ResponseEntity<List<MugArticleVariantDto>> {
-        logger.info("Copying ${request.variantIds.size} variants to mug $mugId")
+        logger.info { "Copying ${request.variantIds.size} variants to mug $mugId" }
         val copiedVariants = mugVariantFacade.copyVariants(mugId, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(copiedVariants)
     }

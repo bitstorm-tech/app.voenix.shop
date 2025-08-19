@@ -11,7 +11,7 @@ import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRepository
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.io.IOException
@@ -25,7 +25,7 @@ class ShirtVariantServiceImpl(
 ) : ShirtVariantQueryService,
     ShirtVariantFacade {
     companion object {
-        private val logger = LoggerFactory.getLogger(ShirtVariantServiceImpl::class.java)
+        private val logger = KotlinLogging.logger {}
     }
 
     @Transactional
@@ -80,7 +80,7 @@ class ShirtVariantServiceImpl(
             try {
                 imageStorageService.deleteFile(filename, ImageType.SHIRT_VARIANT_EXAMPLE)
             } catch (e: IOException) {
-                logger.warn("Failed to delete shirt variant example image during variant deletion: $filename", e)
+                logger.warn(e) { "Failed to delete shirt variant example image during variant deletion: $filename" }
             }
         }
 

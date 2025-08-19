@@ -26,7 +26,7 @@ import com.jotoai.voenix.shop.order.internal.entity.OrderItem
 import com.jotoai.voenix.shop.order.internal.repository.OrderRepository
 import com.jotoai.voenix.shop.user.api.UserService
 import jakarta.persistence.EntityManager
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
@@ -44,7 +44,7 @@ class OrderServiceImpl(
     private val entityManager: EntityManager,
     @param:Value("\${app.base-url:http://localhost:8080}") private val appBaseUrl: String,
 ) : OrderService {
-    private val logger = LoggerFactory.getLogger(OrderServiceImpl::class.java)
+    private val logger = KotlinLogging.logger {}
 
     /**
      * Creates an order from the user's active cart
@@ -137,13 +137,9 @@ class OrderServiceImpl(
         // Mark cart as converted
         cartQueryService.markCartAsConverted(refreshedCart.id)
 
-        logger.info(
-            "Created order {} for user {} from cart {} with total amount {}",
-            savedOrder.orderNumber,
-            userId,
-            refreshedCart.id,
-            totalAmount,
-        )
+        logger.info {
+            "Created order ${savedOrder.orderNumber} for user $userId from cart ${refreshedCart.id} with total amount $totalAmount"
+        }
 
         return toDto(savedOrder)
     }
@@ -168,7 +164,7 @@ class OrderServiceImpl(
         order.status = OrderStatus.CANCELLED
         val savedOrder = orderRepository.save(order)
 
-        logger.info("Cancelled order {} for user {}", orderId, userId)
+        logger.info { "Cancelled order $orderId for user $userId" }
 
         return toDto(savedOrder)
     }
@@ -189,7 +185,7 @@ class OrderServiceImpl(
         order.status = status
         val savedOrder = orderRepository.save(order)
 
-        logger.info("Admin updated order {} status to {}", orderId, status)
+        logger.info { "Admin updated order $orderId status to $status" }
 
         return toDto(savedOrder)
     }

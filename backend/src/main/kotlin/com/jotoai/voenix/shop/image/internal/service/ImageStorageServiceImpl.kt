@@ -9,7 +9,7 @@ import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
@@ -33,7 +33,7 @@ class ImageStorageServiceImpl(
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
 ) : ImageStorageService {
-    private val logger = LoggerFactory.getLogger(ImageStorageServiceImpl::class.java)
+    private val logger = KotlinLogging.logger {}
 
     companion object {
         private const val MAX_FILE_SIZE = 10 * 1024 * 1024L // 10MB
@@ -50,7 +50,7 @@ class ImageStorageServiceImpl(
         file: MultipartFile,
         imageType: ImageType,
     ): String {
-        logger.debug("Starting file storage - Type: {}, Original filename: {}", imageType, file.originalFilename)
+        logger.debug { "Starting file storage - Type: $imageType, Original filename: ${file.originalFilename}" }
 
         validateFile(file, MAX_FILE_SIZE, ALLOWED_CONTENT_TYPES)
 
@@ -61,23 +61,23 @@ class ImageStorageServiceImpl(
         val targetPath = storagePathService.getPhysicalPath(imageType)
         val filePath = targetPath.resolve(storedFilename)
 
-        logger.info("Storing file - Target path: ${filePath.toAbsolutePath()}")
+        logger.info { "Storing file - Target path: ${filePath.toAbsolutePath()}" }
 
         try {
             var imageBytes = file.bytes
 
             // Apply format conversion if needed
             if (imageType.requiresWebPConversion) {
-                logger.debug("Converting image to WebP format")
+                logger.debug { "Converting image to WebP format" }
                 imageBytes = imageConversionService.convertToWebP(imageBytes)
             }
 
             writeFile(filePath, imageBytes)
-            logger.info("Successfully stored image: ${filePath.toAbsolutePath()}")
+            logger.info { "Successfully stored image: ${filePath.toAbsolutePath()}" }
 
             return storedFilename
         } catch (e: Exception) {
-            logger.error("Failed to store file: ${e.message}", e)
+            logger.error(e) { "Failed to store file: ${e.message}" }
             throw RuntimeException("Failed to store file: ${e.message}", e)
         }
     }
@@ -93,10 +93,10 @@ class ImageStorageServiceImpl(
         val targetPath = storagePathService.getPhysicalPath(imageType)
         val filePath = targetPath.resolve(storedFilename)
 
-        logger.info("Storing image bytes - Target path: ${filePath.toAbsolutePath()}")
+        logger.info { "Storing image bytes - Target path: ${filePath.toAbsolutePath()}" }
 
         writeFile(filePath, bytes)
-        logger.info("Successfully stored image bytes: ${filePath.toAbsolutePath()}")
+        logger.info { "Successfully stored image bytes: ${filePath.toAbsolutePath()}" }
 
         return storedFilename
     }
@@ -145,11 +145,9 @@ class ImageStorageServiceImpl(
         imageType: ImageType,
         cropArea: CropArea? = null,
     ): String {
-        logger.debug(
-            "Starting file storage with cropping - Type: {}, Original filename: {}",
-            imageType,
-            file.originalFilename
-        )
+        logger.debug {
+            "Starting file storage with cropping - Type: $imageType, Original filename: ${file.originalFilename}"
+        }
 
         validateFile(file, imageType.maxFileSize, imageType.allowedContentTypes.toSet())
 
@@ -160,7 +158,7 @@ class ImageStorageServiceImpl(
         val targetPath = storagePathService.getPhysicalPath(imageType)
         val filePath = targetPath.resolve(storedFilename)
 
-        logger.info("Storing file with cropping - Target path: ${filePath.toAbsolutePath()}")
+        logger.info { "Storing file with cropping - Target path: ${filePath.toAbsolutePath()}" }
 
         try {
             var imageBytes = file.bytes
@@ -172,16 +170,16 @@ class ImageStorageServiceImpl(
 
             // Apply format conversion if needed
             if (imageType.requiresWebPConversion) {
-                logger.debug("Converting image to WebP format")
+                logger.debug { "Converting image to WebP format" }
                 imageBytes = imageConversionService.convertToWebP(imageBytes)
             }
 
             writeFile(filePath, imageBytes)
-            logger.info("Successfully stored image: ${filePath.toAbsolutePath()}")
+            logger.info { "Successfully stored image: ${filePath.toAbsolutePath()}" }
 
             return storedFilename
         } catch (e: IllegalArgumentException) {
-            logger.error("Invalid image processing parameters: ${e.message}", e)
+            logger.error(e) { "Invalid image processing parameters: ${e.message}" }
             throw IllegalArgumentException("Invalid image processing parameters: ${e.message}", e)
         }
     }
@@ -252,7 +250,7 @@ class ImageStorageServiceImpl(
         file: MultipartFile,
         cropArea: CropArea? = null,
     ): String {
-        logger.debug("Storing mug variant image - Original filename: {}", file.originalFilename)
+        logger.debug { "Storing mug variant image - Original filename: ${file.originalFilename}" }
 
         // Use the public mug variant example image type
         val imageType = ImageType.MUG_VARIANT_EXAMPLE
@@ -266,20 +264,16 @@ class ImageStorageServiceImpl(
         val targetPath = storagePathService.getPhysicalPath(imageType)
         val filePath = targetPath.resolve(storedFilename)
 
-        logger.info("Storing mug variant image - Target path: ${filePath.toAbsolutePath()}")
+        logger.info { "Storing mug variant image - Target path: ${filePath.toAbsolutePath()}" }
 
         try {
             var imageBytes = file.bytes
 
             // Apply cropping if requested
             if (cropArea != null) {
-                logger.debug(
-                    "Applying crop - x: {}, y: {}, width: {}, height: {}",
-                    cropArea.x,
-                    cropArea.y,
-                    cropArea.width,
-                    cropArea.height,
-                )
+                logger.debug {
+                    "Applying crop - x: ${cropArea.x}, y: ${cropArea.y}, width: ${cropArea.width}, height: ${cropArea.height}"
+                }
                 imageBytes = applyCropping(imageBytes, cropArea)
             }
 
@@ -291,16 +285,16 @@ class ImageStorageServiceImpl(
 
             // Write the file
             writeFile(filePath, imageBytes)
-            logger.info("Successfully stored mug variant image: {}", storedFilename)
+            logger.info { "Successfully stored mug variant image: $storedFilename" }
 
             return storedFilename
         } catch (e: Exception) {
-            logger.error("Failed to store mug variant image: ${e.message}", e)
+            logger.error(e) { "Failed to store mug variant image: ${e.message}" }
             // Try to clean up the file if it was partially written
             try {
                 Files.deleteIfExists(filePath)
             } catch (cleanupEx: Exception) {
-                logger.warn("Failed to clean up partial file: ${cleanupEx.message}")
+                logger.warn { "Failed to clean up partial file: ${cleanupEx.message}" }
             }
             throw RuntimeException("Failed to store mug variant image: ${e.message}", e)
         }
@@ -323,13 +317,13 @@ class ImageStorageServiceImpl(
         return try {
             val deleted = Files.deleteIfExists(filePath)
             if (deleted) {
-                logger.info("Deleted mug variant image: {}", filename)
+                logger.info { "Deleted mug variant image: $filename" }
             } else {
-                logger.debug("Mug variant image not found for deletion: {}", filename)
+                logger.debug { "Mug variant image not found for deletion: $filename" }
             }
             deleted
         } catch (e: Exception) {
-            logger.error("Error deleting mug variant image {}: {}", filename, e.message)
+            logger.error { "Error deleting mug variant image $filename: ${e.message}" }
             false
         }
     }
@@ -358,7 +352,7 @@ class ImageStorageServiceImpl(
         val storedFilename = "$uuid$ORIGINAL_SUFFIX$fileExtension"
         val filePath = userStorageDir.resolve(storedFilename)
 
-        logger.info("Storing uploaded image for user $userId: $storedFilename")
+        logger.info { "Storing uploaded image for user $userId: $storedFilename" }
 
         // Create user directory if it doesn't exist
         ensureDirectoryExists(userStorageDir)
@@ -367,12 +361,12 @@ class ImageStorageServiceImpl(
 
         // Convert to PNG if necessary
         if (!isPng) {
-            logger.debug("Converting image from $contentType to PNG")
+            logger.debug { "Converting image from $contentType to PNG" }
             imageBytes = imageConversionService.convertToPng(imageBytes)
         }
 
         writeFile(filePath, imageBytes)
-        logger.info("Successfully stored uploaded image: ${filePath.toAbsolutePath()}")
+        logger.info { "Successfully stored uploaded image: ${filePath.toAbsolutePath()}" }
 
         // Save to database
         val uploadedImage =
@@ -403,10 +397,10 @@ class ImageStorageServiceImpl(
         val storedFilename = "${uploadedImage.uuid}$GENERATED_PREFIX$generationNumber.png"
         val filePath = userStorageDir.resolve(storedFilename)
 
-        logger.info("Storing generated image for user ${uploadedImage.userId}: $storedFilename")
+        logger.info { "Storing generated image for user ${uploadedImage.userId}: $storedFilename" }
 
         writeFile(filePath, imageBytes)
-        logger.info("Successfully stored generated image: ${filePath.toAbsolutePath()}")
+        logger.info { "Successfully stored generated image: ${filePath.toAbsolutePath()}" }
 
         // Save to database
         val generatedImage =
@@ -421,7 +415,7 @@ class ImageStorageServiceImpl(
         val savedImage = generatedImageRepository.save(generatedImage)
         // Flush to ensure ID is generated immediately
         generatedImageRepository.flush()
-        logger.info("Generated image saved with ID: ${savedImage.id}")
+        logger.info { "Generated image saved with ID: ${savedImage.id}" }
         return savedImage
     }
 
@@ -492,10 +486,10 @@ class ImageStorageServiceImpl(
         try {
             if (!Files.exists(directoryPath)) {
                 Files.createDirectories(directoryPath)
-                logger.debug("Created directory: ${directoryPath.toAbsolutePath()}")
+                logger.debug { "Created directory: ${directoryPath.toAbsolutePath()}" }
             }
         } catch (e: IOException) {
-            logger.error("Failed to create directory ${directoryPath.toAbsolutePath()}: ${e.message}", e)
+            logger.error(e) { "Failed to create directory ${directoryPath.toAbsolutePath()}: ${e.message}" }
             throw RuntimeException("Failed to create directory: ${e.message}", e)
         }
     }
@@ -506,9 +500,9 @@ class ImageStorageServiceImpl(
     ) {
         try {
             Files.write(filePath, bytes)
-            logger.debug("Successfully wrote file: ${filePath.toAbsolutePath()}")
+            logger.debug { "Successfully wrote file: ${filePath.toAbsolutePath()}" }
         } catch (e: IOException) {
-            logger.error("Failed to write file at ${filePath.toAbsolutePath()}: ${e.message}", e)
+            logger.error(e) { "Failed to write file at ${filePath.toAbsolutePath()}: ${e.message}" }
             throw RuntimeException("Failed to write file: ${e.message}", e)
         }
     }
@@ -517,7 +511,7 @@ class ImageStorageServiceImpl(
         try {
             return Files.readAllBytes(filePath)
         } catch (e: IOException) {
-            logger.error("Failed to read file ${filePath.toAbsolutePath()}: ${e.message}", e)
+            logger.error(e) { "Failed to read file ${filePath.toAbsolutePath()}: ${e.message}" }
             throw RuntimeException("Failed to read file: ${e.message}", e)
         }
     }
@@ -526,7 +520,7 @@ class ImageStorageServiceImpl(
         try {
             return Files.deleteIfExists(filePath)
         } catch (e: IOException) {
-            logger.error("Failed to delete file ${filePath.toAbsolutePath()}: ${e.message}", e)
+            logger.error(e) { "Failed to delete file ${filePath.toAbsolutePath()}: ${e.message}" }
             throw RuntimeException("Failed to delete file: ${e.message}", e)
         }
     }
@@ -538,10 +532,10 @@ class ImageStorageServiceImpl(
         try {
             Files.probeContentType(filePath) ?: defaultContentType
         } catch (e: IOException) {
-            logger.warn(
+            logger.warn {
                 "Failed to probe content type for ${filePath.toAbsolutePath()}, " +
-                    "using default: $defaultContentType",
-            )
+                    "using default: $defaultContentType"
+            }
             defaultContentType
         }
 
@@ -564,16 +558,16 @@ class ImageStorageServiceImpl(
                 cropArea.y + cropArea.height > originalImage.height
         val requiresPadding = hasNegativeCoords || exceedsImageBounds
 
-        logger.info(
+        logger.info {
             "Applying crop - Original image: ${originalImage.width}x${originalImage.height}, " +
                 "Crop area: x=${cropArea.x}, y=${cropArea.y}, " +
                 "width=${cropArea.width}, height=${cropArea.height}" +
-                if (requiresPadding) " (with transparent padding)" else "",
-        )
+                if (requiresPadding) " (with transparent padding)" else ""
+        }
 
         val croppedBytes = imageConversionService.cropImage(imageBytes, cropArea)
         val croppedImage = imageConversionService.getImageDimensions(croppedBytes)
-        logger.info("Crop result - New dimensions: ${croppedImage.width}x${croppedImage.height}")
+        logger.info { "Crop result - New dimensions: ${croppedImage.width}x${croppedImage.height}" }
 
         return croppedBytes
     }

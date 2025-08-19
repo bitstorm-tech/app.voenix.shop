@@ -14,7 +14,8 @@ import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
-import org.slf4j.LoggerFactory
+import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.dao.DataAccessException
@@ -45,7 +46,7 @@ class ImageManagementService(
     private val generatedImageRepository: GeneratedImageRepository,
 ) : ImageFacade {
     companion object {
-        private val logger = LoggerFactory.getLogger(ImageManagementService::class.java)
+        private val logger = KotlinLogging.logger {}
         private const val ORIGINAL_SUFFIX = "_original"
         private const val GENERATED_PREFIX = "_generated_"
     }
@@ -68,7 +69,7 @@ class ImageManagementService(
         imageType: ImageType,
     ): UploadedImageDto {
         try {
-            logger.debug("Creating uploaded image for user $userId with type $imageType")
+            logger.debug { "Creating uploaded image for user $userId with type $imageType" }
 
             val uuid = UUID.randomUUID()
             val originalFilename = file.originalFilename ?: "unknown"
@@ -167,7 +168,7 @@ class ImageManagementService(
 
             // Delete from database
             uploadedImageRepository.delete(uploadedImage)
-            logger.debug("Deleted uploaded image $uuid for user $userId")
+            logger.debug { "Deleted uploaded image $uuid for user $userId" }
         } catch (e: DataAccessException) {
             throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
         } catch (e: IOException) {
@@ -286,7 +287,7 @@ class ImageManagementService(
 
             // Delete from database
             generatedImageRepository.delete(generatedImage)
-            logger.debug("Deleted generated image $uuid${userId?.let { " for user $it" } ?: ""}")
+            logger.debug { "Deleted generated image $uuid${userId?.let { " for user $it" } ?: ""}" }
         } catch (e: DataAccessException) {
             throw ImageStorageException("Failed to delete generated image: ${e.message}", e)
         } catch (e: IOException) {
@@ -327,7 +328,7 @@ class ImageManagementService(
         filename: String,
         userId: Long,
     ): Pair<ByteArray, String> {
-        logger.debug("Validating access to image $filename for user $userId")
+        logger.debug { "Validating access to image $filename for user $userId" }
 
         // Check if this is an original image or generated image based on filename pattern
         val isOriginalImage = filename.contains(ORIGINAL_SUFFIX)
@@ -340,7 +341,7 @@ class ImageManagementService(
                 uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
                     ?: throw ResourceNotFoundException("Uploaded image not found or access denied")
 
-                logger.debug("Access granted to original image $filename for user $userId")
+                logger.debug { "Access granted to original image $filename for user $userId" }
             }
             isGeneratedImage -> {
                 // For generated images, check ownership through the generated_images table
@@ -352,7 +353,7 @@ class ImageManagementService(
                     throw ResourceNotFoundException("Generated image not found or access denied")
                 }
 
-                logger.debug("Access granted to generated image $filename for user $userId")
+                logger.debug { "Access granted to generated image $filename for user $userId" }
             }
             else -> {
                 throw ResourceNotFoundException("Invalid image filename format")
@@ -425,11 +426,9 @@ class ImageManagementService(
         file: MultipartFile,
         request: CreateImageRequest,
     ): ImageDto {
-        logger.debug(
-            "Delegating image storage - Type: {}, Original filename: {}",
-            request.imageType,
-            file.originalFilename,
-        )
+        logger.debug {
+            "Delegating image storage - Type: ${request.imageType}, Original filename: ${file.originalFilename}"
+        }
         val filename =
             if (request.cropArea != null) {
                 // Cast to implementation to access extended methods
@@ -473,7 +472,7 @@ class ImageManagementService(
             val uuidString = filename.substringBefore(ORIGINAL_SUFFIX)
             return UUID.fromString(uuidString)
         } catch (e: IllegalArgumentException) {
-            logger.error("Invalid UUID format in filename: $filename", e)
+            logger.error(e) { "Invalid UUID format in filename: $filename" }
             throw ResourceNotFoundException("Invalid image filename format")
         }
     }

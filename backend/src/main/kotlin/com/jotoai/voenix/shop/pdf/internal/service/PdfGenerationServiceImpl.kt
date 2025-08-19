@@ -24,7 +24,7 @@ import com.lowagie.text.pdf.BaseFont
 import com.lowagie.text.pdf.PdfContentByte
 import com.lowagie.text.pdf.PdfWriter
 import jakarta.annotation.PostConstruct
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -63,7 +63,7 @@ class PdfGenerationServiceImpl(
     private val pdfQrProperties: PdfQrProperties,
 ) : PdfGenerationService {
     companion object {
-        private val logger = LoggerFactory.getLogger(PdfGenerationServiceImpl::class.java)
+        private val logger = KotlinLogging.logger {}
 
         // PDF conversion and layout constants
         private const val MM_TO_POINTS = 2.8346457f
@@ -105,7 +105,7 @@ class PdfGenerationServiceImpl(
         // Initialize baseUrl from appBaseUrl if not configured
         if (pdfQrProperties.baseUrl.isEmpty()) {
             pdfQrProperties.baseUrl = appBaseUrl
-            logger.info("Initialized PDF QR base URL with app base URL: $appBaseUrl")
+            logger.info { "Initialized PDF QR base URL with app base URL: $appBaseUrl" }
         }
     }
 
@@ -152,25 +152,25 @@ class PdfGenerationServiceImpl(
             document.close()
             return outputStream.toByteArray()
         } catch (e: PdfGenerationException) {
-            logger.error("Failed to generate PDF for article ${request.articleId}", e)
+            logger.error(e) { "Failed to generate PDF for article ${request.articleId}" }
             throw e
         } catch (e: IOException) {
-            logger.error("I/O error during PDF generation for article ${request.articleId}", e)
+            logger.error(e) { "I/O error during PDF generation for article ${request.articleId}" }
             throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
         } catch (e: WriterException) {
-            logger.error("QR code generation error during PDF generation for article ${request.articleId}", e)
+            logger.error(e) { "QR code generation error during PDF generation for article ${request.articleId}" }
             throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
         } catch (e: IllegalArgumentException) {
-            logger.error("Invalid argument during PDF generation for article ${request.articleId}", e)
+            logger.error(e) { "Invalid argument during PDF generation for article ${request.articleId}" }
             throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
         }
     }
 
     override fun generateOrderPdf(orderData: OrderPdfData): ByteArray {
-        logger.info(
+        logger.info {
             "Generating PDF for order ${orderData.orderNumber} with " +
-                "${orderData.getTotalItemCount()} total items",
-        )
+                "${orderData.getTotalItemCount()} total items"
+        }
 
         try {
             val outputStream = ByteArrayOutputStream()
@@ -205,13 +205,13 @@ class PdfGenerationServiceImpl(
             document.close()
             return outputStream.toByteArray()
         } catch (e: IOException) {
-            logger.error("I/O error while generating PDF for order ${orderData.orderNumber}", e)
+            logger.error(e) { "I/O error while generating PDF for order ${orderData.orderNumber}" }
             throw PdfGenerationException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
         } catch (e: WriterException) {
-            logger.error("QR code generation error while generating PDF for order ${orderData.orderNumber}", e)
+            logger.error(e) { "QR code generation error while generating PDF for order ${orderData.orderNumber}" }
             throw PdfGenerationException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
         } catch (e: IllegalArgumentException) {
-            logger.error("Invalid argument while generating PDF for order ${orderData.orderNumber}", e)
+            logger.error(e) { "Invalid argument while generating PDF for order ${orderData.orderNumber}" }
             throw PdfGenerationException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
         }
     }
@@ -240,7 +240,7 @@ class PdfGenerationServiceImpl(
 
             val filename = request.imageUrl.substringAfterLast("/")
 
-            logger.info("Processing public PDF generation for mug ID: ${request.mugId}")
+            logger.info { "Processing public PDF generation for mug ID: ${request.mugId}" }
 
             val pdfRequest =
                 GeneratePdfRequest(
@@ -250,19 +250,19 @@ class PdfGenerationServiceImpl(
 
             return generatePdf(pdfRequest)
         } catch (e: BadRequestException) {
-            logger.error("Bad request error generating PDF for public user", e)
+            logger.error(e) { "Bad request error generating PDF for public user" }
             throw e
         } catch (e: ResourceNotFoundException) {
-            logger.error("Resource not found error generating PDF for public user", e)
+            logger.error(e) { "Resource not found error generating PDF for public user" }
             throw e
         } catch (e: PdfGenerationException) {
-            logger.error("PDF generation error for public user", e)
+            logger.error(e) { "PDF generation error for public user" }
             throw RuntimeException("Failed to generate PDF. Please try again later.", e)
         } catch (e: IllegalArgumentException) {
-            logger.error("Invalid argument error generating PDF for public user", e)
+            logger.error(e) { "Invalid argument error generating PDF for public user" }
             throw BadRequestException("Invalid request parameters")
         } catch (e: IllegalStateException) {
-            logger.error("Invalid state error generating PDF for public user", e)
+            logger.error(e) { "Invalid state error generating PDF for public user" }
             throw RuntimeException("Service temporarily unavailable. Please try again later.", e)
         }
     }
@@ -330,7 +330,7 @@ class PdfGenerationServiceImpl(
 
             qrImage.setAbsolutePosition(qrX, qrY)
             contentByte.addImage(qrImage)
-            logger.debug("QR code placed at position ({}, {})", qrX, qrY)
+            logger.debug { "QR code placed at position ($qrX, $qrY)" }
         } catch (e: WriterException) {
             throw PdfGenerationException("Failed to generate QR code for content: $qrContent", e)
         } catch (e: IOException) {
@@ -358,13 +358,9 @@ class PdfGenerationServiceImpl(
 
             image.setAbsolutePosition(x, y)
             contentByte.addImage(image)
-            logger.debug(
-                "Image placed at position ({}, {}) with size {}x{} points",
-                x,
-                y,
-                imageWidthPoints,
-                imageHeightPoints,
-            )
+            logger.debug {
+                "Image placed at position ($x, $y) with size ${imageWidthPoints}x$imageHeightPoints points"
+            }
         } catch (e: IOException) {
             throw PdfGenerationException("I/O error adding centered image to PDF", e)
         } catch (e: IllegalArgumentException) {
@@ -430,7 +426,7 @@ class PdfGenerationServiceImpl(
             )
         }
 
-        logger.debug("Created page $pageNumber/$totalPages for order ${orderData.orderNumber}")
+        logger.debug { "Created page $pageNumber/$totalPages for order ${orderData.orderNumber}" }
     }
 
     private fun getPageWidth(orderItem: OrderItemPdfData): Float =
@@ -535,23 +531,21 @@ class PdfGenerationServiceImpl(
                         try {
                             imageAccessService.getImageData(orderItem.generatedImageFilename, orderData.userId).first
                         } catch (e: IOException) {
-                            logger.warn(
+                            logger.warn(e) {
                                 "Could not load generated image ${orderItem.generatedImageFilename} " +
-                                    "for order ${orderData.orderNumber}, using placeholder",
-                                e,
-                            )
+                                    "for order ${orderData.orderNumber}, using placeholder"
+                            }
                             createPlaceholderImage()
                         } catch (e: IllegalArgumentException) {
-                            logger.warn(
+                            logger.warn(e) {
                                 "Invalid image filename ${orderItem.generatedImageFilename} " +
-                                    "for order ${orderData.orderNumber}, using placeholder",
-                                e,
-                            )
+                                    "for order ${orderData.orderNumber}, using placeholder"
+                            }
                             createPlaceholderImage()
                         }
                     }
                     else -> {
-                        logger.info("No generated image for order item ${orderItem.id}, using placeholder")
+                        logger.info { "No generated image for order item ${orderItem.id}, using placeholder" }
                         createPlaceholderImage()
                     }
                 }
@@ -585,27 +579,27 @@ class PdfGenerationServiceImpl(
             pdfImage.setAbsolutePosition(xPosition, yPosition)
             contentByte.addImage(pdfImage)
 
-            logger.debug(
+            logger.debug {
                 "Added product image with exact dimensions ${imageWidthPt}x$imageHeightPt points " +
-                    "at position ($xPosition, $yPosition)",
-            )
+                    "at position ($xPosition, $yPosition)"
+            }
         } catch (e: IOException) {
-            logger.error("I/O error adding product image for order item ${orderItem.id}", e)
+            logger.error(e) { "I/O error adding product image for order item ${orderItem.id}" }
             try {
                 addPlaceholderText(contentByte, "Image not available", pageWidth, pageHeight)
             } catch (placeholderException: IOException) {
-                logger.error("Failed to add placeholder text for order item ${orderItem.id}", placeholderException)
+                logger.error(placeholderException) { "Failed to add placeholder text for order item ${orderItem.id}" }
                 throw PdfGenerationException(
                     "Failed to add product image and placeholder for order item ${orderItem.id}",
                     e,
                 )
             }
         } catch (e: IllegalArgumentException) {
-            logger.error("Invalid image data for order item ${orderItem.id}", e)
+            logger.error(e) { "Invalid image data for order item ${orderItem.id}" }
             try {
                 addPlaceholderText(contentByte, "Image not available", pageWidth, pageHeight)
             } catch (placeholderException: IOException) {
-                logger.error("Failed to add placeholder text for order item ${orderItem.id}", placeholderException)
+                logger.error(placeholderException) { "Failed to add placeholder text for order item ${orderItem.id}" }
                 throw PdfGenerationException(
                     "Failed to add product image and placeholder for order item ${orderItem.id}",
                     e,
@@ -641,9 +635,9 @@ class PdfGenerationServiceImpl(
             qrImage.setAbsolutePosition(xPosition, yPosition)
             contentByte.addImage(qrImage)
 
-            logger.debug("Added QR code for order ID $orderId at position ($xPosition, $yPosition)")
+            logger.debug { "Added QR code for order ID $orderId at position ($xPosition, $yPosition)" }
         } catch (e: WriterException) {
-            logger.error("QR code generation error for order ID $orderId", e)
+            logger.error(e) { "QR code generation error for order ID $orderId" }
             try {
                 addPlaceholderText(
                     contentByte,
@@ -654,11 +648,11 @@ class PdfGenerationServiceImpl(
                     margin + FALLBACK_TEXT_OFFSET,
                 )
             } catch (placeholderException: IOException) {
-                logger.error("Failed to add QR code fallback text for order ID $orderId", placeholderException)
+                logger.error(placeholderException) { "Failed to add QR code fallback text for order ID $orderId" }
                 throw PdfGenerationException("Failed to add QR code and fallback text for order ID $orderId", e)
             }
         } catch (e: IOException) {
-            logger.error("I/O error generating QR code for order ID $orderId", e)
+            logger.error(e) { "I/O error generating QR code for order ID $orderId" }
             try {
                 addPlaceholderText(
                     contentByte,
@@ -669,7 +663,7 @@ class PdfGenerationServiceImpl(
                     margin + FALLBACK_TEXT_OFFSET,
                 )
             } catch (placeholderException: IOException) {
-                logger.error("Failed to add QR code fallback text for order ID $orderId", placeholderException)
+                logger.error(placeholderException) { "Failed to add QR code fallback text for order ID $orderId" }
                 throw PdfGenerationException("Failed to add QR code and fallback text for order ID $orderId", e)
             }
         }
@@ -737,7 +731,7 @@ class PdfGenerationServiceImpl(
             contentByte.showText(text)
             contentByte.endText()
         } catch (e: IOException) {
-            logger.error("Failed to add placeholder text: $text", e)
+            logger.error(e) { "Failed to add placeholder text: $text" }
         }
     }
 }

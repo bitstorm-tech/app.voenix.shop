@@ -7,7 +7,7 @@ import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
 import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequestParams
 import com.jotoai.voenix.shop.openai.api.dto.TestPromptResponse
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -24,35 +24,35 @@ class TestModeImageGenerationStrategy(
     private val promptQueryService: PromptQueryService,
 ) : ImageGenerationStrategy {
     companion object {
-        private val logger = LoggerFactory.getLogger(TestModeImageGenerationStrategy::class.java)
+        private val logger = KotlinLogging.logger {}
     }
 
     init {
-        logger.warn("======================================================")
-        logger.warn("TEST MODE ACTIVE - Image generation will return mock data")
-        logger.warn("Original images will be returned instead of AI-generated ones")
-        logger.warn("======================================================")
+        logger.warn { "======================================================" }
+        logger.warn { "TEST MODE ACTIVE - Image generation will return mock data" }
+        logger.warn { "Original images will be returned instead of AI-generated ones" }
+        logger.warn { "======================================================" }
     }
 
     override fun generateImages(
         imageFile: MultipartFile,
         request: CreateImageEditRequest,
     ): ImageEditBytesResponse {
-        logger.info("TEST MODE: Generating {} mock images for prompt ID: {}", request.n, request.promptId)
+        logger.info { "TEST MODE: Generating ${request.n} mock images for prompt ID: ${request.promptId}" }
 
         // Validate that the prompt exists (same as real implementation)
         val prompt = promptQueryService.getPromptById(request.promptId)
-        logger.debug("TEST MODE: Using prompt '{}' for mock generation", prompt.promptText)
+        logger.debug { "TEST MODE: Using prompt '${prompt.promptText}' for mock generation" }
 
         // Return the original image N times
         val originalImageBytes = imageFile.bytes
         val mockImageList =
             (1..request.n).map {
-                logger.debug("TEST MODE: Creating mock image {} of {}", it, request.n)
+                logger.debug { "TEST MODE: Creating mock image $it of ${request.n}" }
                 originalImageBytes.copyOf() // Create a copy to avoid reference issues
             }
 
-        logger.info("TEST MODE: Successfully generated {} mock images", mockImageList.size)
+        logger.info { "TEST MODE: Successfully generated ${mockImageList.size} mock images" }
         return ImageEditBytesResponse(imageBytes = mockImageList)
     }
 
@@ -60,14 +60,14 @@ class TestModeImageGenerationStrategy(
         imageFile: MultipartFile,
         request: TestPromptRequest,
     ): TestPromptResponse {
-        logger.info("TEST MODE: Testing prompt with master prompt: {}", request.masterPrompt)
+        logger.info { "TEST MODE: Testing prompt with master prompt: ${request.masterPrompt}" }
 
         val combinedPrompt = "${request.masterPrompt} ${request.specificPrompt}".trim()
 
         // Generate a mock URL that indicates this is test mode
         val mockImageUrl = "https://test-mode.voenix.shop/images/mock-${UUID.randomUUID()}.png"
 
-        logger.info("TEST MODE: Generated mock image URL: {}", mockImageUrl)
+        logger.info { "TEST MODE: Generated mock image URL: $mockImageUrl" }
 
         return TestPromptResponse(
             imageUrl = mockImageUrl,

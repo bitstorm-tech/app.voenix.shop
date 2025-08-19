@@ -13,7 +13,7 @@ import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserService
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.OffsetDateTime
@@ -25,7 +25,7 @@ class CartQueryServiceImpl(
     private val cartAssembler: CartAssembler,
     private val promptQueryService: PromptQueryService,
 ) : CartQueryService {
-    private val logger = LoggerFactory.getLogger(CartQueryServiceImpl::class.java)
+    private val logger = KotlinLogging.logger {}
 
     /**
      * Gets or creates an active cart for the user
@@ -47,7 +47,7 @@ class CartQueryServiceImpl(
         cartRepository
             .findActiveCartByUserId(userId)
             .orElseGet {
-                logger.debug("Creating new cart for user: {}", userId)
+                logger.debug { "Creating new cart for user: $userId" }
                 createNewCart(userId)
             }
 
@@ -148,7 +148,7 @@ class CartQueryServiceImpl(
                 .orElseThrow { CartNotFoundException(userId = 0, isActiveCart = false) }
         cart.status = CartStatus.CONVERTED
         cartRepository.save(cart)
-        logger.info("Marked cart {} as converted", cartId)
+        logger.info { "Marked cart $cartId as converted" }
     }
 
     /**

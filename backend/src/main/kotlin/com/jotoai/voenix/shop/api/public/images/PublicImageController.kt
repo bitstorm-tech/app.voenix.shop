@@ -4,7 +4,7 @@ import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageGenerationService
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.io.Resource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -24,7 +24,7 @@ class PublicImageController(
     private val imageAccessService: ImageAccessService,
 ) {
     companion object {
-        private val logger = LoggerFactory.getLogger(PublicImageController::class.java)
+        private val logger = KotlinLogging.logger {}
     }
 
     @PostMapping("/generate", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -32,7 +32,7 @@ class PublicImageController(
         @RequestPart("image") imageFile: MultipartFile,
         @RequestParam("promptId") promptId: Long,
     ): PublicImageGenerationResponse {
-        logger.info("Received public image generation request for prompt ID: $promptId")
+        logger.info { "Received public image generation request for prompt ID: $promptId" }
 
         val generationRequest =
             PublicImageGenerationRequest(
@@ -48,7 +48,7 @@ class PublicImageController(
     fun getImage(
         @PathVariable filename: String,
     ): ResponseEntity<Resource> {
-        logger.info("Retrieving public image: $filename")
+        logger.info { "Retrieving public image: $filename" }
 
         return imageAccessService.servePublicImage(filename)
     }

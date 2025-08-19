@@ -35,7 +35,7 @@ import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.jackson
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
@@ -55,13 +55,13 @@ class OpenAIImageGenerationStrategy(
     private val promptQueryService: PromptQueryService,
 ) : ImageGenerationStrategy {
     companion object {
-        private val logger = LoggerFactory.getLogger(OpenAIImageGenerationStrategy::class.java)
+        private val logger = KotlinLogging.logger {}
         private const val OPENAI_API_URL = "https://api.openai.com/v1/images/edits"
         private const val REQUEST_TIMEOUT_MS = 300000L // 5 minutes in milliseconds
     }
 
     init {
-        logger.info("OpenAI Image Generation Strategy initialized - Real AI generation active")
+        logger.info { "OpenAI Image Generation Strategy initialized - Real AI generation active" }
     }
 
     private val httpClient =
@@ -140,20 +140,20 @@ class OpenAIImageGenerationStrategy(
 
         if (!httpResponse.status.isSuccess()) {
             val errorBody = httpResponse.bodyAsText()
-            logger.error("OpenAI API returned error status ${httpResponse.status}: $errorBody")
+            logger.error { "OpenAI API returned error status ${httpResponse.status}: $errorBody" }
             throw IllegalStateException("OpenAI API error: ${httpResponse.status} - $errorBody")
         }
 
         val response = httpResponse.body<OpenAIResponse>()
-        logger.info("Successfully received response from OpenAI API")
+        logger.info { "Successfully received response from OpenAI API" }
 
         if (response.error != null) {
-            logger.error("OpenAI API returned error: ${response.error.message}")
+            logger.error { "OpenAI API returned error: ${response.error.message}" }
             throw IllegalStateException("OpenAI API error: ${response.error.message}")
         }
 
         if (response.data.isNullOrEmpty()) {
-            logger.error("OpenAI API returned empty or null data")
+            logger.error { "OpenAI API returned empty or null data" }
             throw IllegalStateException("OpenAI API returned no images")
         }
 
@@ -168,12 +168,12 @@ class OpenAIImageGenerationStrategy(
             when {
                 openAIImage.url != null -> {
                     // Download image from URL
-                    logger.debug("Downloading image from URL: ${openAIImage.url}")
+                    logger.debug { "Downloading image from URL: ${openAIImage.url}" }
                     httpClient.get(openAIImage.url).body()
                 }
                 openAIImage.b64Json != null -> {
                     // Decode base64 image
-                    logger.debug("Decoding base64 image")
+                    logger.debug { "Decoding base64 image" }
                     Base64.decode(openAIImage.b64Json)
                 }
                 else -> {
@@ -187,7 +187,7 @@ class OpenAIImageGenerationStrategy(
         request: CreateImageEditRequest,
     ): ImageEditBytesResponse =
         runBlocking {
-            logger.info("Starting OpenAI image generation with prompt ID: ${request.promptId}")
+            logger.info { "Starting OpenAI image generation with prompt ID: ${request.promptId}" }
 
             val prompt = promptQueryService.getPromptById(request.promptId)
 
@@ -204,28 +204,28 @@ class OpenAIImageGenerationStrategy(
                 val imageBytesList = extractImageBytes(response.data!!)
                 ImageEditBytesResponse(imageBytes = imageBytesList)
             } catch (e: CancellationException) {
-                logger.info("OpenAI API call was cancelled")
+                logger.info { "OpenAI API call was cancelled" }
                 throw e // Re-throw cancellation exceptions
             } catch (e: HttpRequestTimeoutException) {
-                logger.error("OpenAI API call timed out", e)
+                logger.error(e) { "OpenAI API call timed out" }
                 throw IllegalStateException("Failed to generate images: Request timed out", e)
             } catch (e: SocketTimeoutException) {
-                logger.error("Socket timeout during OpenAI API call", e)
+                logger.error(e) { "Socket timeout during OpenAI API call" }
                 throw IllegalStateException("Failed to generate images: Socket timeout", e)
             } catch (e: ClientRequestException) {
-                logger.error("Client error during OpenAI API call: ${e.response.status}", e)
+                logger.error(e) { "Client error during OpenAI API call: ${e.response.status}" }
                 throw IllegalStateException("Failed to generate images: Client error (${e.response.status})", e)
             } catch (e: ServerResponseException) {
-                logger.error("Server error during OpenAI API call: ${e.response.status}", e)
+                logger.error(e) { "Server error during OpenAI API call: ${e.response.status}" }
                 throw IllegalStateException("Failed to generate images: Server error (${e.response.status})", e)
             } catch (e: ResponseException) {
-                logger.error("HTTP response error during OpenAI API call", e)
+                logger.error(e) { "HTTP response error during OpenAI API call" }
                 throw IllegalStateException("Failed to generate images: HTTP error (${e.response.status})", e)
             } catch (e: JsonProcessingException) {
-                logger.error("JSON processing error during OpenAI API call", e)
+                logger.error(e) { "JSON processing error during OpenAI API call" }
                 throw IllegalStateException("Failed to generate images: JSON processing error", e)
             } catch (e: IOException) {
-                logger.error("IO error during OpenAI API call", e)
+                logger.error(e) { "IO error during OpenAI API call" }
                 throw IllegalStateException("Failed to generate images: IO error", e)
             } catch (e: IllegalStateException) {
                 // Re-throw IllegalStateException from OpenAI API responses
@@ -238,7 +238,7 @@ class OpenAIImageGenerationStrategy(
         request: TestPromptRequest,
     ): TestPromptResponse =
         runBlocking {
-            logger.info("Starting OpenAI prompt test with master prompt: ${request.masterPrompt}")
+            logger.info { "Starting OpenAI prompt test with master prompt: ${request.masterPrompt}" }
 
             try {
                 val combinedPrompt = "${request.masterPrompt} ${request.specificPrompt}".trim()
@@ -272,28 +272,28 @@ class OpenAIImageGenerationStrategy(
                         ),
                 )
             } catch (e: CancellationException) {
-                logger.info("OpenAI API call was cancelled")
+                logger.info { "OpenAI API call was cancelled" }
                 throw e // Re-throw cancellation exceptions
             } catch (e: HttpRequestTimeoutException) {
-                logger.error("OpenAI API call timed out", e)
+                logger.error(e) { "OpenAI API call timed out" }
                 throw IllegalStateException("Failed to test prompt: Request timed out", e)
             } catch (e: SocketTimeoutException) {
-                logger.error("Socket timeout during OpenAI API call", e)
+                logger.error(e) { "Socket timeout during OpenAI API call" }
                 throw IllegalStateException("Failed to test prompt: Socket timeout", e)
             } catch (e: ClientRequestException) {
-                logger.error("Client error during OpenAI API call: ${e.response.status}", e)
+                logger.error(e) { "Client error during OpenAI API call: ${e.response.status}" }
                 throw IllegalStateException("Failed to test prompt: Client error (${e.response.status})", e)
             } catch (e: ServerResponseException) {
-                logger.error("Server error during OpenAI API call: ${e.response.status}", e)
+                logger.error(e) { "Server error during OpenAI API call: ${e.response.status}" }
                 throw IllegalStateException("Failed to test prompt: Server error (${e.response.status})", e)
             } catch (e: ResponseException) {
-                logger.error("HTTP response error during OpenAI API call", e)
+                logger.error(e) { "HTTP response error during OpenAI API call" }
                 throw IllegalStateException("Failed to test prompt: HTTP error (${e.response.status})", e)
             } catch (e: JsonProcessingException) {
-                logger.error("JSON processing error during OpenAI API call", e)
+                logger.error(e) { "JSON processing error during OpenAI API call" }
                 throw IllegalStateException("Failed to test prompt: JSON processing error", e)
             } catch (e: IOException) {
-                logger.error("IO error during OpenAI API call", e)
+                logger.error(e) { "IO error during OpenAI API call" }
                 throw IllegalStateException("Failed to test prompt: IO error", e)
             } catch (e: IllegalStateException) {
                 // Re-throw IllegalStateException from OpenAI API responses

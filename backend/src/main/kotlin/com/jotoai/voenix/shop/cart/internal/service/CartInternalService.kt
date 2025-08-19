@@ -3,7 +3,7 @@ package com.jotoai.voenix.shop.cart.internal.service
 import com.jotoai.voenix.shop.cart.api.enums.CartStatus
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.OffsetDateTime
@@ -17,7 +17,7 @@ import java.time.OffsetDateTime
 class CartInternalService(
     private val cartRepository: CartRepository,
 ) {
-    private val logger = LoggerFactory.getLogger(CartInternalService::class.java)
+    private val logger = KotlinLogging.logger {}
 
     /**
      * Gets or creates an active cart entity for the user.
@@ -27,7 +27,7 @@ class CartInternalService(
         cartRepository
             .findActiveCartByUserId(userId)
             .orElseGet {
-                logger.debug("Creating new cart for user: {}", userId)
+                logger.debug { "Creating new cart for user: $userId" }
                 createNewCart(userId)
             }
 

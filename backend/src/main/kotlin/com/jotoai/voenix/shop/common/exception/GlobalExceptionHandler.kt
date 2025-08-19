@@ -3,7 +3,7 @@ package com.jotoai.voenix.shop.common.exception
 import com.jotoai.voenix.shop.common.dto.ErrorResponse
 import com.jotoai.voenix.shop.image.api.exceptions.ImageAccessDeniedException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.FieldError
@@ -14,7 +14,7 @@ import java.time.LocalDateTime
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
-    private val log = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
+    private val log = KotlinLogging.logger {}
 
     @ExceptionHandler(ResourceNotFoundException::class)
     fun handleResourceNotFoundException(ex: ResourceNotFoundException): ResponseEntity<ErrorResponse> {
@@ -86,7 +86,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(ImageNotFoundException::class)
     fun handleImageNotFoundException(ex: ImageNotFoundException): ResponseEntity<ErrorResponse> {
-        log.warn("Image not found: {}", ex.message)
+        log.warn { "Image not found: ${ex.message}" }
 
         val errorResponse =
             ErrorResponse(
@@ -102,12 +102,9 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(ImageAccessDeniedException::class)
     fun handleImageAccessDeniedException(ex: ImageAccessDeniedException): ResponseEntity<ErrorResponse> {
-        log.warn(
-            "Access denied to image: userId={}, resourceId={}, message={}",
-            ex.userId,
-            ex.resourceId,
-            ex.message,
-        )
+        log.warn {
+            "Access denied to image: userId=${ex.userId}, resourceId=${ex.resourceId}, message=${ex.message}"
+        }
 
         val errorResponse =
             ErrorResponse(
@@ -123,7 +120,7 @@ class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception::class)
     fun handleGlobalException(ex: Exception): ResponseEntity<ErrorResponse> {
-        log.error("Unexpected error occurred", ex)
+        log.error(ex) { "Unexpected error occurred" }
 
         val errorResponse =
             ErrorResponse(

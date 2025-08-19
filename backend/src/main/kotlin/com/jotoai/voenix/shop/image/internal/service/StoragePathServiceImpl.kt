@@ -3,7 +3,7 @@ package com.jotoai.voenix.shop.image.internal.service
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import java.io.IOException
 import java.nio.file.Files
@@ -18,11 +18,11 @@ class StoragePathServiceImpl(
     private val storagePathConfiguration: StoragePathConfiguration,
 ) : StoragePathService {
     companion object {
-        private val logger = LoggerFactory.getLogger(StoragePathServiceImpl::class.java)
+        private val logger = KotlinLogging.logger {}
     }
 
     init {
-        logger.info("Initializing StoragePathService with storage root: ${storagePathConfiguration.storageRoot}")
+        logger.info { "Initializing StoragePathService with storage root: ${storagePathConfiguration.storageRoot}" }
         createDirectories()
     }
 
@@ -130,9 +130,9 @@ class StoragePathServiceImpl(
             try {
                 val physicalPath = storagePathConfiguration.storageRoot.resolve(pathConfig.relativePath)
                 Files.createDirectories(physicalPath)
-                logger.info("Created/verified directory for $imageType: ${physicalPath.toAbsolutePath()}")
+                logger.info { "Created/verified directory for $imageType: ${physicalPath.toAbsolutePath()}" }
             } catch (e: IOException) {
-                logger.error("Failed to create directory for $imageType: ${e.message}", e)
+                logger.error(e) { "Failed to create directory for $imageType: ${e.message}" }
                 throw RuntimeException("Failed to create storage directory for $imageType: ${e.message}", e)
             }
         }

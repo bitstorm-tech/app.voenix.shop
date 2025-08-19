@@ -5,7 +5,7 @@ import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.ImageGenerationService
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.user.api.UserService
-import org.slf4j.LoggerFactory
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -30,7 +30,7 @@ class UserImageController(
     private val userService: UserService,
 ) {
     companion object {
-        private val logger = LoggerFactory.getLogger(UserImageController::class.java)
+        private val logger = KotlinLogging.logger {}
     }
 
     @PostMapping("/generate", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
@@ -40,19 +40,19 @@ class UserImageController(
         @AuthenticationPrincipal userDetails: UserDetails,
     ): PublicImageGenerationResponse {
         val user = userService.getUserByEmail(userDetails.username)
-        logger.info("Received authenticated image generation request from user ${user.id} for prompt ID: $promptId")
+        logger.info { "Received authenticated image generation request from user ${user.id} for prompt ID: $promptId" }
 
         // First upload the image to get UUID
         val uploadedImage = imageFacade.createUploadedImage(imageFile, user.id)
-        logger.info("Uploaded image for user ${user.id} with UUID: ${uploadedImage.uuid}")
+        logger.info { "Uploaded image for user ${user.id} with UUID: ${uploadedImage.uuid}" }
 
         // Generate all 4 images in one call and get the complete response with IDs
         val response = imageGenerationService.generateUserImageWithIds(promptId, uploadedImage.uuid, user.id)
 
-        logger.info(
+        logger.info {
             "Generated ${response.generatedImageIds.size} images with IDs: " +
-                "${response.generatedImageIds} for user ${user.id}",
-        )
+                "${response.generatedImageIds} for user ${user.id}"
+        }
 
         return response
     }
@@ -63,7 +63,7 @@ class UserImageController(
         @AuthenticationPrincipal userDetails: UserDetails,
     ): ResponseEntity<ByteArray> {
         val user = userService.getUserByEmail(userDetails.username)
-        logger.info("User ${user.id} retrieving image: $filename")
+        logger.info { "User ${user.id} retrieving image: $filename" }
 
         // Use the serveUserImage method instead which handles validation internally
         val response = imageAccessService.serveUserImage(filename, user.id)
