@@ -80,10 +80,6 @@ tasks.withType<KotlinCompile> {
     }
 }
 
-kotlin {
-    jvmToolchain(21)
-}
-
 flyway {
     url = System.getenv("DATABASE_URL")
     user = System.getenv("DATABASE_USERNAME")
