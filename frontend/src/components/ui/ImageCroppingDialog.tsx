@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/Dialog';
-import ImageCropper from '@/components/ui/ImageCropper';
+import ImageCropperFixedBox from '@/components/ui/ImageCropperFixedBox';
 import { createCroppedImage, type CropArea } from '@/lib/image-utils';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -68,7 +68,7 @@ export default function ImageCroppingDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <ImageCropper
+        <ImageCropperFixedBox
           srcImage={srcImage}
           aspectRatio={aspectRatio}
           onCropComplete={handleCropComplete}

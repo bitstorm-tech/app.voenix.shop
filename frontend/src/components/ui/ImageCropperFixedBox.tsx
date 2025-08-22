@@ -9,19 +9,19 @@ interface CropState {
   y: number;
 }
 
-interface ImageCropperProps {
+interface ImageCropperFixedBoxProps {
   srcImage: string;
   aspectRatio?: number;
   onCropComplete: (croppedArea: CropArea, croppedAreaPixels: CropArea) => void;
   className?: string;
 }
 
-export default function ImageCropper({
+export default function ImageCropperFixedBox({
   srcImage,
   aspectRatio,
   onCropComplete,
   className = '',
-}: ImageCropperProps) {
+}: ImageCropperFixedBoxProps) {
   const [crop, setCrop] = useState<CropState>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
 
