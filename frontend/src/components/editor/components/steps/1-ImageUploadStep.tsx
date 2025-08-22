@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/Button';
 import ImageCropperDialog from '@/components/ui/ImageCropperDialog';
-import { cleanupBlobUrls, isValidImageFile, isValidImageSize, type CropArea } from '@/lib/image-utils';
+import { cleanupBlobUrls, type CropArea, isValidImageFile, isValidImageSize } from '@/lib/image-utils';
 import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Upload, X } from 'lucide-react';
@@ -117,7 +117,6 @@ export default function ImageUploadStep() {
         open={showCropper && !!originalImageUrl}
         onOpenChange={(open) => !open && handleCropCancel()}
         srcImage={originalImageUrl || ''}
-        aspectRatio={1}
         onConfirm={handleCropConfirm}
         title="Crop your image"
         description="Select the area you want to use for your mug design"

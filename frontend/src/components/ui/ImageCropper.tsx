@@ -10,18 +10,13 @@ interface ImageCropperProps {
   className?: string;
 }
 
-export default function ImageCropper({
-  srcImage,
-  aspectRatio,
-  onCropComplete,
-  className = '',
-}: ImageCropperProps) {
+export default function ImageCropper({ srcImage, aspectRatio, onCropComplete, className = '' }: ImageCropperProps) {
   const [crop, setCrop] = useState<Crop>({
     unit: '%',
-    width: 50,
-    height: 50,
-    x: 25,
-    y: 25,
+    width: 80,
+    height: 80,
+    x: 10,
+    y: 10,
   });
 
   const handleCropComplete = useCallback(
@@ -44,20 +39,14 @@ export default function ImageCropper({
 
       onCropComplete(croppedArea, croppedAreaPixels);
     },
-    [onCropComplete]
+    [onCropComplete],
   );
 
   return (
     <div className={`space-y-4 ${className}`}>
-      <div className="relative h-96">
-        <ReactCrop
-          crop={crop}
-          onChange={(_, percentCrop) => setCrop(percentCrop)}
-          onComplete={handleCropComplete}
-          aspect={aspectRatio}
-          keepSelection
-        >
-          <img src={srcImage} alt="Crop" className="max-w-full max-h-full" />
+      <div className="relative max-h-[60vh] overflow-auto">
+        <ReactCrop crop={crop} onChange={(_, percentCrop) => setCrop(percentCrop)} onComplete={handleCropComplete} aspect={aspectRatio} keepSelection>
+          <img src={srcImage} alt="Crop" className="h-auto max-w-full object-contain" />
         </ReactCrop>
       </div>
     </div>
