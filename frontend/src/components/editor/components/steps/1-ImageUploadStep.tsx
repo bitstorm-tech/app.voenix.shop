@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/Button';
-import ImageCropperFixedBoxDialog from '@/components/ui/ImageCropperFixedBoxDialog';
+import ImageCropperDialog from '@/components/ui/ImageCropperDialog';
 import { cleanupBlobUrls, isValidImageFile, isValidImageSize, type CropArea } from '@/lib/image-utils';
 import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
@@ -113,7 +113,7 @@ export default function ImageUploadStep() {
 
   return (
     <>
-      <ImageCropperFixedBoxDialog
+      <ImageCropperDialog
         open={showCropper && !!originalImageUrl}
         onOpenChange={(open) => !open && handleCropCancel()}
         srcImage={originalImageUrl || ''}
