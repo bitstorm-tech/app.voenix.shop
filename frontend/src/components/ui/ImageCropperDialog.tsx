@@ -68,11 +68,7 @@ export default function ImageCropperDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <ImageCropper
-          srcImage={srcImage}
-          aspectRatio={aspectRatio}
-          onCropComplete={handleCropComplete}
-        />
+        <ImageCropper srcImage={srcImage} aspectRatio={aspectRatio} onCropComplete={handleCropComplete} />
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel} disabled={isLoading}>

@@ -68,11 +68,7 @@ export default function ImageCropperFixedBoxDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <ImageCropperFixedBox
-          srcImage={srcImage}
-          aspectRatio={aspectRatio}
-          onCropComplete={handleCropComplete}
-        />
+        <ImageCropperFixedBox srcImage={srcImage} aspectRatio={aspectRatio} onCropComplete={handleCropComplete} />
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel} disabled={isLoading}>

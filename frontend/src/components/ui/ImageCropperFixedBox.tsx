@@ -16,12 +16,7 @@ interface ImageCropperFixedBoxProps {
   className?: string;
 }
 
-export default function ImageCropperFixedBox({
-  srcImage,
-  aspectRatio,
-  onCropComplete,
-  className = '',
-}: ImageCropperFixedBoxProps) {
+export default function ImageCropperFixedBox({ srcImage, aspectRatio, onCropComplete, className = '' }: ImageCropperFixedBoxProps) {
   const [crop, setCrop] = useState<CropState>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
 
@@ -29,7 +24,7 @@ export default function ImageCropperFixedBox({
     (croppedArea: CropArea, croppedAreaPixels: CropArea) => {
       onCropComplete(croppedArea, croppedAreaPixels);
     },
-    [onCropComplete]
+    [onCropComplete],
   );
 
   return (
