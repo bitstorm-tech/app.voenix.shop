@@ -5,7 +5,7 @@ import { createCroppedImage, type CropArea } from '@/lib/image-utils';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-interface ImageCroppingDialogProps {
+interface ImageCropperFixedBoxDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   srcImage: string;
@@ -15,7 +15,7 @@ interface ImageCroppingDialogProps {
   description?: string;
 }
 
-export default function ImageCroppingDialog({
+export default function ImageCropperFixedBoxDialog({
   open,
   onOpenChange,
   srcImage,
@@ -23,7 +23,7 @@ export default function ImageCroppingDialog({
   onConfirm,
   title = 'Crop Image',
   description = 'Select the area you want to use',
-}: ImageCroppingDialogProps) {
+}: ImageCropperFixedBoxDialogProps) {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 

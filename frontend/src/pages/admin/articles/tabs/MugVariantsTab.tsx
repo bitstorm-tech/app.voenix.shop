@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Checkbox } from '@/components/ui/Checkbox';
 import { ColorPicker } from '@/components/ui/ColorPicker';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
-import ImageCroppingDialog from '@/components/ui/ImageCroppingDialog';
+import ImageCropperFixedBoxDialog from '@/components/ui/ImageCropperFixedBoxDialog';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
@@ -385,7 +385,7 @@ export default function MugVariantsTab({
           </div>
         )}
 
-        <ImageCroppingDialog
+        <ImageCropperFixedBoxDialog
           open={showCropper && !!originalImageUrl}
           onOpenChange={(open) => !open && handleCropCancel()}
           srcImage={originalImageUrl || ''}
