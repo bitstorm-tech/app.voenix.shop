@@ -153,7 +153,7 @@ export default function ImageUploadStep() {
           </div>
 
           <div className="flex justify-center">
-            <img src={uploadedImageUrl} alt="Cropped preview" className="h-64 w-64 rounded border object-cover" />
+            <img src={uploadedImageUrl} alt="Cropped preview" className="h-auto w-auto max-h-96 max-w-full rounded border" />
           </div>
 
           <p className="text-center text-sm text-gray-600">Your image is ready! You can continue to the next step or upload a different image.</p>
