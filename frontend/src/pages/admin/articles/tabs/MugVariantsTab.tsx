@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { articlesApi } from '@/lib/api';
-import type { CropArea } from '@/lib/image-utils';
+import { blobUrlToFile } from '@/lib/image-utils';
 import { cn } from '@/lib/utils';
 import type { ArticleMugVariant, CreateArticleMugVariantRequest } from '@/types/article';
 import { Copy, Edit, Image as ImageIcon, Plus, Trash2, Upload, X } from 'lucide-react';
@@ -47,7 +47,6 @@ export default function MugVariantsTab({
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
   const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
   const [showCropper, setShowCropper] = useState(false);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteVariantId, setDeleteVariantId] = useState<number | null>(null);
@@ -89,7 +88,6 @@ export default function MugVariantsTab({
     setImageFile(file);
     setOriginalImageUrl(blobUrl);
     setImagePreviewUrl(blobUrl);
-    setCroppedAreaPixels(null);
     setShowCropper(true);
 
     if (fileInputRef.current) {
@@ -99,7 +97,6 @@ export default function MugVariantsTab({
 
   const handleCropCancel = () => {
     setShowCropper(false);
-    setCroppedAreaPixels(null);
     if (imagePreviewUrl) {
       URL.revokeObjectURL(imagePreviewUrl);
     }
@@ -111,14 +108,19 @@ export default function MugVariantsTab({
     setImageFile(null);
   };
 
-  const handleCropConfirm = async (croppedImageUrl: string, croppedAreaPixels: CropArea) => {
+  const handleCropConfirm = async (croppedImageUrl: string, ..._args: unknown[]) => {
     try {
       // Update the preview URL to show the cropped version
       if (imagePreviewUrl && imagePreviewUrl !== originalImageUrl) {
         URL.revokeObjectURL(imagePreviewUrl);
       }
       setImagePreviewUrl(croppedImageUrl);
-      setCroppedAreaPixels(croppedAreaPixels);
+      
+      // Convert the cropped blob URL to a File object to replace the original
+      if (imageFile) {
+        const croppedFile = await blobUrlToFile(croppedImageUrl, imageFile.name, imageFile.type);
+        setImageFile(croppedFile);
+      }
     } catch (error) {
       console.error('Failed to process cropped image:', error);
       toast.error('Failed to process cropped image');
@@ -135,7 +137,6 @@ export default function MugVariantsTab({
     setImagePreviewUrl(null);
     setOriginalImageUrl(null);
     setImageFile(null);
-    setCroppedAreaPixels(null);
     // Mark the existing image for removal but keep the URL reference
     if (existingImageUrl) {
       setImageRemoved(true);
@@ -272,14 +273,9 @@ export default function MugVariantsTab({
       }
 
       // Upload image if a new file was selected
-      if (imageFile && response.id && croppedAreaPixels) {
+      if (imageFile && response.id) {
         try {
-          const imageResponse = await articlesApi.uploadMugVariantImage(response.id, imageFile, {
-            x: croppedAreaPixels.x,
-            y: croppedAreaPixels.y,
-            width: croppedAreaPixels.width,
-            height: croppedAreaPixels.height,
-          });
+          const imageResponse = await articlesApi.uploadMugVariantImage(response.id, imageFile);
           // Update the response with the data returned from the backend
           response.exampleImageFilename = imageResponse.exampleImageFilename;
           response.exampleImageUrl = imageResponse.exampleImageUrl;

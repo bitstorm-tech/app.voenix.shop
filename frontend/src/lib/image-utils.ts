@@ -77,6 +77,19 @@ export const isValidImageSize = (file: File, maxSizeInMB: number = 4): boolean =
 };
 
 /**
+ * Converts a blob URL to a File object
+ * @param blobUrl - The blob URL to convert
+ * @param fileName - The name for the resulting file
+ * @param mimeType - The MIME type for the file (default: 'image/jpeg')
+ * @returns Promise resolving to a File object
+ */
+export const blobUrlToFile = async (blobUrl: string, fileName: string, mimeType: string = 'image/jpeg'): Promise<File> => {
+  const response = await fetch(blobUrl);
+  const blob = await response.blob();
+  return new File([blob], fileName, { type: mimeType });
+};
+
+/**
  * Cleanup function for blob URLs
  * @param urls - Array of blob URLs to revoke
  */
