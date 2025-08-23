@@ -1,20 +1,15 @@
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Checkbox } from '@/components/ui/Checkbox';
-import { ColorPicker } from '@/components/ui/ColorPicker';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
-import ImageCropperFixedBoxDialog from '@/components/ui/ImageCropperFixedBoxDialog';
-import { Input } from '@/components/ui/Input';
-import { Label } from '@/components/ui/Label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { articlesApi } from '@/lib/api';
-import { blobUrlToFile } from '@/lib/image-utils';
 import { cn } from '@/lib/utils';
 import type { ArticleMugVariant, CreateArticleMugVariantRequest } from '@/types/article';
-import { Copy, Edit, Image as ImageIcon, Plus, Trash2, Upload, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Copy, Edit, Image as ImageIcon, Plus, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import MugVariantDialog from '@/components/admin/articles/MugVariantDialog';
 
 interface MugVariantsTabProps {
   articleId?: number;
@@ -35,286 +30,73 @@ export default function MugVariantsTab({
 }: MugVariantsTabProps) {
   const navigate = useNavigate();
   const [variants, setVariants] = useState<ArticleMugVariant[]>(initialVariants);
-  const [newVariant, setNewVariant] = useState<CreateArticleMugVariantRequest>({
-    insideColorCode: '#ffffff',
-    outsideColorCode: '#ffffff',
-    name: '',
-    articleVariantNumber: '',
-    isDefault: false,
-    active: true,
-  });
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
-  const [showCropper, setShowCropper] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showDialog, setShowDialog] = useState(false);
+  const [editingVariant, setEditingVariant] = useState<ArticleMugVariant | null>(null);
+  const [editingTemporaryVariant, setEditingTemporaryVariant] = useState<CreateArticleMugVariantRequest | null>(null);
+  const [editingTemporaryIndex, setEditingTemporaryIndex] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteVariantId, setDeleteVariantId] = useState<number | null>(null);
   const [deleteVariantIndex, setDeleteVariantIndex] = useState<number | null>(null);
   const [isTemporaryVariant, setIsTemporaryVariant] = useState(false);
-  const [editingVariantId, setEditingVariantId] = useState<number | null>(null);
-  const [editingTemporaryIndex, setEditingTemporaryIndex] = useState<number | null>(null);
-  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
-  const [imageRemoved, setImageRemoved] = useState(false);
 
   // Sync local state with prop changes (important for when variants are copied or refetched)
   useEffect(() => {
     setVariants(initialVariants);
   }, [initialVariants]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
-      return;
-    }
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast.error('File size exceeds maximum allowed size of 10MB');
-      return;
-    }
-
-    // Clean up previous blob URLs if exist
-    if (imagePreviewUrl) {
-      URL.revokeObjectURL(imagePreviewUrl);
-    }
-    if (originalImageUrl) {
-      URL.revokeObjectURL(originalImageUrl);
-    }
-
-    const blobUrl = URL.createObjectURL(file);
-    setImageFile(file);
-    setOriginalImageUrl(blobUrl);
-    setImagePreviewUrl(blobUrl);
-    setShowCropper(true);
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleCropCancel = () => {
-    setShowCropper(false);
-    if (imagePreviewUrl) {
-      URL.revokeObjectURL(imagePreviewUrl);
-    }
-    if (originalImageUrl) {
-      URL.revokeObjectURL(originalImageUrl);
-    }
-    setImagePreviewUrl(null);
-    setOriginalImageUrl(null);
-    setImageFile(null);
-  };
-
-  const handleCropConfirm = async (croppedImageUrl: string, ..._args: unknown[]) => {
-    try {
-      // Update the preview URL to show the cropped version
-      if (imagePreviewUrl && imagePreviewUrl !== originalImageUrl) {
-        URL.revokeObjectURL(imagePreviewUrl);
-      }
-      setImagePreviewUrl(croppedImageUrl);
-      
-      // Convert the cropped blob URL to a File object to replace the original
-      if (imageFile) {
-        const croppedFile = await blobUrlToFile(croppedImageUrl, imageFile.name, imageFile.type);
-        setImageFile(croppedFile);
-      }
-    } catch (error) {
-      console.error('Failed to process cropped image:', error);
-      toast.error('Failed to process cropped image');
-    }
-  };
-
-  const handleRemoveImage = () => {
-    if (imagePreviewUrl && imagePreviewUrl !== existingImageUrl) {
-      URL.revokeObjectURL(imagePreviewUrl);
-    }
-    if (originalImageUrl && originalImageUrl !== imagePreviewUrl) {
-      URL.revokeObjectURL(originalImageUrl);
-    }
-    setImagePreviewUrl(null);
-    setOriginalImageUrl(null);
-    setImageFile(null);
-    // Mark the existing image for removal but keep the URL reference
-    if (existingImageUrl) {
-      setImageRemoved(true);
-      // Don't clear existingImageUrl here - we need it to know which image to remove
-    }
+  const handleAddVariant = () => {
+    setEditingVariant(null);
+    setEditingTemporaryVariant(null);
+    setEditingTemporaryIndex(null);
+    setShowDialog(true);
   };
 
   const handleEditVariant = (variant: ArticleMugVariant) => {
-    setEditingVariantId(variant.id);
+    setEditingVariant(variant);
+    setEditingTemporaryVariant(null);
     setEditingTemporaryIndex(null);
-    setNewVariant({
-      insideColorCode: variant.insideColorCode,
-      outsideColorCode: variant.outsideColorCode,
-      name: variant.name,
-      articleVariantNumber: variant.articleVariantNumber || '',
-      isDefault: variant.isDefault || false,
-      active: variant.active ?? true,
-    });
-    setImageRemoved(false);
-
-    // Handle existing image preview
-    if (variant.exampleImageUrl) {
-      setImagePreviewUrl(variant.exampleImageUrl);
-      setExistingImageUrl(variant.exampleImageUrl);
-    } else {
-      setImagePreviewUrl(null);
-      setExistingImageUrl(null);
-    }
+    setShowDialog(true);
   };
 
   const handleEditTemporaryVariant = (index: number, variant: CreateArticleMugVariantRequest) => {
+    setEditingTemporaryVariant(variant);
     setEditingTemporaryIndex(index);
-    setEditingVariantId(null);
-    setNewVariant({
-      insideColorCode: variant.insideColorCode,
-      outsideColorCode: variant.outsideColorCode,
-      name: variant.name,
-      articleVariantNumber: variant.articleVariantNumber || '',
-      isDefault: variant.isDefault || false,
-      active: variant.active ?? true,
-    });
-    setImageRemoved(false);
+    setEditingVariant(null);
+    setShowDialog(true);
   };
 
-  const handleCancelEdit = () => {
-    setEditingVariantId(null);
-    setEditingTemporaryIndex(null);
-    setExistingImageUrl(null);
-    setImageRemoved(false);
-    setNewVariant({
-      insideColorCode: '#ffffff',
-      outsideColorCode: '#ffffff',
-      name: '',
-      articleVariantNumber: '',
-      isDefault: false,
-      active: true,
-    });
-    handleRemoveImage();
+
+  const handleVariantSaved = (variant: ArticleMugVariant) => {
+    const existingIndex = variants.findIndex((v) => v.id === variant.id);
+    if (existingIndex >= 0) {
+      // Update existing variant
+      setVariants(variants.map((v) => (v.id === variant.id ? variant : v)));
+    } else {
+      // Add new variant
+      setVariants([...variants, variant]);
+    }
   };
 
-  const handleAddOrUpdateVariant = async () => {
-    if (!newVariant.name) {
-      toast.error('Please enter a variant name');
-      return;
+  const handleTemporaryVariantSaved = (variant: CreateArticleMugVariantRequest, index?: number) => {
+    if (typeof index === 'number' && onUpdateTemporaryVariant) {
+      // Update existing temporary variant
+      onUpdateTemporaryVariant(index, variant);
+    } else if (onAddTemporaryVariant) {
+      // Add new temporary variant
+      onAddTemporaryVariant(variant);
     }
+  };
 
-    const isEditing = editingVariantId !== null || editingTemporaryIndex !== null;
-
-    // Check for duplicate variants (excluding the one being edited)
-    const isDuplicate = articleId
-      ? variants.some((v) => v.name === newVariant.name && v.id !== editingVariantId)
-      : temporaryVariants.some((v, index) => v.name === newVariant.name && index !== editingTemporaryIndex);
-
-    if (isDuplicate) {
-      toast.error('A variant with this name already exists');
-      return;
-    }
-
-    // Backend will handle ensuring only one variant is default
-
-    if (!articleId) {
-      // Handle temporary variant for unsaved article
-      const variantToSave = { ...newVariant };
-
-      // Store image file reference separately to be handled when article is saved
-      // NOTE: Image files for temporary variants need to be stored in the parent component
-      // and uploaded after the article and variant are created
-
-      if (editingTemporaryIndex !== null && onUpdateTemporaryVariant) {
-        // Update existing temporary variant
-        onUpdateTemporaryVariant(editingTemporaryIndex, variantToSave);
-        toast.success('Variant updated (will be saved with article)');
-      } else if (onAddTemporaryVariant) {
-        // Add new temporary variant
-        onAddTemporaryVariant(variantToSave);
-        toast.success('Variant added (will be saved with article)');
-      }
-
-      handleCancelEdit();
-      return;
-    }
-
-    // Handle variant for saved article
-    try {
-      let response: ArticleMugVariant;
-
-      if (isEditing && editingVariantId) {
-        // Update existing variant without image data
-        const updateRequest: CreateArticleMugVariantRequest = {
-          insideColorCode: newVariant.insideColorCode,
-          outsideColorCode: newVariant.outsideColorCode,
-          name: newVariant.name,
-          articleVariantNumber: newVariant.articleVariantNumber,
-          isDefault: newVariant.isDefault,
-          active: newVariant.active,
-        };
-
-        response = await articlesApi.updateMugVariant(editingVariantId, updateRequest);
-
-        // Handle image removal if user removed the existing image
-        if (imageRemoved && existingImageUrl && !imageFile) {
-          try {
-            // The removeMugVariantImage API returns the updated variant
-            response = await articlesApi.removeMugVariantImage(editingVariantId);
-            toast.success('Image removed successfully');
-          } catch (error) {
-            console.error('Error removing variant image:', error);
-            toast.error('Failed to remove image');
-          }
+  const handleRefetchVariants = async () => {
+    if (articleId) {
+      try {
+        const article = await articlesApi.getById(articleId);
+        if (article.mugVariants) {
+          setVariants(article.mugVariants);
         }
-      } else {
-        // Create new variant without image data
-        response = await articlesApi.createMugVariant(articleId, newVariant);
+      } catch (error) {
+        console.error('Error refetching variants:', error);
       }
-
-      // Upload image if a new file was selected
-      if (imageFile && response.id) {
-        try {
-          const imageResponse = await articlesApi.uploadMugVariantImage(response.id, imageFile);
-          // Update the response with the data returned from the backend
-          response.exampleImageFilename = imageResponse.exampleImageFilename;
-          response.exampleImageUrl = imageResponse.exampleImageUrl;
-        } catch (imageError) {
-          console.error('Error uploading variant image:', imageError);
-          toast.error(isEditing ? 'Variant updated but image upload failed' : 'Variant created but image upload failed');
-        }
-      }
-
-      // Update the variant in the list
-      if (isEditing) {
-        // If we updated the default status, we need to refetch all variants
-        // because the backend might have updated other variants' default status
-        if (newVariant.isDefault && articleId) {
-          try {
-            // Refetch all variants for this article to get the updated default states
-            const article = await articlesApi.getById(articleId);
-            if (article.mugVariants) {
-              setVariants(article.mugVariants);
-            }
-          } catch (error) {
-            console.error('Error refetching variants:', error);
-            // Fallback to just updating the single variant
-            setVariants(variants.map((v) => (v.id === editingVariantId ? response : v)));
-          }
-        } else {
-          // For non-default updates, just update the single variant
-          setVariants(variants.map((v) => (v.id === editingVariantId ? response : v)));
-        }
-        toast.success('Variant updated successfully');
-      } else {
-        setVariants([...variants, response]);
-        toast.success('Variant added successfully');
-      }
-
-      handleCancelEdit();
-    } catch (error) {
-      console.error(isEditing ? 'Error updating variant:' : 'Error adding variant:', error);
-      toast.error(isEditing ? 'Failed to update variant' : 'Failed to add variant');
     }
   };
 
@@ -369,9 +151,7 @@ export default function MugVariantsTab({
       <CardHeader>
         <CardTitle>Mug Variants</CardTitle>
         <CardDescription>
-          {editingVariantId || editingTemporaryIndex !== null
-            ? 'Edit the variant details below'
-            : 'Add different color combinations for this mug. Each variant can have different inside and outside colors.'}
+          Add different color combinations for this mug. Each variant can have different inside and outside colors.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -381,130 +161,31 @@ export default function MugVariantsTab({
           </div>
         )}
 
-        <ImageCropperFixedBoxDialog
-          open={showCropper && !!originalImageUrl}
-          onOpenChange={(open) => !open && handleCropCancel()}
-          srcImage={originalImageUrl || ''}
-          aspectRatio={1}
-          onConfirm={handleCropConfirm}
-          title="Crop your variant image"
-          description="Select the area you want to use for the variant thumbnail"
+        <MugVariantDialog
+          open={showDialog}
+          onOpenChange={setShowDialog}
+          articleId={articleId}
+          variant={editingVariant || undefined}
+          temporaryVariant={editingTemporaryVariant || undefined}
+          temporaryVariantIndex={editingTemporaryIndex || undefined}
+          existingVariants={variants}
+          existingTemporaryVariants={temporaryVariants}
+          onVariantSaved={handleVariantSaved}
+          onTemporaryVariantSaved={handleTemporaryVariantSaved}
+          onRefetchVariants={handleRefetchVariants}
         />
 
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <div className="space-y-2">
-              <Label>Name *</Label>
-              <Input
-                value={newVariant.name}
-                onChange={(e) => setNewVariant({ ...newVariant, name: e.target.value })}
-                placeholder="e.g., Classic White"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Article Variant Number</Label>
-              <Input
-                value={newVariant.articleVariantNumber || ''}
-                onChange={(e) => setNewVariant({ ...newVariant, articleVariantNumber: e.target.value })}
-                placeholder="e.g., MUG-001"
-                maxLength={100}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Inside Color</Label>
-              <ColorPicker value={newVariant.insideColorCode} onChange={(color) => setNewVariant({ ...newVariant, insideColorCode: color })} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Outside Color</Label>
-              <ColorPicker value={newVariant.outsideColorCode} onChange={(color) => setNewVariant({ ...newVariant, outsideColorCode: color })} />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Default Variant</Label>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="default-variant"
-                  checked={newVariant.isDefault}
-                  onCheckedChange={(checked) => setNewVariant({ ...newVariant, isDefault: checked === true })}
-                />
-                <Label htmlFor="default-variant" className="cursor-pointer text-sm font-normal">
-                  Set as default variant
-                </Label>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Active Status</Label>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="active-variant"
-                  checked={newVariant.active ?? true}
-                  onCheckedChange={(checked) => setNewVariant({ ...newVariant, active: checked === true })}
-                />
-                <Label htmlFor="active-variant" className="cursor-pointer text-sm font-normal">
-                  Variant is active and visible to customers
-                </Label>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Example Image</Label>
-              <div className="space-y-2">
-                {imagePreviewUrl && !showCropper ? (
-                  <div className="relative inline-block">
-                    <img src={imagePreviewUrl} alt="Preview" className="h-20 w-20 rounded border object-cover" />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 p-0 text-white hover:bg-red-600"
-                      onClick={handleRemoveImage}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div>
-                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                    <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} className="w-full">
-                      <Upload className="mr-2 h-4 w-4" />
-                      Upload Image
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-4">
-            {articleId && !(editingVariantId || editingTemporaryIndex !== null) && (
-              <Button onClick={handleCopyVariants} variant="outline" className="min-w-[140px]">
-                <Copy className="mr-2 h-4 w-4" />
-                Copy Variants
-              </Button>
-            )}
-            <div className={cn('flex gap-2', !articleId || editingVariantId || editingTemporaryIndex !== null ? 'w-full justify-end' : '')}>
-              {(editingVariantId || editingTemporaryIndex !== null) && (
-                <Button onClick={handleCancelEdit} variant="outline" className="min-w-[120px]">
-                  Cancel
-                </Button>
-              )}
-              <Button onClick={handleAddOrUpdateVariant} className="min-w-[120px]">
-                {editingVariantId || editingTemporaryIndex !== null ? (
-                  <>Update Variant</>
-                ) : (
-                  <>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Variant
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
+        <div className="flex items-center justify-end gap-4">
+          {articleId && (
+            <Button onClick={handleCopyVariants} variant="outline" className="min-w-[140px]">
+              <Copy className="mr-2 h-4 w-4" />
+              Copy Variants
+            </Button>
+          )}
+          <Button onClick={handleAddVariant} className="min-w-[140px]">
+            <Plus className="mr-2 h-4 w-4" />
+            Add Variant
+          </Button>
         </div>
 
         {/* Show saved variants */}
@@ -527,7 +208,7 @@ export default function MugVariantsTab({
                 {variants.map((variant) => (
                   <TableRow
                     key={variant.id}
-                    className={cn(editingVariantId === variant.id ? 'bg-blue-50' : '', !variant.active ? 'bg-gray-50 opacity-60' : '')}
+                    className={cn(!variant.active ? 'bg-gray-50 opacity-60' : '')}
                   >
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
