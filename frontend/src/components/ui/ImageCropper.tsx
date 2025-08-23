@@ -51,27 +51,16 @@ export default function ImageCropper({ srcImage, aspectRatio, onCropComplete, cl
 
   return (
     <div className={`space-y-4 ${className}`}>
-      <div className="relative flex items-center justify-center" style={{ maxHeight: '60vh' }}>
+      <div className="relative flex max-h-[60vh] items-center justify-center">
         <ReactCrop
           crop={crop}
           onChange={(_, percentCrop) => setCrop(percentCrop)}
           onComplete={handleCropComplete}
           aspect={aspectRatio}
           keepSelection
-          style={{ maxHeight: '60vh', maxWidth: '100%' }}
+          className="max-h-[60vh] max-w-full"
         >
-          <img
-            ref={imageRef}
-            src={srcImage}
-            alt="Crop"
-            style={{
-              maxHeight: '60vh',
-              maxWidth: '100%',
-              width: 'auto',
-              height: 'auto',
-              objectFit: 'contain',
-            }}
-          />
+          <img ref={imageRef} src={srcImage} alt="Crop" className="h-auto max-h-[60vh] w-auto max-w-full object-contain" />
         </ReactCrop>
       </div>
     </div>
