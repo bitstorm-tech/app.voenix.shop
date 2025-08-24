@@ -3,6 +3,7 @@
  * <p>
  * This module provides:
  * <ul>
+ *   <li>AI image generation service through {@link com.jotoai.voenix.shop.openai.api.ImageGenerationService}</li>
  *   <li>Image generation and editing operations through {@link com.jotoai.voenix.shop.openai.api.OpenAIImageFacade}</li>
  *   <li>Image generation query operations through {@link com.jotoai.voenix.shop.openai.api.OpenAIImageQueryService}</li>
  *   <li>Strategy pattern for different image generation backends (OpenAI, test mode)</li>

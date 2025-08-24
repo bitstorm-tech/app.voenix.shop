@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.image.api
+package com.jotoai.voenix.shop.openai.api
 
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest

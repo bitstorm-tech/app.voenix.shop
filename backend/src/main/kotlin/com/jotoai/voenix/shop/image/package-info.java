@@ -5,7 +5,6 @@
  * <ul>
  *   <li>Image CRUD operations through {@link com.jotoai.voenix.shop.image.api.ImageFacade}</li>
  *   <li>Image query operations and data access through {@link com.jotoai.voenix.shop.image.api.ImageQueryService}</li>
- *   <li>AI image generation through {@link com.jotoai.voenix.shop.image.api.ImageGenerationService}</li>
  *   <li>Image storage operations through {@link com.jotoai.voenix.shop.image.api.ImageStorageService}</li>
  * </ul>
  * <p>

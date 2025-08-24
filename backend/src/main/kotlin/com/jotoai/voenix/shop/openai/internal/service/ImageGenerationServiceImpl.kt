@@ -1,7 +1,7 @@
-package com.jotoai.voenix.shop.image.internal.service
+package com.jotoai.voenix.shop.openai.internal.service
 
 import com.jotoai.voenix.shop.common.exception.BadRequestException
-import com.jotoai.voenix.shop.image.api.ImageGenerationService
+import com.jotoai.voenix.shop.openai.api.ImageGenerationService
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
@@ -10,6 +10,8 @@ import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
+import com.jotoai.voenix.shop.image.internal.service.ImageValidationService
 import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
 import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService

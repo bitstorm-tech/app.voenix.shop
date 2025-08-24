@@ -1,6 +1,6 @@
+import { CropData } from '@/components/editor/types';
 import { publicApi, userApi } from '@/lib/api';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
-import { CropData } from '@/components/editor/types';
 import { useState } from 'react';
 
 interface GeneratedImageData {
@@ -25,8 +25,8 @@ export function useImageGeneration(): UseImageGenerationReturn {
 
     try {
       // Use authenticated endpoint if user is logged in
-      const response = isAuthenticated 
-        ? await userApi.generateImage(file, promptId, cropData) 
+      const response = isAuthenticated
+        ? await userApi.generateImage(file, promptId, cropData)
         : await publicApi.generateImage(file, promptId, cropData);
 
       // Return both URLs and IDs

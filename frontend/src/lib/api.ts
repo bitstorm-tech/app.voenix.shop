@@ -1,3 +1,4 @@
+import type { CropData } from '@/components/editor/types';
 import type {
   Article,
   ArticleMugVariant,
@@ -12,7 +13,6 @@ import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
 import type { AddToCartRequest, CartDto, CartSummaryDto, UpdateCartItemRequest } from '@/types/cart';
 import type { MugWithVariantsSummary } from '@/types/copyVariants';
 import type { Country } from '@/types/country';
-import type { CropData } from '@/components/editor/types';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
 import type { PromptSlotType, PromptSlotVariant } from '@/types/promptSlotVariant';
@@ -501,7 +501,7 @@ export const userApi = {
     const formData = new FormData();
     formData.append('image', image);
     formData.append('promptId', promptId.toString());
-    
+
     // Add crop data if provided
     if (cropData) {
       formData.append('cropX', cropData.croppedAreaPixels.x.toString());
@@ -612,7 +612,7 @@ export const publicApi = {
     const formData = new FormData();
     formData.append('image', image);
     formData.append('promptId', promptId.toString());
-    
+
     // Add crop data if provided
     if (cropData) {
       formData.append('cropX', cropData.croppedAreaPixels.x.toString());
