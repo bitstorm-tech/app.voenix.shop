@@ -30,7 +30,7 @@ export default function ImageUploadStep() {
     }
 
     // Clean up previous blob URLs
-    cleanupBlobUrls([originalImageUrl]);
+    cleanupBlobUrls([originalImageUrl].filter((url): url is string => url !== null));
 
     const blobUrl = URL.createObjectURL(file);
     setImageFile(file);
@@ -66,7 +66,7 @@ export default function ImageUploadStep() {
 
   const handleCropCancel = () => {
     setShowCropper(false);
-    cleanupBlobUrls([originalImageUrl]);
+    cleanupBlobUrls([originalImageUrl].filter((url): url is string => url !== null));
     setOriginalImageUrl(null);
     setImageFile(null);
   };
@@ -98,7 +98,7 @@ export default function ImageUploadStep() {
   };
 
   const handleRemoveImage = () => {
-    cleanupBlobUrls([originalImageUrl, uploadedImageUrl]);
+    cleanupBlobUrls([originalImageUrl, uploadedImageUrl].filter((url): url is string => url !== null));
     setOriginalImageUrl(null);
     setImageFile(null);
     removeImage();
@@ -107,7 +107,7 @@ export default function ImageUploadStep() {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      cleanupBlobUrls([originalImageUrl, uploadedImageUrl]);
+      cleanupBlobUrls([originalImageUrl, uploadedImageUrl].filter((url): url is string => url !== null));
     };
   }, [originalImageUrl, uploadedImageUrl]);
 

@@ -10,50 +10,62 @@ export interface CropArea {
 }
 
 /**
+ * Loads an image from a URL
+ * @param src - The image URL to load
+ * @returns Promise resolving to the loaded HTMLImageElement
+ */
+const loadImage = (src: string): Promise<HTMLImageElement> => {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = () => resolve(image);
+    image.onerror = () => reject(new Error('Failed to load image'));
+    image.src = src;
+  });
+};
+
+/**
+ * Converts a canvas to a blob
+ * @param canvas - The canvas to convert
+ * @returns Promise resolving to the blob
+ */
+const canvasToBlob = (canvas: HTMLCanvasElement): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => blob ? resolve(blob) : reject(new Error('Failed to create blob from canvas')),
+      'image/png',
+      0.9
+    );
+  });
+};
+
+/**
  * Creates a cropped image from a source image URL and crop area
  * @param imageUrl - The source image URL (can be blob URL or regular URL)
  * @param cropArea - The crop area in pixels
  * @returns Promise resolving to a blob URL of the cropped image
  */
 export const createCroppedImage = async (imageUrl: string, cropArea: CropArea): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.crossOrigin = 'anonymous';
+  const image = await loadImage(imageUrl);
+  
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  
+  if (!ctx) {
+    throw new Error('Failed to get canvas context');
+  }
 
-    image.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+  canvas.width = cropArea.width;
+  canvas.height = cropArea.height;
 
-      if (!ctx) {
-        reject(new Error('Failed to get canvas context'));
-        return;
-      }
+  ctx.drawImage(
+    image, 
+    cropArea.x, cropArea.y, cropArea.width, cropArea.height,
+    0, 0, cropArea.width, cropArea.height
+  );
 
-      canvas.width = cropArea.width;
-      canvas.height = cropArea.height;
-
-      ctx.drawImage(image, cropArea.x, cropArea.y, cropArea.width, cropArea.height, 0, 0, cropArea.width, cropArea.height);
-
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            const croppedUrl = URL.createObjectURL(blob);
-            resolve(croppedUrl);
-          } else {
-            reject(new Error('Failed to create blob from canvas'));
-          }
-        },
-        'image/jpeg',
-        0.9,
-      );
-    };
-
-    image.onerror = () => {
-      reject(new Error('Failed to load image'));
-    };
-
-    image.src = imageUrl;
-  });
+  const blob = await canvasToBlob(canvas);
+  return URL.createObjectURL(blob);
 };
 
 /**
@@ -80,10 +92,10 @@ export const isValidImageSize = (file: File, maxSizeInMB: number = 4): boolean =
  * Converts a blob URL to a File object
  * @param blobUrl - The blob URL to convert
  * @param fileName - The name for the resulting file
- * @param mimeType - The MIME type for the file (default: 'image/jpeg')
+ * @param mimeType - The MIME type for the file (default: 'image/png')
  * @returns Promise resolving to a File object
  */
-export const blobUrlToFile = async (blobUrl: string, fileName: string, mimeType: string = 'image/jpeg'): Promise<File> => {
+export const blobUrlToFile = async (blobUrl: string, fileName: string, mimeType: string = 'image/png'): Promise<File> => {
   const response = await fetch(blobUrl);
   const blob = await response.blob();
   return new File([blob], fileName, { type: mimeType });
@@ -93,9 +105,9 @@ export const blobUrlToFile = async (blobUrl: string, fileName: string, mimeType:
  * Cleanup function for blob URLs
  * @param urls - Array of blob URLs to revoke
  */
-export const cleanupBlobUrls = (urls: (string | null)[]): void => {
+export const cleanupBlobUrls = (urls: string[]): void => {
   urls.forEach((url) => {
-    if (url && url.startsWith('blob:')) {
+    if (url.startsWith('blob:')) {
       URL.revokeObjectURL(url);
     }
   });
