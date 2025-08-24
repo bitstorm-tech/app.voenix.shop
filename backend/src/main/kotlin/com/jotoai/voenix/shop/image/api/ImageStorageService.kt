@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.image.api
 
+import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.springframework.core.io.Resource
 import org.springframework.web.multipart.MultipartFile
@@ -11,10 +12,12 @@ import org.springframework.web.multipart.MultipartFile
 interface ImageStorageService {
     /**
      * Stores a multipart file and returns the stored filename.
+     * If cropArea is provided, the image will be cropped before storage.
      */
     fun storeFile(
         file: MultipartFile,
         imageType: ImageType,
+        cropArea: CropArea? = null,
     ): String
 
     /**

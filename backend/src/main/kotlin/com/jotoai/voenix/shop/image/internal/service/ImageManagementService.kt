@@ -429,14 +429,7 @@ class ImageManagementService(
         logger.debug {
             "Delegating image storage - Type: ${request.imageType}, Original filename: ${file.originalFilename}"
         }
-        val filename =
-            if (request.cropArea != null) {
-                // Cast to implementation to access extended methods
-                val storageImpl = imageStorageService as ImageStorageServiceImpl
-                storageImpl.storeImageWithCropping(file, request.imageType, request.cropArea)
-            } else {
-                imageStorageService.storeFile(file, request.imageType)
-            }
+        val filename = imageStorageService.storeFile(file, request.imageType, request.cropArea)
 
         return SimpleImageDto(
             filename = filename,

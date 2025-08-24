@@ -32,6 +32,7 @@ class ImageStorageServiceImpl(
     private val imageConversionService: ImageConversionService,
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
+    private val imageValidationService: ImageValidationService,
 ) : ImageStorageService {
     private val logger = KotlinLogging.logger {}
 
@@ -49,37 +50,40 @@ class ImageStorageServiceImpl(
     override fun storeFile(
         file: MultipartFile,
         imageType: ImageType,
+        cropArea: CropArea?,
     ): String {
         logger.debug { "Starting file storage - Type: $imageType, Original filename: ${file.originalFilename}" }
 
-        validateFile(file, MAX_FILE_SIZE, ALLOWED_CONTENT_TYPES)
+        imageValidationService.validateImageFile(file, imageType)
 
         val originalFilename = file.originalFilename ?: "unknown"
         val fileExtension = imageType.getFileExtension(originalFilename)
-        val storedFilename = "${UUID.randomUUID()}$fileExtension"
+        val suffix = if (cropArea != null) ORIGINAL_SUFFIX else ""
+        val storedFilename = "${UUID.randomUUID()}$suffix$fileExtension"
 
         val targetPath = storagePathService.getPhysicalPath(imageType)
         val filePath = targetPath.resolve(storedFilename)
 
         logger.info { "Storing file - Target path: ${filePath.toAbsolutePath()}" }
 
-        try {
-            var imageBytes = file.bytes
+        var imageBytes = file.bytes
 
-            // Apply format conversion if needed
-            if (imageType.requiresWebPConversion) {
-                logger.debug { "Converting image to WebP format" }
-                imageBytes = imageConversionService.convertToWebP(imageBytes)
-            }
-
-            writeFile(filePath, imageBytes)
-            logger.info { "Successfully stored image: ${filePath.toAbsolutePath()}" }
-
-            return storedFilename
-        } catch (e: Exception) {
-            logger.error(e) { "Failed to store file: ${e.message}" }
-            throw RuntimeException("Failed to store file: ${e.message}", e)
+        // Apply cropping if provided
+        if (cropArea != null) {
+            logger.debug { "Applying cropping with area: $cropArea" }
+            imageBytes = imageConversionService.cropImage(imageBytes, cropArea)
         }
+
+        // Apply format conversion if needed
+        if (imageType.requiresWebPConversion) {
+            logger.debug { "Converting image to WebP format" }
+            imageBytes = imageConversionService.convertToWebP(imageBytes)
+        }
+
+        writeFile(filePath, imageBytes)
+        logger.info { "Successfully stored image: ${filePath.toAbsolutePath()}" }
+
+        return storedFilename
     }
 
     override fun storeFile(
@@ -100,6 +104,7 @@ class ImageStorageServiceImpl(
 
         return storedFilename
     }
+
 
     override fun loadFileAsResource(
         filename: String,
@@ -135,54 +140,7 @@ class ImageStorageServiceImpl(
         return Files.exists(filePath)
     }
 
-    // Extended Storage Operations (formerly in internal ImageStorageService)
-
-    /**
-     * Stores an image file with optional cropping and format conversion.
-     */
-    fun storeImageWithCropping(
-        file: MultipartFile,
-        imageType: ImageType,
-        cropArea: CropArea? = null,
-    ): String {
-        logger.debug {
-            "Starting file storage with cropping - Type: $imageType, Original filename: ${file.originalFilename}"
-        }
-
-        validateFile(file, imageType.maxFileSize, imageType.allowedContentTypes.toSet())
-
-        val originalFilename = file.originalFilename ?: "unknown"
-        val fileExtension = imageType.getFileExtension(originalFilename)
-        val storedFilename = "${UUID.randomUUID()}$fileExtension"
-
-        val targetPath = storagePathService.getPhysicalPath(imageType)
-        val filePath = targetPath.resolve(storedFilename)
-
-        logger.info { "Storing file with cropping - Target path: ${filePath.toAbsolutePath()}" }
-
-        try {
-            var imageBytes = file.bytes
-
-            // Apply cropping if requested
-            if (cropArea != null) {
-                imageBytes = applyCropping(imageBytes, cropArea)
-            }
-
-            // Apply format conversion if needed
-            if (imageType.requiresWebPConversion) {
-                logger.debug { "Converting image to WebP format" }
-                imageBytes = imageConversionService.convertToWebP(imageBytes)
-            }
-
-            writeFile(filePath, imageBytes)
-            logger.info { "Successfully stored image: ${filePath.toAbsolutePath()}" }
-
-            return storedFilename
-        } catch (e: IllegalArgumentException) {
-            logger.error(e) { "Invalid image processing parameters: ${e.message}" }
-            throw IllegalArgumentException("Invalid image processing parameters: ${e.message}", e)
-        }
-    }
+    // Internal helper methods for ImageManagementService
 
     /**
      * Retrieves image data from storage.
@@ -191,14 +149,9 @@ class ImageStorageServiceImpl(
         filename: String,
         imageType: ImageType,
     ): Pair<ByteArray, String> {
-        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
-
-        if (!Files.exists(filePath)) {
-            throw ResourceNotFoundException("Image with filename $filename not found")
-        }
-
-        val bytes = readFile(filePath)
-        val contentType = probeContentType(filePath, "application/octet-stream")
+        val resource = loadFileAsResource(filename, imageType)
+        val bytes = resource.inputStream.use { it.readAllBytes() }
+        val contentType = probeContentType(storagePathService.getPhysicalFilePath(imageType, filename), "application/octet-stream")
         return Pair(bytes, contentType)
     }
 
@@ -219,9 +172,7 @@ class ImageStorageServiceImpl(
         filename: String,
         imageType: ImageType,
     ) {
-        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
-
-        if (!deleteFile(filePath)) {
+        if (!deleteFile(filename, imageType)) {
             throw ResourceNotFoundException("Image with filename $filename not found")
         }
     }

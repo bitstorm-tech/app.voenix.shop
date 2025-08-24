@@ -15,14 +15,14 @@ import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.servlet.http.HttpServletRequest
+import java.io.IOException
+import java.time.LocalDateTime
+import java.util.*
+import org.springframework.core.io.Resource
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.io.IOException
-import java.time.LocalDateTime
-import java.util.*
 
 /**
  * Consolidated implementation of ImageGenerationService that handles both public and user image generation.
@@ -38,15 +38,10 @@ class ImageGenerationServiceImpl(
     private val imageStorageService: ImageStorageService,
     private val storagePathService: StoragePathService,
     private val imageStorageServiceImpl: ImageStorageServiceImpl,
-    private val imageConversionService: ImageConversionService,
-    private val request: HttpServletRequest,
+    private val imageValidationService: ImageValidationService,
 ) : ImageGenerationService {
     companion object {
         private val logger = KotlinLogging.logger {}
-
-        // File validation constants
-        private const val MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
-        private val ALLOWED_CONTENT_TYPES = setOf("image/jpeg", "image/jpg", "image/png", "image/webp")
 
         // Rate limiting constants
         private const val PUBLIC_RATE_LIMIT_HOURS = 1
@@ -63,7 +58,7 @@ class ImageGenerationServiceImpl(
     ): PublicImageGenerationResponse {
         logger.info { "Processing public image generation request for prompt ID: ${request.promptId}" }
 
-        validateImageFile(imageFile)
+        imageValidationService.validateImageFile(imageFile)
         checkPublicRateLimit(ipAddress)
         validatePrompt(request.promptId)
 
@@ -140,35 +135,34 @@ class ImageGenerationServiceImpl(
         val openAIRequest = createOpenAIRequest(request)
         logger.debug { "Generated OpenAI request: $openAIRequest" }
 
-        // Apply cropping if crop area is provided
-        val processedImageFile =
-            if (request.cropArea != null) {
-                logger.info { "Applying cropping with area: ${request.cropArea}" }
-                val originalBytes = imageFile.bytes
-                val croppedBytes = imageConversionService.cropImage(originalBytes, request.cropArea)
+        // Store the image (cropped if needed) and load it for OpenAI processing
+        val storedFilename = if (request.cropArea != null) {
+            logger.info { "Storing cropped image with area: ${request.cropArea}" }
+            imageStorageService.storeFile(imageFile, ImageType.PUBLIC, request.cropArea)
+        } else {
+            imageStorageService.storeFile(imageFile, ImageType.PUBLIC)
+        }
 
-                // Create a new MultipartFile with cropped bytes
-                ByteArrayMultipartFile(
-                    bytes = croppedBytes,
-                    filename = imageFile.originalFilename ?: "cropped_image.png",
-                    contentType = "image/png", // Always PNG after cropping to preserve transparency
-                    fieldName = imageFile.name,
-                )
-            } else {
-                imageFile
-            }
+        // Load the stored image file for OpenAI processing
+        val storedImageResource = imageStorageService.loadFileAsResource(storedFilename, ImageType.PUBLIC)
+        val processedImageFile =
+            ResourceMultipartFile(
+                resource = storedImageResource,
+                filename = imageFile.originalFilename ?: "image.png",
+                contentType = imageFile.contentType ?: "image/png",
+            )
 
         // Generate images using OpenAI service
-        val imageEditResponse = openAIImageFacade.editImageBytes(processedImageFile, openAIRequest)
+        val imageBytes = generateImagesWithOpenAI(processedImageFile, request.promptId)
 
         // Store each generated image and create database records
         val generatedImages =
-            imageEditResponse.imageBytes.mapIndexed { index, imageBytes ->
+            imageBytes.mapIndexed { index, bytes ->
                 // Generate filename for this image
                 val filename = "${UUID.randomUUID()}_generated_${index + 1}.png"
 
                 // Store the image bytes
-                imageStorageService.storeFile(imageBytes, filename, ImageType.PUBLIC)
+                imageStorageService.storeFile(bytes, filename, ImageType.PUBLIC)
 
                 // Create and save the database record
                 val generatedImage =
@@ -209,39 +203,39 @@ class ImageGenerationServiceImpl(
         // Retrieve the uploaded image entity
         val uploadedImage = imageStorageServiceImpl.getUploadedImageByUuid(uploadedImageUuid, userId)
 
-        // Load the image data from storage
-        val (imageBytes, contentType) = imageStorageServiceImpl.getUserImageData(uploadedImage.storedFilename, userId)
-
-        // Apply cropping if crop area is provided
-        val processedImageBytes =
-            if (cropArea != null) {
-                logger.info { "Applying cropping with area: $cropArea for user $userId" }
-                imageConversionService.cropImage(imageBytes, cropArea)
-            } else {
-                imageBytes
-            }
-
-        // Create a MultipartFile wrapper for the processed image
-        val multipartFile =
-            ByteArrayMultipartFile(
-                bytes = processedImageBytes,
+        // Load the original image as MultipartFile
+        val originalImageResource = imageStorageService.loadFileAsResource(uploadedImage.storedFilename, ImageType.PRIVATE)
+        val originalMultipartFile =
+            ResourceMultipartFile(
+                resource = originalImageResource,
                 filename = uploadedImage.originalFilename,
-                contentType = if (cropArea != null) "image/png" else contentType, // PNG after cropping
-                fieldName = "image",
+                contentType = "image/png",
             )
 
-        // Create OpenAI request to generate 4 images (matching the public generation)
-        val request = PublicImageGenerationRequest(promptId = promptId, n = 4)
-        val openAIRequest = createOpenAIRequest(request)
+        // Store the image (cropped if needed) and load it for OpenAI processing
+        val processedFilename = if (cropArea != null) {
+            logger.info { "Storing cropped image with area: $cropArea for user $userId" }
+            imageStorageService.storeFile(originalMultipartFile, ImageType.PRIVATE, cropArea)
+        } else {
+            // Use the existing uploaded image
+            uploadedImage.storedFilename
+        }
 
-        logger.debug { "Generated OpenAI request for user image: $openAIRequest" }
+        // Load the processed image file for OpenAI processing
+        val processedImageResource = imageStorageService.loadFileAsResource(processedFilename, ImageType.PRIVATE)
+        val multipartFile =
+            ResourceMultipartFile(
+                resource = processedImageResource,
+                filename = uploadedImage.originalFilename,
+                contentType = "image/png",
+            )
 
-        // Generate image using OpenAI service
-        val imageEditResponse = openAIImageFacade.editImageBytes(multipartFile, openAIRequest)
+        // Generate images using OpenAI service
+        val generatedImageBytes = generateImagesWithOpenAI(multipartFile, promptId)
 
         // Store the generated image(s) in user storage
         val generatedImages =
-            imageEditResponse.imageBytes.mapIndexed { index, generatedBytes ->
+            generatedImageBytes.mapIndexed { index, generatedBytes ->
                 imageStorageServiceImpl.storeGeneratedImage(
                     imageBytes = generatedBytes,
                     uploadedImage = uploadedImage,
@@ -274,40 +268,40 @@ class ImageGenerationServiceImpl(
         // Retrieve the uploaded image entity
         val uploadedImage = imageStorageServiceImpl.getUploadedImageByUuid(uploadedImageUuid, userId)
 
-        // Load the image data from storage
-        val (imageBytes, contentType) = imageStorageServiceImpl.getUserImageData(uploadedImage.storedFilename, userId)
-
-        // Apply cropping if crop area is provided
-        val processedImageBytes =
-            if (cropArea != null) {
-                logger.info { "Applying cropping with area: $cropArea for user $userId (with IDs)" }
-                imageConversionService.cropImage(imageBytes, cropArea)
-            } else {
-                imageBytes
-            }
-
-        // Create a MultipartFile wrapper for the processed image
-        val multipartFile =
-            ByteArrayMultipartFile(
-                bytes = processedImageBytes,
+        // Load the original image as MultipartFile
+        val originalImageResource = imageStorageService.loadFileAsResource(uploadedImage.storedFilename, ImageType.PRIVATE)
+        val originalMultipartFile =
+            ResourceMultipartFile(
+                resource = originalImageResource,
                 filename = uploadedImage.originalFilename,
-                contentType = if (cropArea != null) "image/png" else contentType, // PNG after cropping
-                fieldName = "image",
+                contentType = "image/png",
             )
 
-        // Create OpenAI request to generate 4 images (matching the public generation)
-        val request = PublicImageGenerationRequest(promptId = promptId, n = 4)
-        val openAIRequest = createOpenAIRequest(request)
+        // Store the image (cropped if needed) and load it for OpenAI processing
+        val processedFilename = if (cropArea != null) {
+            logger.info { "Storing cropped image with area: $cropArea for user $userId (with IDs)" }
+            imageStorageService.storeFile(originalMultipartFile, ImageType.PRIVATE, cropArea)
+        } else {
+            // Use the existing uploaded image
+            uploadedImage.storedFilename
+        }
 
-        logger.debug { "Generated OpenAI request for user image with IDs: $openAIRequest" }
+        // Load the processed image file for OpenAI processing
+        val processedImageResource = imageStorageService.loadFileAsResource(processedFilename, ImageType.PRIVATE)
+        val multipartFile =
+            ResourceMultipartFile(
+                resource = processedImageResource,
+                filename = uploadedImage.originalFilename,
+                contentType = "image/png",
+            )
 
-        // Generate image using OpenAI service
-        val imageEditResponse = openAIImageFacade.editImageBytes(multipartFile, openAIRequest)
+        // Generate images using OpenAI service
+        val generatedImageBytes = generateImagesWithOpenAI(multipartFile, promptId)
 
         // Store each generated image and create database records
         val generatedImages =
-            imageEditResponse.imageBytes.mapIndexed { index, generatedBytes ->
-                logger.info { "Processing generated image ${index + 1} of ${imageEditResponse.imageBytes.size}" }
+            generatedImageBytes.mapIndexed { index, generatedBytes ->
+                logger.info { "Processing generated image ${index + 1} of ${generatedImageBytes.size}" }
                 val generatedImage =
                     imageStorageServiceImpl.storeGeneratedImage(
                         imageBytes = generatedBytes,
@@ -325,7 +319,7 @@ class ImageGenerationServiceImpl(
         // Create image URLs for user images
         val baseUuid = uploadedImage.uuid.toString()
         val imageUrls =
-            (1..request.n).map { index ->
+            (1..4).map { index ->
                 "/api/user/images/${baseUuid}_generated_$index.png"
             }
 
@@ -391,27 +385,6 @@ class ImageGenerationServiceImpl(
             true
         }
 
-    private fun validateImageFile(file: MultipartFile) {
-        if (file.isEmpty) {
-            throw BadRequestException("Image file is required")
-        }
-
-        if (file.size > MAX_FILE_SIZE) {
-            throw BadRequestException("Image file size must be less than 10MB")
-        }
-
-        val contentType = file.contentType?.lowercase() ?: ""
-        if (contentType !in ALLOWED_CONTENT_TYPES) {
-            throw BadRequestException("Invalid image format. Allowed formats: JPEG, PNG, WebP")
-        }
-    }
-
-    private fun validatePrompt(promptId: Long) {
-        val prompt = promptQueryService.getPromptById(promptId)
-        if (!prompt.active) {
-            throw BadRequestException("The selected prompt is not available")
-        }
-    }
 
     private fun createOpenAIRequest(request: PublicImageGenerationRequest): CreateImageEditRequest =
         CreateImageEditRequest(
@@ -421,6 +394,29 @@ class ImageGenerationServiceImpl(
             size = request.size,
             n = request.n,
         )
+
+    private fun createOpenAIRequest(promptId: Long): CreateImageEditRequest =
+        createOpenAIRequest(PublicImageGenerationRequest(promptId = promptId, n = 4))
+
+    /**
+     * Common helper method for generating images using OpenAI.
+     * Handles the OpenAI API call and returns the generated image bytes.
+     */
+    private fun generateImagesWithOpenAI(
+        processedImageFile: MultipartFile,
+        promptId: Long,
+    ): List<ByteArray> {
+        val openAIRequest = createOpenAIRequest(promptId)
+        val imageEditResponse = openAIImageFacade.editImageBytes(processedImageFile, openAIRequest)
+        return imageEditResponse.imageBytes
+    }
+
+    private fun validatePrompt(promptId: Long) {
+        val prompt = promptQueryService.getPromptById(promptId)
+        if (!prompt.active) {
+            throw BadRequestException("The selected prompt is not available")
+        }
+    }
 
     private fun checkTimeBasedRateLimit(
         identifier: String,
@@ -461,4 +457,35 @@ class ImageGenerationServiceImpl(
             logger.error(e) { "Argument error $contextMessage" }
             throw RuntimeException("Failed to generate image. Please try again later.")
         }
+}
+
+/**
+ * MultipartFile wrapper for Spring Resource objects.
+ */
+private class ResourceMultipartFile(
+    private val resource: Resource,
+    private val filename: String,
+    private val contentType: String,
+) : MultipartFile {
+    override fun getName(): String = "file"
+
+    override fun getOriginalFilename(): String = filename
+
+    override fun getContentType(): String = contentType
+
+    override fun isEmpty(): Boolean = !resource.exists() || resource.contentLength() == 0L
+
+    override fun getSize(): Long = resource.contentLength()
+
+    override fun getBytes(): ByteArray = resource.inputStream.use { it.readAllBytes() }
+
+    override fun getInputStream(): java.io.InputStream = resource.inputStream
+
+    override fun transferTo(dest: java.io.File) {
+        resource.inputStream.use { input ->
+            dest.outputStream().use { output ->
+                input.copyTo(output)
+            }
+        }
+    }
 }
