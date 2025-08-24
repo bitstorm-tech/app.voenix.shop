@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.api.public.images
 
 import com.jotoai.voenix.shop.image.api.ImageAccessService
-import com.jotoai.voenix.shop.openai.api.ImageGenerationService
+import com.jotoai.voenix.shop.api.orchestration.ImageGenerationOrchestrationService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/api/public/images")
 class PublicImageController(
-    private val imageGenerationService: ImageGenerationService,
+    private val imageGenerationOrchestrationService: ImageGenerationOrchestrationService,
     private val imageAccessService: ImageAccessService,
 ) {
     companion object {
@@ -55,7 +55,7 @@ class PublicImageController(
             )
 
         val clientIP = "127.0.0.1" // TODO: Extract real IP address
-        return imageGenerationService.generatePublicImage(generationRequest, clientIP, imageFile)
+        return imageGenerationOrchestrationService.generatePublicImage(generationRequest, clientIP, imageFile)
     }
 
     @GetMapping("/{filename}")

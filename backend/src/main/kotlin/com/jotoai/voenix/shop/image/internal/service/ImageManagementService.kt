@@ -42,6 +42,7 @@ class ImageManagementService(
     private val imageStorageService: ImageStorageService,
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
+    private val imageValidationService: ImageValidationService,
 ) : ImageFacade {
     companion object {
         private val logger = KotlinLogging.logger {}
@@ -86,6 +87,7 @@ class ImageManagementService(
                         return UploadedImageDto(
                             filename = uploadedImage.storedFilename,
                             imageType = imageType,
+                            id = uploadedImage.id,
                             uuid = uploadedImage.uuid, // Use the UUID from the saved entity
                             originalFilename = uploadedImage.originalFilename,
                             contentType = uploadedImage.contentType,
@@ -306,12 +308,127 @@ class ImageManagementService(
                 GeneratedImageDto(
                     filename = generatedImage.filename,
                     imageType = ImageType.GENERATED,
+                    id = generatedImage.id,
                     promptId = generatedImage.promptId,
                     userId = generatedImage.userId,
                     generatedAt = generatedImage.generatedAt,
                     ipAddress = generatedImage.ipAddress,
                 )
             }
+
+    @Transactional
+    override fun storeGeneratedImage(
+        imageBytes: ByteArray,
+        uploadedImageId: Long,
+        promptId: Long,
+        generationNumber: Int,
+    ): GeneratedImageDto {
+        try {
+            logger.info { "Storing generated image for uploaded image ID: $uploadedImageId" }
+
+            // Get the uploaded image to get the user ID
+            val uploadedImage = uploadedImageRepository.findById(uploadedImageId).orElseThrow {
+                ResourceNotFoundException("Uploaded image with ID $uploadedImageId not found")
+            }
+
+            val storageImpl = imageStorageService as ImageStorageServiceImpl
+            val generatedImage = storageImpl.storeGeneratedImage(
+                imageBytes = imageBytes,
+                uploadedImage = uploadedImage,
+                promptId = promptId,
+                generationNumber = generationNumber,
+            )
+
+            logger.info { "Successfully stored generated image: ${generatedImage.filename}" }
+
+            return GeneratedImageDto(
+                filename = generatedImage.filename,
+                imageType = ImageType.GENERATED,
+                id = generatedImage.id,
+                promptId = generatedImage.promptId,
+                userId = generatedImage.userId,
+                generatedAt = generatedImage.generatedAt,
+                ipAddress = generatedImage.ipAddress,
+            )
+        } catch (e: DataAccessException) {
+            logger.error(e) { "Database error storing generated image" }
+            throw ImageStorageException("Failed to store generated image: ${e.message}", e)
+        } catch (e: IOException) {
+            logger.error(e) { "I/O error storing generated image" }
+            throw ImageStorageException("Failed to store generated image: ${e.message}", e)
+        } catch (e: IllegalStateException) {
+            logger.error(e) { "State error storing generated image" }
+            throw ImageStorageException("Failed to store generated image: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
+            logger.error(e) { "Argument error storing generated image" }
+            throw ImageStorageException("Failed to store generated image: ${e.message}", e)
+        }
+    }
+
+    @Transactional(readOnly = true)
+    override fun validateImageFile(file: MultipartFile) {
+        imageValidationService.validateImageFile(file)
+    }
+
+    @Transactional(readOnly = true)
+    override fun countGeneratedImagesForIpAfter(ipAddress: String, after: java.time.LocalDateTime): Long =
+        generatedImageRepository.countByIpAddressAndGeneratedAtAfter(ipAddress, after)
+
+    @Transactional(readOnly = true)
+    override fun countGeneratedImagesForUserAfter(userId: Long, after: java.time.LocalDateTime): Long =
+        generatedImageRepository.countByUserIdAndGeneratedAtAfter(userId, after)
+
+    @Transactional
+    override fun storePublicGeneratedImage(
+        imageBytes: ByteArray,
+        promptId: Long,
+        ipAddress: String,
+        generationNumber: Int,
+    ): GeneratedImageDto {
+        try {
+            logger.info { "Storing public generated image for prompt ID: $promptId" }
+
+            // Generate filename for this image
+            val filename = "${UUID.randomUUID()}_generated_$generationNumber.png"
+
+            // Store the image bytes
+            imageStorageService.storeFile(imageBytes, filename, ImageType.PUBLIC)
+
+            // Create and save the database record
+            val generatedImage = com.jotoai.voenix.shop.image.internal.entity.GeneratedImage(
+                filename = filename,
+                promptId = promptId,
+                userId = null, // Anonymous user
+                ipAddress = ipAddress,
+                generatedAt = LocalDateTime.now(),
+            )
+            val savedImage = generatedImageRepository.save(generatedImage)
+
+            logger.info { "Successfully stored public generated image: $filename" }
+
+            return GeneratedImageDto(
+                filename = savedImage.filename,
+                imageType = ImageType.GENERATED,
+                id = savedImage.id,
+                promptId = savedImage.promptId,
+                userId = savedImage.userId,
+                generatedAt = savedImage.generatedAt,
+                ipAddress = savedImage.ipAddress,
+            )
+        } catch (e: DataAccessException) {
+            logger.error(e) { "Database error storing public generated image" }
+            throw ImageStorageException("Failed to store public generated image: ${e.message}", e)
+        } catch (e: IOException) {
+            logger.error(e) { "I/O error storing public generated image" }
+            throw ImageStorageException("Failed to store public generated image: ${e.message}", e)
+        } catch (e: IllegalStateException) {
+            logger.error(e) { "State error storing public generated image" }
+            throw ImageStorageException("Failed to store public generated image: ${e.message}", e)
+        } catch (e: IllegalArgumentException) {
+            logger.error(e) { "Argument error storing public generated image" }
+            throw ImageStorageException("Failed to store public generated image: ${e.message}", e)
+        }
+    }
 
     // Additional methods for access validation (from ImageAccessValidationService)
 

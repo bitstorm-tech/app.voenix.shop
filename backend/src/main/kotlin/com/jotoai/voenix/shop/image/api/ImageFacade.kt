@@ -6,8 +6,8 @@ import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
+import java.util.*
 import org.springframework.web.multipart.MultipartFile
-import java.util.UUID
 
 /**
  * Main facade for Image module operations.
@@ -88,4 +88,39 @@ interface ImageFacade {
      * Retrieves all generated images for a user.
      */
     fun getUserGeneratedImages(userId: Long): List<GeneratedImageDto>
+
+    /**
+     * Stores a generated image and creates a database record.
+     */
+    fun storeGeneratedImage(
+        imageBytes: ByteArray,
+        uploadedImageId: Long,
+        promptId: Long,
+        generationNumber: Int,
+    ): GeneratedImageDto
+
+    /**
+     * Validates an uploaded image file.
+     */
+    fun validateImageFile(file: MultipartFile)
+
+    /**
+     * Counts generated images for IP address after a specific date.
+     */
+    fun countGeneratedImagesForIpAfter(ipAddress: String, after: java.time.LocalDateTime): Long
+
+    /**
+     * Counts generated images for user after a specific date.
+     */
+    fun countGeneratedImagesForUserAfter(userId: Long, after: java.time.LocalDateTime): Long
+
+    /**
+     * Stores a public generated image and creates a database record.
+     */
+    fun storePublicGeneratedImage(
+        imageBytes: ByteArray,
+        promptId: Long,
+        ipAddress: String,
+        generationNumber: Int,
+    ): GeneratedImageDto
 }

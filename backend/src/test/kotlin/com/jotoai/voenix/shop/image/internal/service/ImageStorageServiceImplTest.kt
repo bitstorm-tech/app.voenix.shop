@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
+import com.jotoai.voenix.shop.image.internal.service.ImageValidationService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -20,6 +21,7 @@ class ImageStorageServiceImplTest {
     private lateinit var imageConversionService: ImageConversionService
     private lateinit var uploadedImageRepository: UploadedImageRepository
     private lateinit var generatedImageRepository: GeneratedImageRepository
+    private lateinit var imageValidationService: ImageValidationService
     private lateinit var imageStorageService: ImageStorageServiceImpl
 
     private lateinit var mockFile: MultipartFile
@@ -30,6 +32,7 @@ class ImageStorageServiceImplTest {
         imageConversionService = mock()
         uploadedImageRepository = mock()
         generatedImageRepository = mock()
+        imageValidationService = mock()
 
         imageStorageService =
             ImageStorageServiceImpl(
@@ -37,6 +40,7 @@ class ImageStorageServiceImplTest {
                 imageConversionService = imageConversionService,
                 uploadedImageRepository = uploadedImageRepository,
                 generatedImageRepository = generatedImageRepository,
+                imageValidationService = imageValidationService,
             )
 
         mockFile =

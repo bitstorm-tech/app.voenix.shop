@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
+import com.jotoai.voenix.shop.image.internal.service.ImageValidationService
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -20,6 +21,7 @@ class ImageManagementServiceSimpleTest {
         val imageStorageService: ImageStorageService = mock()
         val uploadedImageRepository: UploadedImageRepository = mock()
         val generatedImageRepository: GeneratedImageRepository = mock()
+        val imageValidationService: ImageValidationService = mock()
 
         // When
         val service =
@@ -27,6 +29,7 @@ class ImageManagementServiceSimpleTest {
                 imageStorageService,
                 uploadedImageRepository,
                 generatedImageRepository,
+                imageValidationService,
             )
 
         // Then
@@ -40,6 +43,7 @@ class ImageManagementServiceSimpleTest {
         val imageStorageService: ImageStorageService = mock()
         val uploadedImageRepository: UploadedImageRepository = mock()
         val generatedImageRepository: GeneratedImageRepository = mock()
+        val imageValidationService: ImageValidationService = mock()
 
         // When
         val service =
@@ -47,15 +51,21 @@ class ImageManagementServiceSimpleTest {
                 imageStorageService,
                 uploadedImageRepository,
                 generatedImageRepository,
+                imageValidationService,
             )
 
         // Then
-        val storageService = ReflectionTestUtils.getField(service, "imageStorageService")
-        val uploadedRepo = ReflectionTestUtils.getField(service, "uploadedImageRepository")
-        val generatedRepo = ReflectionTestUtils.getField(service, "generatedImageRepository")
+        assertNotNull(service)
 
-        assertNotNull(storageService)
-        assertNotNull(uploadedRepo)
-        assertNotNull(generatedRepo)
+        // Verify all dependencies are properly injected
+        val retrievedImageStorageService = ReflectionTestUtils.getField(service, "imageStorageService")
+        val retrievedUploadedImageRepository = ReflectionTestUtils.getField(service, "uploadedImageRepository")
+        val retrievedGeneratedImageRepository = ReflectionTestUtils.getField(service, "generatedImageRepository")
+        val retrievedImageValidationService = ReflectionTestUtils.getField(service, "imageValidationService")
+
+        assertNotNull(retrievedImageStorageService)
+        assertNotNull(retrievedUploadedImageRepository)
+        assertNotNull(retrievedGeneratedImageRepository)
+        assertNotNull(retrievedImageValidationService)
     }
 }

@@ -17,6 +17,7 @@ sealed class ImageDto(
 data class UploadedImageDto(
     override val filename: String,
     override val imageType: ImageType,
+    val id: Long? = null,
     val uuid: UUID,
     val originalFilename: String,
     val contentType: String,
@@ -30,6 +31,7 @@ data class UploadedImageDto(
 data class GeneratedImageDto(
     override val filename: String,
     override val imageType: ImageType,
+    val id: Long? = null,
     val promptId: Long,
     val userId: Long? = null,
     val generatedAt: LocalDateTime,
