@@ -1,3 +1,4 @@
+import MugVariantDialog from '@/components/admin/articles/MugVariantDialog';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
@@ -9,20 +10,15 @@ import { Copy, Edit, Image as ImageIcon, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import MugVariantDialog from '@/components/admin/articles/MugVariantDialog';
 
 const ColorDisplay = ({ color }: { color: string }) => (
   <div className="flex items-center gap-2">
-    <div 
-      className="h-6 w-6 rounded border border-gray-300" 
-      style={{ backgroundColor: color }} 
-    />
+    <div className="h-6 w-6 rounded border border-gray-300" style={{ backgroundColor: color }} />
     <span className="text-sm text-gray-600">{color}</span>
   </div>
 );
 
-const isActive = (variant: ArticleMugVariant | CreateArticleMugVariantRequest) =>
-  variant.active !== false;
+const isActive = (variant: ArticleMugVariant | CreateArticleMugVariantRequest) => variant.active !== false;
 
 interface VariantTableProps<T> {
   variants: T[];
@@ -35,7 +31,7 @@ function VariantTable<T extends ArticleMugVariant | CreateArticleMugVariantReque
   variants,
   onEdit,
   onDelete,
-  isTemporary = false
+  isTemporary = false,
 }: VariantTableProps<T>) {
   return (
     <div className="rounded-md border">
@@ -54,17 +50,12 @@ function VariantTable<T extends ArticleMugVariant | CreateArticleMugVariantReque
         </TableHeader>
         <TableBody>
           {variants.map((variant, index) => (
-            <TableRow
-              key={isTemporary ? index : (variant as ArticleMugVariant).id}
-              className={cn(!isActive(variant) ? 'bg-gray-50 opacity-60' : '')}
-            >
+            <TableRow key={isTemporary ? index : (variant as ArticleMugVariant).id} className={cn(!isActive(variant) ? 'bg-gray-50 opacity-60' : '')}>
               <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
                   {variant.name}
                   {!isActive(variant) && (
-                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
-                      Inactive
-                    </span>
+                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">Inactive</span>
                   )}
                 </div>
               </TableCell>
@@ -77,28 +68,22 @@ function VariantTable<T extends ArticleMugVariant | CreateArticleMugVariantReque
               </TableCell>
               <TableCell>
                 {variant.isDefault && (
-                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                    Default
-                  </span>
+                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">Default</span>
                 )}
               </TableCell>
               <TableCell>
                 {isActive(variant) ? (
-                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                    Active
-                  </span>
+                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">Active</span>
                 ) : (
-                  <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
-                    Inactive
-                  </span>
+                  <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">Inactive</span>
                 )}
               </TableCell>
               <TableCell>
                 {!isTemporary && (variant as ArticleMugVariant).exampleImageUrl ? (
-                  <img 
-                    src={(variant as ArticleMugVariant).exampleImageUrl!} 
-                    alt={`${variant.name} example`} 
-                    className="h-10 w-10 rounded border object-cover" 
+                  <img
+                    src={(variant as ArticleMugVariant).exampleImageUrl!}
+                    alt={`${variant.name} example`}
+                    className="h-10 w-10 rounded border object-cover"
                   />
                 ) : (
                   <div className="flex h-10 w-10 items-center justify-center rounded border bg-gray-100">
@@ -124,16 +109,13 @@ function VariantTable<T extends ArticleMugVariant | CreateArticleMugVariantReque
   );
 }
 
-type DialogState = 
+type DialogState =
   | { type: 'closed' }
   | { type: 'add' }
   | { type: 'edit'; variant: ArticleMugVariant }
   | { type: 'editTemp'; variant: CreateArticleMugVariantRequest; index: number };
 
-type DeleteState =
-  | { type: 'none' }
-  | { type: 'saved'; id: number }
-  | { type: 'temporary'; index: number };
+type DeleteState = { type: 'none' } | { type: 'saved'; id: number } | { type: 'temporary'; index: number };
 
 interface MugVariantsTabProps {
   articleId?: number;
@@ -164,12 +146,9 @@ export default function MugVariantsTab({
 
   const handleAddVariant = () => setDialogState({ type: 'add' });
 
-  const handleEditVariant = (variant: ArticleMugVariant) => 
-    setDialogState({ type: 'edit', variant });
+  const handleEditVariant = (variant: ArticleMugVariant) => setDialogState({ type: 'edit', variant });
 
-  const handleEditTemporaryVariant = (index: number, variant: CreateArticleMugVariantRequest) =>
-    setDialogState({ type: 'editTemp', variant, index });
-
+  const handleEditTemporaryVariant = (index: number, variant: CreateArticleMugVariantRequest) => setDialogState({ type: 'editTemp', variant, index });
 
   const handleVariantSaved = (variant: ArticleMugVariant) => {
     const existingIndex = variants.findIndex((v) => v.id === variant.id);
@@ -205,11 +184,9 @@ export default function MugVariantsTab({
     }
   };
 
-  const handleDeleteVariant = (variant: ArticleMugVariant) =>
-    setDeleteState({ type: 'saved', id: variant.id });
+  const handleDeleteVariant = (variant: ArticleMugVariant) => setDeleteState({ type: 'saved', id: variant.id });
 
-  const handleDeleteTemporaryVariant = (index: number) =>
-    setDeleteState({ type: 'temporary', index });
+  const handleDeleteTemporaryVariant = (index: number) => setDeleteState({ type: 'temporary', index });
 
   const confirmDelete = async () => {
     switch (deleteState.type) {
@@ -217,11 +194,11 @@ export default function MugVariantsTab({
         onDeleteTemporaryVariant?.(deleteState.index);
         toast.success('Variant removed');
         break;
-        
+
       case 'saved':
         try {
           await articlesApi.deleteMugVariant(deleteState.id);
-          setVariants(prev => prev.filter(v => v.id !== deleteState.id));
+          setVariants((prev) => prev.filter((v) => v.id !== deleteState.id));
           toast.success('Variant deleted successfully');
         } catch (error) {
           console.error('Error deleting variant:', error);
@@ -246,9 +223,7 @@ export default function MugVariantsTab({
     <Card>
       <CardHeader>
         <CardTitle>Mug Variants</CardTitle>
-        <CardDescription>
-          Add different color combinations for this mug. Each variant can have different inside and outside colors.
-        </CardDescription>
+        <CardDescription>Add different color combinations for this mug. Each variant can have different inside and outside colors.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {!articleId && temporaryVariants.length > 0 && (
@@ -286,11 +261,7 @@ export default function MugVariantsTab({
 
         {/* Show saved variants */}
         {variants.length > 0 && (
-          <VariantTable
-            variants={variants}
-            onEdit={(variant) => handleEditVariant(variant)}
-            onDelete={(variant) => handleDeleteVariant(variant)}
-          />
+          <VariantTable variants={variants} onEdit={(variant) => handleEditVariant(variant)} onDelete={(variant) => handleDeleteVariant(variant)} />
         )}
 
         {/* Show temporary variants for unsaved articles */}

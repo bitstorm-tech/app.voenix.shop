@@ -43,104 +43,123 @@ export default function MugVariantDialog({
   const isTemporary = !articleId || !!temporaryVariant;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [formData, setFormData] = useState<CreateArticleMugVariantRequest>({
+  const DEFAULT_FORM_DATA: CreateArticleMugVariantRequest = {
     insideColorCode: '#ffffff',
     outsideColorCode: '#ffffff',
     name: '',
     articleVariantNumber: '',
     isDefault: false,
     active: true,
-  });
+  };
 
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null);
-  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
-  const [showCropper, setShowCropper] = useState(false);
-  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
-  const [imageRemoved, setImageRemoved] = useState(false);
+  const [formData, setFormData] = useState<CreateArticleMugVariantRequest>(DEFAULT_FORM_DATA);
+
+  const [imageState, setImageState] = useState({
+    file: null as File | null,
+    previewUrl: null as string | null,
+    originalUrl: null as string | null,
+    existingUrl: null as string | null,
+    showCropper: false,
+    isRemoved: false,
+  });
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (open) {
-      if (variant) {
-        setFormData({
-          insideColorCode: variant.insideColorCode,
-          outsideColorCode: variant.outsideColorCode,
-          name: variant.name,
-          articleVariantNumber: variant.articleVariantNumber || '',
-          isDefault: variant.isDefault || false,
-          active: variant.active ?? true,
-        });
-        if (variant.exampleImageUrl) {
-          setImagePreviewUrl(variant.exampleImageUrl);
-          setExistingImageUrl(variant.exampleImageUrl);
-        } else {
-          setImagePreviewUrl(null);
-          setExistingImageUrl(null);
-        }
-      } else if (temporaryVariant) {
-        setFormData({
-          insideColorCode: temporaryVariant.insideColorCode,
-          outsideColorCode: temporaryVariant.outsideColorCode,
-          name: temporaryVariant.name,
-          articleVariantNumber: temporaryVariant.articleVariantNumber || '',
-          isDefault: temporaryVariant.isDefault || false,
-          active: temporaryVariant.active ?? true,
-        });
-      } else {
-        setFormData({
-          insideColorCode: '#ffffff',
-          outsideColorCode: '#ffffff',
-          name: '',
-          articleVariantNumber: '',
-          isDefault: false,
-          active: true,
-        });
-        setImagePreviewUrl(null);
-        setExistingImageUrl(null);
-      }
-      setImageRemoved(false);
-      setImageFile(null);
-      setOriginalImageUrl(null);
-    } else {
-      // Clean up when dialog closes
-      if (imagePreviewUrl && imagePreviewUrl !== existingImageUrl) {
-        URL.revokeObjectURL(imagePreviewUrl);
-      }
-      if (originalImageUrl && originalImageUrl !== imagePreviewUrl) {
-        URL.revokeObjectURL(originalImageUrl);
-      }
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+  const cleanupBlobUrls = () => {
+    if (imageState.previewUrl && imageState.previewUrl !== imageState.existingUrl && imageState.previewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(imageState.previewUrl);
     }
-  }, [open, variant, temporaryVariant, imagePreviewUrl, existingImageUrl, originalImageUrl]);
+    if (imageState.originalUrl && imageState.originalUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(imageState.originalUrl);
+    }
+  };
+
+  const resetImageState = () => {
+    cleanupBlobUrls();
+    setImageState({
+      file: null,
+      previewUrl: null,
+      originalUrl: null,
+      existingUrl: null,
+      showCropper: false,
+      isRemoved: false,
+    });
+  };
+
+  const validateImageFile = (file: File): string | null => {
+    if (!file.type.startsWith('image/')) return 'Please upload an image file';
+    if (file.size > MAX_FILE_SIZE) return 'File size exceeds maximum allowed size of 10MB';
+    return null;
+  };
+
+  const validateForm = (): string | null => {
+    if (!formData.name) return 'Please enter a variant name';
+
+    const isDuplicate = isTemporary
+      ? existingTemporaryVariants.some((v, index) => v.name === formData.name && index !== temporaryVariantIndex)
+      : existingVariants.some((v) => v.name === formData.name && v.id !== variant?.id);
+
+    if (isDuplicate) return 'A variant with this name already exists';
+    return null;
+  };
+
+  useEffect(() => {
+    if (!open) return;
+
+    // Initialize form data
+    const initialData = variant || temporaryVariant || DEFAULT_FORM_DATA;
+    setFormData({
+      insideColorCode: initialData.insideColorCode,
+      outsideColorCode: initialData.outsideColorCode,
+      name: initialData.name,
+      articleVariantNumber: initialData.articleVariantNumber || '',
+      isDefault: initialData.isDefault || false,
+      active: initialData.active ?? true,
+    });
+
+    // Initialize image state
+    resetImageState();
+    if (variant?.exampleImageUrl) {
+      setImageState((prev) => ({
+        ...prev,
+        previewUrl: variant.exampleImageUrl!,
+        existingUrl: variant.exampleImageUrl!,
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, variant, temporaryVariant]);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      cleanupBlobUrls();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload an image file');
-      return;
-    }
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast.error('File size exceeds maximum allowed size of 10MB');
+    const error = validateImageFile(file);
+    if (error) {
+      toast.error(error);
       return;
     }
 
-    // Clean up previous blob URLs if exist
-    if (imagePreviewUrl && imagePreviewUrl !== existingImageUrl) {
-      URL.revokeObjectURL(imagePreviewUrl);
-    }
-    if (originalImageUrl) {
-      URL.revokeObjectURL(originalImageUrl);
-    }
+    // Clean up previous blob URLs
+    cleanupBlobUrls();
 
     const blobUrl = URL.createObjectURL(file);
-    setImageFile(file);
-    setOriginalImageUrl(blobUrl);
-    setImagePreviewUrl(blobUrl);
-    setImageRemoved(false);
-    setShowCropper(true);
+    setImageState({
+      file,
+      previewUrl: blobUrl,
+      originalUrl: blobUrl,
+      existingUrl: imageState.existingUrl,
+      showCropper: true,
+      isRemoved: false,
+    });
 
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -148,30 +167,33 @@ export default function MugVariantDialog({
   };
 
   const handleCropCancel = () => {
-    setShowCropper(false);
-    if (imagePreviewUrl && imagePreviewUrl !== existingImageUrl) {
-      URL.revokeObjectURL(imagePreviewUrl);
-    }
-    if (originalImageUrl) {
-      URL.revokeObjectURL(originalImageUrl);
-    }
-    setImagePreviewUrl(existingImageUrl);
-    setOriginalImageUrl(null);
-    setImageFile(null);
+    cleanupBlobUrls();
+    setImageState({
+      file: null,
+      previewUrl: imageState.existingUrl,
+      originalUrl: null,
+      existingUrl: imageState.existingUrl,
+      showCropper: false,
+      isRemoved: false,
+    });
   };
 
   const handleCropConfirm = async (croppedImageUrl: string) => {
     try {
       // Update the preview URL to show the cropped version
-      if (imagePreviewUrl && imagePreviewUrl !== originalImageUrl && imagePreviewUrl !== existingImageUrl) {
-        URL.revokeObjectURL(imagePreviewUrl);
+      if (imageState.previewUrl && imageState.previewUrl !== imageState.originalUrl && imageState.previewUrl !== imageState.existingUrl) {
+        URL.revokeObjectURL(imageState.previewUrl);
       }
-      setImagePreviewUrl(croppedImageUrl);
-      
+
       // Convert the cropped blob URL to a File object to replace the original
-      if (imageFile) {
-        const croppedFile = await blobUrlToFile(croppedImageUrl, imageFile.name, imageFile.type);
-        setImageFile(croppedFile);
+      if (imageState.file) {
+        const croppedFile = await blobUrlToFile(croppedImageUrl, imageState.file.name, imageState.file.type);
+        setImageState((prev) => ({
+          ...prev,
+          file: croppedFile,
+          previewUrl: croppedImageUrl,
+          showCropper: false,
+        }));
       }
     } catch (error) {
       console.error('Failed to process cropped image:', error);
@@ -180,116 +202,119 @@ export default function MugVariantDialog({
   };
 
   const handleRemoveImage = () => {
-    if (imagePreviewUrl && imagePreviewUrl !== existingImageUrl) {
-      URL.revokeObjectURL(imagePreviewUrl);
-    }
-    if (originalImageUrl && originalImageUrl !== imagePreviewUrl) {
-      URL.revokeObjectURL(originalImageUrl);
-    }
-    
+    cleanupBlobUrls();
+
     // For newly uploaded images (no existing image), clear everything
-    if (!existingImageUrl) {
-      setImagePreviewUrl(null);
+    if (!imageState.existingUrl) {
+      resetImageState();
+    } else {
+      // For existing images, keep the existing URL but mark for removal
+      setImageState((prev) => ({
+        ...prev,
+        file: null,
+        previewUrl: prev.existingUrl,
+        originalUrl: null,
+        isRemoved: true,
+      }));
     }
-    // For existing images, keep the preview URL but mark for removal
-    
-    setOriginalImageUrl(null);
-    setImageFile(null);
-    setImageRemoved(true);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.name) {
-      toast.error('Please enter a variant name');
-      return;
+  const handleTemporarySubmit = () => {
+    const variantToSave = { ...formData };
+    if (onTemporaryVariantSaved) {
+      onTemporaryVariantSaved(variantToSave, temporaryVariantIndex);
+      toast.success(isEditing ? 'Variant updated (will be saved with article)' : 'Variant added (will be saved with article)');
     }
+    onOpenChange(false);
+  };
 
-    // Check for duplicate variants (excluding the one being edited)
-    const isDuplicate = isTemporary
-      ? existingTemporaryVariants.some((v, index) => v.name === formData.name && index !== temporaryVariantIndex)
-      : existingVariants.some((v) => v.name === formData.name && v.id !== variant?.id);
+  const updateVariant = async (variant: ArticleMugVariant): Promise<ArticleMugVariant> => {
+    let response = await articlesApi.updateMugVariant(variant.id, formData);
 
-    if (isDuplicate) {
-      toast.error('A variant with this name already exists');
-      return;
-    }
-
-    if (isTemporary) {
-      // Handle temporary variant for unsaved article
-      const variantToSave = { ...formData };
-      if (onTemporaryVariantSaved) {
-        onTemporaryVariantSaved(variantToSave, temporaryVariantIndex);
-        toast.success(isEditing ? 'Variant updated (will be saved with article)' : 'Variant added (will be saved with article)');
+    // Handle image removal if user removed the existing image
+    if (imageState.isRemoved && imageState.existingUrl && !imageState.file) {
+      try {
+        response = await articlesApi.removeMugVariantImage(variant.id);
+        toast.success('Image removed successfully');
+      } catch (error) {
+        console.error('Error removing variant image:', error);
+        toast.error('Failed to remove image');
       }
-      onOpenChange(false);
-      return;
     }
 
+    return response;
+  };
+
+  const createVariant = async (articleId: number): Promise<ArticleMugVariant> => {
+    return await articlesApi.createMugVariant(articleId, formData);
+  };
+
+  const uploadImage = async (variantId: number): Promise<ArticleMugVariant> => {
+    if (!imageState.file) throw new Error('No file to upload');
+
+    try {
+      return await articlesApi.uploadMugVariantImage(variantId, imageState.file);
+    } catch (imageError) {
+      console.error('Error uploading variant image:', imageError);
+      toast.error(isEditing ? 'Variant updated but image upload failed' : 'Variant created but image upload failed');
+      throw imageError;
+    }
+  };
+
+  const handleSuccess = (response: ArticleMugVariant) => {
+    if (formData.isDefault && onRefetchVariants) {
+      onRefetchVariants();
+    } else if (onVariantSaved) {
+      onVariantSaved(response);
+    }
+
+    toast.success(isEditing ? 'Variant updated successfully' : 'Variant added successfully');
+    onOpenChange(false);
+  };
+
+  const handlePersistentSubmit = async () => {
     if (!articleId) return;
 
-    // Handle variant for saved article
+    setLoading(true);
     try {
-      setLoading(true);
       let response: ArticleMugVariant;
 
       if (isEditing && variant) {
-        // Update existing variant without image data
-        const updateRequest: CreateArticleMugVariantRequest = {
-          insideColorCode: formData.insideColorCode,
-          outsideColorCode: formData.outsideColorCode,
-          name: formData.name,
-          articleVariantNumber: formData.articleVariantNumber,
-          isDefault: formData.isDefault,
-          active: formData.active,
-        };
-
-        response = await articlesApi.updateMugVariant(variant.id, updateRequest);
-
-        // Handle image removal if user removed the existing image
-        if (imageRemoved && existingImageUrl && !imageFile) {
-          try {
-            // The removeMugVariantImage API returns the updated variant
-            response = await articlesApi.removeMugVariantImage(variant.id);
-            toast.success('Image removed successfully');
-          } catch (error) {
-            console.error('Error removing variant image:', error);
-            toast.error('Failed to remove image');
-          }
-        }
+        response = await updateVariant(variant);
       } else {
-        // Create new variant without image data
-        response = await articlesApi.createMugVariant(articleId, formData);
+        response = await createVariant(articleId);
       }
 
       // Upload image if a new file was selected
-      if (imageFile && response.id) {
-        try {
-          const imageResponse = await articlesApi.uploadMugVariantImage(response.id, imageFile);
-          // Update the response with the data returned from the backend
-          response.exampleImageFilename = imageResponse.exampleImageFilename;
-          response.exampleImageUrl = imageResponse.exampleImageUrl;
-        } catch (imageError) {
-          console.error('Error uploading variant image:', imageError);
-          toast.error(isEditing ? 'Variant updated but image upload failed' : 'Variant created but image upload failed');
-        }
+      if (imageState.file && response.id) {
+        const imageResponse = await uploadImage(response.id);
+        // Update the response with the data returned from the backend
+        response.exampleImageFilename = imageResponse.exampleImageFilename;
+        response.exampleImageUrl = imageResponse.exampleImageUrl;
       }
 
-      // If we updated the default status, we need to refetch all variants
-      if (formData.isDefault && onRefetchVariants) {
-        onRefetchVariants();
-      } else if (onVariantSaved) {
-        onVariantSaved(response);
-      }
-
-      toast.success(isEditing ? 'Variant updated successfully' : 'Variant added successfully');
-      onOpenChange(false);
+      handleSuccess(response);
     } catch (error) {
       console.error(isEditing ? 'Error updating variant:' : 'Error adding variant:', error);
       toast.error(isEditing ? 'Failed to update variant' : 'Failed to add variant');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const error = validateForm();
+    if (error) {
+      toast.error(error);
+      return;
+    }
+
+    if (isTemporary) {
+      handleTemporarySubmit();
+    } else {
+      await handlePersistentSubmit();
     }
   };
 
@@ -300,9 +325,9 @@ export default function MugVariantDialog({
   return (
     <>
       <ImageCropperFixedBoxDialog
-        open={showCropper && !!originalImageUrl}
+        open={imageState.showCropper && !!imageState.originalUrl}
         onOpenChange={(open) => !open && handleCropCancel()}
-        srcImage={originalImageUrl || ''}
+        srcImage={imageState.originalUrl || ''}
         aspectRatio={1}
         onConfirm={handleCropConfirm}
         title="Crop your variant image"
@@ -310,20 +335,15 @@ export default function MugVariantDialog({
       />
 
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>
-                {isEditing ? 'Edit Mug Variant' : 'Add New Mug Variant'}
-              </DialogTitle>
+              <DialogTitle>{isEditing ? 'Edit Mug Variant' : 'Add New Mug Variant'}</DialogTitle>
               <DialogDescription>
-                {isEditing 
-                  ? 'Update the variant details below' 
-                  : 'Create a new mug variant with different colors and settings'
-                }
+                {isEditing ? 'Update the variant details below' : 'Create a new mug variant with different colors and settings'}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="grid gap-6 py-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
@@ -350,18 +370,12 @@ export default function MugVariantDialog({
 
                 <div className="space-y-2">
                   <Label>Inside Color</Label>
-                  <ColorPicker 
-                    value={formData.insideColorCode} 
-                    onChange={(color) => setFormData({ ...formData, insideColorCode: color })} 
-                  />
+                  <ColorPicker value={formData.insideColorCode} onChange={(color) => setFormData({ ...formData, insideColorCode: color })} />
                 </div>
 
                 <div className="space-y-2">
                   <Label>Outside Color</Label>
-                  <ColorPicker 
-                    value={formData.outsideColorCode} 
-                    onChange={(color) => setFormData({ ...formData, outsideColorCode: color })} 
-                  />
+                  <ColorPicker value={formData.outsideColorCode} onChange={(color) => setFormData({ ...formData, outsideColorCode: color })} />
                 </div>
               </div>
 
@@ -398,40 +412,38 @@ export default function MugVariantDialog({
               <div className="space-y-2">
                 <Label>Example Image</Label>
                 <div className="space-y-2">
-                  {(imagePreviewUrl && !imageRemoved) && !showCropper ? (
-                    <div className="relative inline-block">
-                      <img src={imagePreviewUrl} alt="Preview" className="h-20 w-20 rounded border object-cover" />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 p-0 text-white hover:bg-red-600"
-                        onClick={handleRemoveImage}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ) : (
-                    <div>
-                      <input 
-                        ref={fileInputRef} 
-                        type="file" 
-                        accept="image/*" 
-                        onChange={handleImageUpload} 
-                        className="hidden" 
-                      />
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        size="sm" 
-                        onClick={() => fileInputRef.current?.click()} 
-                        className="w-full max-w-[200px]"
-                      >
-                        <Upload className="mr-2 h-4 w-4" />
-                        Upload Image
-                      </Button>
-                    </div>
-                  )}
+                  {(() => {
+                    const showImagePreview = imageState.previewUrl && !imageState.isRemoved && !imageState.showCropper;
+
+                    return showImagePreview ? (
+                      <div className="relative inline-block">
+                        <img src={imageState.previewUrl!} alt="Preview" className="h-20 w-20 rounded border object-cover" />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-red-500 p-0 text-white hover:bg-red-600"
+                          onClick={handleRemoveImage}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="w-full max-w-[200px]"
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Image
+                        </Button>
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

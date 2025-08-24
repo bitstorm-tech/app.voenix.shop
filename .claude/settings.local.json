@@ -76,7 +76,8 @@
       "mcp__playwright__browser_press_key",
       "mcp__playwright__browser_snapshot",
       "Bash(npm --prefix frontend run dev)",
-      "Bash(backend/gradlew:*)"
+      "Bash(backend/gradlew:*)",
+      "Bash(npx vite:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
