@@ -74,7 +74,9 @@
       "mcp__playwright__browser_console_messages",
       "mcp__playwright__browser_close",
       "mcp__playwright__browser_press_key",
-      "mcp__playwright__browser_snapshot"
+      "mcp__playwright__browser_snapshot",
+      "Bash(npm --prefix frontend run dev)",
+      "Bash(backend/gradlew:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

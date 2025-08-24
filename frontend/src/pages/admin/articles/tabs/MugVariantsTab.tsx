@@ -11,6 +11,130 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import MugVariantDialog from '@/components/admin/articles/MugVariantDialog';
 
+const ColorDisplay = ({ color }: { color: string }) => (
+  <div className="flex items-center gap-2">
+    <div 
+      className="h-6 w-6 rounded border border-gray-300" 
+      style={{ backgroundColor: color }} 
+    />
+    <span className="text-sm text-gray-600">{color}</span>
+  </div>
+);
+
+const isActive = (variant: ArticleMugVariant | CreateArticleMugVariantRequest) =>
+  variant.active !== false;
+
+interface VariantTableProps<T> {
+  variants: T[];
+  onEdit: (variant: T, index?: number) => void;
+  onDelete: (variant: T, index?: number) => void;
+  isTemporary?: boolean;
+}
+
+function VariantTable<T extends ArticleMugVariant | CreateArticleMugVariantRequest>({
+  variants,
+  onEdit,
+  onDelete,
+  isTemporary = false
+}: VariantTableProps<T>) {
+  return (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Article Variant Number</TableHead>
+            <TableHead>Inside Color</TableHead>
+            <TableHead>Outside Color</TableHead>
+            <TableHead>Default</TableHead>
+            <TableHead>Active</TableHead>
+            <TableHead>Example Image</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {variants.map((variant, index) => (
+            <TableRow
+              key={isTemporary ? index : (variant as ArticleMugVariant).id}
+              className={cn(!isActive(variant) ? 'bg-gray-50 opacity-60' : '')}
+            >
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-2">
+                  {variant.name}
+                  {!isActive(variant) && (
+                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                      Inactive
+                    </span>
+                  )}
+                </div>
+              </TableCell>
+              <TableCell>{variant.articleVariantNumber || '-'}</TableCell>
+              <TableCell>
+                <ColorDisplay color={variant.insideColorCode} />
+              </TableCell>
+              <TableCell>
+                <ColorDisplay color={variant.outsideColorCode} />
+              </TableCell>
+              <TableCell>
+                {variant.isDefault && (
+                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                    Default
+                  </span>
+                )}
+              </TableCell>
+              <TableCell>
+                {isActive(variant) ? (
+                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                    Active
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
+                    Inactive
+                  </span>
+                )}
+              </TableCell>
+              <TableCell>
+                {!isTemporary && (variant as ArticleMugVariant).exampleImageUrl ? (
+                  <img 
+                    src={(variant as ArticleMugVariant).exampleImageUrl!} 
+                    alt={`${variant.name} example`} 
+                    className="h-10 w-10 rounded border object-cover" 
+                  />
+                ) : (
+                  <div className="flex h-10 w-10 items-center justify-center rounded border bg-gray-100">
+                    <ImageIcon className="h-4 w-4 text-gray-400" />
+                  </div>
+                )}
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex justify-end gap-1">
+                  <Button variant="ghost" size="sm" onClick={() => onEdit(variant, index)}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => onDelete(variant, index)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+type DialogState = 
+  | { type: 'closed' }
+  | { type: 'add' }
+  | { type: 'edit'; variant: ArticleMugVariant }
+  | { type: 'editTemp'; variant: CreateArticleMugVariantRequest; index: number };
+
+type DeleteState =
+  | { type: 'none' }
+  | { type: 'saved'; id: number }
+  | { type: 'temporary'; index: number };
+
 interface MugVariantsTabProps {
   articleId?: number;
   variants: ArticleMugVariant[];
@@ -30,40 +154,21 @@ export default function MugVariantsTab({
 }: MugVariantsTabProps) {
   const navigate = useNavigate();
   const [variants, setVariants] = useState<ArticleMugVariant[]>(initialVariants);
-  const [showDialog, setShowDialog] = useState(false);
-  const [editingVariant, setEditingVariant] = useState<ArticleMugVariant | null>(null);
-  const [editingTemporaryVariant, setEditingTemporaryVariant] = useState<CreateArticleMugVariantRequest | null>(null);
-  const [editingTemporaryIndex, setEditingTemporaryIndex] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteVariantId, setDeleteVariantId] = useState<number | null>(null);
-  const [deleteVariantIndex, setDeleteVariantIndex] = useState<number | null>(null);
-  const [isTemporaryVariant, setIsTemporaryVariant] = useState(false);
+  const [dialogState, setDialogState] = useState<DialogState>({ type: 'closed' });
+  const [deleteState, setDeleteState] = useState<DeleteState>({ type: 'none' });
 
   // Sync local state with prop changes (important for when variants are copied or refetched)
   useEffect(() => {
     setVariants(initialVariants);
   }, [initialVariants]);
 
-  const handleAddVariant = () => {
-    setEditingVariant(null);
-    setEditingTemporaryVariant(null);
-    setEditingTemporaryIndex(null);
-    setShowDialog(true);
-  };
+  const handleAddVariant = () => setDialogState({ type: 'add' });
 
-  const handleEditVariant = (variant: ArticleMugVariant) => {
-    setEditingVariant(variant);
-    setEditingTemporaryVariant(null);
-    setEditingTemporaryIndex(null);
-    setShowDialog(true);
-  };
+  const handleEditVariant = (variant: ArticleMugVariant) => 
+    setDialogState({ type: 'edit', variant });
 
-  const handleEditTemporaryVariant = (index: number, variant: CreateArticleMugVariantRequest) => {
-    setEditingTemporaryVariant(variant);
-    setEditingTemporaryIndex(index);
-    setEditingVariant(null);
-    setShowDialog(true);
-  };
+  const handleEditTemporaryVariant = (index: number, variant: CreateArticleMugVariantRequest) =>
+    setDialogState({ type: 'editTemp', variant, index });
 
 
   const handleVariantSaved = (variant: ArticleMugVariant) => {
@@ -100,43 +205,34 @@ export default function MugVariantsTab({
     }
   };
 
-  const handleDeleteVariant = (variantId: number) => {
-    setDeleteVariantId(variantId);
-    setIsTemporaryVariant(false);
-    setIsDeleting(true);
-  };
+  const handleDeleteVariant = (variant: ArticleMugVariant) =>
+    setDeleteState({ type: 'saved', id: variant.id });
 
-  const handleDeleteTemporaryVariant = (index: number) => {
-    setDeleteVariantIndex(index);
-    setIsTemporaryVariant(true);
-    setIsDeleting(true);
-  };
+  const handleDeleteTemporaryVariant = (index: number) =>
+    setDeleteState({ type: 'temporary', index });
 
   const confirmDelete = async () => {
-    if (isTemporaryVariant && deleteVariantIndex !== null) {
-      if (onDeleteTemporaryVariant) {
-        onDeleteTemporaryVariant(deleteVariantIndex);
+    switch (deleteState.type) {
+      case 'temporary':
+        onDeleteTemporaryVariant?.(deleteState.index);
         toast.success('Variant removed');
-      }
-    } else if (!isTemporaryVariant && deleteVariantId !== null) {
-      try {
-        await articlesApi.deleteMugVariant(deleteVariantId);
-        setVariants(variants.filter((v) => v.id !== deleteVariantId));
-        toast.success('Variant deleted successfully');
-      } catch (error) {
-        console.error('Error deleting variant:', error);
-        toast.error('Failed to delete variant');
-      }
+        break;
+        
+      case 'saved':
+        try {
+          await articlesApi.deleteMugVariant(deleteState.id);
+          setVariants(prev => prev.filter(v => v.id !== deleteState.id));
+          toast.success('Variant deleted successfully');
+        } catch (error) {
+          console.error('Error deleting variant:', error);
+          toast.error('Failed to delete variant');
+        }
+        break;
     }
-    cancelDelete();
+    setDeleteState({ type: 'none' });
   };
 
-  const cancelDelete = () => {
-    setIsDeleting(false);
-    setDeleteVariantId(null);
-    setDeleteVariantIndex(null);
-    setIsTemporaryVariant(false);
-  };
+  const cancelDelete = () => setDeleteState({ type: 'none' });
 
   const handleCopyVariants = () => {
     if (!articleId) {
@@ -162,12 +258,12 @@ export default function MugVariantsTab({
         )}
 
         <MugVariantDialog
-          open={showDialog}
-          onOpenChange={setShowDialog}
+          open={dialogState.type !== 'closed'}
+          onOpenChange={(open) => setDialogState(open ? dialogState : { type: 'closed' })}
           articleId={articleId}
-          variant={editingVariant || undefined}
-          temporaryVariant={editingTemporaryVariant || undefined}
-          temporaryVariantIndex={editingTemporaryIndex || undefined}
+          variant={dialogState.type === 'edit' ? dialogState.variant : undefined}
+          temporaryVariant={dialogState.type === 'editTemp' ? dialogState.variant : undefined}
+          temporaryVariantIndex={dialogState.type === 'editTemp' ? dialogState.index : undefined}
           existingVariants={variants}
           existingTemporaryVariants={temporaryVariants}
           onVariantSaved={handleVariantSaved}
@@ -190,177 +286,26 @@ export default function MugVariantsTab({
 
         {/* Show saved variants */}
         {variants.length > 0 && (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Article Variant Number</TableHead>
-                  <TableHead>Inside Color</TableHead>
-                  <TableHead>Outside Color</TableHead>
-                  <TableHead>Default</TableHead>
-                  <TableHead>Active</TableHead>
-                  <TableHead>Example Image</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {variants.map((variant) => (
-                  <TableRow
-                    key={variant.id}
-                    className={cn(!variant.active ? 'bg-gray-50 opacity-60' : '')}
-                  >
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        {variant.name}
-                        {!variant.active && (
-                          <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
-                            Inactive
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{variant.articleVariantNumber || '-'}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded border border-gray-300" style={{ backgroundColor: variant.insideColorCode }} />
-                        <span className="text-sm text-gray-600">{variant.insideColorCode}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded border border-gray-300" style={{ backgroundColor: variant.outsideColorCode }} />
-                        <span className="text-sm text-gray-600">{variant.outsideColorCode}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {variant.isDefault && (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                          Default
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {variant.active ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                          Active
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">Inactive</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {variant.exampleImageUrl ? (
-                        <img src={variant.exampleImageUrl} alt={`${variant.name} example`} className="h-10 w-10 rounded border object-cover" />
-                      ) : (
-                        <div className="flex h-10 w-10 items-center justify-center rounded border bg-gray-100">
-                          <ImageIcon className="h-4 w-4 text-gray-400" />
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => handleEditVariant(variant)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteVariant(variant.id)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <VariantTable
+            variants={variants}
+            onEdit={(variant) => handleEditVariant(variant)}
+            onDelete={(variant) => handleDeleteVariant(variant)}
+          />
         )}
 
         {/* Show temporary variants for unsaved articles */}
         {!articleId && temporaryVariants.length > 0 && (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Article Variant Number</TableHead>
-                  <TableHead>Inside Color</TableHead>
-                  <TableHead>Outside Color</TableHead>
-                  <TableHead>Default</TableHead>
-                  <TableHead>Active</TableHead>
-                  <TableHead>Example Image</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {temporaryVariants.map((variant, index) => (
-                  <TableRow
-                    key={index}
-                    className={cn(editingTemporaryIndex === index ? 'bg-blue-50' : '', variant.active === false ? 'bg-gray-50 opacity-60' : '')}
-                  >
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        {variant.name}
-                        {variant.active === false && (
-                          <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
-                            Inactive
-                          </span>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>{variant.articleVariantNumber || '-'}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded border border-gray-300" style={{ backgroundColor: variant.insideColorCode }} />
-                        <span className="text-sm text-gray-600">{variant.insideColorCode}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded border border-gray-300" style={{ backgroundColor: variant.outsideColorCode }} />
-                        <span className="text-sm text-gray-600">{variant.outsideColorCode}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {variant.isDefault && (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                          Default
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {variant.active !== false ? (
-                        <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                          Active
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">Inactive</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex h-10 w-10 items-center justify-center rounded border bg-gray-100">
-                        <ImageIcon className="h-4 w-4 text-gray-400" />
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="sm" onClick={() => handleEditTemporaryVariant(index, variant)}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDeleteTemporaryVariant(index)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <VariantTable
+            variants={temporaryVariants}
+            onEdit={(variant, index) => handleEditTemporaryVariant(index!, variant)}
+            onDelete={(_, index) => handleDeleteTemporaryVariant(index!)}
+            isTemporary
+          />
         )}
       </CardContent>
 
       <ConfirmationDialog
-        isOpen={isDeleting}
+        isOpen={deleteState.type !== 'none'}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
         title="Delete Mug Variant"
