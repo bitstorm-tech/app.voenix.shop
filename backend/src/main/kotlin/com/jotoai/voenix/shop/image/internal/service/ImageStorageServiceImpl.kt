@@ -10,16 +10,16 @@ import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.time.LocalDateTime
+import java.util.*
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Path
-import java.time.LocalDateTime
-import java.util.UUID
 
 /**
  * Consolidated implementation of ImageStorageService that handles all storage functionality.
@@ -405,13 +405,6 @@ class ImageStorageServiceImpl(
         uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
             ?: throw ResourceNotFoundException("Uploaded image with UUID $uuid not found for user $userId")
 
-    /**
-     * Gets all uploaded images for a user.
-     */
-    fun getUserUploadedImages(userId: Long): List<UploadedImage> = uploadedImageRepository.findAllByUserId(userId)
-
-    // Private Helper Methods (consolidated from BaseStorageService and other utilities)
-
     private fun validateFile(
         file: MultipartFile,
         maxFileSize: Long,
@@ -482,7 +475,7 @@ class ImageStorageServiceImpl(
     ): String =
         try {
             Files.probeContentType(filePath) ?: defaultContentType
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             logger.warn {
                 "Failed to probe content type for ${filePath.toAbsolutePath()}, " +
                     "using default: $defaultContentType"

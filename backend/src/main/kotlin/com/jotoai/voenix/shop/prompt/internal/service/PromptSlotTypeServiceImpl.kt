@@ -75,20 +75,6 @@ class PromptSlotTypeServiceImpl(
 
     @Transactional
     override fun deletePromptSlotType(id: Long) {
-        val promptSlotType =
-            promptSlotTypeRepository
-                .findById(id)
-                .orElseThrow { PromptSlotTypeNotFoundException("PromptSlotType", "id", id) }
-
         promptSlotTypeRepository.deleteById(id)
     }
-
-    private fun PromptSlotType.toDto(): PromptSlotTypeDto =
-        PromptSlotTypeDto(
-            id = this.id!!,
-            name = this.name,
-            position = this.position,
-            createdAt = this.createdAt,
-            updatedAt = this.updatedAt,
-        )
 }

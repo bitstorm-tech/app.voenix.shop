@@ -7,24 +7,22 @@ import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
-import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.IOException
+import java.time.LocalDateTime
+import java.util.*
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.io.IOException
-import java.time.LocalDateTime
-import java.util.UUID
 
 /**
  * Consolidated image management service that handles all image operations.
@@ -366,31 +364,6 @@ class ImageManagementService(
     }
 
     /**
-     * Validates that a user owns an uploaded image by UUID.
-     * @param uuid The image UUID
-     * @param userId The user ID
-     * @return true if user owns the image, false otherwise
-     */
-    fun validateUploadedImageOwnership(
-        uuid: UUID,
-        userId: Long,
-    ): Boolean = uploadedImageRepository.findByUserIdAndUuid(userId, uuid) != null
-
-    /**
-     * Validates that a user owns a generated image by filename.
-     * @param filename The generated image filename
-     * @param userId The user ID
-     * @return true if user owns the image, false otherwise
-     */
-    fun validateGeneratedImageOwnership(
-        filename: String,
-        userId: Long,
-    ): Boolean {
-        val generatedImage = generatedImageRepository.findByFilename(filename)
-        return generatedImage?.userId == userId
-    }
-
-    /**
      * Returns raw image data for internal use or public access.
      */
     fun getImageData(
@@ -414,27 +387,6 @@ class ImageManagementService(
     ): Pair<ByteArray, String> {
         val storageImpl = imageStorageService as ImageStorageServiceImpl
         return storageImpl.getImageData(filename, imageType)
-    }
-
-    // Legacy compatibility methods (from original ImageService)
-
-    /**
-     * Stores an image file using the storage service. This is primarily for compatibility.
-     * For user uploads, use createUploadedImage instead.
-     */
-    fun store(
-        file: MultipartFile,
-        request: CreateImageRequest,
-    ): ImageDto {
-        logger.debug {
-            "Delegating image storage - Type: ${request.imageType}, Original filename: ${file.originalFilename}"
-        }
-        val filename = imageStorageService.storeFile(file, request.imageType, request.cropArea)
-
-        return SimpleImageDto(
-            filename = filename,
-            imageType = request.imageType,
-        )
     }
 
     /**

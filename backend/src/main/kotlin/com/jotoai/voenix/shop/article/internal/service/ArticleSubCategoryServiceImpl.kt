@@ -33,14 +33,6 @@ class ArticleSubCategoryServiceImpl(
     override fun searchSubCategoriesByName(name: String): List<ArticleSubCategoryDto> =
         articleSubCategoryRepository.findByNameContainingIgnoreCase(name).map { it.toDto() }
 
-    fun searchSubCategoriesByCategoryAndName(
-        categoryId: Long,
-        name: String,
-    ): List<ArticleSubCategoryDto> =
-        articleSubCategoryRepository
-            .findByArticleCategoryIdAndNameContainingIgnoreCase(categoryId, name)
-            .map { it.toDto() }
-
     @Transactional
     override fun createSubCategory(request: CreateArticleSubCategoryRequest): ArticleSubCategoryDto {
         val articleCategory =

@@ -10,13 +10,12 @@ import com.jotoai.voenix.shop.cart.api.exceptions.CartNotFoundException
 import com.jotoai.voenix.shop.cart.internal.assembler.CartAssembler
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
-import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.OffsetDateTime
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.OffsetDateTime
 
 @Service
 class CartQueryServiceImpl(
@@ -149,29 +148,6 @@ class CartQueryServiceImpl(
         cartRepository.save(cart)
         logger.info { "Marked cart $cartId as converted" }
     }
-
-    /**
-     * Internal method to get the cart entity for order service
-     * This method is used internally by the order module
-     */
-    fun findActiveCartEntityByUserId(userId: Long): Cart? = cartRepository.findActiveCartByUserId(userId).orElse(null)
-
-    /**
-     * Internal method to find active cart entity by user ID and throw exception if not found
-     * This method is used internally by the order module
-     */
-    fun getActiveCartEntityByUserId(userId: Long): Cart =
-        cartRepository
-            .findActiveCartByUserId(userId)
-            .orElseThrow {
-                BadRequestException("No active cart found for user: $userId")
-            }
-
-    /**
-     * Internal method to save a cart entity
-     * Used by other modules that need to persist cart changes
-     */
-    fun saveCartEntity(cart: Cart): Cart = cartRepository.save(cart)
 
     private fun createNewCart(userId: Long): Cart {
         val cart =

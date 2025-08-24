@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 
@@ -13,7 +12,6 @@ import org.springframework.web.multipart.MultipartFile
 @Service
 class ImageValidationService {
     companion object {
-        private val logger = KotlinLogging.logger {}
         private const val MAX_FILE_SIZE = 10 * 1024 * 1024L // 10MB
         private val ALLOWED_CONTENT_TYPES = setOf("image/jpeg", "image/jpg", "image/png", "image/webp")
     }
