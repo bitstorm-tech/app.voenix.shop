@@ -139,6 +139,7 @@ export default function MugVariantDialog({
     setImageFile(file);
     setOriginalImageUrl(blobUrl);
     setImagePreviewUrl(blobUrl);
+    setImageRemoved(false);
     setShowCropper(true);
 
     if (fileInputRef.current) {
@@ -185,13 +186,16 @@ export default function MugVariantDialog({
     if (originalImageUrl && originalImageUrl !== imagePreviewUrl) {
       URL.revokeObjectURL(originalImageUrl);
     }
-    setImagePreviewUrl(null);
+    
+    // For newly uploaded images (no existing image), clear everything
+    if (!existingImageUrl) {
+      setImagePreviewUrl(null);
+    }
+    // For existing images, keep the preview URL but mark for removal
+    
     setOriginalImageUrl(null);
     setImageFile(null);
-    // Mark the existing image for removal but keep the URL reference
-    if (existingImageUrl) {
-      setImageRemoved(true);
-    }
+    setImageRemoved(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -394,7 +398,7 @@ export default function MugVariantDialog({
               <div className="space-y-2">
                 <Label>Example Image</Label>
                 <div className="space-y-2">
-                  {imagePreviewUrl && !showCropper ? (
+                  {(imagePreviewUrl && !imageRemoved) && !showCropper ? (
                     <div className="relative inline-block">
                       <img src={imagePreviewUrl} alt="Preview" className="h-20 w-20 rounded border object-cover" />
                       <Button
