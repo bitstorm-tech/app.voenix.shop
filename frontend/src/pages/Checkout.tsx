@@ -9,9 +9,60 @@ import { useCreateOrder } from '@/hooks/queries/useOrders';
 import { downloadOrderPDF } from '@/lib/pdfDownload';
 import type { CreateOrderRequest } from '@/types/order';
 import { AlertTriangle, CreditCard, Lock, ShoppingBag, Truck } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+
+// Pricing configuration
+const CHECKOUT_CONFIG = {
+  shipping: 4.99,
+  taxRate: 0.08,
+};
+
+// Form field configurations
+interface FieldConfig {
+  name: string;
+  label: string;
+  type?: string;
+  placeholder: string;
+  required?: boolean;
+  span?: number;
+}
+
+const contactFields: FieldConfig[] = [
+  { name: 'email', label: 'Email Address', type: 'email', placeholder: 'john.doe@example.com', required: true, span: 2 },
+  { name: 'firstName', label: 'First Name', placeholder: 'John', required: true },
+  { name: 'lastName', label: 'Last Name', placeholder: 'Doe', required: true },
+  { name: 'phone', label: 'Phone Number (optional)', type: 'tel', placeholder: '+1 (555) 123-4567', span: 2 },
+];
+
+const addressFields: FieldConfig[] = [
+  { name: 'streetAddress1', label: 'Street Address', placeholder: '123 Main Street', required: true, span: 2 },
+  { name: 'streetAddress2', label: 'Apartment, suite, etc. (optional)', placeholder: 'Apt 4B', span: 2 },
+  { name: 'city', label: 'City', placeholder: 'New York', required: true },
+  { name: 'state', label: 'State', placeholder: 'NY', required: true },
+  { name: 'postalCode', label: 'ZIP Code', placeholder: '10001', required: true },
+  { name: 'country', label: 'Country', placeholder: 'US', required: true },
+];
+
+// Reusable state component
+interface CheckoutStateProps {
+  icon?: React.ComponentType<{ className?: string }>;
+  title?: string;
+  message?: string;
+  action?: ReactNode;
+}
+
+const CheckoutState = ({ icon: Icon, title, message, action }: CheckoutStateProps) => (
+  <div className="flex min-h-screen items-center justify-center px-4">
+    <div className="text-center">
+      {Icon && <Icon className="mx-auto h-12 w-12 text-gray-400" />}
+      {title && <h2 className="mt-4 text-lg font-medium text-gray-900">{title}</h2>}
+      {message && <p className="mt-2 text-sm text-gray-600">{message}</p>}
+      {action}
+    </div>
+  </div>
+);
 
 // Using the real CartDto and CartItemDto types from the API
 
@@ -36,6 +87,7 @@ export default function CheckoutPage() {
   const { data: session, isLoading: sessionLoading } = useSession();
   const { data: cartData, isLoading: cartLoading, error: cartError } = useCart();
   const createOrderMutation = useCreateOrder();
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [formData, setFormData] = useState<FormData>({
     email: '',
     firstName: '',
@@ -52,73 +104,41 @@ export default function CheckoutPage() {
     sameAsBilling: true,
   });
 
-  // Redirect to login if not authenticated
+  // Handle redirects
   useEffect(() => {
-    if (!sessionLoading && !session?.authenticated) {
-      navigate('/login?redirect=' + encodeURIComponent('/checkout'));
-    }
-  }, [session, sessionLoading, navigate]);
+    if (sessionLoading || cartLoading) return;
 
-  // Handle empty cart - redirect to cart page
-  useEffect(() => {
-    if (!cartLoading && cartData && cartData.isEmpty) {
+    if (!session?.authenticated) {
+      navigate('/login?redirect=' + encodeURIComponent('/checkout'));
+    } else if (cartData?.isEmpty) {
       navigate('/cart');
     }
-  }, [cartData, cartLoading, navigate]);
+  }, [session, sessionLoading, cartData, cartLoading, navigate]);
 
   // Convert cart data for display
   const items = cartData?.items || [];
   const totalItems = cartData?.totalItemCount || 0;
   const subtotal = (cartData?.totalPrice || 0) / 100; // Convert cents to dollars
 
-  const handleInputChange = (field: string, value: string) => {
-    if (field.startsWith('shipping_address.')) {
-      const addressField = field.replace('shipping_address.', '');
-      setFormData((prev) => ({
-        ...prev,
-        shipping_address: {
-          ...prev.shipping_address,
-          [addressField]: value,
-        },
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    }
+  const updateField = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  // Auto-download PDF after successful order creation
-  const triggerPDFDownload = async (orderId: string, orderNumber: string) => {
-    try {
-      console.log('Attempting to auto-download PDF for order:', orderNumber);
-
-      const result = await downloadOrderPDF({
-        orderId,
-        orderNumber,
-        onProgress: (progress) => {
-          // Could show progress in toast if needed
-          console.log(`PDF download progress: ${progress}%`);
-        },
-        onError: (error) => {
-          console.error('PDF download error:', error);
-          toast.error('PDF download failed', {
-            description: 'You can download your receipt from the order details page.',
-          });
-        },
-      });
-
-      if (result.success) {
-        toast.success('Receipt downloaded!', {
-          description: 'Your order receipt has been downloaded to your device.',
-        });
-      }
-    } catch (error) {
-      console.error('Error during PDF download:', error);
-      // Don't show error toast here as the onError callback handles it
-    }
+  const updateAddress = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      shipping_address: { ...prev.shipping_address, [field]: value },
+    }));
   };
+
+  const formatAddress = (addr: FormData['shipping_address']) => ({
+    streetAddress1: addr.streetAddress1,
+    streetAddress2: addr.streetAddress2 || undefined,
+    city: addr.city,
+    state: addr.state,
+    postalCode: addr.postalCode,
+    country: addr.country,
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,30 +149,15 @@ export default function CheckoutPage() {
     }
 
     try {
+      const shippingAddr = formatAddress(formData.shipping_address);
       const orderRequest: CreateOrderRequest = {
         customerEmail: formData.email,
         customerFirstName: formData.firstName,
         customerLastName: formData.lastName,
         customerPhone: formData.phone || undefined,
-        shippingAddress: {
-          streetAddress1: formData.shipping_address.streetAddress1,
-          streetAddress2: formData.shipping_address.streetAddress2 || undefined,
-          city: formData.shipping_address.city,
-          state: formData.shipping_address.state,
-          postalCode: formData.shipping_address.postalCode,
-          country: formData.shipping_address.country,
-        },
+        shippingAddress: shippingAddr,
         useShippingAsBilling: formData.sameAsBilling,
-        billingAddress: formData.sameAsBilling
-          ? undefined
-          : {
-              streetAddress1: formData.shipping_address.streetAddress1,
-              streetAddress2: formData.shipping_address.streetAddress2 || undefined,
-              city: formData.shipping_address.city,
-              state: formData.shipping_address.state,
-              postalCode: formData.shipping_address.postalCode,
-              country: formData.shipping_address.country,
-            },
+        billingAddress: formData.sameAsBilling ? undefined : shippingAddr,
       };
 
       const order = await createOrderMutation.mutateAsync(orderRequest);
@@ -162,10 +167,22 @@ export default function CheckoutPage() {
         description: `Order #${order.orderNumber} has been created.`,
       });
 
-      // Trigger automatic PDF download
-      // Use setTimeout to ensure navigation doesn't interfere with download
-      setTimeout(() => {
-        triggerPDFDownload(order.id, order.orderNumber);
+      // Auto-download PDF
+      setTimeout(async () => {
+        const result = await downloadOrderPDF({
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+        });
+
+        if (result.success) {
+          toast.success('Receipt downloaded!', {
+            description: 'Your order receipt has been downloaded to your device.',
+          });
+        } else {
+          toast.error('PDF download failed', {
+            description: 'You can download your receipt from the order details page.',
+          });
+        }
       }, 500);
 
       // Navigate to order success page
@@ -178,71 +195,49 @@ export default function CheckoutPage() {
     }
   };
 
-  // Don't render anything while checking authentication
-  if (sessionLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <LoadingSpinner />
-      </div>
-    );
+  // Handle loading and error states
+  if (sessionLoading || cartLoading) {
+    return <CheckoutState icon={LoadingSpinner} message={cartLoading ? 'Loading checkout...' : undefined} />;
   }
 
-  // Don't render if not authenticated (redirect will happen)
-  if (!session?.authenticated) {
-    return null;
-  }
+  if (!session?.authenticated) return null;
 
-  // Loading state for cart data
-  if (cartLoading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="text-center">
-          <LoadingSpinner />
-          <p className="mt-2 text-sm text-gray-600">Loading checkout...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error state for cart
   if (cartError) {
+    const errorMessage =
+      typeof cartError === 'object' && cartError && 'message' in cartError ? (cartError as Error).message : 'Unable to load your cart';
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="text-center">
-          <div className="mx-auto h-12 w-12 text-red-500">
-            <AlertTriangle className="h-12 w-12" />
-          </div>
-          <h2 className="mt-4 text-lg font-medium text-gray-900">Error loading cart</h2>
-          <p className="mt-2 text-sm text-gray-600">{cartError instanceof Error ? cartError.message : 'Unable to load your cart'}</p>
+      <CheckoutState
+        icon={AlertTriangle}
+        title="Error loading cart"
+        message={errorMessage}
+        action={
           <Button onClick={() => window.location.reload()} className="mt-6">
             Try Again
           </Button>
-        </div>
-      </div>
+        }
+      />
     );
   }
 
-  // This case should be handled by the redirect effect, but keeping as fallback
-  if (!cartData || cartData.isEmpty) {
+  if (!cartData?.items?.length) {
     return (
-      <div className="flex min-h-screen items-center justify-center px-4">
-        <div className="text-center">
-          <ShoppingBag className="mx-auto h-12 w-12 text-gray-400" />
-          <h2 className="mt-4 text-lg font-medium text-gray-900">Your cart is empty</h2>
-          <p className="mt-2 text-sm text-gray-600">Add items to your cart before checking out</p>
+      <CheckoutState
+        icon={ShoppingBag}
+        title="Your cart is empty"
+        message="Add items to your cart before checking out"
+        action={
           <Button onClick={() => navigate('/cart')} className="mt-6">
             View Cart
           </Button>
-        </div>
-      </div>
+        }
+      />
     );
   }
 
-  const shipping = 4.99; // TODO: Make configurable
-  const tax = subtotal * 0.08; // TODO: Make configurable - currently 8%
+  const { shipping, taxRate } = CHECKOUT_CONFIG;
+  const tax = subtotal * taxRate;
   const total = subtotal + shipping + tax;
 
-  // Check if any items have price changes
   const hasPriceChanges = items.some((item) => item.hasPriceChanged);
 
   return (
@@ -256,51 +251,20 @@ export default function CheckoutPage() {
               <div className="rounded-lg bg-white p-6 shadow-sm">
                 <h2 className="mb-4 text-lg font-semibold">Contact Information</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="sm:col-span-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
-                      placeholder="john.doe@example.com"
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="firstName">First Name</Label>
-                    <Input
-                      id="firstName"
-                      value={formData.firstName}
-                      onChange={(e) => handleInputChange('firstName', e.target.value)}
-                      placeholder="John"
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="lastName">Last Name</Label>
-                    <Input
-                      id="lastName"
-                      value={formData.lastName}
-                      onChange={(e) => handleInputChange('lastName', e.target.value)}
-                      placeholder="Doe"
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <Label htmlFor="phone">Phone Number (optional)</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) => handleInputChange('phone', e.target.value)}
-                      placeholder="+1 (555) 123-4567"
-                      className="mt-1"
-                    />
-                  </div>
+                  {contactFields.map((field) => (
+                    <div key={field.name} className={field.span === 2 ? 'sm:col-span-2' : ''}>
+                      <Label htmlFor={field.name}>{field.label}</Label>
+                      <Input
+                        id={field.name}
+                        type={field.type || 'text'}
+                        value={formData[field.name as keyof FormData] as string}
+                        onChange={(e) => updateField(field.name, e.target.value)}
+                        placeholder={field.placeholder}
+                        className="mt-1"
+                        required={field.required}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -310,71 +274,19 @@ export default function CheckoutPage() {
                   Shipping Information
                 </h2>
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="sm:col-span-2">
-                    <Label htmlFor="address">Street Address</Label>
-                    <Input
-                      id="address"
-                      value={formData.shipping_address.streetAddress1}
-                      onChange={(e) => handleInputChange('shipping_address.streetAddress1', e.target.value)}
-                      placeholder="123 Main Street"
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div className="sm:col-span-2">
-                    <Label htmlFor="address2">Apartment, suite, etc. (optional)</Label>
-                    <Input
-                      id="address2"
-                      value={formData.shipping_address.streetAddress2}
-                      onChange={(e) => handleInputChange('shipping_address.streetAddress2', e.target.value)}
-                      placeholder="Apt 4B"
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      value={formData.shipping_address.city}
-                      onChange={(e) => handleInputChange('shipping_address.city', e.target.value)}
-                      placeholder="New York"
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">State</Label>
-                    <Input
-                      id="state"
-                      value={formData.shipping_address.state}
-                      onChange={(e) => handleInputChange('shipping_address.state', e.target.value)}
-                      placeholder="NY"
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="zip">ZIP Code</Label>
-                    <Input
-                      id="zip"
-                      value={formData.shipping_address.postalCode}
-                      onChange={(e) => handleInputChange('shipping_address.postalCode', e.target.value)}
-                      placeholder="10001"
-                      className="mt-1"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="country">Country</Label>
-                    <Input
-                      id="country"
-                      value={formData.shipping_address.country}
-                      onChange={(e) => handleInputChange('shipping_address.country', e.target.value)}
-                      placeholder="US"
-                      className="mt-1"
-                      required
-                    />
-                  </div>
+                  {addressFields.map((field) => (
+                    <div key={field.name} className={field.span === 2 ? 'sm:col-span-2' : ''}>
+                      <Label htmlFor={field.name}>{field.label}</Label>
+                      <Input
+                        id={field.name}
+                        value={formData.shipping_address[field.name as keyof FormData['shipping_address']]}
+                        onChange={(e) => updateAddress(field.name, e.target.value)}
+                        placeholder={field.placeholder}
+                        className="mt-1"
+                        required={field.required}
+                      />
+                    </div>
+                  ))}
                 </div>
                 <div className="mt-4">
                   <label className="flex items-center gap-2">
@@ -423,27 +335,18 @@ export default function CheckoutPage() {
                     return (
                       <div key={item.id} className="flex gap-3">
                         <div className="relative h-16 w-16 overflow-hidden rounded-lg bg-gray-100">
-                          {imageUrl ? (
+                          {imageUrl && !imageErrors[item.id] ? (
                             <img
                               src={imageUrl}
                               alt="Custom mug design"
                               className="h-full w-full object-cover"
-                              onError={(e) => {
-                                // Hide broken image and show placeholder
-                                e.currentTarget.style.display = 'none';
-                                const placeholder = e.currentTarget.nextElementSibling;
-                                if (placeholder) {
-                                  (placeholder as HTMLElement).style.display = 'flex';
-                                }
-                              }}
+                              onError={() => setImageErrors((prev) => ({ ...prev, [item.id]: true }))}
                             />
-                          ) : null}
-                          <div
-                            className="flex h-16 w-16 items-center justify-center rounded-lg bg-gray-200"
-                            style={{ display: imageUrl ? 'none' : 'flex' }}
-                          >
-                            <ShoppingBag className="h-6 w-6 text-gray-400" />
-                          </div>
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-gray-200">
+                              <ShoppingBag className="h-6 w-6 text-gray-400" />
+                            </div>
+                          )}
                         </div>
                         <div className="flex-1">
                           <h3 className="text-sm font-medium">{item.article.name}</h3>

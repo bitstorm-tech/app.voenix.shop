@@ -77,7 +77,8 @@
       "mcp__playwright__browser_snapshot",
       "Bash(npm --prefix frontend run dev)",
       "Bash(backend/gradlew:*)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(npm --prefix frontend run lint)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
