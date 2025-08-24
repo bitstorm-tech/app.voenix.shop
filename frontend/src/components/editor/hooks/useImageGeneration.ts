@@ -1,5 +1,6 @@
 import { publicApi, userApi } from '@/lib/api';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
+import { CropData } from '@/components/editor/types';
 import { useState } from 'react';
 
 interface GeneratedImageData {
@@ -10,7 +11,7 @@ interface GeneratedImageData {
 interface UseImageGenerationReturn {
   isGenerating: boolean;
   error: string | null;
-  generateImages: (file: File, promptId: number) => Promise<GeneratedImageData | null>;
+  generateImages: (file: File, promptId: number, cropData?: CropData) => Promise<GeneratedImageData | null>;
 }
 
 export function useImageGeneration(): UseImageGenerationReturn {
@@ -18,13 +19,15 @@ export function useImageGeneration(): UseImageGenerationReturn {
   const [error, setError] = useState<string | null>(null);
   const isAuthenticated = useWizardStore((state) => state.isAuthenticated);
 
-  const generateImages = async (file: File, promptId: number): Promise<GeneratedImageData | null> => {
+  const generateImages = async (file: File, promptId: number, cropData?: CropData): Promise<GeneratedImageData | null> => {
     setIsGenerating(true);
     setError(null);
 
     try {
       // Use authenticated endpoint if user is logged in
-      const response = isAuthenticated ? await userApi.generateImage(file, promptId) : await publicApi.generateImage(file, promptId);
+      const response = isAuthenticated 
+        ? await userApi.generateImage(file, promptId, cropData) 
+        : await publicApi.generateImage(file, promptId, cropData);
 
       // Return both URLs and IDs
       return {

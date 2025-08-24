@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.image.api.ImageGenerationService
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
@@ -13,8 +14,8 @@ import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
 import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserService
-import jakarta.servlet.http.HttpServletRequest
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -37,6 +38,7 @@ class ImageGenerationServiceImpl(
     private val imageStorageService: ImageStorageService,
     private val storagePathService: StoragePathService,
     private val imageStorageServiceImpl: ImageStorageServiceImpl,
+    private val imageConversionService: ImageConversionService,
     private val request: HttpServletRequest,
 ) : ImageGenerationService {
     companion object {
@@ -76,6 +78,7 @@ class ImageGenerationServiceImpl(
         promptId: Long,
         uploadedImageUuid: UUID?,
         userId: Long,
+        cropArea: CropArea?,
     ): String {
         logger.info { "Processing user image generation request for user $userId with prompt ID: $promptId" }
 
@@ -88,7 +91,7 @@ class ImageGenerationServiceImpl(
         userService.getUserById(userId)
 
         return executeWithErrorHandling(
-            operation = { processUserImageGeneration(promptId, uploadedImageUuid, userId) },
+            operation = { processUserImageGeneration(promptId, uploadedImageUuid, userId, cropArea) },
             contextMessage = "generating image for user $userId",
         )
     }
@@ -98,6 +101,7 @@ class ImageGenerationServiceImpl(
         promptId: Long,
         uploadedImageUuid: UUID?,
         userId: Long,
+        cropArea: CropArea?,
     ): PublicImageGenerationResponse {
         logger.info { "Processing user image generation with IDs request for user $userId with prompt ID: $promptId" }
 
@@ -110,7 +114,7 @@ class ImageGenerationServiceImpl(
         userService.getUserById(userId)
 
         return executeWithErrorHandling(
-            operation = { processUserImageGenerationWithIds(promptId, uploadedImageUuid, userId) },
+            operation = { processUserImageGenerationWithIds(promptId, uploadedImageUuid, userId, cropArea) },
             contextMessage = "generating image with IDs for user $userId",
         )
     }
@@ -136,8 +140,26 @@ class ImageGenerationServiceImpl(
         val openAIRequest = createOpenAIRequest(request)
         logger.debug { "Generated OpenAI request: $openAIRequest" }
 
+        // Apply cropping if crop area is provided
+        val processedImageFile =
+            if (request.cropArea != null) {
+                logger.info { "Applying cropping with area: ${request.cropArea}" }
+                val originalBytes = imageFile.bytes
+                val croppedBytes = imageConversionService.cropImage(originalBytes, request.cropArea)
+
+                // Create a new MultipartFile with cropped bytes
+                ByteArrayMultipartFile(
+                    bytes = croppedBytes,
+                    filename = imageFile.originalFilename ?: "cropped_image.png",
+                    contentType = "image/png", // Always PNG after cropping to preserve transparency
+                    fieldName = imageFile.name,
+                )
+            } else {
+                imageFile
+            }
+
         // Generate images using OpenAI service
-        val imageEditResponse = openAIImageFacade.editImageBytes(imageFile, openAIRequest)
+        val imageEditResponse = openAIImageFacade.editImageBytes(processedImageFile, openAIRequest)
 
         // Store each generated image and create database records
         val generatedImages =
@@ -180,6 +202,7 @@ class ImageGenerationServiceImpl(
         promptId: Long,
         uploadedImageUuid: UUID,
         userId: Long,
+        cropArea: CropArea?,
     ): String {
         logger.info { "Processing user image generation for user $userId with uploaded image UUID: $uploadedImageUuid" }
 
@@ -189,12 +212,21 @@ class ImageGenerationServiceImpl(
         // Load the image data from storage
         val (imageBytes, contentType) = imageStorageServiceImpl.getUserImageData(uploadedImage.storedFilename, userId)
 
-        // Create a MultipartFile wrapper for the stored image
+        // Apply cropping if crop area is provided
+        val processedImageBytes =
+            if (cropArea != null) {
+                logger.info { "Applying cropping with area: $cropArea for user $userId" }
+                imageConversionService.cropImage(imageBytes, cropArea)
+            } else {
+                imageBytes
+            }
+
+        // Create a MultipartFile wrapper for the processed image
         val multipartFile =
             ByteArrayMultipartFile(
-                bytes = imageBytes,
+                bytes = processedImageBytes,
                 filename = uploadedImage.originalFilename,
-                contentType = contentType,
+                contentType = if (cropArea != null) "image/png" else contentType, // PNG after cropping
                 fieldName = "image",
             )
 
@@ -232,6 +264,7 @@ class ImageGenerationServiceImpl(
         promptId: Long,
         uploadedImageUuid: UUID,
         userId: Long,
+        cropArea: CropArea?,
     ): PublicImageGenerationResponse {
         logger.info {
             "Processing user image generation with IDs for user $userId " +
@@ -244,12 +277,21 @@ class ImageGenerationServiceImpl(
         // Load the image data from storage
         val (imageBytes, contentType) = imageStorageServiceImpl.getUserImageData(uploadedImage.storedFilename, userId)
 
-        // Create a MultipartFile wrapper for the stored image
+        // Apply cropping if crop area is provided
+        val processedImageBytes =
+            if (cropArea != null) {
+                logger.info { "Applying cropping with area: $cropArea for user $userId (with IDs)" }
+                imageConversionService.cropImage(imageBytes, cropArea)
+            } else {
+                imageBytes
+            }
+
+        // Create a MultipartFile wrapper for the processed image
         val multipartFile =
             ByteArrayMultipartFile(
-                bytes = imageBytes,
+                bytes = processedImageBytes,
                 filename = uploadedImage.originalFilename,
-                contentType = contentType,
+                contentType = if (cropArea != null) "image/png" else contentType, // PNG after cropping
                 fieldName = "image",
             )
 

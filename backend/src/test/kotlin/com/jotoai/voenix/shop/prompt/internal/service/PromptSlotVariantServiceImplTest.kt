@@ -402,7 +402,7 @@ class PromptSlotVariantServiceImplTest {
             whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
             whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
             whenever(
-                imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+                imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE),
             ).thenReturn(true)
 
             // When
@@ -470,7 +470,7 @@ class PromptSlotVariantServiceImplTest {
             whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
             whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
             whenever(
-                imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+                imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE),
             ).thenReturn(true)
 
             // When
@@ -536,7 +536,7 @@ class PromptSlotVariantServiceImplTest {
 
             whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
             whenever(
-                imageStorageService.deleteFile("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+                imageStorageService.deleteFile("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE),
             ).thenReturn(true)
 
             // When

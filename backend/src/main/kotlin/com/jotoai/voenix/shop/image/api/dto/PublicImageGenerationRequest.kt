@@ -12,4 +12,5 @@ data class PublicImageGenerationRequest(
     val quality: ImageQuality = ImageQuality.LOW,
     val size: ImageSize = ImageSize.LANDSCAPE_1536X1024,
     val n: Int = 1,
+    val cropArea: CropArea? = null,
 )

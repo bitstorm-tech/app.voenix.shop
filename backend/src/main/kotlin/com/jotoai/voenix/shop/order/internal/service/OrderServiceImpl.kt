@@ -25,8 +25,8 @@ import com.jotoai.voenix.shop.order.internal.entity.Order
 import com.jotoai.voenix.shop.order.internal.entity.OrderItem
 import com.jotoai.voenix.shop.order.internal.repository.OrderRepository
 import com.jotoai.voenix.shop.user.api.UserService
-import jakarta.persistence.EntityManager
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.persistence.EntityManager
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service

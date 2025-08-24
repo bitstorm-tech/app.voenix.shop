@@ -12,6 +12,7 @@ import type { LoginRequest, LoginResponse, SessionInfo } from '@/types/auth';
 import type { AddToCartRequest, CartDto, CartSummaryDto, UpdateCartItemRequest } from '@/types/cart';
 import type { MugWithVariantsSummary } from '@/types/copyVariants';
 import type { Country } from '@/types/country';
+import type { CropData } from '@/components/editor/types';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
 import type { PromptSlotType, PromptSlotVariant } from '@/types/promptSlotVariant';
@@ -496,10 +497,18 @@ export const userApi = {
   logout: () => api.post<void>('/user/logout', {}),
   deleteAccount: () => api.delete<void>('/user/account'),
   // Generate images using authenticated endpoint
-  generateImage: async (image: File, promptId: number): Promise<PublicImageGenerationResponse> => {
+  generateImage: async (image: File, promptId: number, cropData?: CropData): Promise<PublicImageGenerationResponse> => {
     const formData = new FormData();
     formData.append('image', image);
     formData.append('promptId', promptId.toString());
+    
+    // Add crop data if provided
+    if (cropData) {
+      formData.append('cropX', cropData.croppedAreaPixels.x.toString());
+      formData.append('cropY', cropData.croppedAreaPixels.y.toString());
+      formData.append('cropWidth', cropData.croppedAreaPixels.width.toString());
+      formData.append('cropHeight', cropData.croppedAreaPixels.height.toString());
+    }
 
     const response = await fetch('/api/user/images/generate', {
       method: 'POST',
@@ -599,10 +608,18 @@ export const publicApi = {
     });
     return handleResponse<Prompt[]>(response);
   },
-  generateImage: async (image: File, promptId: number): Promise<PublicImageGenerationResponse> => {
+  generateImage: async (image: File, promptId: number, cropData?: CropData): Promise<PublicImageGenerationResponse> => {
     const formData = new FormData();
     formData.append('image', image);
     formData.append('promptId', promptId.toString());
+    
+    // Add crop data if provided
+    if (cropData) {
+      formData.append('cropX', cropData.croppedAreaPixels.x.toString());
+      formData.append('cropY', cropData.croppedAreaPixels.y.toString());
+      formData.append('cropWidth', cropData.croppedAreaPixels.width.toString());
+      formData.append('cropHeight', cropData.croppedAreaPixels.height.toString());
+    }
 
     const response = await fetch('/api/public/images/generate', {
       method: 'POST',

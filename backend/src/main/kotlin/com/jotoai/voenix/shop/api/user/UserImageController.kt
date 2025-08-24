@@ -3,6 +3,7 @@ package com.jotoai.voenix.shop.api.user
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.ImageGenerationService
+import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -37,17 +38,29 @@ class UserImageController(
     fun generateImage(
         @RequestPart("image") imageFile: MultipartFile,
         @RequestParam("promptId") promptId: Long,
+        @RequestParam("cropX", required = false) cropX: Double?,
+        @RequestParam("cropY", required = false) cropY: Double?,
+        @RequestParam("cropWidth", required = false) cropWidth: Double?,
+        @RequestParam("cropHeight", required = false) cropHeight: Double?,
         @AuthenticationPrincipal userDetails: UserDetails,
     ): PublicImageGenerationResponse {
         val user = userService.getUserByEmail(userDetails.username)
         logger.info { "Received authenticated image generation request from user ${user.id} for prompt ID: $promptId" }
+
+        // Create crop area if all crop parameters are provided
+        val cropArea =
+            if (cropX != null && cropY != null && cropWidth != null && cropHeight != null) {
+                CropArea(x = cropX, y = cropY, width = cropWidth, height = cropHeight)
+            } else {
+                null
+            }
 
         // First upload the image to get UUID
         val uploadedImage = imageFacade.createUploadedImage(imageFile, user.id)
         logger.info { "Uploaded image for user ${user.id} with UUID: ${uploadedImage.uuid}" }
 
         // Generate all 4 images in one call and get the complete response with IDs
-        val response = imageGenerationService.generateUserImageWithIds(promptId, uploadedImage.uuid, user.id)
+        val response = imageGenerationService.generateUserImageWithIds(promptId, uploadedImage.uuid, user.id, cropArea)
 
         logger.info {
             "Generated ${response.generatedImageIds.size} images with IDs: " +

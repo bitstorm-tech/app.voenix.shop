@@ -79,12 +79,13 @@ class AuthServiceImplTest {
         val loginRequest = LoginRequest(email = "test@example.com", password = "password123")
         val userDto = createTestUser()
         val userRoles = setOf("USER")
-        val principal = CustomUserDetails(
-            id = 1L,
-            email = "test@example.com",
-            passwordHash = "encoded",
-            userRoles = userRoles
-        )
+        val principal =
+            CustomUserDetails(
+                id = 1L,
+                email = "test@example.com",
+                passwordHash = "encoded",
+                userRoles = userRoles,
+            )
 
         whenever(httpRequest.getSession(true)).thenReturn(httpSession)
         whenever(httpSession.id).thenReturn("session-123")
@@ -138,12 +139,13 @@ class AuthServiceImplTest {
     fun `getCurrentSession should return authenticated session for valid principal`() {
         val userDto = createTestUser()
         val userRoles = setOf("USER")
-        val principal = CustomUserDetails(
-            id = 1L,
-            email = "test@example.com",
-            passwordHash = "encoded",
-            userRoles = userRoles
-        )
+        val principal =
+            CustomUserDetails(
+                id = 1L,
+                email = "test@example.com",
+                passwordHash = "encoded",
+                userRoles = userRoles,
+            )
 
         SecurityContextHolder.getContext().authentication = authentication
         whenever(authentication.isAuthenticated).thenReturn(true)
@@ -172,12 +174,13 @@ class AuthServiceImplTest {
 
     @Test
     fun `getCurrentSession should return unauthenticated session when user not found`() {
-        val principal = CustomUserDetails(
-            id = 999L,
-            email = "nonexistent@example.com",
-            passwordHash = "encoded",
-            userRoles = setOf()
-        )
+        val principal =
+            CustomUserDetails(
+                id = 999L,
+                email = "nonexistent@example.com",
+                passwordHash = "encoded",
+                userRoles = setOf(),
+            )
 
         SecurityContextHolder.getContext().authentication = authentication
         whenever(authentication.isAuthenticated).thenReturn(true)
@@ -207,12 +210,13 @@ class AuthServiceImplTest {
             )
         val userDto = createTestUser(email = "newuser@example.com")
         val userRoles = setOf("USER")
-        val principal = CustomUserDetails(
-            id = 1L,
-            email = "newuser@example.com",
-            passwordHash = "encoded",
-            userRoles = userRoles
-        )
+        val principal =
+            CustomUserDetails(
+                id = 1L,
+                email = "newuser@example.com",
+                passwordHash = "encoded",
+                userRoles = userRoles,
+            )
 
         whenever(passwordEncoder.encode("password123")).thenReturn("encoded-password")
         whenever(httpRequest.getSession(true)).thenReturn(httpSession)
@@ -248,12 +252,13 @@ class AuthServiceImplTest {
             )
         val userDto = createTestUser(email = "guest@example.com")
         val userRoles = setOf("USER")
-        val principal = CustomUserDetails(
-            id = 1L,
-            email = "guest@example.com",
-            passwordHash = null,
-            userRoles = userRoles
-        )
+        val principal =
+            CustomUserDetails(
+                id = 1L,
+                email = "guest@example.com",
+                passwordHash = null,
+                userRoles = userRoles,
+            )
 
         whenever(userService.existsByEmail("guest@example.com")).thenReturn(false)
         whenever(httpRequest.getSession(true)).thenReturn(httpSession)
@@ -291,12 +296,13 @@ class AuthServiceImplTest {
         val existingUser = createTestUser(id = 5L, email = "guest@example.com")
         val updatedUser = existingUser.copy(firstName = "UpdatedGuest", lastName = "UpdatedUser")
         val userRoles = setOf("USER")
-        val principal = CustomUserDetails(
-            id = 5L,
-            email = "guest@example.com",
-            passwordHash = null,
-            userRoles = userRoles
-        )
+        val principal =
+            CustomUserDetails(
+                id = 5L,
+                email = "guest@example.com",
+                passwordHash = null,
+                userRoles = userRoles,
+            )
 
         whenever(userService.existsByEmail("guest@example.com")).thenReturn(true)
         whenever(userService.getUserByEmail("guest@example.com")).thenReturn(existingUser)

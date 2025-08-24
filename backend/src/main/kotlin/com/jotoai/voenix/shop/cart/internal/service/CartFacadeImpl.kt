@@ -126,8 +126,12 @@ class CartFacadeImpl(
         val savedCart = saveCartWithOptimisticLocking(cart)
 
         logger.info {
-            "Successfully added item to cart: userId=$userId, articleId=${request.articleId}, variantId=${request.variantId}, quantity=${request.quantity}, " +
-                "generatedImageId=${request.generatedImageId}, promptId=${request.promptId}, hasCustomData=${request.customData.isNotEmpty()}"
+            "Successfully added item to cart: " + "userId=$userId, " + "articleId=${request.articleId}, " +
+                "variantId=${request.variantId}, " +
+                "quantity=${request.quantity}, " +
+                "generatedImageId=${request.generatedImageId}, " +
+                "promptId=${request.promptId}, " +
+                "hasCustomData=${request.customData.isNotEmpty()}"
         }
 
         return cartAssembler.toDto(savedCart)
@@ -142,14 +146,9 @@ class CartFacadeImpl(
         itemId: Long,
         request: UpdateCartItemRequest,
     ): CartDto {
-        val cart =
-            cartRepository
-                .findActiveCartByUserId(userId)
-                .orElseThrow { CartNotFoundException(userId, true) }
+        val cart = cartRepository.findActiveCartByUserId(userId).orElseThrow { CartNotFoundException(userId, true) }
 
-        val cartItem =
-            cart.items.find { it.id == itemId }
-                ?: throw CartItemNotFoundException(cart.id!!, itemId)
+        val cartItem = cart.items.find { it.id == itemId } ?: throw CartItemNotFoundException(cart.id!!, itemId)
 
         // Update the cart item
         cartItem.updateQuantity(request.quantity)
@@ -214,10 +213,7 @@ class CartFacadeImpl(
         userId: Long,
         itemId: Long,
     ): CartDto {
-        val cart =
-            cartRepository
-                .findActiveCartByUserId(userId)
-                .orElseThrow { CartNotFoundException(userId, true) }
+        val cart = cartRepository.findActiveCartByUserId(userId).orElseThrow { CartNotFoundException(userId, true) }
 
         // Log details about the item being removed before removal
         val itemToRemove = cart.items.find { it.id == itemId }
@@ -246,10 +242,7 @@ class CartFacadeImpl(
      */
     @Transactional
     override fun clearCart(userId: Long): CartDto {
-        val cart =
-            cartRepository
-                .findActiveCartByUserId(userId)
-                .orElseThrow { CartNotFoundException(userId, true) }
+        val cart = cartRepository.findActiveCartByUserId(userId).orElseThrow { CartNotFoundException(userId, true) }
 
         // Log details about items being cleared
         val itemsWithGeneratedImages = cart.items.count { it.generatedImageId != null }
@@ -275,10 +268,7 @@ class CartFacadeImpl(
      */
     @Transactional
     override fun refreshCartPrices(userId: Long): CartDto {
-        val cart =
-            cartRepository
-                .findActiveCartByUserId(userId)
-                .orElseThrow { CartNotFoundException(userId, true) }
+        val cart = cartRepository.findActiveCartByUserId(userId).orElseThrow { CartNotFoundException(userId, true) }
 
         var pricesUpdated = false
 
@@ -311,12 +301,15 @@ class CartFacadeImpl(
     @Transactional
     override fun refreshCartPricesForOrder(cartId: Long): CartOrderInfo {
         val cart =
-            cartRepository
-                .findById(cartId)
-                .orElseThrow { CartNotFoundException(userId = 0, isActiveCart = false) }
+            cartRepository.findById(cartId).orElseThrow { CartNotFoundException(userId = 0, isActiveCart = false) }
 
         logger.debug {
-            "Refreshing cart prices for order: cartId=$cartId, userId=${cart.userId}, itemCount=${cart.items.size}, itemsWithGeneratedImages=${cart.items.count { it.generatedImageId != null }}"
+            "Refreshing cart prices for order: " + "cartId=$cartId, " + "userId=${cart.userId}, " + "itemCount=${cart.items.size}, " +
+                "itemsWithGeneratedImages=${
+                    cart.items.count {
+                        it.generatedImageId != null
+                    }
+                }"
         }
 
         // Update prices to current
@@ -364,9 +357,7 @@ class CartFacadeImpl(
         )
     }
 
-    private fun saveCartWithOptimisticLocking(
-        cart: Cart,
-    ): Cart =
+    private fun saveCartWithOptimisticLocking(cart: Cart): Cart =
         try {
             cartRepository.save(cart)
         } catch (e: OptimisticLockingFailureException) {

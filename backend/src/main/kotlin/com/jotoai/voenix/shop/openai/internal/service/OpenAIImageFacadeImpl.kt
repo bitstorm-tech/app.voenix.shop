@@ -10,8 +10,8 @@ import com.jotoai.voenix.shop.openai.api.dto.ImageEditResponse
 import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
 import com.jotoai.voenix.shop.openai.api.dto.TestPromptResponse
 import com.jotoai.voenix.shop.openai.api.exception.ImageGenerationException
-import kotlinx.coroutines.CancellationException
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CancellationException
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.io.ByteArrayInputStream

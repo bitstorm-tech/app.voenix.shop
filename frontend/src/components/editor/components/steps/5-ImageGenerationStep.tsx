@@ -23,6 +23,7 @@ export default function ImageGenerationStep() {
   const selectedPrompt = useWizardStore((state) => state.selectedPrompt);
   const generatedImages = useWizardStore((state) => state.generatedImages);
   const selectedGeneratedImage = useWizardStore((state) => state.selectedGeneratedImage);
+  const cropData = useWizardStore((state) => state.cropData);
   const setProcessing = useWizardStore((state) => state.setProcessing);
   const setGeneratedImagesInfo = useWizardStore((state) => state.setGeneratedImagesInfo);
   const selectGeneratedImageInfo = useWizardStore((state) => state.selectGeneratedImageInfo);
@@ -45,7 +46,7 @@ export default function ImageGenerationStep() {
       hasStartedGeneration.current = true;
       const performGeneration = async () => {
         setProcessing(true);
-        const result = await generateImages(uploadedImage, selectedPrompt.id);
+        const result = await generateImages(uploadedImage, selectedPrompt.id, cropData || undefined);
         if (result) {
           // Combine URLs and IDs into GeneratedImageInfo objects
           const imagesInfo = result.urls.map((url, index) => ({
@@ -58,7 +59,7 @@ export default function ImageGenerationStep() {
       };
       performGeneration();
     }
-  }, [uploadedImage, selectedPrompt?.id, generatedImages, generateImages, setProcessing, setGeneratedImagesInfo]);
+  }, [uploadedImage, selectedPrompt?.id, generatedImages, generateImages, setProcessing, setGeneratedImagesInfo, cropData]);
 
   if (isGenerating) {
     return (

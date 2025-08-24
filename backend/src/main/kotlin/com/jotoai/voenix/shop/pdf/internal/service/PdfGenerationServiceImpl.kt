@@ -23,8 +23,8 @@ import com.lowagie.text.Rectangle
 import com.lowagie.text.pdf.BaseFont
 import com.lowagie.text.pdf.PdfContentByte
 import com.lowagie.text.pdf.PdfWriter
-import jakarta.annotation.PostConstruct
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.annotation.PostConstruct
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -615,12 +615,13 @@ class PdfGenerationServiceImpl(
     ) {
         try {
             val qrCodeWriter = QRCodeWriter()
-            val bitMatrix = qrCodeWriter.encode(
-                orderId,
-                BarcodeFormat.QR_CODE,
-                ORDER_QR_SIZE_PIXELS,
-                ORDER_QR_SIZE_PIXELS
-            )
+            val bitMatrix =
+                qrCodeWriter.encode(
+                    orderId,
+                    BarcodeFormat.QR_CODE,
+                    ORDER_QR_SIZE_PIXELS,
+                    ORDER_QR_SIZE_PIXELS,
+                )
 
             val bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix)
             val qrByteArray = ByteArrayOutputStream()

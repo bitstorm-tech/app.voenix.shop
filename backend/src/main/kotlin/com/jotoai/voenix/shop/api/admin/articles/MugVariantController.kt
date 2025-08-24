@@ -8,8 +8,8 @@ import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
-import jakarta.validation.Valid
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity

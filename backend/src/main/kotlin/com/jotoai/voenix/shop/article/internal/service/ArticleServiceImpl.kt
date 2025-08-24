@@ -619,6 +619,5 @@ class ArticleServiceImpl(
         return variantOpt.map { it.article.id == articleId }.orElse(false)
     }
 
-    override fun getMugDetailsByArticleId(articleId: Long): MugArticleDetailsDto? =
-        mugDetailsService.findByArticleId(articleId)
+    override fun getMugDetailsByArticleId(articleId: Long): MugArticleDetailsDto? = mugDetailsService.findByArticleId(articleId)
 }

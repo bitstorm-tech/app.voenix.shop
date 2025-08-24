@@ -8,9 +8,9 @@ import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
 import com.jotoai.voenix.shop.cart.api.enums.CartStatus
 import com.jotoai.voenix.shop.cart.api.exceptions.CartNotFoundException
 import com.jotoai.voenix.shop.cart.internal.assembler.CartAssembler
-import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
+import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -94,8 +94,7 @@ class CartQueryServiceImpl(
      * Checks if an active cart exists for the user
      */
     @Transactional(readOnly = true)
-    override fun existsActiveCartForUser(userId: Long): Boolean =
-        cartRepository.findActiveCartByUserId(userId).isPresent
+    override fun existsActiveCartForUser(userId: Long): Boolean = cartRepository.findActiveCartByUserId(userId).isPresent
 
     /**
      * Gets active cart information for order creation.

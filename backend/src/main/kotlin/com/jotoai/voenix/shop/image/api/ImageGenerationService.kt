@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.image.api
 
+import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import org.springframework.web.multipart.MultipartFile
@@ -26,6 +27,7 @@ interface ImageGenerationService {
         promptId: Long,
         uploadedImageUuid: UUID?,
         userId: Long,
+        cropArea: CropArea? = null,
     ): String
 
     /**
@@ -37,6 +39,7 @@ interface ImageGenerationService {
         promptId: Long,
         uploadedImageUuid: UUID?,
         userId: Long,
+        cropArea: CropArea? = null,
     ): PublicImageGenerationResponse
 
     /**
