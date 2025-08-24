@@ -1,6 +1,6 @@
 import { type CropArea } from '@/lib/image-utils';
 import { useCallback, useRef, useState } from 'react';
-import ReactCrop, { type Crop, type PixelCrop } from 'react-image-crop';
+import ReactCrop, { type Crop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 
 interface ImageCropperProps {
@@ -20,49 +20,45 @@ export default function ImageCropper({ srcImage, aspectRatio, onCropComplete, cl
     y: 10,
   });
 
-  const handleCropComplete = useCallback(
-    (crop: PixelCrop, percentCrop: Crop) => {
-      if (!imageRef.current) return;
-
+  const calculateCropArea = useCallback(
+    (percentCrop: Crop) => {
       const image = imageRef.current;
-      const scaleX = image.naturalWidth / image.width;
-      const scaleY = image.naturalHeight / image.height;
+      if (!image) return;
 
-      // Scale the pixel crop coordinates to match the natural image size
-      const croppedAreaPixels: CropArea = {
-        x: crop.x * scaleX,
-        y: crop.y * scaleY,
-        width: crop.width * scaleX,
-        height: crop.height * scaleY,
+      const scale = {
+        x: image.naturalWidth / image.width,
+        y: image.naturalHeight / image.height,
       };
 
-      // Convert percentage crop to CropArea format
-      const croppedArea: CropArea = {
-        x: percentCrop.x,
-        y: percentCrop.y,
-        width: percentCrop.width,
-        height: percentCrop.height,
+      const pixelCrop: CropArea = {
+        x: (percentCrop.x / 100) * image.width * scale.x,
+        y: (percentCrop.y / 100) * image.height * scale.y,
+        width: (percentCrop.width / 100) * image.width * scale.x,
+        height: (percentCrop.height / 100) * image.height * scale.y,
       };
 
-      onCropComplete(croppedArea, croppedAreaPixels);
+      onCropComplete(percentCrop as CropArea, pixelCrop);
     },
     [onCropComplete],
   );
 
+  const handleImageLoad = useCallback(() => {
+    // Calculate initial crop area when image loads
+    calculateCropArea(crop);
+  }, [calculateCropArea, crop]);
+
   return (
-    <div className={`space-y-4 ${className}`}>
-      <div className="relative flex max-h-[60vh] items-center justify-center">
-        <ReactCrop
-          crop={crop}
-          onChange={(_, percentCrop) => setCrop(percentCrop)}
-          onComplete={handleCropComplete}
-          aspect={aspectRatio}
-          keepSelection
-          className="max-h-[60vh] max-w-full"
-        >
-          <img ref={imageRef} src={srcImage} alt="Crop" className="h-auto max-h-[60vh] w-auto max-w-full object-contain" />
-        </ReactCrop>
-      </div>
+    <div className={`relative flex max-h-[60vh] items-center justify-center ${className}`.trim()}>
+      <ReactCrop
+        crop={crop}
+        onChange={(_, percentCrop) => setCrop(percentCrop)}
+        onComplete={(_, percentCrop) => calculateCropArea(percentCrop)}
+        aspect={aspectRatio}
+        keepSelection
+        className="max-h-[60vh] max-w-full"
+      >
+        <img ref={imageRef} src={srcImage} alt="Crop" className="h-auto max-h-[60vh] w-auto max-w-full object-contain" onLoad={handleImageLoad} />
+      </ReactCrop>
     </div>
   );
 }
