@@ -113,14 +113,16 @@ export default function ImageUploadStep() {
 
   return (
     <>
-      <ImageCropperDialog
-        open={showCropper && !!originalImageUrl}
-        onOpenChange={(open) => !open && handleCropCancel()}
-        srcImage={originalImageUrl || ''}
-        onConfirm={handleCropConfirm}
-        title="Crop your image"
-        description="Select the area you want to use for your mug design"
-      />
+      {originalImageUrl && (
+        <ImageCropperDialog
+          open={showCropper}
+          onOpenChange={(open) => !open && handleCropCancel()}
+          srcImage={originalImageUrl}
+          onConfirm={handleCropConfirm}
+          title="Crop your image"
+          description="Select the area you want to use for your mug design"
+        />
+      )}
 
       {!uploadedImageUrl ? (
         <div className="flex flex-col items-center justify-center space-y-4">
