@@ -95,7 +95,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "npm --prefix frontend run format"
+            "command": "cd ~/projects/joto-ai/app.voenix.shop/frontend && npm run format && cd -"
           }
         ]
       }
