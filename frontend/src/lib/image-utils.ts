@@ -31,11 +31,7 @@ const loadImage = (src: string): Promise<HTMLImageElement> => {
  */
 const canvasToBlob = (canvas: HTMLCanvasElement): Promise<Blob> => {
   return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => blob ? resolve(blob) : reject(new Error('Failed to create blob from canvas')),
-      'image/png',
-      0.9
-    );
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('Failed to create blob from canvas'))), 'image/png', 0.9);
   });
 };
 
@@ -47,10 +43,10 @@ const canvasToBlob = (canvas: HTMLCanvasElement): Promise<Blob> => {
  */
 export const createCroppedImage = async (imageUrl: string, cropArea: CropArea): Promise<string> => {
   const image = await loadImage(imageUrl);
-  
+
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  
+
   if (!ctx) {
     throw new Error('Failed to get canvas context');
   }
@@ -58,11 +54,7 @@ export const createCroppedImage = async (imageUrl: string, cropArea: CropArea): 
   canvas.width = cropArea.width;
   canvas.height = cropArea.height;
 
-  ctx.drawImage(
-    image, 
-    cropArea.x, cropArea.y, cropArea.width, cropArea.height,
-    0, 0, cropArea.width, cropArea.height
-  );
+  ctx.drawImage(image, cropArea.x, cropArea.y, cropArea.width, cropArea.height, 0, 0, cropArea.width, cropArea.height);
 
   const blob = await canvasToBlob(canvas);
   return URL.createObjectURL(blob);
