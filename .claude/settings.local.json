@@ -78,7 +78,8 @@
       "Bash(npm --prefix frontend run dev)",
       "Bash(backend/gradlew:*)",
       "Bash(npx vite:*)",
-      "Bash(npm --prefix frontend run lint)"
+      "Bash(npm --prefix frontend run lint)",
+      "Bash(popd:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
