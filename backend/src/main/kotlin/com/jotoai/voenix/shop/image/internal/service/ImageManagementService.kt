@@ -14,15 +14,15 @@ import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.IOException
-import java.time.LocalDateTime
-import java.util.*
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
+import java.time.LocalDateTime
+import java.util.*
 
 /**
  * Consolidated image management service that handles all image operations.

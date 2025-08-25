@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.admin.countries
+package com.jotoai.voenix.shop.country.web
 
 import com.jotoai.voenix.shop.country.api.CountryService
 import com.jotoai.voenix.shop.country.api.dto.CountryDto
