@@ -7,7 +7,9 @@
 - [ ] Editor: mug selection: variant name behind mug name
 - [ ] Editor: the white checkmark for the color selection is not visible in some cases
 - [ ] Editor: traffic light system for uploaded image qualities
+- [ ] System: add price to prompts
 - [ ] System: add stripe payment
+- [ ] System: create invoice
 - [ ] System: credit system
 - [ ] System: standard images
 - [ ] Testing: replace mockito with mockk
