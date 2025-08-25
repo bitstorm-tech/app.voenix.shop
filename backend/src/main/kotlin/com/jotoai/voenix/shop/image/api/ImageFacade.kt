@@ -6,8 +6,8 @@ import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
-import java.util.*
 import org.springframework.web.multipart.MultipartFile
+import java.util.*
 
 /**
  * Main facade for Image module operations.
@@ -107,12 +107,18 @@ interface ImageFacade {
     /**
      * Counts generated images for IP address after a specific date.
      */
-    fun countGeneratedImagesForIpAfter(ipAddress: String, after: java.time.LocalDateTime): Long
+    fun countGeneratedImagesForIpAfter(
+        ipAddress: String,
+        after: java.time.LocalDateTime,
+    ): Long
 
     /**
      * Counts generated images for user after a specific date.
      */
-    fun countGeneratedImagesForUserAfter(userId: Long, after: java.time.LocalDateTime): Long
+    fun countGeneratedImagesForUserAfter(
+        userId: Long,
+        after: java.time.LocalDateTime,
+    ): Long
 
     /**
      * Stores a public generated image and creates a database record.

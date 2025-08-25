@@ -26,6 +26,19 @@ interface OpenAIImageFacade {
     ): ImageEditBytesResponse
 
     /**
+     * Edits an image from bytes and returns raw image bytes without storing them.
+     * Delegates to the configured ImageGenerationStrategy.
+     *
+     * @param imageBytes The image bytes to be edited
+     * @param request The image edit request containing generation parameters
+     * @return Response containing raw image bytes
+     */
+    fun editImageBytes(
+        imageBytes: ByteArray,
+        request: CreateImageEditRequest,
+    ): ImageEditBytesResponse
+
+    /**
      * Edits an image and stores the results, returning filenames.
      * Uses the strategy pattern for generation and then handles storage.
      *

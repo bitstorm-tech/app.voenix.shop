@@ -105,7 +105,6 @@ class ImageStorageServiceImpl(
         return storedFilename
     }
 
-
     override fun loadFileAsResource(
         filename: String,
         imageType: ImageType,
@@ -117,6 +116,19 @@ class ImageStorageServiceImpl(
         }
 
         return FileSystemResource(filePath)
+    }
+
+    override fun loadFileAsBytes(
+        filename: String,
+        imageType: ImageType,
+    ): ByteArray {
+        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+
+        if (!Files.exists(filePath)) {
+            throw ResourceNotFoundException("Image with filename $filename not found")
+        }
+
+        return Files.readAllBytes(filePath)
     }
 
     override fun generateImageUrl(
@@ -394,16 +406,6 @@ class ImageStorageServiceImpl(
         val contentType = probeContentType(filePath, "image/png")
         return Pair(bytes, contentType)
     }
-
-    /**
-     * Gets the uploaded image entity by UUID and validates user ownership.
-     */
-    fun getUploadedImageByUuid(
-        uuid: UUID,
-        userId: Long,
-    ): UploadedImage =
-        uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
-            ?: throw ResourceNotFoundException("Uploaded image with UUID $uuid not found for user $userId")
 
     private fun validateFile(
         file: MultipartFile,

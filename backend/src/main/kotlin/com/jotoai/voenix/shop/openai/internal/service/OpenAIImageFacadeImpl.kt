@@ -51,6 +51,14 @@ class OpenAIImageFacadeImpl(
         }
     }
 
+    override fun editImageBytes(
+        imageBytes: ByteArray,
+        request: CreateImageEditRequest,
+    ): ImageEditBytesResponse {
+        val multipartFile = SimpleMultipartFile("image.png", "image/png", imageBytes)
+        return editImageBytes(multipartFile, request)
+    }
+
     /**
      * Edits an image and stores the results, returning filenames.
      * Uses the strategy pattern for generation and then handles storage.

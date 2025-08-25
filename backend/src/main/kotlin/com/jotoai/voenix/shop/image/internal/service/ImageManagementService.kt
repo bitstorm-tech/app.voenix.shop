@@ -327,17 +327,19 @@ class ImageManagementService(
             logger.info { "Storing generated image for uploaded image ID: $uploadedImageId" }
 
             // Get the uploaded image to get the user ID
-            val uploadedImage = uploadedImageRepository.findById(uploadedImageId).orElseThrow {
-                ResourceNotFoundException("Uploaded image with ID $uploadedImageId not found")
-            }
+            val uploadedImage =
+                uploadedImageRepository.findById(uploadedImageId).orElseThrow {
+                    ResourceNotFoundException("Uploaded image with ID $uploadedImageId not found")
+                }
 
             val storageImpl = imageStorageService as ImageStorageServiceImpl
-            val generatedImage = storageImpl.storeGeneratedImage(
-                imageBytes = imageBytes,
-                uploadedImage = uploadedImage,
-                promptId = promptId,
-                generationNumber = generationNumber,
-            )
+            val generatedImage =
+                storageImpl.storeGeneratedImage(
+                    imageBytes = imageBytes,
+                    uploadedImage = uploadedImage,
+                    promptId = promptId,
+                    generationNumber = generationNumber,
+                )
 
             logger.info { "Successfully stored generated image: ${generatedImage.filename}" }
 
@@ -371,12 +373,16 @@ class ImageManagementService(
     }
 
     @Transactional(readOnly = true)
-    override fun countGeneratedImagesForIpAfter(ipAddress: String, after: java.time.LocalDateTime): Long =
-        generatedImageRepository.countByIpAddressAndGeneratedAtAfter(ipAddress, after)
+    override fun countGeneratedImagesForIpAfter(
+        ipAddress: String,
+        after: LocalDateTime,
+    ): Long = generatedImageRepository.countByIpAddressAndGeneratedAtAfter(ipAddress, after)
 
     @Transactional(readOnly = true)
-    override fun countGeneratedImagesForUserAfter(userId: Long, after: java.time.LocalDateTime): Long =
-        generatedImageRepository.countByUserIdAndGeneratedAtAfter(userId, after)
+    override fun countGeneratedImagesForUserAfter(
+        userId: Long,
+        after: LocalDateTime,
+    ): Long = generatedImageRepository.countByUserIdAndGeneratedAtAfter(userId, after)
 
     @Transactional
     override fun storePublicGeneratedImage(
@@ -395,13 +401,14 @@ class ImageManagementService(
             imageStorageService.storeFile(imageBytes, filename, ImageType.PUBLIC)
 
             // Create and save the database record
-            val generatedImage = com.jotoai.voenix.shop.image.internal.entity.GeneratedImage(
-                filename = filename,
-                promptId = promptId,
-                userId = null, // Anonymous user
-                ipAddress = ipAddress,
-                generatedAt = LocalDateTime.now(),
-            )
+            val generatedImage =
+                com.jotoai.voenix.shop.image.internal.entity.GeneratedImage(
+                    filename = filename,
+                    promptId = promptId,
+                    userId = null, // Anonymous user
+                    ipAddress = ipAddress,
+                    generatedAt = LocalDateTime.now(),
+                )
             val savedImage = generatedImageRepository.save(generatedImage)
 
             logger.info { "Successfully stored public generated image: $filename" }

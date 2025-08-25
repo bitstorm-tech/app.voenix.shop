@@ -38,6 +38,14 @@ interface ImageStorageService {
     ): Resource
 
     /**
+     * Loads a file as bytes by filename and image type.
+     */
+    fun loadFileAsBytes(
+        filename: String,
+        imageType: ImageType,
+    ): ByteArray
+
+    /**
      * Generates a public URL for accessing an image.
      */
     fun generateImageUrl(

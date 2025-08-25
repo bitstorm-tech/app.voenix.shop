@@ -6,7 +6,6 @@ import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
 import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
-import org.springframework.web.multipart.MultipartFile
 
 /**
  * Simplified implementation focused solely on OpenAI API interactions.
@@ -21,28 +20,26 @@ class OpenAIImageGenerationServiceImpl(
     }
 
     override fun generateImages(
-        processedImageFile: MultipartFile,
+        imageBytes: ByteArray,
         request: PublicImageGenerationRequest,
     ): List<ByteArray> {
         logger.info { "Generating images with OpenAI for prompt ID: ${request.promptId}" }
         val openAIRequest = createOpenAIRequest(request)
-        val imageEditResponse = openAIImageFacade.editImageBytes(processedImageFile, openAIRequest)
+        val imageEditResponse = openAIImageFacade.editImageBytes(imageBytes, openAIRequest)
         logger.info { "Successfully generated ${imageEditResponse.imageBytes.size} images with OpenAI" }
         return imageEditResponse.imageBytes
     }
 
     override fun generateImages(
-        processedImageFile: MultipartFile,
+        imageBytes: ByteArray,
         promptId: Long,
     ): List<ByteArray> {
         logger.info { "Generating images with OpenAI for prompt ID: $promptId" }
         val openAIRequest = createOpenAIRequest(promptId)
-        val imageEditResponse = openAIImageFacade.editImageBytes(processedImageFile, openAIRequest)
+        val imageEditResponse = openAIImageFacade.editImageBytes(imageBytes, openAIRequest)
         logger.info { "Successfully generated ${imageEditResponse.imageBytes.size} images with OpenAI" }
         return imageEditResponse.imageBytes
     }
-
-
 
     private fun createOpenAIRequest(request: PublicImageGenerationRequest): CreateImageEditRequest =
         CreateImageEditRequest(

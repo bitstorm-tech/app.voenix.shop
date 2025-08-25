@@ -37,7 +37,10 @@ class ImageValidationService {
     /**
      * Validates an image file for a specific image type.
      */
-    fun validateImageFile(file: MultipartFile, imageType: ImageType) {
+    fun validateImageFile(
+        file: MultipartFile,
+        imageType: ImageType,
+    ) {
         if (file.isEmpty) {
             throw BadRequestException("Image file is required")
         }
@@ -52,5 +55,4 @@ class ImageValidationService {
             throw BadRequestException("Invalid image format for ${imageType.name}. Allowed formats: ${imageType.allowedContentTypes}")
         }
     }
-
 }

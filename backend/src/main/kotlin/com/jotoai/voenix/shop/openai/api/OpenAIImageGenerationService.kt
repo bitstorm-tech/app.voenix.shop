@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.openai.api
 
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
-import org.springframework.web.multipart.MultipartFile
 
 /**
  * Simplified service interface for AI image generation operations using OpenAI.
@@ -9,20 +8,20 @@ import org.springframework.web.multipart.MultipartFile
  */
 interface OpenAIImageGenerationService {
     /**
-     * Generates images using OpenAI API from a processed image file and prompt.
+     * Generates images using OpenAI API from processed image bytes and prompt.
      * Returns the raw image bytes without any storage operations.
      */
     fun generateImages(
-        processedImageFile: MultipartFile,
+        imageBytes: ByteArray,
         request: PublicImageGenerationRequest,
     ): List<ByteArray>
 
     /**
-     * Generates images using OpenAI API from a processed image file and prompt ID.
+     * Generates images using OpenAI API from processed image bytes and prompt ID.
      * Returns the raw image bytes without any storage operations.
      */
     fun generateImages(
-        processedImageFile: MultipartFile,
+        imageBytes: ByteArray,
         promptId: Long,
     ): List<ByteArray>
 }
