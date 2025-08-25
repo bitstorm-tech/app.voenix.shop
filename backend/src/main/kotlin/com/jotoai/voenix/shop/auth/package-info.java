@@ -8,9 +8,8 @@
  * 
  * <h2>Module Structure</h2>
  * <ul>
- *   <li><b>API:</b> {@link com.jotoai.voenix.shop.auth.api.AuthFacade} - Main authentication operations</li>
- *   <li><b>API:</b> {@link com.jotoai.voenix.shop.auth.api.AuthQueryService} - Read operations and session info</li>
- *   <li><b>API:</b> {@link com.jotoai.voenix.shop.auth.api.AuthRegistrationService} - User registration operations</li>
+ *   <li><b>API:</b> {@code com.jotoai.voenix.shop.auth.api} - Public API for authentication operations and queries</li>
+ *   <li><b>Web:</b> {@code com.jotoai.voenix.shop.auth.web} - REST controllers for authentication endpoints</li>
  *   <li><b>Internal:</b> Internal services and security implementations</li>
  *   <li><b>Config:</b> {@code com.jotoai.voenix.shop.auth.config} - Security configuration</li>
  * </ul>

@@ -21,7 +21,6 @@
             "user::api.dto",
             "prompt::api",
             "prompt::api.dto",
-            "auth",
             "domain",
             "common"
     }
