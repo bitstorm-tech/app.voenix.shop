@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.admin.vat
+package com.jotoai.voenix.shop.vat.web
 
 import com.jotoai.voenix.shop.vat.api.VatService
 import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest

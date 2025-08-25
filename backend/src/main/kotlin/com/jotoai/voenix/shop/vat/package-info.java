@@ -4,6 +4,7 @@
  * This module provides:
  * <ul>
  *   <li>VAT operations and data access through {@link com.jotoai.voenix.shop.vat.api.VatService}</li>
+ *   <li>Admin REST endpoints for VAT management through {@code web} package</li>
  * </ul>
  * <p>
  * Named interfaces:
