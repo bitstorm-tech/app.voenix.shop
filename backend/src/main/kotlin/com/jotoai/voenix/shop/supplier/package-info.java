@@ -9,6 +9,7 @@
  * Named interfaces:
  * <ul>
  *   <li>{@code api} - Public API for supplier operations and queries</li>
+ *   <li>{@code web} - REST controllers for supplier endpoints</li>
  * </ul>
  * <p>
  * Other modules should explicitly depend on {@code supplier::api} to access supplier functionality.
