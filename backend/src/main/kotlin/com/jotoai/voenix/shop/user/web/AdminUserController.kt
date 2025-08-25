@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.admin.users
+package com.jotoai.voenix.shop.user.web
 
 import com.jotoai.voenix.shop.user.api.UserService
 import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
