@@ -1,35 +1,33 @@
 /**
- * Admin PDF generation controller using OpenPDF library.
+ * Public PDF generation controller using OpenPDF library.
  * Migrated from Apache PDFBox for improved memory efficiency and performance.
  */
 
-package com.jotoai.voenix.shop.api.admin.services
+package com.jotoai.voenix.shop.pdf.web
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
-import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
+import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
 import jakarta.validation.Valid
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/admin/pdf")
-@PreAuthorize("hasRole('ADMIN')")
-class AdminPdfController(
+@RequestMapping("/api/public/pdf")
+class PublicPdfController(
     private val pdfGenerationService: PdfGenerationService,
 ) {
     @PostMapping("/generate")
     fun generatePdf(
-        @Valid @RequestBody request: GeneratePdfRequest,
+        @Valid @RequestBody request: PublicPdfGenerationRequest,
     ): ResponseEntity<ByteArrayResource> {
-        val pdfData = pdfGenerationService.generatePdf(request)
+        val pdfData = pdfGenerationService.generatePublicPdf(request)
         val resource = ByteArrayResource(pdfData)
-        val filename = "generated-${System.currentTimeMillis()}.pdf"
+        val filename = "mug-preview-${System.currentTimeMillis()}.pdf"
 
         return ResponseEntity
             .ok()

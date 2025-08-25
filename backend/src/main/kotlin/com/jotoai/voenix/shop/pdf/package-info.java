@@ -12,6 +12,7 @@
  * Named interfaces:
  * <ul>
  *   <li>{@code api} - Public API for PDF operations and queries</li>
+ *   <li>{@code web} - REST controllers for PDF endpoints</li>
  * </ul>
  * <p>
  * Other modules should explicitly depend on {@code pdf::api} to access PDF functionality
