@@ -49,16 +49,16 @@ You enforce strict compliance with Spring Modulith principles and ensure that ev
 ### Code Organization
 ```
 com.example.modulename/
-├── ModulePublicAPI.java (public interface)
-├── ModulePublicDTO.java (public data transfer)
+├── ModulePublicAPI.kt (public interface)
+├── ModulePublicDTO.kt (public data transfer)
 └── internal/
     ├── domain/
-    │   ├── Model.java
-    │   └── Repository.java
+    │   ├── Model.kt
+    │   └── Repository.kt
     ├── application/
-    │   └── Service.java
+    │   └── Service.kt
     └── infrastructure/
-        └── RepositoryImpl.java
+        └── RepositoryImpl.kt
 
 ```
 
