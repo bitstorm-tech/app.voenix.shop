@@ -2,6 +2,7 @@ package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.ImageStorageService
+import com.jotoai.voenix.shop.image.internal.orchestration.ImageGenerationOrchestrationService
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -21,6 +22,7 @@ class ImageManagementServiceSimpleTest {
         val uploadedImageRepository: UploadedImageRepository = mock()
         val generatedImageRepository: GeneratedImageRepository = mock()
         val imageValidationService: ImageValidationService = mock()
+        val imageGenerationOrchestrationService: ImageGenerationOrchestrationService = mock()
 
         // When
         val service =
@@ -29,6 +31,7 @@ class ImageManagementServiceSimpleTest {
                 uploadedImageRepository,
                 generatedImageRepository,
                 imageValidationService,
+                imageGenerationOrchestrationService,
             )
 
         // Then
@@ -43,6 +46,7 @@ class ImageManagementServiceSimpleTest {
         val uploadedImageRepository: UploadedImageRepository = mock()
         val generatedImageRepository: GeneratedImageRepository = mock()
         val imageValidationService: ImageValidationService = mock()
+        val imageGenerationOrchestrationService: ImageGenerationOrchestrationService = mock()
 
         // When
         val service =
@@ -51,6 +55,7 @@ class ImageManagementServiceSimpleTest {
                 uploadedImageRepository,
                 generatedImageRepository,
                 imageValidationService,
+                imageGenerationOrchestrationService,
             )
 
         // Then

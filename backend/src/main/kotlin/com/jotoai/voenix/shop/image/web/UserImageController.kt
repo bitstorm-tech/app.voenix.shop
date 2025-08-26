@@ -4,7 +4,6 @@ import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
-import com.jotoai.voenix.shop.image.internal.orchestration.ImageGenerationOrchestrationService
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.MediaType
@@ -25,7 +24,6 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/user/images")
 @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
 class UserImageController(
-    private val imageGenerationOrchestrationService: ImageGenerationOrchestrationService,
     private val imageFacade: ImageFacade,
     private val imageAccessService: ImageAccessService,
     private val userService: UserService,
@@ -60,7 +58,7 @@ class UserImageController(
         logger.info { "Uploaded image for user ${user.id} with UUID: ${uploadedImage.uuid}" }
 
         // Generate all 4 images in one call and get the complete response with IDs
-        val response = imageGenerationOrchestrationService.generateUserImageWithIds(promptId, uploadedImage.uuid, user.id, cropArea)
+        val response = imageFacade.generateUserImageWithIds(promptId, uploadedImage.uuid, user.id, cropArea)
 
         logger.info {
             "Generated ${response.generatedImageIds.size} images with IDs: " +

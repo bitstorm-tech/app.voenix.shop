@@ -4,13 +4,16 @@ import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
+import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
+import com.jotoai.voenix.shop.image.internal.orchestration.ImageGenerationOrchestrationService
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -43,6 +46,7 @@ class ImageManagementService(
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
     private val imageValidationService: ImageValidationService,
+    private val imageGenerationOrchestrationService: ImageGenerationOrchestrationService,
 ) : ImageFacade {
     companion object {
         private val logger = KotlinLogging.logger {}
@@ -436,6 +440,15 @@ class ImageManagementService(
             throw ImageStorageException("Failed to store public generated image: ${e.message}", e)
         }
     }
+
+    @Transactional
+    override fun generateUserImageWithIds(
+        promptId: Long,
+        uploadedImageUuid: UUID,
+        userId: Long,
+        cropArea: CropArea?,
+    ): PublicImageGenerationResponse =
+        imageGenerationOrchestrationService.generateUserImageWithIds(promptId, uploadedImageUuid, userId, cropArea)
 
     // Additional methods for access validation (from ImageAccessValidationService)
 

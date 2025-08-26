@@ -16,5 +16,7 @@
  * - Depends on: user, article, image, prompt modules
  * - Used by: order processing, user interfaces
  */
-@org.springframework.modulith.ApplicationModule
+@org.springframework.modulith.ApplicationModule(
+        displayName = "Cart Management"
+)
 package com.jotoai.voenix.shop.cart;

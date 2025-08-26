@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.admin.images
+package com.jotoai.voenix.shop.image.web
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.image.api.ImageAccessService
@@ -9,8 +9,10 @@ import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
 import com.jotoai.voenix.shop.user.api.UserService
 import org.springframework.core.io.Resource
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
@@ -60,5 +62,18 @@ class AdminImageController(
     ): ResponseEntity<Resource> = imageAccessService.serveImage(filename, ImageType.PUBLIC)
 
     @DeleteMapping("/{filename}")
-    fun deleteImage(): Unit = throw UnsupportedOperationException("Delete via ImageFacade not implemented yet")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    fun deleteImage(
+        @PathVariable filename: String,
+        @AuthenticationPrincipal userDetails: UserDetails,
+    ) {
+        val adminUser = userService.getUserByEmail(userDetails.username)
+        
+        // TODO: Implement admin image deletion
+        // This requires either:
+        // 1. Adding a deleteImageByFilename method to ImageFacade, or 
+        // 2. Finding the uploaded image by filename first to get the UUID/userId, then using existing deleteUploadedImage
+        // For now, throwing UnsupportedOperationException to indicate this needs proper implementation
+        throw UnsupportedOperationException("Admin image deletion not yet implemented - requires filename-based deletion in ImageFacade")
+    }
 }

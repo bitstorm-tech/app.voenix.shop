@@ -1,9 +1,11 @@
 package com.jotoai.voenix.shop.image.api
 
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
+import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import org.springframework.web.multipart.MultipartFile
@@ -129,4 +131,14 @@ interface ImageFacade {
         ipAddress: String,
         generationNumber: Int,
     ): GeneratedImageDto
+
+    /**
+     * Generates images for a user using an uploaded image and prompt with rate limiting and validation.
+     */
+    fun generateUserImageWithIds(
+        promptId: Long,
+        uploadedImageUuid: UUID,
+        userId: Long,
+        cropArea: CropArea?,
+    ): PublicImageGenerationResponse
 }
