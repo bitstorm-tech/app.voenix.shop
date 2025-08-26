@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.admin.articles.categories
+package com.jotoai.voenix.shop.article.web
 
 import com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryFacade
 import com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryQueryService

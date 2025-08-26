@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.admin.articles
+package com.jotoai.voenix.shop.article.web
 
 import com.jotoai.voenix.shop.article.api.dto.CopyVariantsRequest
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest

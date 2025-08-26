@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.public.mugs
+package com.jotoai.voenix.shop.article.web
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
