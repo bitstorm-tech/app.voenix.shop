@@ -19,13 +19,13 @@ import com.jotoai.voenix.shop.user.internal.entity.User
 import com.jotoai.voenix.shop.user.internal.repository.RoleRepository
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository
 import com.jotoai.voenix.shop.user.internal.repository.UserSpecifications
+import java.time.OffsetDateTime
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.OffsetDateTime
 
 /**
  * Unified implementation of UserService that combines all user-related operations.
@@ -48,10 +48,6 @@ class UserServiceImpl(
         private const val MIN_PASSWORD_LENGTH = 8
         private const val MAX_PASSWORD_LENGTH = 128
     }
-
-    // ========================================
-    // Authentication Operations
-    // ========================================
 
     override fun loadUserByEmail(email: String): UserAuthenticationDto? {
         val user = userRepository.findActiveByEmail(email).orElse(null) ?: return null
@@ -99,13 +95,10 @@ class UserServiceImpl(
         return user.toDto()
     }
 
-    // ========================================
-    // Query Operations
-    // ========================================
-
     override fun getAllUsers(): List<UserDto> = userRepository.findAllActive().map { it.toDto() }
 
-    override fun getAllUsers(pageable: Pageable): Page<UserDto> = userRepository.findAllActive(pageable).map { it.toDto() }
+    override fun getAllUsers(pageable: Pageable): Page<UserDto> =
+        userRepository.findAllActive(pageable).map { it.toDto() }
 
     override fun searchUsers(
         criteria: UserSearchCriteria,
@@ -132,10 +125,6 @@ class UserServiceImpl(
     override fun getTotalUserCount(): Long = userRepository.countActive()
 
     override fun getUsersByIds(ids: List<Long>): List<UserDto> = userRepository.findActiveByIds(ids).map { it.toDto() }
-
-    // ========================================
-    // Command Operations (User Management)
-    // ========================================
 
     @Transactional
     override fun createUser(request: CreateUserRequest): UserDto {
@@ -224,10 +213,6 @@ class UserServiceImpl(
         val result = restoredUser.toDto()
         return result
     }
-
-    // ========================================
-    // Bulk Operations
-    // ========================================
 
     @Transactional
     override fun bulkCreateUsers(request: BulkCreateUsersRequest): BulkOperationResult<UserDto> {
@@ -364,10 +349,6 @@ class UserServiceImpl(
 
         return BulkOperationResult(successful, failed)
     }
-
-    // ========================================
-    // Password Management Operations
-    // ========================================
 
     @Transactional
     override fun setEncodedPassword(
@@ -507,10 +488,6 @@ class UserServiceImpl(
         return user.password != null && passwordEncoder.matches(rawPassword, user.password)
     }
 
-    // ========================================
-    // Role Management Operations
-    // ========================================
-
     @Transactional
     override fun assignRoles(
         userId: Long,
@@ -604,10 +581,6 @@ class UserServiceImpl(
     }
 
     override fun getAllRoleNames(): Set<String> = roleRepository.findAllRoleNames().toSet()
-
-    // ========================================
-    // Private Helper Methods
-    // ========================================
 
     /**
      * Validates email format using a simple regex pattern.

@@ -134,7 +134,10 @@ class StoragePathServiceImpl(
                 logger.info { "Created/verified directory for $imageType: ${physicalPath.toAbsolutePath()}" }
             } catch (e: IOException) {
                 logger.error(e) { "Failed to create directory for $imageType: ${e.message}" }
-                throw StorageConfigurationException("Failed to create storage directory for $imageType: ${e.message}", e)
+                throw StorageConfigurationException(
+                    "Failed to create storage directory for $imageType: ${e.message}",
+                    e
+                )
             }
         }
     }

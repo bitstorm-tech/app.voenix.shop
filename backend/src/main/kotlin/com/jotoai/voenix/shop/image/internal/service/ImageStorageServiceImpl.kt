@@ -164,7 +164,10 @@ class ImageStorageServiceImpl(
     ): Pair<ByteArray, String> {
         val resource = loadFileAsResource(filename, imageType)
         val bytes = resource.inputStream.use { it.readAllBytes() }
-        val contentType = probeContentType(storagePathService.getPhysicalFilePath(imageType, filename), "application/octet-stream")
+        val contentType = probeContentType(
+            storagePathService.getPhysicalFilePath(imageType, filename),
+            "application/octet-stream"
+        )
         return Pair(bytes, contentType)
     }
 
@@ -236,7 +239,8 @@ class ImageStorageServiceImpl(
             // Apply cropping if requested
             if (cropArea != null) {
                 logger.debug {
-                    "Applying crop - x: ${cropArea.x}, y: ${cropArea.y}, width: ${cropArea.width}, height: ${cropArea.height}"
+                    "Applying crop - x: ${cropArea.x}, y: ${cropArea.y}, width: ${cropArea.width}, " +
+                        "height: ${cropArea.height}"
                 }
                 imageBytes = applyCropping(imageBytes, cropArea)
             }

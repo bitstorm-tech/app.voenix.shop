@@ -97,7 +97,9 @@ class MugVariantServiceImpl(
                 val newDefault = otherVariants.first()
                 newDefault.isDefault = true
                 mugVariantRepository.save(newDefault)
-                logger.debug { "Assigned default to variant ${newDefault.id} as variant $variantId is no longer default" }
+                logger.debug {
+                    "Assigned default to variant ${newDefault.id} as variant $variantId is no longer default"
+                }
             }
         }
 

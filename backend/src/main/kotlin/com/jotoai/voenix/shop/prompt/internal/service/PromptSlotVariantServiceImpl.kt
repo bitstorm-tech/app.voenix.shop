@@ -123,7 +123,10 @@ class PromptSlotVariantServiceImpl(
                 try {
                     imageStorageService.deleteFile(oldImageFilename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
                 } catch (e: IOException) {
-                    logger.warn(e) { "Failed to delete old example image file '$oldImageFilename' during slot variant update. This may result in orphaned files." }
+                    logger.warn(e) {
+                        "Failed to delete old example image file '$oldImageFilename' during slot variant update. " +
+                            "This may result in orphaned files."
+                    }
                     // Don't fail the update if image deletion fails
                     // This prevents orphaned files from blocking updates
                 }
@@ -152,7 +155,10 @@ class PromptSlotVariantServiceImpl(
             try {
                 imageStorageService.deleteFile(filename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
             } catch (e: IOException) {
-                logger.warn(e) { "Failed to delete example image file '$filename' during slot variant deletion. This may result in orphaned files." }
+                logger.warn(e) {
+                    "Failed to delete example image file '$filename' during slot variant deletion. " +
+                        "This may result in orphaned files."
+                }
                 // Don't fail the deletion if image deletion fails
                 // This prevents orphaned files from blocking entity deletion
             }

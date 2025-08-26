@@ -94,7 +94,8 @@ class CartQueryServiceImpl(
      * Checks if an active cart exists for the user
      */
     @Transactional(readOnly = true)
-    override fun existsActiveCartForUser(userId: Long): Boolean = cartRepository.findActiveCartByUserId(userId).isPresent
+    override fun existsActiveCartForUser(userId: Long): Boolean =
+        cartRepository.findActiveCartByUserId(userId).isPresent
 
     /**
      * Gets active cart information for order creation.
@@ -124,7 +125,9 @@ class CartQueryServiceImpl(
                                     try {
                                         promptQueryService.getPromptById(it).promptText
                                     } catch (e: PromptNotFoundException) {
-                                        logger.warn(e) { "Failed to fetch prompt text for promptId=$it, prompt may have been deleted" }
+                                        logger.warn(e) {
+                                            "Failed to fetch prompt text for promptId=$it, prompt may have been deleted"
+                                        }
                                         null // Handle case where prompt might have been deleted
                                     }
                                 },

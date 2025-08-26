@@ -487,7 +487,11 @@ class PromptAssemblerTest {
     }
     
     // Helper methods for full DTO conversion test
-    private fun createTestPromptWithAllFields(createdAt: OffsetDateTime, updatedAt: OffsetDateTime, exampleImageFilename: String) =
+    private fun createTestPromptWithAllFields(
+        createdAt: OffsetDateTime,
+        updatedAt: OffsetDateTime,
+        exampleImageFilename: String
+    ) =
         Prompt(
             id = 1L,
             title = "Test Prompt",
@@ -522,7 +526,11 @@ class PromptAssemblerTest {
             updatedAt = null,
         )
     
-    private fun setupPromptTestMocks(exampleImageFilename: String, expectedImageUrl: String, expectedSlotDto: PromptSlotVariantDto) {
+    private fun setupPromptTestMocks(
+        exampleImageFilename: String,
+        expectedImageUrl: String,
+        expectedSlotDto: PromptSlotVariantDto
+    ) {
         `when`(storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename))
             .thenReturn(expectedImageUrl)
         `when`(promptSlotVariantAssembler.toDto(testSlotVariant))

@@ -72,8 +72,11 @@ class AdminImageController(
         // TODO: Implement admin image deletion
         // This requires either:
         // 1. Adding a deleteImageByFilename method to ImageFacade, or
-        // 2. Finding the uploaded image by filename first to get the UUID/userId, then using existing deleteUploadedImage
+        // 2. Finding the uploaded image by filename first to get the UUID/userId,
+        //    then using existing deleteUploadedImage
         // For now, throwing UnsupportedOperationException to indicate this needs proper implementation
-        throw UnsupportedOperationException("Admin image deletion not yet implemented - requires filename-based deletion in ImageFacade")
+        throw UnsupportedOperationException(
+            "Admin image deletion not yet implemented - requires filename-based deletion in ImageFacade"
+        )
     }
 }

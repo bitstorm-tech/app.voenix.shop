@@ -90,7 +90,8 @@ class CartFacadeImpl(
 
             if (!imageQueryService.validateGeneratedImageOwnership(imageId, userId)) {
                 logger.warn {
-                    "Generated image validation failed: userId=$userId, generatedImageId=$imageId, reason=ownership_check_failed"
+                    "Generated image validation failed: userId=$userId, generatedImageId=$imageId, " +
+                        "reason=ownership_check_failed"
                 }
 
                 if (!imageQueryService.existsGeneratedImageById(imageId)) {
@@ -189,7 +190,8 @@ class CartFacadeImpl(
             }
 
             logger.debug {
-                "Generated image validation successful for cart update: userId=$userId, itemId=$itemId, generatedImageId=$imageId"
+                "Generated image validation successful for cart update: userId=$userId, itemId=$itemId, " +
+                    "generatedImageId=$imageId"
             }
             cartItem.generatedImageId = imageId
         }
@@ -205,7 +207,8 @@ class CartFacadeImpl(
 
         logger.info {
             "Successfully updated cart item: userId=$userId, itemId=$itemId, quantity=${request.quantity}, " +
-                "generatedImageId=${cartItem.generatedImageId}, promptId=${cartItem.promptId}, hasCustomData=${request.customData != null}"
+                "generatedImageId=${cartItem.generatedImageId}, promptId=${cartItem.promptId}, " +
+                "hasCustomData=${request.customData != null}"
         }
 
         return cartAssembler.toDto(savedCart)
@@ -225,8 +228,9 @@ class CartFacadeImpl(
         val itemToRemove = cart.items.find { it.id == itemId }
         itemToRemove?.let { item ->
             logger.debug {
-                "Removing cart item: userId=$userId, itemId=$itemId, articleId=${item.articleId}, variantId=${item.variantId}, " +
-                    "generatedImageId=${item.generatedImageId}, promptId=${item.promptId}"
+                "Removing cart item: userId=$userId, itemId=$itemId, articleId=${item.articleId}, " +
+                    "variantId=${item.variantId}, generatedImageId=${item.generatedImageId}, " +
+                    "promptId=${item.promptId}"
             }
         }
 
@@ -237,7 +241,8 @@ class CartFacadeImpl(
         val savedCart = saveCartWithOptimisticLocking(cart)
 
         logger.info {
-            "Successfully removed item from cart: userId=$userId, itemId=$itemId, hadGeneratedImage=${itemToRemove?.generatedImageId != null}"
+            "Successfully removed item from cart: userId=$userId, itemId=$itemId, " +
+                "hadGeneratedImage=${itemToRemove?.generatedImageId != null}"
         }
 
         return cartAssembler.toDto(savedCart)
@@ -255,7 +260,8 @@ class CartFacadeImpl(
         val totalItems = cart.items.size
 
         logger.debug {
-            "Clearing cart contents: userId=$userId, totalItems=$totalItems, itemsWithGeneratedImages=$itemsWithGeneratedImages"
+            "Clearing cart contents: userId=$userId, totalItems=$totalItems, " +
+                "itemsWithGeneratedImages=$itemsWithGeneratedImages"
         }
 
         cart.clearItems()
@@ -263,7 +269,8 @@ class CartFacadeImpl(
         val savedCart = saveCartWithOptimisticLocking(cart)
 
         logger.info {
-            "Successfully cleared cart: userId=$userId, clearedItems=$totalItems, clearedItemsWithGeneratedImages=$itemsWithGeneratedImages"
+            "Successfully cleared cart: userId=$userId, clearedItems=$totalItems, " +
+                "clearedItemsWithGeneratedImages=$itemsWithGeneratedImages"
         }
 
         return cartAssembler.toDto(savedCart)
@@ -310,8 +317,8 @@ class CartFacadeImpl(
             cartRepository.findById(cartId).orElseThrow { CartNotFoundException(userId = 0, isActiveCart = false) }
 
         logger.debug {
-            "Refreshing cart prices for order: " + "cartId=$cartId, " + "userId=${cart.userId}, " + "itemCount=${cart.items.size}, " +
-                "itemsWithGeneratedImages=${
+            "Refreshing cart prices for order: cartId=$cartId, userId=${cart.userId}, " +
+                "itemCount=${cart.items.size}, itemsWithGeneratedImages=${
                     cart.items.count {
                         it.generatedImageId != null
                     }
@@ -352,7 +359,9 @@ class CartFacadeImpl(
                                 try {
                                     promptQueryService.getPromptById(it).promptText
                                 } catch (e: PromptNotFoundException) {
-                                    logger.warn(e) { "Failed to fetch prompt text for promptId=$it, prompt may have been deleted" }
+                                    logger.warn(e) {
+                                        "Failed to fetch prompt text for promptId=$it, prompt may have been deleted"
+                                    }
                                     null // Handle case where prompt might have been deleted
                                 }
                             },

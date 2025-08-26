@@ -52,13 +52,17 @@ class ImageValidationService {
         val maxSize = imageType.maxFileSize
         if (file.size > maxSize) {
             val maxSizeMB = bytesToMegabytes(maxSize)
-            throw BadRequestException("Image file size must be less than ${maxSizeMB}MB for ${imageType.name}")
+            throw BadRequestException(
+                "Image file size must be less than ${maxSizeMB}MB for ${imageType.name}"
+            )
         }
 
         val contentType = file.contentType?.lowercase() ?: ""
         if (contentType !in imageType.allowedContentTypes) {
             val allowedFormats = imageType.allowedContentTypes
-            throw BadRequestException("Invalid image format for ${imageType.name}. Allowed formats: $allowedFormats")
+            throw BadRequestException(
+                "Invalid image format for ${imageType.name}. Allowed formats: $allowedFormats"
+            )
         }
     }
 }

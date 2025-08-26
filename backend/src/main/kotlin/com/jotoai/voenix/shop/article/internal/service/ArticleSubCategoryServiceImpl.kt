@@ -19,7 +19,8 @@ class ArticleSubCategoryServiceImpl(
     private val articleCategoryRepository: ArticleCategoryRepository,
 ) : ArticleSubCategoryQueryService,
     ArticleSubCategoryFacade {
-    override fun getAllSubCategories(): List<ArticleSubCategoryDto> = articleSubCategoryRepository.findAll().map { it.toDto() }
+    override fun getAllSubCategories(): List<ArticleSubCategoryDto> =
+        articleSubCategoryRepository.findAll().map { it.toDto() }
 
     override fun getSubCategoryById(id: Long): ArticleSubCategoryDto =
         articleSubCategoryRepository
