@@ -1,10 +1,10 @@
-package com.jotoai.voenix.shop.api.user
+package com.jotoai.voenix.shop.image.web
 
-import com.jotoai.voenix.shop.api.orchestration.ImageGenerationOrchestrationService
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
+import com.jotoai.voenix.shop.image.internal.orchestration.ImageGenerationOrchestrationService
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.MediaType

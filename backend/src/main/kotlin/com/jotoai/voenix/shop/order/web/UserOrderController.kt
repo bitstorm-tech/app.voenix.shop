@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.user
+package com.jotoai.voenix.shop.order.web
 
 import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import com.jotoai.voenix.shop.order.api.OrderService
@@ -6,7 +6,6 @@ import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
 import com.jotoai.voenix.shop.order.api.enums.OrderStatus
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
-import com.jotoai.voenix.shop.pdf.internal.service.OrderDataConverter
 import com.jotoai.voenix.shop.user.api.UserService
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
@@ -30,11 +29,10 @@ import java.util.UUID
 @RestController
 @RequestMapping("/api/user")
 @PreAuthorize("hasRole('USER')")
-class OrderController(
+class UserOrderController(
     private val orderService: OrderService,
     private val userService: UserService,
     private val pdfGenerationService: PdfGenerationService,
-    private val orderDataConverter: OrderDataConverter,
 ) {
     /**
      * Creates an order from the user's current cart
@@ -105,8 +103,8 @@ class OrderController(
         // Get order data for PDF and validate ownership
         val orderForPdf = orderService.getOrderForPdf(userId, orderId)
 
-        // Convert order to PDF data DTO
-        val orderPdfData = orderDataConverter.convertToOrderPdfData(orderForPdf)
+        // Convert order to PDF data DTO using the public API
+        val orderPdfData = pdfGenerationService.convertToOrderPdfData(orderForPdf)
 
         // Generate PDF
         val pdfBytes = pdfGenerationService.generateOrderPdf(orderPdfData)

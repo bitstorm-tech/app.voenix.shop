@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.user
+package com.jotoai.voenix.shop.cart.web
 
 import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.CartQueryService
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/user/cart")
 @PreAuthorize("hasRole('USER')")
-class CartController(
+class UserCartController(
     private val cartFacade: CartFacade,
     private val cartQueryService: CartQueryService,
     private val userService: UserService,

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.orchestration
+package com.jotoai.voenix.shop.image.internal.orchestration
 
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.image.api.ImageFacade

@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.api.public.images
 
-import com.jotoai.voenix.shop.api.orchestration.ImageGenerationOrchestrationService
+import com.jotoai.voenix.shop.image.internal.orchestration.ImageGenerationOrchestrationService
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest

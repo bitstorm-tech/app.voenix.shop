@@ -44,4 +44,13 @@ interface PdfGenerationService {
      * @return The generated PDF as byte array
      */
     fun generatePublicPdf(request: PublicPdfGenerationRequest): ByteArray
+
+    /**
+     * Converts OrderForPdfDto to OrderPdfData.
+     * This method encapsulates the conversion logic and maintains module boundaries
+     * by keeping the internal OrderDataConverter within the PDF module.
+     * @param orderForPdf The order data for PDF generation
+     * @return The converted OrderPdfData
+     */
+    fun convertToOrderPdfData(orderForPdf: com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto): OrderPdfData
 }

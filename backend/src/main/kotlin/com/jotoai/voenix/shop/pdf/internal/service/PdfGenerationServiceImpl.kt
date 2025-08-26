@@ -61,6 +61,7 @@ class PdfGenerationServiceImpl(
     private val storagePathService: StoragePathService,
     private val imageAccessService: ImageAccessService,
     private val pdfQrProperties: PdfQrProperties,
+    private val orderDataConverter: OrderDataConverter,
 ) : PdfGenerationService {
     companion object {
         private val logger = KotlinLogging.logger {}
@@ -734,5 +735,9 @@ class PdfGenerationServiceImpl(
         } catch (e: IOException) {
             logger.error(e) { "Failed to add placeholder text: $text" }
         }
+    }
+
+    override fun convertToOrderPdfData(orderForPdf: com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto): OrderPdfData {
+        return orderDataConverter.convertToOrderPdfData(orderForPdf)
     }
 }
