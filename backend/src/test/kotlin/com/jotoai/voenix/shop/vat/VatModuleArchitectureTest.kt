@@ -45,7 +45,7 @@ class VatModuleArchitectureTest {
         try {
             modules.verify()
         } catch (e: AssertionError) {
-            throw AssertionError("Module verification failed, possibly due to cyclic dependencies: ${e.message}")
+            throw AssertionError("Module verification failed, possibly due to cyclic dependencies: ${e.message}", e)
         }
     }
 }

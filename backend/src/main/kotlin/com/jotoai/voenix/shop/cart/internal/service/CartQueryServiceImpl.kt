@@ -123,6 +123,7 @@ class CartQueryServiceImpl(
                                     try {
                                         promptQueryService.getPromptById(it).promptText
                                     } catch (e: Exception) {
+                                        logger.warn(e) { "Failed to fetch prompt text for promptId=$it, prompt may have been deleted" }
                                         null // Handle case where prompt might have been deleted
                                     }
                                 },

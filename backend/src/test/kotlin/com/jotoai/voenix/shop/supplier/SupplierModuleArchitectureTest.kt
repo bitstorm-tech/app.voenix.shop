@@ -62,7 +62,7 @@ class SupplierModuleArchitectureTest {
                 // For now, we acknowledge this known architectural debt
                 return
             } else {
-                throw AssertionError("Module verification failed with unexpected issue: ${e.message}")
+                throw AssertionError("Module verification failed with unexpected issue: ${e.message}", e)
             }
         }
     }

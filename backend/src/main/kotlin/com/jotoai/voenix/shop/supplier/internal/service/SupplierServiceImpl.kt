@@ -11,6 +11,7 @@ import com.jotoai.voenix.shop.supplier.api.exceptions.DuplicateSupplierException
 import com.jotoai.voenix.shop.supplier.api.exceptions.InvalidSupplierDataException
 import com.jotoai.voenix.shop.supplier.api.exceptions.SupplierNotFoundException
 import com.jotoai.voenix.shop.supplier.internal.repository.SupplierRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -27,6 +28,9 @@ class SupplierServiceImpl(
     private val supplierRepository: SupplierRepository,
     private val countryService: CountryService,
 ) : SupplierService {
+
+    private val logger = KotlinLogging.logger {}
+
     // Query operations
 
     override fun getAllSuppliers(): List<SupplierDto> {
@@ -126,6 +130,7 @@ class SupplierServiceImpl(
             try {
                 countryService.getCountryById(id)
             } catch (e: CountryNotFoundException) {
+                logger.debug(e) { "Country with ID $id not found when fetching supplier country details" }
                 null
             }
         }

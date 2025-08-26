@@ -83,7 +83,7 @@ class UserModuleArchitectureTest {
         try {
             Class.forName(className)
         } catch (e: ClassNotFoundException) {
-            throw AssertionError("Expected class $className to exist, but it was not found")
+            throw AssertionError("Expected class $className to exist, but it was not found", e)
         }
     }
 }

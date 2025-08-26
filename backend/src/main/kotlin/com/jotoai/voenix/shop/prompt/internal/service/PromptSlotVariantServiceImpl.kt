@@ -11,6 +11,7 @@ import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSlotVariantNotFoundExc
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -23,6 +24,8 @@ class PromptSlotVariantServiceImpl(
     private val imageStorageService: ImageStorageService,
 ) : PromptSlotVariantFacade,
     PromptSlotVariantQueryService {
+
+    private val logger = KotlinLogging.logger {}
     override fun getAllSlotVariants(): List<PromptSlotVariantDto> =
         promptSlotVariantRepository.findAll().map { promptSlotVariantAssembler.toDto(it) }
 
@@ -119,7 +122,8 @@ class PromptSlotVariantServiceImpl(
                 try {
                     imageStorageService.deleteFile(oldImageFilename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
                 } catch (e: Exception) {
-                    // Log but don't fail the update if image deletion fails
+                    logger.warn(e) { "Failed to delete old example image file '$oldImageFilename' during slot variant update. This may result in orphaned files." }
+                    // Don't fail the update if image deletion fails
                     // This prevents orphaned files from blocking updates
                 }
             }
@@ -147,7 +151,8 @@ class PromptSlotVariantServiceImpl(
             try {
                 imageStorageService.deleteFile(filename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
             } catch (e: Exception) {
-                // Log but don't fail the deletion if image deletion fails
+                logger.warn(e) { "Failed to delete example image file '$filename' during slot variant deletion. This may result in orphaned files." }
+                // Don't fail the deletion if image deletion fails
                 // This prevents orphaned files from blocking entity deletion
             }
         }
