@@ -12,6 +12,9 @@ data class CustomUserDetails(
     private val userRoles: Set<String>,
 ) : UserDetails,
     Serializable {
+    companion object {
+        private const val serialVersionUID = 1L
+    }
     override fun getAuthorities(): Collection<GrantedAuthority> = userRoles.map { SimpleGrantedAuthority("ROLE_$it") }
 
     override fun getPassword(): String? = passwordHash

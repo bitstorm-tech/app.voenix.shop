@@ -19,7 +19,11 @@ data class PromptSlotVariantMappingId(
     val promptId: Long = 0,
     @Column(name = "slot_id")
     val promptSlotVariantId: Long = 0,
-) : Serializable
+) : Serializable {
+    companion object {
+        private const val serialVersionUID = 1L
+    }
+}
 
 @Entity
 @Table(name = "prompt_slot_variant_mappings")
