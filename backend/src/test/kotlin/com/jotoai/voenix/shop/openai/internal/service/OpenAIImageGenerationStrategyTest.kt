@@ -60,9 +60,9 @@ class OpenAIImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = promptId,
                 n = 1,
-                sizeString = "1536x1024",
-                qualityString = "HIGH",
-                backgroundString = "AUTO",
+                size = ImageSize.LANDSCAPE_1536X1024,
+                quality = ImageQuality.HIGH,
+                background = ImageBackground.AUTO,
             )
 
         val mockPrompt =
@@ -100,9 +100,9 @@ class OpenAIImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = promptId,
                 n = 1,
-                sizeString = "1536x1024",
-                qualityString = "HIGH",
-                backgroundString = "AUTO",
+                size = ImageSize.LANDSCAPE_1536X1024,
+                quality = ImageQuality.HIGH,
+                background = ImageBackground.AUTO,
             )
 
         `when`(promptQueryService.getPromptById(promptId)).thenThrow(ResourceNotFoundException("Prompt not found"))
@@ -207,7 +207,7 @@ class OpenAIImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = promptId,
                 n = 1,
-                sizeString = "1024x1536",
+                size = ImageSize.PORTRAIT_1024X1536,
                 quality = ImageQuality.LOW,
                 background = ImageBackground.TRANSPARENT,
             )
@@ -246,9 +246,9 @@ class OpenAIImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = promptId,
                 n = 1,
-                sizeString = "1536x1024",
-                qualityString = "HIGH",
-                backgroundString = "AUTO",
+                size = ImageSize.LANDSCAPE_1536X1024,
+                quality = ImageQuality.HIGH,
+                background = ImageBackground.AUTO,
             )
 
         val slotType =
@@ -343,8 +343,8 @@ class OpenAIImageGenerationStrategyTest {
                 masterPrompt = "",
                 specificPrompt = "Specific prompt only",
                 sizeString = "1024x1536",
-                quality = ImageQuality.LOW,
-                background = ImageBackground.TRANSPARENT,
+                qualityString = "LOW",
+                backgroundString = "TRANSPARENT",
             )
 
         // When/Then
@@ -361,9 +361,9 @@ class OpenAIImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = promptId,
                 n = 5, // Multiple images
-                sizeString = "1536x1024",
-                qualityString = "HIGH",
-                backgroundString = "AUTO",
+                size = ImageSize.LANDSCAPE_1536X1024,
+                quality = ImageQuality.HIGH,
+                background = ImageBackground.AUTO,
             )
 
         val mockPrompt =

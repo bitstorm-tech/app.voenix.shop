@@ -52,11 +52,6 @@ class PublicMugControllerActiveVariantTest {
                 printTemplateHeightMm = 90,
                 fillingQuantity = "330ml",
                 dishwasherSafe = true,
-                active = true,
-                categoryId = 1L,
-                categoryName = "Mugs",
-                subcategoryId = 2L,
-                subcategoryName = "Coffee Mugs",
                 variants =
                     listOf(
                         PublicMugVariantDto(
@@ -87,8 +82,6 @@ class PublicMugControllerActiveVariantTest {
                         ),
                         // Note: Inactive variants should already be filtered out at service layer
                     ),
-                createdAt = now,
-                updatedAt = now,
             )
 
         // Mug with only active variants
@@ -106,11 +99,6 @@ class PublicMugControllerActiveVariantTest {
                 printTemplateHeightMm = 120,
                 fillingQuantity = "450ml",
                 dishwasherSafe = true,
-                active = true,
-                categoryId = 1L,
-                categoryName = "Mugs",
-                subcategoryId = 3L,
-                subcategoryName = "Travel Mugs",
                 variants =
                     listOf(
                         PublicMugVariantDto(
@@ -127,8 +115,6 @@ class PublicMugControllerActiveVariantTest {
                             updatedAt = now,
                         ),
                     ),
-                createdAt = now,
-                updatedAt = now,
             )
 
         // Edge case: Mug with no active variants (should probably not be returned)
@@ -146,14 +132,7 @@ class PublicMugControllerActiveVariantTest {
                 printTemplateHeightMm = 85,
                 fillingQuantity = "300ml",
                 dishwasherSafe = false,
-                active = true,
-                categoryId = 1L,
-                categoryName = "Mugs",
-                subcategoryId = 4L,
-                subcategoryName = "Clearance",
                 variants = emptyList(), // All variants are inactive
-                createdAt = now,
-                updatedAt = now,
             )
     }
 

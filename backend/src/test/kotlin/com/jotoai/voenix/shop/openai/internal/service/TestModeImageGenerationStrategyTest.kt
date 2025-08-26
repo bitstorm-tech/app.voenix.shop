@@ -96,9 +96,9 @@ class TestModeImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = 1L,
                 n = 2,
-                sizeString = "1024x1024",
-                qualityString = "LOW",
-                backgroundString = "OPAQUE",
+                size = ImageSize.SQUARE_1024X1024,
+                quality = ImageQuality.LOW,
+                background = ImageBackground.OPAQUE,
             )
 
         val mockPrompt =
@@ -141,7 +141,7 @@ class TestModeImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = 1L,
                 n = 1,
-                sizeString = "1024x1536",
+                size = ImageSize.PORTRAIT_1024X1536,
                 quality = ImageQuality.MEDIUM,
                 background = ImageBackground.TRANSPARENT,
             )
@@ -250,9 +250,9 @@ class TestModeImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = 1L,
                 n = 2,
-                sizeString = "1024x1024",
-                qualityString = "LOW",
-                backgroundString = "OPAQUE",
+                size = ImageSize.SQUARE_1024X1024,
+                quality = ImageQuality.LOW,
+                background = ImageBackground.OPAQUE,
             )
 
         val mockPrompt =
@@ -298,9 +298,9 @@ class TestModeImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = 1L,
                 n = 1,
-                sizeString = "1024x1024",
-                qualityString = "LOW",
-                backgroundString = "OPAQUE",
+                size = ImageSize.SQUARE_1024X1024,
+                quality = ImageQuality.LOW,
+                background = ImageBackground.OPAQUE,
             )
 
         val mockPrompt =
@@ -397,8 +397,8 @@ class TestModeImageGenerationStrategyTest {
                 masterPrompt = "",
                 specificPrompt = "Specific prompt only",
                 sizeString = "1024x1536",
-                quality = ImageQuality.MEDIUM,
-                background = ImageBackground.TRANSPARENT,
+                qualityString = "MEDIUM",
+                backgroundString = "TRANSPARENT",
             )
 
         // When
