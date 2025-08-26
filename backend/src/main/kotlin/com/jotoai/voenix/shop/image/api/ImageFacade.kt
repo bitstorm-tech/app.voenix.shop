@@ -5,6 +5,7 @@ import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
@@ -140,5 +141,14 @@ interface ImageFacade {
         uploadedImageUuid: UUID,
         userId: Long,
         cropArea: CropArea?,
+    ): PublicImageGenerationResponse
+
+    /**
+     * Generates public images from uploaded file with rate limiting and validation.
+     */
+    fun generatePublicImage(
+        request: PublicImageGenerationRequest,
+        ipAddress: String,
+        imageFile: org.springframework.web.multipart.MultipartFile,
     ): PublicImageGenerationResponse
 }

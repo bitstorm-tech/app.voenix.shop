@@ -9,6 +9,7 @@ import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData
@@ -25,15 +26,15 @@ import com.lowagie.text.pdf.PdfContentByte
 import com.lowagie.text.pdf.PdfWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PostConstruct
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.imageio.ImageIO
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 
 /**
  * Consolidated PDF generation service implementation using OpenPDF library.
@@ -737,7 +738,6 @@ class PdfGenerationServiceImpl(
         }
     }
 
-    override fun convertToOrderPdfData(orderForPdf: com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto): OrderPdfData {
-        return orderDataConverter.convertToOrderPdfData(orderForPdf)
-    }
+    override fun convertToOrderPdfData(orderForPdf: OrderForPdfDto) =
+        orderDataConverter.convertToOrderPdfData(orderForPdf)
 }

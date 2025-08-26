@@ -12,7 +12,6 @@ import org.springframework.core.io.Resource
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
@@ -68,10 +68,10 @@ class AdminImageController(
         @AuthenticationPrincipal userDetails: UserDetails,
     ) {
         val adminUser = userService.getUserByEmail(userDetails.username)
-        
+
         // TODO: Implement admin image deletion
         // This requires either:
-        // 1. Adding a deleteImageByFilename method to ImageFacade, or 
+        // 1. Adding a deleteImageByFilename method to ImageFacade, or
         // 2. Finding the uploaded image by filename first to get the UUID/userId, then using existing deleteUploadedImage
         // For now, throwing UnsupportedOperationException to indicate this needs proper implementation
         throw UnsupportedOperationException("Admin image deletion not yet implemented - requires filename-based deletion in ImageFacade")

@@ -34,15 +34,15 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.jackson
-import java.io.IOException
-import java.net.SocketTimeoutException
-import kotlin.io.encoding.Base64
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
+import java.net.SocketTimeoutException
+import kotlin.io.encoding.Base64
 
 /**
  * OpenAI-based implementation of image generation strategy.

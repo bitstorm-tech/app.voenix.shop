@@ -1,21 +1,26 @@
 package com.jotoai.voenix.shop.image.internal.service
 
+import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.ImageStorageService
+import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
-import com.jotoai.voenix.shop.image.internal.orchestration.ImageGenerationOrchestrationService
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
+import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
+import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.cache.annotation.CacheEvict
 import org.springframework.cache.annotation.Cacheable
@@ -46,12 +51,20 @@ class ImageManagementService(
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
     private val imageValidationService: ImageValidationService,
-    private val imageGenerationOrchestrationService: ImageGenerationOrchestrationService,
+    private val openAIImageGenerationService: OpenAIImageGenerationService,
+    private val storagePathService: StoragePathService,
+    private val promptQueryService: PromptQueryService,
+    private val userService: UserService,
 ) : ImageFacade {
     companion object {
         private val logger = KotlinLogging.logger {}
         private const val ORIGINAL_SUFFIX = "_original"
         private const val GENERATED_PREFIX = "_generated_"
+
+        private const val PUBLIC_RATE_LIMIT_HOURS = 1
+        private const val PUBLIC_MAX_GENERATIONS_PER_HOUR = 10
+        private const val USER_RATE_LIMIT_HOURS = 24
+        private const val USER_MAX_GENERATIONS_PER_DAY = 50
     }
 
     // Implementation of ImageFacade interface
@@ -447,8 +460,67 @@ class ImageManagementService(
         uploadedImageUuid: UUID,
         userId: Long,
         cropArea: CropArea?,
-    ): PublicImageGenerationResponse =
-        imageGenerationOrchestrationService.generateUserImageWithIds(promptId, uploadedImageUuid, userId, cropArea)
+    ): PublicImageGenerationResponse {
+        logger.info { "Generating image: user=$userId, prompt=$promptId" }
+
+        validatePrompt(promptId)
+        userService.getUserById(userId)
+
+        val dayAgo = LocalDateTime.now().minusHours(USER_RATE_LIMIT_HOURS.toLong())
+        val count = countGeneratedImagesForUserAfter(userId, dayAgo)
+        checkRateLimit(
+            count,
+            USER_MAX_GENERATIONS_PER_DAY,
+            "Rate limit exceeded. Max $USER_MAX_GENERATIONS_PER_DAY images per day.",
+        )
+
+        try {
+            return processImageGeneration(
+                uploadedImageUuid,
+                promptId,
+                userId,
+                null,
+                cropArea,
+            )
+        } catch (e: BadRequestException) {
+            throw e
+        } catch (e: Exception) {
+            handleSystemError(e, "user image generation")
+        }
+    }
+
+    @Transactional
+    override fun generatePublicImage(
+        request: PublicImageGenerationRequest,
+        ipAddress: String,
+        imageFile: MultipartFile,
+    ): PublicImageGenerationResponse {
+        logger.info { "Generating image: public, prompt=${request.promptId}" }
+
+        validateImageFile(imageFile)
+        validatePrompt(request.promptId)
+
+        val hourAgo = LocalDateTime.now().minusHours(PUBLIC_RATE_LIMIT_HOURS.toLong())
+        val count = countGeneratedImagesForIpAfter(ipAddress, hourAgo)
+        checkRateLimit(
+            count,
+            PUBLIC_MAX_GENERATIONS_PER_HOUR,
+            "Rate limit exceeded. Max $PUBLIC_MAX_GENERATIONS_PER_HOUR images per hour.",
+        )
+
+        try {
+            return processPublicImageGeneration(
+                imageFile,
+                request.promptId,
+                ipAddress,
+                request.cropArea,
+            )
+        } catch (e: BadRequestException) {
+            throw e
+        } catch (e: Exception) {
+            handleSystemError(e, "public image generation")
+        }
+    }
 
     // Additional methods for access validation (from ImageAccessValidationService)
 
@@ -557,5 +629,122 @@ class ImageManagementService(
             logger.error(e) { "Invalid UUID format in filename: $filename" }
             throw ResourceNotFoundException("Invalid image filename format")
         }
+    }
+
+    private fun validatePrompt(promptId: Long) {
+        val prompt = promptQueryService.getPromptById(promptId)
+        if (!prompt.active) {
+            throw BadRequestException("The selected prompt is not available")
+        }
+    }
+
+    private fun checkRateLimit(
+        count: Long,
+        limit: Int,
+        errorMessage: String,
+    ) {
+        if (count >= limit) {
+            throw BadRequestException(errorMessage)
+        }
+    }
+
+    private fun processImageGeneration(
+        uploadedImageUuid: UUID,
+        promptId: Long,
+        userId: Long,
+        ipAddress: String?,
+        cropArea: CropArea?,
+    ): PublicImageGenerationResponse {
+        val uploadedImage = getUploadedImageByUuid(uploadedImageUuid, userId)
+
+        val imageBytes =
+            if (cropArea != null) {
+                val originalBytes = imageStorageService.loadFileAsBytes(uploadedImage.filename, ImageType.PRIVATE)
+                val croppedFilename =
+                    imageStorageService.storeFile(
+                        originalBytes,
+                        uploadedImage.originalFilename,
+                        ImageType.PRIVATE,
+                    )
+                imageStorageService.loadFileAsBytes(croppedFilename, ImageType.PRIVATE)
+            } else {
+                imageStorageService.loadFileAsBytes(uploadedImage.filename, ImageType.PRIVATE)
+            }
+
+        val generatedBytes = openAIImageGenerationService.generateImages(imageBytes, promptId)
+
+        val generatedImages =
+            generatedBytes.mapIndexed { index, bytes ->
+                val uploadedImageEntity =
+                    uploadedImageRepository.findByUserIdAndUuid(userId, uploadedImageUuid)
+                        ?: throw ResourceNotFoundException("Uploaded image not found")
+                storeGeneratedImage(
+                    imageBytes = bytes,
+                    uploadedImageId = uploadedImageEntity.id!!,
+                    promptId = promptId,
+                    generationNumber = index + 1,
+                )
+            }
+
+        val imageUrls =
+            generatedImages.mapIndexed { index, _ ->
+                "/api/user/images/${uploadedImageUuid}_generated_${index + 1}.png"
+            }
+
+        val imageIds = generatedImages.mapNotNull { it.id }
+        logger.info { "Generated ${imageIds.size} images" }
+
+        return PublicImageGenerationResponse(
+            imageUrls = imageUrls,
+            generatedImageIds = imageIds,
+        )
+    }
+
+    private fun processPublicImageGeneration(
+        imageFile: MultipartFile,
+        promptId: Long,
+        ipAddress: String,
+        cropArea: CropArea?,
+    ): PublicImageGenerationResponse {
+        val storedFilename =
+            if (cropArea != null) {
+                imageStorageService.storeFile(imageFile, ImageType.PUBLIC, cropArea)
+            } else {
+                imageStorageService.storeFile(imageFile, ImageType.PUBLIC)
+            }
+
+        val imageBytes = imageStorageService.loadFileAsBytes(storedFilename, ImageType.PUBLIC)
+        val generatedBytes = openAIImageGenerationService.generateImages(imageBytes, promptId)
+
+        val generatedImages =
+            generatedBytes.mapIndexed { index, bytes ->
+                storePublicGeneratedImage(
+                    imageBytes = bytes,
+                    promptId = promptId,
+                    ipAddress = ipAddress,
+                    generationNumber = index + 1,
+                )
+            }
+
+        val imageUrls =
+            generatedImages.map { generatedImageDto ->
+                storagePathService.getImageUrl(ImageType.PUBLIC, generatedImageDto.filename)
+            }
+
+        val imageIds = generatedImages.mapNotNull { it.id }
+        logger.info { "Generated ${imageIds.size} images" }
+
+        return PublicImageGenerationResponse(
+            imageUrls = imageUrls,
+            generatedImageIds = imageIds,
+        )
+    }
+
+    private fun handleSystemError(
+        e: Exception,
+        operation: String,
+    ): Nothing {
+        logger.error(e) { "Error during $operation" }
+        throw RuntimeException("Failed to generate image. Please try again later.", e)
     }
 }
