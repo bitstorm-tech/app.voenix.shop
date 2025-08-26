@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.article.web
 
-import com.jotoai.voenix.shop.article.api.ArticleFacade
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
@@ -25,9 +24,6 @@ class PublicMugControllerTest {
 
     @MockitoBean
     private lateinit var articleQueryService: ArticleQueryService
-
-    @MockitoBean
-    private lateinit var articleFacade: ArticleFacade
 
     @Test
     fun `should return list of public mugs without authentication`() {
