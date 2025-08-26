@@ -1,8 +1,8 @@
-package com.jotoai.voenix.shop.api.admin.orders
+package com.jotoai.voenix.shop.order.web
 
 import com.jotoai.voenix.shop.order.api.OrderService
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
-import com.jotoai.voenix.shop.order.api.enums.OrderStatus
+import com.jotoai.voenix.shop.order.api.dto.UpdateOrderStatusRequest
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PutMapping
@@ -31,10 +31,3 @@ class AdminOrderController(
         @RequestBody request: UpdateOrderStatusRequest,
     ): OrderDto = orderService.updateOrderStatus(orderId, request.status)
 }
-
-/**
- * Request DTO for updating order status.
- */
-data class UpdateOrderStatusRequest(
-    val status: OrderStatus,
-)
