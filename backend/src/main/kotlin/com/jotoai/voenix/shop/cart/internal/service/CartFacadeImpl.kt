@@ -63,22 +63,32 @@ class CartFacadeImpl(
     }
     
     private fun validateAddToCartRequest(userId: Long, request: AddToCartRequest) {
-        val articlesById = articleQueryService.getArticlesByIds(listOf(request.articleId))
-        if (request.articleId !in articlesById) {
-            throw ResourceNotFoundException("Article not found with id: ${request.articleId}")
-        }
-
-        val variantsById = articleQueryService.getMugVariantsByIds(listOf(request.variantId))
-        if (request.variantId !in variantsById) {
-            throw ResourceNotFoundException("Variant not found with id: ${request.variantId}")
-        }
-
-        if (!articleQueryService.validateVariantBelongsToArticle(request.articleId, request.variantId)) {
-            throw CartOperationException("Variant ${request.variantId} does not belong to article ${request.articleId}")
-        }
-        
+        validateArticleAndVariant(request)
         validateGeneratedImageForCart(userId, request)
         validatePromptForCart(request)
+    }
+    
+    private fun validateArticleAndVariant(request: AddToCartRequest) {
+        validateArticleExists(request.articleId)
+        validateVariantAndAssociation(request.articleId, request.variantId)
+    }
+
+    private fun validateArticleExists(articleId: Long) {
+        val articlesById = articleQueryService.getArticlesByIds(listOf(articleId))
+        if (articleId !in articlesById) {
+            throw ResourceNotFoundException("Article not found with id: $articleId")
+        }
+    }
+
+    private fun validateVariantAndAssociation(articleId: Long, variantId: Long) {
+        val variantsById = articleQueryService.getMugVariantsByIds(listOf(variantId))
+        if (variantId !in variantsById) {
+            throw ResourceNotFoundException("Variant not found with id: $variantId")
+        }
+
+        if (!articleQueryService.validateVariantBelongsToArticle(articleId, variantId)) {
+            throw CartOperationException("Variant $variantId does not belong to article $articleId")
+        }
     }
     
     private fun validateGeneratedImageForCart(userId: Long, request: AddToCartRequest) {

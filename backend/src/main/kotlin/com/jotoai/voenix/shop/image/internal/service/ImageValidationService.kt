@@ -27,14 +27,20 @@ class ImageValidationService {
         if (file.isEmpty) {
             throw BadRequestException("Image file is required")
         }
+        validateFileSize(file.size, MAX_FILE_SIZE)
+        validateContentType(file.contentType, ALLOWED_CONTENT_TYPES, "JPEG, PNG, WebP")
+    }
 
-        if (file.size > MAX_FILE_SIZE) {
-            throw BadRequestException("Image file size must be less than ${bytesToMegabytes(MAX_FILE_SIZE)}MB")
+    private fun validateFileSize(size: Long, maxSize: Long) {
+        if (size > maxSize) {
+            throw BadRequestException("Image file size must be less than ${bytesToMegabytes(maxSize)}MB")
         }
+    }
 
-        val contentType = file.contentType?.lowercase() ?: ""
-        if (contentType !in ALLOWED_CONTENT_TYPES) {
-            throw BadRequestException("Invalid image format. Allowed formats: JPEG, PNG, WebP")
+    private fun validateContentType(contentType: String?, allowedTypes: Set<String>, formatDescription: String) {
+        val normalizedContentType = contentType?.lowercase() ?: ""
+        if (normalizedContentType !in allowedTypes) {
+            throw BadRequestException("Invalid image format. Allowed formats: $formatDescription")
         }
     }
 
@@ -48,20 +54,24 @@ class ImageValidationService {
         if (file.isEmpty) {
             throw BadRequestException("Image file is required")
         }
+        validateTypedFileSize(file.size, imageType)
+        validateTypedContentType(file.contentType, imageType)
+    }
 
-        val maxSize = imageType.maxFileSize
-        if (file.size > maxSize) {
-            val maxSizeMB = bytesToMegabytes(maxSize)
+    private fun validateTypedFileSize(size: Long, imageType: ImageType) {
+        if (size > imageType.maxFileSize) {
+            val maxSizeMB = bytesToMegabytes(imageType.maxFileSize)
             throw BadRequestException(
                 "Image file size must be less than ${maxSizeMB}MB for ${imageType.name}"
             )
         }
+    }
 
-        val contentType = file.contentType?.lowercase() ?: ""
-        if (contentType !in imageType.allowedContentTypes) {
-            val allowedFormats = imageType.allowedContentTypes
+    private fun validateTypedContentType(contentType: String?, imageType: ImageType) {
+        val normalizedContentType = contentType?.lowercase() ?: ""
+        if (normalizedContentType !in imageType.allowedContentTypes) {
             throw BadRequestException(
-                "Invalid image format for ${imageType.name}. Allowed formats: $allowedFormats"
+                "Invalid image format for ${imageType.name}. Allowed formats: ${imageType.allowedContentTypes}"
             )
         }
     }

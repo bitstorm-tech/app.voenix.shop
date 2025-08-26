@@ -538,39 +538,45 @@ class ImageManagementService(
     ): Pair<ByteArray, String> {
         logger.debug { "Validating access to image $filename for user $userId" }
 
+        validateImageAccess(filename, userId)
+
+        // If validation passes, get the image data through the storage service
+        val storageImpl = imageStorageService as ImageStorageServiceImpl
+        return storageImpl.getUserImageData(filename, userId)
+    }
+
+    private fun validateImageAccess(filename: String, userId: Long) {
         // Check if this is an original image or generated image based on filename pattern
         val isOriginalImage = filename.contains(ORIGINAL_SUFFIX)
         val isGeneratedImage = filename.contains(GENERATED_PREFIX)
 
         when {
-            isOriginalImage -> {
-                // Extract UUID from filename (format: {uuid}_original.{ext})
-                val uuid = extractUuidFromOriginalFilename(filename)
-                uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
-                    ?: throw ResourceNotFoundException("Uploaded image not found or access denied")
+            isOriginalImage -> validateOriginalImageAccess(filename, userId)
+            isGeneratedImage -> validateGeneratedImageAccess(filename, userId)
+            else -> throw ResourceNotFoundException("Invalid image filename format")
+        }
+    }
 
-                logger.debug { "Access granted to original image $filename for user $userId" }
-            }
-            isGeneratedImage -> {
-                // For generated images, check ownership through the generated_images table
-                val generatedImage =
-                    generatedImageRepository.findByFilename(filename)
-                        ?: throw ResourceNotFoundException("Generated image not found")
+    private fun validateOriginalImageAccess(filename: String, userId: Long) {
+        // Extract UUID from filename (format: {uuid}_original.{ext})
+        val uuid = extractUuidFromOriginalFilename(filename)
+        uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
+            ?: throw ResourceNotFoundException("Uploaded image not found or access denied")
 
-                if (generatedImage.userId != userId) {
-                    throw ResourceNotFoundException("Generated image not found or access denied")
-                }
+        logger.debug { "Access granted to original image $filename for user $userId" }
+    }
 
-                logger.debug { "Access granted to generated image $filename for user $userId" }
-            }
-            else -> {
-                throw ResourceNotFoundException("Invalid image filename format")
-            }
+    private fun validateGeneratedImageAccess(filename: String, userId: Long) {
+        // For generated images, check ownership through the generated_images table
+        val generatedImage =
+            generatedImageRepository.findByFilename(filename)
+                ?: throw ResourceNotFoundException("Generated image not found")
+
+        if (generatedImage.userId != userId) {
+            throw ResourceNotFoundException("Generated image not found or access denied")
         }
 
-        // If validation passes, get the image data through the storage service
-        val storageImpl = imageStorageService as ImageStorageServiceImpl
-        return storageImpl.getUserImageData(filename, userId)
+        logger.debug { "Access granted to generated image $filename for user $userId" }
     }
 
     /**

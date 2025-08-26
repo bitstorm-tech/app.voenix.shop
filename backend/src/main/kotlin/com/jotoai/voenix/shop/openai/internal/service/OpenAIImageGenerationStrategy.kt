@@ -147,6 +147,11 @@ class OpenAIImageGenerationStrategy(
         val response = httpResponse.body<OpenAIResponse>()
         logger.info { "Successfully received response from OpenAI API" }
 
+        validateOpenAIResponse(response)
+        return response
+    }
+
+    private fun validateOpenAIResponse(response: OpenAIResponse) {
         if (response.error != null) {
             logger.error { "OpenAI API returned error: ${response.error.message}" }
             throw IllegalStateException("OpenAI API error: ${response.error.message}")
@@ -156,8 +161,6 @@ class OpenAIImageGenerationStrategy(
             logger.error { "OpenAI API returned empty or null data" }
             throw IllegalStateException("OpenAI API returned no images")
         }
-
-        return response
     }
 
     /**

@@ -289,21 +289,27 @@ class PdfGenerationServiceImpl(
         marginMm: Int?,
         articleId: Long,
     ): PdfSize {
-        val pdfWidthMm =
-            widthMm?.toFloat()
-                ?: throw PdfGenerationException("Document format width not configured for article $articleId")
-        val pdfHeightMm =
-            heightMm?.toFloat()
-                ?: throw PdfGenerationException("Document format height not configured for article $articleId")
-        val marginMmFloat =
-            marginMm?.toFloat()
-                ?: throw PdfGenerationException("Document format margin not configured for article $articleId")
-
+        validatePdfDimensions(widthMm, heightMm, marginMm, articleId)
+        
         return PdfSize(
-            width = pdfWidthMm * MM_TO_POINTS,
-            height = pdfHeightMm * MM_TO_POINTS,
-            margin = marginMmFloat * MM_TO_POINTS,
+            width = widthMm!!.toFloat() * MM_TO_POINTS,
+            height = heightMm!!.toFloat() * MM_TO_POINTS,
+            margin = marginMm!!.toFloat() * MM_TO_POINTS,
         )
+    }
+
+    private fun validatePdfDimensions(widthMm: Int?, heightMm: Int?, marginMm: Int?, articleId: Long) {
+        val missingConfig = mutableListOf<String>()
+        
+        if (widthMm == null) missingConfig.add("width")
+        if (heightMm == null) missingConfig.add("height")
+        if (marginMm == null) missingConfig.add("margin")
+        
+        if (missingConfig.isNotEmpty()) {
+            throw PdfGenerationException(
+                "Document format ${missingConfig.joinToString(", ")} not configured for article $articleId"
+            )
+        }
     }
 
     private fun addArticleQrCode(
@@ -415,18 +421,14 @@ class PdfGenerationServiceImpl(
 
             // Add QR code in bottom left
             addOrderQrCode(contentByte, orderData.id.toString(), itemMargin)
-        } catch (e: IOException) {
-            throw PdfGenerationException("I/O error creating page $pageNumber for order ${orderData.orderNumber}", e)
-        } catch (e: WriterException) {
-            throw PdfGenerationException(
-                "QR code generation error creating page $pageNumber for order ${orderData.orderNumber}",
-                e,
-            )
-        } catch (e: IllegalArgumentException) {
-            throw PdfGenerationException(
-                "Invalid argument creating page $pageNumber for order ${orderData.orderNumber}",
-                e,
-            )
+        } catch (e: Exception) {
+            val errorMessage = when (e) {
+                is IOException -> "I/O error creating page $pageNumber for order ${orderData.orderNumber}"
+                is WriterException -> 
+                    "QR code generation error creating page $pageNumber for order ${orderData.orderNumber}"
+                else -> "Error creating page $pageNumber for order ${orderData.orderNumber}"
+            }
+            throw PdfGenerationException(errorMessage, e)
         }
 
         logger.debug { "Created page $pageNumber/$totalPages for order ${orderData.orderNumber}" }

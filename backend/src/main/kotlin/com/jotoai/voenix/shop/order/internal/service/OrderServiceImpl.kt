@@ -73,6 +73,12 @@ class OrderServiceImpl(
         val cartInfo = cartQueryService.getActiveCartForOrder(userId)
             ?: throw BadRequestException("No active cart found for user: $userId")
         
+        validateCartForOrder(cartInfo)
+        
+        return cartFacade.refreshCartPricesForOrder(cartInfo.id)
+    }
+
+    private fun validateCartForOrder(cartInfo: CartOrderInfo) {
         if (cartInfo.isEmpty) {
             throw BadRequestException("Cannot create order from empty cart")
         }
@@ -80,8 +86,6 @@ class OrderServiceImpl(
         if (orderRepository.existsByCartId(cartInfo.id)) {
             throw OrderAlreadyExistsException(cartInfo.id)
         }
-        
-        return cartFacade.refreshCartPricesForOrder(cartInfo.id)
     }
     
     private fun calculateOrderTotals(cart: CartOrderInfo): OrderTotals {
