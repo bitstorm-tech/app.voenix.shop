@@ -41,48 +41,8 @@ class CartAssemblerTest {
         val cartId = 1L
         val userId = 100L
         val cart = createCart(id = cartId, userId = userId)
-
-        val item1 =
-            createCartItem(
-                id = 10L,
-                articleId = 1001L,
-                variantId = 2001L,
-                generatedImageId = 3001L,
-                promptId = 4001L,
-                quantity = 2,
-                priceAtTime = 1999L,
-            )
-
-        val item2 =
-            createCartItem(
-                id = 11L,
-                articleId = 1002L,
-                variantId = 2002L,
-                generatedImageId = 3002L,
-                promptId = 4002L,
-                quantity = 1,
-                priceAtTime = 2499L,
-            )
-
-        cart.items.add(item1)
-        cart.items.add(item2)
-        item1.cart = cart
-        item2.cart = cart
-
-        val article1 = createArticleDto(id = 1001L, name = "Custom Mug 1")
-        val article2 = createArticleDto(id = 1002L, name = "Custom Mug 2")
-        val variant1 = createMugVariantDto(id = 2001L, articleId = 1001L, colorCode = "RED")
-        val variant2 = createMugVariantDto(id = 2002L, articleId = 1002L, colorCode = "BLUE")
-
-        val image1 = createGeneratedImageDto(filename = "image1.jpg", promptId = 4001L)
-        val image2 = createGeneratedImageDto(filename = "image2.jpg", promptId = 4002L)
-
-        whenever(articleQueryService.getArticlesByIds(listOf(1001L, 1002L)))
-            .thenReturn(mapOf(1001L to article1, 1002L to article2))
-        whenever(articleQueryService.getMugVariantsByIds(listOf(2001L, 2002L)))
-            .thenReturn(mapOf(2001L to variant1, 2002L to variant2))
-        whenever(imageQueryService.findGeneratedImagesByIds(listOf(3001L, 3002L)))
-            .thenReturn(mapOf(3001L to image1, 3002L to image2))
+        val (item1, item2) = setupCartItemsWithImages(cart)
+        setupMockServiceResponses()
 
         // When
         val result = cartAssembler.toDto(cart)
@@ -93,27 +53,74 @@ class CartAssemblerTest {
         assertEquals(userId, result.userId)
         assertEquals(2, result.items.size)
 
-        // Verify first item
-        val resultItem1 = result.items[0]
-        assertEquals(10L, resultItem1.id)
-        assertEquals(3001L, resultItem1.generatedImageId)
-        assertEquals("image1.jpg", resultItem1.generatedImageFilename)
-        assertEquals(4001L, resultItem1.promptId)
-        assertEquals(2, resultItem1.quantity)
-        assertEquals(3998L, resultItem1.totalPrice) // 1999 * 2
+        verifyFirstCartItem(result.items[0])
+        verifySecondCartItem(result.items[1])
+        verifyCartTotals(result)
+    }
 
-        // Verify second item
-        val resultItem2 = result.items[1]
-        assertEquals(11L, resultItem2.id)
-        assertEquals(3002L, resultItem2.generatedImageId)
-        assertEquals("image2.jpg", resultItem2.generatedImageFilename)
-        assertEquals(4002L, resultItem2.promptId)
-        assertEquals(1, resultItem2.quantity)
-        assertEquals(2499L, resultItem2.totalPrice)
+    private fun setupCartItemsWithImages(cart: Cart): Pair<CartItem, CartItem> {
+        val item1 = createCartItem(
+            id = 10L,
+            articleId = 1001L,
+            variantId = 2001L,
+            generatedImageId = 3001L,
+            promptId = 4001L,
+            quantity = 2,
+            priceAtTime = 1999L,
+        )
+        val item2 = createCartItem(
+            id = 11L,
+            articleId = 1002L,
+            variantId = 2002L,
+            generatedImageId = 3002L,
+            promptId = 4002L,
+            quantity = 1,
+            priceAtTime = 2499L,
+        )
+        cart.items.add(item1)
+        cart.items.add(item2)
+        item1.cart = cart
+        item2.cart = cart
+        return Pair(item1, item2)
+    }
 
-        // Verify cart totals
-        assertEquals(3, result.totalItemCount) // 2 + 1
-        assertEquals(6497L, result.totalPrice) // 3998 + 2499
+    private fun setupMockServiceResponses() {
+        val article1 = createArticleDto(id = 1001L, name = "Custom Mug 1")
+        val article2 = createArticleDto(id = 1002L, name = "Custom Mug 2")
+        val variant1 = createMugVariantDto(id = 2001L, articleId = 1001L, colorCode = "RED")
+        val variant2 = createMugVariantDto(id = 2002L, articleId = 1002L, colorCode = "BLUE")
+        val image1 = createGeneratedImageDto(filename = "image1.jpg", promptId = 4001L)
+        val image2 = createGeneratedImageDto(filename = "image2.jpg", promptId = 4002L)
+
+        whenever(articleQueryService.getArticlesByIds(listOf(1001L, 1002L)))
+            .thenReturn(mapOf(1001L to article1, 1002L to article2))
+        whenever(articleQueryService.getMugVariantsByIds(listOf(2001L, 2002L)))
+            .thenReturn(mapOf(2001L to variant1, 2002L to variant2))
+        whenever(imageQueryService.findGeneratedImagesByIds(listOf(3001L, 3002L)))
+            .thenReturn(mapOf(3001L to image1, 3002L to image2))
+    }
+
+    private fun verifyFirstCartItem(item: CartItemDto) {
+        assertEquals(10L, item.id)
+        assertEquals(3001L, item.generatedImageId)
+        assertEquals("image1.jpg", item.generatedImageFilename)
+        assertEquals(4001L, item.promptId)
+        assertEquals(2, item.quantity)
+        assertEquals(3998L, item.totalPrice)
+    }
+
+    private fun verifySecondCartItem(item: CartItemDto) {
+        assertEquals(11L, item.id)
+        assertEquals(3002L, item.generatedImageId)
+        assertEquals("image2.jpg", item.generatedImageFilename)
+        assertEquals(4002L, item.promptId)
+        assertEquals(1, item.quantity)
+        assertEquals(2499L, item.totalPrice)
+    }
+
+    private fun verifyCartTotals(result: CartDto) {
+        assertEquals(3, result.totalItemCount)
+        assertEquals(6497L, result.totalPrice)
         assertFalse(result.isEmpty)
     }
 
@@ -269,68 +276,8 @@ class CartAssemblerTest {
     fun `toDto should batch load images efficiently`() {
         // Given - Multiple items with same image ID
         val cart = createCart(id = 1L, userId = 100L)
-
-        val item1 =
-            createCartItem(
-                id = 10L,
-                articleId = 1001L,
-                variantId = 2001L,
-                generatedImageId = 3001L,
-                quantity = 1,
-                priceAtTime = 1999L,
-            )
-
-        val item2 =
-            createCartItem(
-                id = 11L,
-                articleId = 1002L,
-                variantId = 2002L,
-                generatedImageId = 3001L, // Same image ID
-                quantity = 1,
-                priceAtTime = 2499L,
-            )
-
-        val item3 =
-            createCartItem(
-                id = 12L,
-                articleId = 1003L,
-                variantId = 2003L,
-                generatedImageId = 3002L, // Different image ID
-                quantity = 1,
-                priceAtTime = 1899L,
-            )
-
-        cart.items.addAll(listOf(item1, item2, item3))
-        item1.cart = cart
-        item2.cart = cart
-        item3.cart = cart
-
-        val articles =
-            mapOf(
-                1001L to createArticleDto(id = 1001L, name = "Mug 1"),
-                1002L to createArticleDto(id = 1002L, name = "Mug 2"),
-                1003L to createArticleDto(id = 1003L, name = "Mug 3"),
-            )
-
-        val variants =
-            mapOf(
-                2001L to createMugVariantDto(id = 2001L, articleId = 1001L),
-                2002L to createMugVariantDto(id = 2002L, articleId = 1002L),
-                2003L to createMugVariantDto(id = 2003L, articleId = 1003L),
-            )
-
-        val images =
-            mapOf(
-                3001L to createGeneratedImageDto(filename = "shared-image.jpg"),
-                3002L to createGeneratedImageDto(filename = "unique-image.jpg"),
-            )
-
-        whenever(articleQueryService.getArticlesByIds(listOf(1001L, 1002L, 1003L)))
-            .thenReturn(articles)
-        whenever(articleQueryService.getMugVariantsByIds(listOf(2001L, 2002L, 2003L)))
-            .thenReturn(variants)
-        whenever(imageQueryService.findGeneratedImagesByIds(listOf(3001L, 3002L)))
-            .thenReturn(images)
+        val items = setupBatchLoadTestItems(cart)
+        setupBatchLoadMockResponses()
 
         // When
         val result = cartAssembler.toDto(cart)
@@ -338,8 +285,63 @@ class CartAssemblerTest {
         // Then
         assertNotNull(result)
         assertEquals(3, result.items.size)
+        verifyBatchLoadResults(result)
+    }
 
-        // Both items should have the same filename for the shared image
+    private fun setupBatchLoadTestItems(cart: Cart): List<CartItem> {
+        val item1 = createCartItem(
+            id = 10L,
+            articleId = 1001L,
+            variantId = 2001L,
+            generatedImageId = 3001L,
+            quantity = 1,
+            priceAtTime = 1999L,
+        )
+        val item2 = createCartItem(
+            id = 11L,
+            articleId = 1002L,
+            variantId = 2002L,
+            generatedImageId = 3001L,
+            quantity = 1,
+            priceAtTime = 2499L,
+        )
+        val item3 = createCartItem(
+            id = 12L,
+            articleId = 1003L,
+            variantId = 2003L,
+            generatedImageId = 3002L,
+            quantity = 1,
+            priceAtTime = 1899L,
+        )
+
+        val items = listOf(item1, item2, item3)
+        cart.items.addAll(items)
+        items.forEach { it.cart = cart }
+        return items
+    }
+
+    private fun setupBatchLoadMockResponses() {
+        val articles = mapOf(
+            1001L to createArticleDto(id = 1001L, name = "Mug 1"),
+            1002L to createArticleDto(id = 1002L, name = "Mug 2"),
+            1003L to createArticleDto(id = 1003L, name = "Mug 3"),
+        )
+        val variants = mapOf(
+            2001L to createMugVariantDto(id = 2001L, articleId = 1001L),
+            2002L to createMugVariantDto(id = 2002L, articleId = 1002L),
+            2003L to createMugVariantDto(id = 2003L, articleId = 1003L),
+        )
+        val images = mapOf(
+            3001L to createGeneratedImageDto(filename = "shared-image.jpg"),
+            3002L to createGeneratedImageDto(filename = "unique-image.jpg"),
+        )
+
+        whenever(articleQueryService.getArticlesByIds(listOf(1001L, 1002L, 1003L))).thenReturn(articles)
+        whenever(articleQueryService.getMugVariantsByIds(listOf(2001L, 2002L, 2003L))).thenReturn(variants)
+        whenever(imageQueryService.findGeneratedImagesByIds(listOf(3001L, 3002L))).thenReturn(images)
+    }
+
+    private fun verifyBatchLoadResults(result: CartDto) {
         assertEquals("shared-image.jpg", result.items[0].generatedImageFilename)
         assertEquals("shared-image.jpg", result.items[1].generatedImageFilename)
         assertEquals("unique-image.jpg", result.items[2].generatedImageFilename)

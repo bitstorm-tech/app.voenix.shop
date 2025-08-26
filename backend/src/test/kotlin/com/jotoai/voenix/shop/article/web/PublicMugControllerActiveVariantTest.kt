@@ -36,105 +36,106 @@ class PublicMugControllerActiveVariantTest {
     @BeforeEach
     fun setUp() {
         val now = OffsetDateTime.now()
-
-        // Mug with both active and inactive variants
-        testMugWithMixedVariants =
-            PublicMugDto(
-                id = 1L,
-                name = "Premium Coffee Mug",
-                descriptionShort = "High-quality ceramic mug",
-                descriptionLong = "Dishwasher safe premium ceramic coffee mug",
-                image = "/images/mugs/premium.jpg",
-                price = 15.99,
-                heightMm = 95,
-                diameterMm = 80,
-                printTemplateWidthMm = 200,
-                printTemplateHeightMm = 90,
-                fillingQuantity = "330ml",
-                dishwasherSafe = true,
-                variants =
-                    listOf(
-                        PublicMugVariantDto(
-                            id = 1L,
-                            mugId = 1L,
-                            colorCode = "#FFFFFF",
-                            name = "White",
-                            exampleImageUrl = "/images/variants/white.jpg",
-                            articleVariantNumber = "PM-WHITE",
-                            isDefault = true,
-                            active = true,
-                            exampleImageFilename = "white.jpg",
-                            createdAt = now,
-                            updatedAt = now,
-                        ),
-                        PublicMugVariantDto(
-                            id = 2L,
-                            mugId = 1L,
-                            colorCode = "#000000",
-                            name = "Black",
-                            exampleImageUrl = "/images/variants/black.jpg",
-                            articleVariantNumber = "PM-BLACK",
-                            isDefault = false,
-                            active = true,
-                            exampleImageFilename = "black.jpg",
-                            createdAt = now,
-                            updatedAt = now,
-                        ),
-                        // Note: Inactive variants should already be filtered out at service layer
-                    ),
-            )
-
-        // Mug with only active variants
-        testMugWithOnlyActiveVariants =
-            PublicMugDto(
-                id = 2L,
-                name = "Travel Mug",
-                descriptionShort = "Insulated travel mug",
-                descriptionLong = "Double-wall insulated travel mug",
-                image = "/images/mugs/travel.jpg",
-                price = 24.99,
-                heightMm = 150,
-                diameterMm = 75,
-                printTemplateWidthMm = 180,
-                printTemplateHeightMm = 120,
-                fillingQuantity = "450ml",
-                dishwasherSafe = true,
-                variants =
-                    listOf(
-                        PublicMugVariantDto(
-                            id = 3L,
-                            mugId = 2L,
-                            colorCode = "#FF0000",
-                            name = "Red",
-                            exampleImageUrl = "/images/variants/red.jpg",
-                            articleVariantNumber = "TM-RED",
-                            isDefault = true,
-                            active = true,
-                            exampleImageFilename = "red.jpg",
-                            createdAt = now,
-                            updatedAt = now,
-                        ),
-                    ),
-            )
-
-        // Edge case: Mug with no active variants (should probably not be returned)
-        testMugWithNoActiveVariants =
-            PublicMugDto(
-                id = 3L,
-                name = "Discontinued Mug",
-                descriptionShort = "Old model",
-                descriptionLong = "This mug model has been discontinued",
-                image = "/images/mugs/discontinued.jpg",
-                price = 9.99,
-                heightMm = 90,
-                diameterMm = 85,
-                printTemplateWidthMm = 190,
-                printTemplateHeightMm = 85,
-                fillingQuantity = "300ml",
-                dishwasherSafe = false,
-                variants = emptyList(), // All variants are inactive
-            )
+        testMugWithMixedVariants = createPremiumCoffeeMug(now)
+        testMugWithOnlyActiveVariants = createTravelMug(now)
+        testMugWithNoActiveVariants = createDiscontinuedMug()
     }
+
+    private fun createPremiumCoffeeMug(now: OffsetDateTime) =
+        PublicMugDto(
+            id = 1L,
+            name = "Premium Coffee Mug",
+            descriptionShort = "High-quality ceramic mug",
+            descriptionLong = "Dishwasher safe premium ceramic coffee mug",
+            image = "/images/mugs/premium.jpg",
+            price = 15.99,
+            heightMm = 95,
+            diameterMm = 80,
+            printTemplateWidthMm = 200,
+            printTemplateHeightMm = 90,
+            fillingQuantity = "330ml",
+            dishwasherSafe = true,
+            variants = createPremiumMugVariants(now),
+        )
+
+    private fun createPremiumMugVariants(now: OffsetDateTime) =
+        listOf(
+            PublicMugVariantDto(
+                id = 1L,
+                mugId = 1L,
+                colorCode = "#FFFFFF",
+                name = "White",
+                exampleImageUrl = "/images/variants/white.jpg",
+                articleVariantNumber = "PM-WHITE",
+                isDefault = true,
+                active = true,
+                exampleImageFilename = "white.jpg",
+                createdAt = now,
+                updatedAt = now,
+            ),
+            PublicMugVariantDto(
+                id = 2L,
+                mugId = 1L,
+                colorCode = "#000000",
+                name = "Black",
+                exampleImageUrl = "/images/variants/black.jpg",
+                articleVariantNumber = "PM-BLACK",
+                isDefault = false,
+                active = true,
+                exampleImageFilename = "black.jpg",
+                createdAt = now,
+                updatedAt = now,
+            ),
+        )
+
+    private fun createTravelMug(now: OffsetDateTime) =
+        PublicMugDto(
+            id = 2L,
+            name = "Travel Mug",
+            descriptionShort = "Insulated travel mug",
+            descriptionLong = "Double-wall insulated travel mug",
+            image = "/images/mugs/travel.jpg",
+            price = 24.99,
+            heightMm = 150,
+            diameterMm = 75,
+            printTemplateWidthMm = 180,
+            printTemplateHeightMm = 120,
+            fillingQuantity = "450ml",
+            dishwasherSafe = true,
+            variants =
+                listOf(
+                    PublicMugVariantDto(
+                        id = 3L,
+                        mugId = 2L,
+                        colorCode = "#FF0000",
+                        name = "Red",
+                        exampleImageUrl = "/images/variants/red.jpg",
+                        articleVariantNumber = "TM-RED",
+                        isDefault = true,
+                        active = true,
+                        exampleImageFilename = "red.jpg",
+                        createdAt = now,
+                        updatedAt = now,
+                    ),
+                ),
+        )
+
+    private fun createDiscontinuedMug() =
+        PublicMugDto(
+            id = 3L,
+            name = "Discontinued Mug",
+            descriptionShort = "Old model",
+            descriptionLong = "This mug model has been discontinued",
+            image = "/images/mugs/discontinued.jpg",
+            price = 9.99,
+            heightMm = 90,
+            diameterMm = 85,
+            printTemplateWidthMm = 190,
+            printTemplateHeightMm = 85,
+            fillingQuantity = "300ml",
+            dishwasherSafe = false,
+            variants = emptyList(),
+        )
 
     @Test
     @DisplayName("GET /api/mugs should return mugs with only active variants")

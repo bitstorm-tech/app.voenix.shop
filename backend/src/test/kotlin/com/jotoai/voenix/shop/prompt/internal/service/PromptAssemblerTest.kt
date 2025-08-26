@@ -80,73 +80,20 @@ class PromptAssemblerTest {
         val updatedAt = OffsetDateTime.now()
         val exampleImageFilename = "prompt-example.jpg"
         val expectedImageUrl = "https://example.com/images/prompt-examples/prompt-example.jpg"
-
-        val entity =
-            Prompt(
-                id = 1L,
-                title = "Test Prompt",
-                promptText = "Create a beautiful image with {background}",
-                categoryId = 1L,
-                category = testCategory,
-                subcategoryId = 2L,
-                subcategory = testSubcategory,
-                active = true,
-                exampleImageFilename = exampleImageFilename,
-                createdAt = createdAt,
-                updatedAt = updatedAt,
-            )
-
-        // Add slot variant mapping
-        val mapping =
-            PromptSlotVariantMapping(
-                id = PromptSlotVariantMappingId(1L, 1L),
-                prompt = entity,
-                promptSlotVariant = testSlotVariant,
-            )
+        
+        val entity = createTestPromptWithAllFields(createdAt, updatedAt, exampleImageFilename)
+        val mapping = createTestSlotVariantMapping(entity)
         entity.promptSlotVariantMappings.add(mapping)
-
-        val expectedSlotDto =
-            PromptSlotVariantDto(
-                id = 1L,
-                promptSlotTypeId = 1L,
-                promptSlotType = null,
-                name = "Nature Background",
-                prompt = "A beautiful natural landscape",
-                description = "Perfect for nature themes",
-                exampleImageUrl = null,
-                createdAt = null,
-                updatedAt = null,
-            )
-
-        `when`(storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename))
-            .thenReturn(expectedImageUrl)
-        `when`(promptSlotVariantAssembler.toDto(testSlotVariant))
-            .thenReturn(expectedSlotDto)
+        
+        val expectedSlotDto = createExpectedSlotDto()
+        setupPromptTestMocks(exampleImageFilename, expectedImageUrl, expectedSlotDto)
 
         // When
         val result = assembler.toDto(entity)
 
         // Then
-        assertEquals(1L, result.id)
-        assertEquals("Test Prompt", result.title)
-        assertEquals("Create a beautiful image with {background}", result.promptText)
-        assertEquals(1L, result.categoryId)
-        assertNotNull(result.category)
-        assertEquals(1L, result.category!!.id)
-        assertEquals("Test Category", result.category!!.name)
-        assertEquals(2L, result.subcategoryId)
-        assertNotNull(result.subcategory)
-        assertEquals(2L, result.subcategory!!.id)
-        assertEquals("Test Subcategory", result.subcategory!!.name)
-        assertEquals(true, result.active)
-        assertEquals(1, result.slots.size)
-        assertEquals(expectedSlotDto, result.slots[0])
-        assertEquals(expectedImageUrl, result.exampleImageUrl)
-        assertEquals(createdAt, result.createdAt)
-        assertEquals(updatedAt, result.updatedAt)
-
-        verify(storagePathService).getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename)
-        verify(promptSlotVariantAssembler).toDto(testSlotVariant)
+        verifyPromptDtoFields(result, expectedSlotDto, expectedImageUrl, createdAt, updatedAt)
+        verifyPromptTestInteractions(exampleImageFilename)
     }
 
     @Test
@@ -272,80 +219,20 @@ class PromptAssemblerTest {
     @Test
     fun `toDto should handle multiple slot variants correctly`() {
         // Given
-        val entity =
-            Prompt(
-                id = 6L,
-                title = "Multi-Slot Prompt",
-                promptText = "Create an image with {background} and {style}",
-                categoryId = 1L,
-                category = testCategory,
-                active = true,
-            )
-
-        val slotVariant2 =
-            PromptSlotVariant(
-                id = 2L,
-                promptSlotTypeId = 2L,
-                name = "Artistic Style",
-                prompt = "Abstract art style",
-            )
-
-        val mapping1 =
-            PromptSlotVariantMapping(
-                id = PromptSlotVariantMappingId(6L, 1L),
-                prompt = entity,
-                promptSlotVariant = testSlotVariant,
-            )
-        val mapping2 =
-            PromptSlotVariantMapping(
-                id = PromptSlotVariantMappingId(6L, 2L),
-                prompt = entity,
-                promptSlotVariant = slotVariant2,
-            )
+        val entity = createMultiSlotPromptEntity()
+        val slotVariant2 = createSecondSlotVariant()
+        val (mapping1, mapping2) = createMultipleSlotVariantMappings(entity, slotVariant2)
         entity.promptSlotVariantMappings.addAll(listOf(mapping1, mapping2))
-
-        val expectedSlotDto1 =
-            PromptSlotVariantDto(
-                id = 1L,
-                promptSlotTypeId = 1L,
-                promptSlotType = null,
-                name = "Nature Background",
-                prompt = "A beautiful natural landscape",
-                description = "Perfect for nature themes",
-                exampleImageUrl = null,
-                createdAt = null,
-                updatedAt = null,
-            )
-
-        val expectedSlotDto2 =
-            PromptSlotVariantDto(
-                id = 2L,
-                promptSlotTypeId = 2L,
-                promptSlotType = null,
-                name = "Artistic Style",
-                prompt = "Abstract art style",
-                description = null,
-                exampleImageUrl = null,
-                createdAt = null,
-                updatedAt = null,
-            )
-
-        `when`(promptSlotVariantAssembler.toDto(testSlotVariant))
-            .thenReturn(expectedSlotDto1)
-        `when`(promptSlotVariantAssembler.toDto(slotVariant2))
-            .thenReturn(expectedSlotDto2)
+        
+        val (expectedDto1, expectedDto2) = createExpectedMultipleSlotDtos()
+        setupMultipleSlotVariantMocks(slotVariant2, expectedDto1, expectedDto2)
 
         // When
         val result = assembler.toDto(entity)
 
         // Then
-        assertEquals(6L, result.id)
-        assertEquals(2, result.slots.size)
-        assertEquals(expectedSlotDto1, result.slots[0])
-        assertEquals(expectedSlotDto2, result.slots[1])
-
-        verify(promptSlotVariantAssembler).toDto(testSlotVariant)
-        verify(promptSlotVariantAssembler).toDto(slotVariant2)
+        verifyMultipleSlotVariantsFields(result, expectedDto1, expectedDto2)
+        verifyMultipleSlotVariantsInteractions(slotVariant2)
     }
 
     @Test
@@ -597,5 +484,172 @@ class PromptAssemblerTest {
         assertEquals("Complex & Special Characters", publicResult.category!!.name)
         assertEquals(888L, publicResult.subcategory!!.id)
         assertEquals("Complex Sub & Category", publicResult.subcategory!!.name)
+    }
+    
+    // Helper methods for full DTO conversion test
+    private fun createTestPromptWithAllFields(createdAt: OffsetDateTime, updatedAt: OffsetDateTime, exampleImageFilename: String) =
+        Prompt(
+            id = 1L,
+            title = "Test Prompt",
+            promptText = "Create a beautiful image with {background}",
+            categoryId = 1L,
+            category = testCategory,
+            subcategoryId = 2L,
+            subcategory = testSubcategory,
+            active = true,
+            exampleImageFilename = exampleImageFilename,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
+    
+    private fun createTestSlotVariantMapping(entity: Prompt) =
+        PromptSlotVariantMapping(
+            id = PromptSlotVariantMappingId(1L, 1L),
+            prompt = entity,
+            promptSlotVariant = testSlotVariant,
+        )
+    
+    private fun createExpectedSlotDto() =
+        PromptSlotVariantDto(
+            id = 1L,
+            promptSlotTypeId = 1L,
+            promptSlotType = null,
+            name = "Nature Background",
+            prompt = "A beautiful natural landscape",
+            description = "Perfect for nature themes",
+            exampleImageUrl = null,
+            createdAt = null,
+            updatedAt = null,
+        )
+    
+    private fun setupPromptTestMocks(exampleImageFilename: String, expectedImageUrl: String, expectedSlotDto: PromptSlotVariantDto) {
+        `when`(storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename))
+            .thenReturn(expectedImageUrl)
+        `when`(promptSlotVariantAssembler.toDto(testSlotVariant))
+            .thenReturn(expectedSlotDto)
+    }
+    
+    private fun verifyPromptDtoFields(
+        result: com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto,
+        expectedSlotDto: PromptSlotVariantDto,
+        expectedImageUrl: String,
+        createdAt: OffsetDateTime,
+        updatedAt: OffsetDateTime,
+    ) {
+        assertEquals(1L, result.id)
+        assertEquals("Test Prompt", result.title)
+        assertEquals("Create a beautiful image with {background}", result.promptText)
+        assertEquals(1L, result.categoryId)
+        assertNotNull(result.category)
+        assertEquals(1L, result.category!!.id)
+        assertEquals("Test Category", result.category!!.name)
+        assertEquals(2L, result.subcategoryId)
+        assertNotNull(result.subcategory)
+        assertEquals(2L, result.subcategory!!.id)
+        assertEquals("Test Subcategory", result.subcategory!!.name)
+        assertEquals(true, result.active)
+        assertEquals(1, result.slots.size)
+        assertEquals(expectedSlotDto, result.slots[0])
+        assertEquals(expectedImageUrl, result.exampleImageUrl)
+        assertEquals(createdAt, result.createdAt)
+        assertEquals(updatedAt, result.updatedAt)
+    }
+    
+    private fun verifyPromptTestInteractions(exampleImageFilename: String) {
+        verify(storagePathService).getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename)
+        verify(promptSlotVariantAssembler).toDto(testSlotVariant)
+    }
+    
+    // Helper methods for multiple slot variants test
+    private fun createMultiSlotPromptEntity() =
+        Prompt(
+            id = 6L,
+            title = "Multi-Slot Prompt",
+            promptText = "Create an image with {background} and {style}",
+            categoryId = 1L,
+            category = testCategory,
+            active = true,
+        )
+    
+    private fun createSecondSlotVariant() =
+        PromptSlotVariant(
+            id = 2L,
+            promptSlotTypeId = 2L,
+            name = "Artistic Style",
+            prompt = "Abstract art style",
+        )
+    
+    private fun createMultipleSlotVariantMappings(
+        entity: Prompt,
+        slotVariant2: PromptSlotVariant,
+    ): Pair<PromptSlotVariantMapping, PromptSlotVariantMapping> {
+        val mapping1 = PromptSlotVariantMapping(
+            id = PromptSlotVariantMappingId(6L, 1L),
+            prompt = entity,
+            promptSlotVariant = testSlotVariant,
+        )
+        
+        val mapping2 = PromptSlotVariantMapping(
+            id = PromptSlotVariantMappingId(6L, 2L),
+            prompt = entity,
+            promptSlotVariant = slotVariant2,
+        )
+        
+        return Pair(mapping1, mapping2)
+    }
+    
+    private fun createExpectedMultipleSlotDtos(): Pair<PromptSlotVariantDto, PromptSlotVariantDto> {
+        val expectedDto1 = PromptSlotVariantDto(
+            id = 1L,
+            promptSlotTypeId = 1L,
+            promptSlotType = null,
+            name = "Nature Background",
+            prompt = "A beautiful natural landscape",
+            description = "Perfect for nature themes",
+            exampleImageUrl = null,
+            createdAt = null,
+            updatedAt = null,
+        )
+        
+        val expectedDto2 = PromptSlotVariantDto(
+            id = 2L,
+            promptSlotTypeId = 2L,
+            promptSlotType = null,
+            name = "Artistic Style",
+            prompt = "Abstract art style",
+            description = null,
+            exampleImageUrl = null,
+            createdAt = null,
+            updatedAt = null,
+        )
+        
+        return Pair(expectedDto1, expectedDto2)
+    }
+    
+    private fun setupMultipleSlotVariantMocks(
+        slotVariant2: PromptSlotVariant,
+        expectedDto1: PromptSlotVariantDto,
+        expectedDto2: PromptSlotVariantDto,
+    ) {
+        `when`(promptSlotVariantAssembler.toDto(testSlotVariant))
+            .thenReturn(expectedDto1)
+        `when`(promptSlotVariantAssembler.toDto(slotVariant2))
+            .thenReturn(expectedDto2)
+    }
+    
+    private fun verifyMultipleSlotVariantsFields(
+        result: com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto,
+        expectedDto1: PromptSlotVariantDto,
+        expectedDto2: PromptSlotVariantDto,
+    ) {
+        assertEquals(6L, result.id)
+        assertEquals(2, result.slots.size)
+        assertEquals(expectedDto1, result.slots[0])
+        assertEquals(expectedDto2, result.slots[1])
+    }
+    
+    private fun verifyMultipleSlotVariantsInteractions(slotVariant2: PromptSlotVariant) {
+        verify(promptSlotVariantAssembler).toDto(testSlotVariant)
+        verify(promptSlotVariantAssembler).toDto(slotVariant2)
     }
 }
