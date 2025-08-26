@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.public.prompts
+package com.jotoai.voenix.shop.prompt.web
 
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptDto
@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/prompts")
+@RequestMapping("/api/public/prompts")
 class PublicPromptController(
     private val promptQueryService: PromptQueryService,
 ) {
