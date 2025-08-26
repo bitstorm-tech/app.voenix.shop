@@ -227,9 +227,6 @@ class OpenAIImageGenerationStrategy(
             } catch (e: IOException) {
                 logger.error(e) { "IO error during OpenAI API call" }
                 throw IllegalStateException("Failed to generate images: IO error", e)
-            } catch (e: IllegalStateException) {
-                // Re-throw IllegalStateException from OpenAI API responses
-                throw e
             }
         }
 
@@ -295,9 +292,6 @@ class OpenAIImageGenerationStrategy(
             } catch (e: IOException) {
                 logger.error(e) { "IO error during OpenAI API call" }
                 throw IllegalStateException("Failed to test prompt: IO error", e)
-            } catch (e: IllegalStateException) {
-                // Re-throw IllegalStateException from OpenAI API responses
-                throw e
             }
         }
 

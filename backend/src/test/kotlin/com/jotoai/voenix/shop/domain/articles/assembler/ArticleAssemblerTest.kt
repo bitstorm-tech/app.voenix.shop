@@ -13,6 +13,7 @@ import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
+import java.time.OffsetDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -23,8 +24,8 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
-import java.time.OffsetDateTime
 
+@Suppress("LongMethod", "LargeClass")
 class ArticleAssemblerTest {
     private lateinit var mugArticleVariantAssembler: MugArticleVariantAssembler
     private lateinit var shirtArticleVariantAssembler: ShirtArticleVariantAssembler
