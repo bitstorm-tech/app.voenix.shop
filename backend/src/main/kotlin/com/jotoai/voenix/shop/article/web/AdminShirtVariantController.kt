@@ -4,15 +4,14 @@ import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.api.variants.ShirtVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.ShirtVariantQueryService
-import com.jotoai.voenix.shop.image.api.ImageFacade
-import com.jotoai.voenix.shop.user.api.UserService
+import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
+import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.security.core.annotation.AuthenticationPrincipal
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -30,8 +29,7 @@ import org.springframework.web.multipart.MultipartFile
 class AdminShirtVariantController(
     private val shirtVariantQueryService: ShirtVariantQueryService,
     private val shirtVariantFacade: ShirtVariantFacade,
-    private val imageFacade: ImageFacade,
-    private val userService: UserService,
+    private val imageStorageService: ImageStorageServiceImpl,
 ) {
     @GetMapping("/{articleId}/variants")
     fun findByArticleId(
@@ -75,14 +73,15 @@ class AdminShirtVariantController(
         @RequestParam("cropY", required = false) cropY: Double?,
         @RequestParam("cropWidth", required = false) cropWidth: Double?,
         @RequestParam("cropHeight", required = false) cropHeight: Double?,
-        @AuthenticationPrincipal userDetails: UserDetails,
     ): ResponseEntity<ShirtArticleVariantDto> {
-        // Get the actual admin user ID from security context
-        val adminUser = userService.getUserByEmail(userDetails.username)
+        // Create crop area if crop parameters are provided
+        val cropArea = CropAreaUtils.createIfPresent(cropX, cropY, cropWidth, cropHeight)
 
-        // Upload the image using the facade's multipart method
-        val uploadedImage = imageFacade.createUploadedImage(file, adminUser.id)
-        val updatedVariant = shirtVariantFacade.updateExampleImage(variantId, uploadedImage.filename)
+        // Store the image directly in the shirt variant images directory
+        val storedFilename = imageStorageService.storeFile(file, ImageType.SHIRT_VARIANT_EXAMPLE, cropArea)
+
+        // Update the variant with the new image filename
+        val updatedVariant = shirtVariantFacade.updateExampleImage(variantId, storedFilename)
 
         return ResponseEntity.ok(updatedVariant)
     }

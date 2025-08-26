@@ -340,6 +340,7 @@ class ImageManagementService(
         uploadedImageId: Long,
         promptId: Long,
         generationNumber: Int,
+        ipAddress: String? = null,
     ): GeneratedImageDto {
         try {
             logger.info { "Storing generated image for uploaded image ID: $uploadedImageId" }
@@ -357,6 +358,7 @@ class ImageManagementService(
                     uploadedImage = uploadedImage,
                     promptId = promptId,
                     generationNumber = generationNumber,
+                    ipAddress = ipAddress,
                 )
 
             logger.info { "Successfully stored generated image: ${generatedImage.filename}" }
@@ -690,6 +692,7 @@ class ImageManagementService(
                     uploadedImageId = uploadedImageEntity.id!!,
                     promptId = promptId,
                     generationNumber = index + 1,
+                    ipAddress = ipAddress,
                 )
             }
 

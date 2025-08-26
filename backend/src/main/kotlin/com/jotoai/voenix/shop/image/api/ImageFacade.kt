@@ -100,6 +100,7 @@ interface ImageFacade {
         uploadedImageId: Long,
         promptId: Long,
         generationNumber: Int,
+        ipAddress: String? = null,
     ): GeneratedImageDto
 
     /**

@@ -3,10 +3,12 @@ package com.jotoai.voenix.shop.image.web
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
+import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
+import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.user.api.UserService
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpStatus
@@ -30,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile
 @PreAuthorize("hasRole('ADMIN')")
 class AdminImageController(
     private val imageFacade: ImageFacade,
+    private val imageQueryService: ImageQueryService,
     private val imageAccessService: ImageAccessService,
     private val objectMapper: ObjectMapper,
     private val userService: UserService,
@@ -69,14 +72,18 @@ class AdminImageController(
     ) {
         val adminUser = userService.getUserByEmail(userDetails.username)
 
-        // TODO: Implement admin image deletion
-        // This requires either:
-        // 1. Adding a deleteImageByFilename method to ImageFacade, or
-        // 2. Finding the uploaded image by filename first to get the UUID/userId,
-        //    then using existing deleteUploadedImage
-        // For now, throwing UnsupportedOperationException to indicate this needs proper implementation
-        throw UnsupportedOperationException(
-            "Admin image deletion not yet implemented - requires filename-based deletion in ImageFacade"
-        )
+        // Find the image by filename to get its UUID
+        val imageDto = imageQueryService.findImageByFilename(filename)
+            ?: throw IllegalArgumentException("Image with filename '$filename' not found")
+
+        // Admin can delete any uploaded image, but we need the UUID and userId
+        when (imageDto) {
+            is UploadedImageDto -> {
+                imageFacade.deleteUploadedImage(imageDto.uuid, adminUser.id)
+            }
+            else -> {
+                throw IllegalArgumentException("Cannot delete image type: ${imageDto::class.simpleName}")
+            }
+        }
     }
 }

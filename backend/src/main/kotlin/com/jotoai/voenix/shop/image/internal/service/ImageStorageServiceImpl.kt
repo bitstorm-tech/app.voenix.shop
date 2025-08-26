@@ -360,6 +360,7 @@ class ImageStorageServiceImpl(
         uploadedImage: UploadedImage,
         promptId: Long,
         generationNumber: Int,
+        ipAddress: String? = null,
     ): GeneratedImage {
         val userStorageDir = getUserStorageDirectory(uploadedImage.userId)
         val storedFilename = "${uploadedImage.uuid}$GENERATED_PREFIX$generationNumber.png"
@@ -378,6 +379,7 @@ class ImageStorageServiceImpl(
                 userId = uploadedImage.userId,
                 uploadedImage = uploadedImage,
                 generatedAt = LocalDateTime.now(),
+                ipAddress = ipAddress,
             )
 
         val savedImage = generatedImageRepository.save(generatedImage)
