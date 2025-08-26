@@ -13,7 +13,11 @@ import org.springframework.web.multipart.MultipartFile
 class ImageValidationService {
     companion object {
         private const val MAX_FILE_SIZE = 10 * 1024 * 1024L // 10MB
+        private const val BYTES_PER_KB = 1024L
+        private const val KB_PER_MB = 1024L
         private val ALLOWED_CONTENT_TYPES = setOf("image/jpeg", "image/jpg", "image/png", "image/webp")
+
+        private fun bytesToMegabytes(bytes: Long): Long = bytes / (BYTES_PER_KB * KB_PER_MB)
     }
 
     /**
@@ -25,7 +29,7 @@ class ImageValidationService {
         }
 
         if (file.size > MAX_FILE_SIZE) {
-            throw BadRequestException("Image file size must be less than ${MAX_FILE_SIZE / (1024 * 1024)}MB")
+            throw BadRequestException("Image file size must be less than ${bytesToMegabytes(MAX_FILE_SIZE)}MB")
         }
 
         val contentType = file.contentType?.lowercase() ?: ""
@@ -47,12 +51,14 @@ class ImageValidationService {
 
         val maxSize = imageType.maxFileSize
         if (file.size > maxSize) {
-            throw BadRequestException("Image file size must be less than ${maxSize / (1024 * 1024)}MB for ${imageType.name}")
+            val maxSizeMB = bytesToMegabytes(maxSize)
+            throw BadRequestException("Image file size must be less than ${maxSizeMB}MB for ${imageType.name}")
         }
 
         val contentType = file.contentType?.lowercase() ?: ""
         if (contentType !in imageType.allowedContentTypes) {
-            throw BadRequestException("Invalid image format for ${imageType.name}. Allowed formats: ${imageType.allowedContentTypes}")
+            val allowedFormats = imageType.allowedContentTypes
+            throw BadRequestException("Invalid image format for ${imageType.name}. Allowed formats: $allowedFormats")
         }
     }
 }
