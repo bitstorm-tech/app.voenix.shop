@@ -14,6 +14,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "article_shirt_details")
+@Suppress("LongParameterList")
 class ShirtArticleDetails(
     @Id
     @Column(name = "article_id")

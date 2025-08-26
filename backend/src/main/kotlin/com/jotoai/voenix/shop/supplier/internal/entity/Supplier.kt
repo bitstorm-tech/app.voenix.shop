@@ -13,6 +13,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "suppliers")
+@Suppress("LongParameterList")
 class Supplier(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

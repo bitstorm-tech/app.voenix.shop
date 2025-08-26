@@ -17,23 +17,12 @@ import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.UpdateCostCalculationRequest
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
-import com.jotoai.voenix.shop.article.internal.assembler.ArticleAssembler
-import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
-import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
-import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleCategoryRepository
-import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleSubCategoryRepository
+import com.jotoai.voenix.shop.article.internal.config.ArticleServiceDependencies
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.CostCalculation
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
-import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
-import com.jotoai.voenix.shop.article.internal.repository.CostCalculationRepository
-import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
-import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRepository
-import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.supplier.api.SupplierService
-import com.jotoai.voenix.shop.vat.api.VatService
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
@@ -41,20 +30,7 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class ArticleServiceImpl(
-    private val articleRepository: ArticleRepository,
-    private val articleMugVariantRepository: MugArticleVariantRepository,
-    private val articleShirtVariantRepository: ShirtArticleVariantRepository,
-    private val articleCategoryRepository: ArticleCategoryRepository,
-    private val articleSubCategoryRepository: ArticleSubCategoryRepository,
-    private val supplierService: SupplierService,
-    private val costCalculationRepository: CostCalculationRepository,
-    private val vatService: VatService,
-    private val mugDetailsService: MugDetailsService,
-    private val shirtDetailsService: ShirtDetailsService,
-    private val articleAssembler: ArticleAssembler,
-    private val mugArticleVariantAssembler: MugArticleVariantAssembler,
-    private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
-    private val storagePathService: StoragePathService,
+    private val dependencies: ArticleServiceDependencies,
 ) : ArticleQueryService,
     ArticleFacade {
     companion object {
@@ -72,7 +48,7 @@ class ArticleServiceImpl(
     ): ArticlePaginatedResponse<ArticleDto> {
         val pageable = PageRequest.of(page, size, Sort.by("id").descending())
         val articlesPage =
-            articleRepository.findAllWithFilters(
+            dependencies.articleRepository.findAllWithFilters(
                 articleType = articleType,
                 categoryId = categoryId,
                 subcategoryId = subcategoryId,
@@ -81,7 +57,7 @@ class ArticleServiceImpl(
             )
 
         return ArticlePaginatedResponse(
-            content = articlesPage.content.map { articleAssembler.toDto(it) },
+            content = articlesPage.content.map { dependencies.articleAssembler.toDto(it) },
             currentPage = articlesPage.number,
             totalPages = articlesPage.totalPages,
             totalElements = articlesPage.totalElements,
@@ -93,14 +69,14 @@ class ArticleServiceImpl(
     override fun findById(id: Long): ArticleWithDetailsDto {
         // First, fetch article with basic details to determine the type
         val articleBasic =
-            articleRepository.findByIdWithBasicDetails(id)
+            dependencies.articleRepository.findByIdWithBasicDetails(id)
                 ?: throw ArticleNotFoundException("Article not found with id: $id")
 
         // Then fetch with appropriate variants based on article type
         val article =
             when (articleBasic.articleType) {
-                ArticleType.MUG -> articleRepository.findMugByIdWithDetails(id)
-                ArticleType.SHIRT -> articleRepository.findShirtByIdWithDetails(id)
+                ArticleType.MUG -> dependencies.articleRepository.findMugByIdWithDetails(id)
+                ArticleType.SHIRT -> dependencies.articleRepository.findShirtByIdWithDetails(id)
             } ?: throw ArticleNotFoundException("Article not found with id: $id")
 
         return buildArticleWithDetailsDto(article)
@@ -109,19 +85,19 @@ class ArticleServiceImpl(
     @Transactional
     override fun create(request: CreateArticleRequest): ArticleWithDetailsDto {
         val category =
-            articleCategoryRepository
+            dependencies.articleCategoryRepository
                 .findById(request.categoryId)
                 .orElseThrow { ArticleNotFoundException("Category not found with id: ${request.categoryId}") }
         val subcategory =
             request.subcategoryId?.let {
-                articleSubCategoryRepository
+                dependencies.articleSubCategoryRepository
                     .findById(it)
                     .orElseThrow { ArticleNotFoundException("Subcategory not found with id: $it") }
             }
 
         // Validate supplier exists if provided
         request.supplierId?.let { supplierId ->
-            if (!supplierService.existsById(supplierId)) {
+            if (!dependencies.supplierService.existsById(supplierId)) {
                 throw ArticleNotFoundException("Supplier not found with id: $supplierId")
             }
         }
@@ -144,17 +120,17 @@ class ArticleServiceImpl(
                 supplierArticleNumber = request.supplierArticleNumber,
             )
 
-        val savedArticle = articleRepository.save(article)
+        val savedArticle = dependencies.articleRepository.save(article)
 
         // Create type-specific details
         when (request.articleType) {
             ArticleType.MUG ->
                 request.mugDetails?.let {
-                    mugDetailsService.create(savedArticle, it)
+                    dependencies.mugDetailsService.create(savedArticle, it)
                 }
             ArticleType.SHIRT ->
                 request.shirtDetails?.let {
-                    shirtDetailsService.create(savedArticle, it)
+                    dependencies.shirtDetailsService.create(savedArticle, it)
                 }
         }
 
@@ -184,27 +160,27 @@ class ArticleServiceImpl(
         request: UpdateArticleRequest,
     ): ArticleWithDetailsDto {
         val article =
-            articleRepository
+            dependencies.articleRepository
                 .findById(id)
                 .orElseThrow { ArticleNotFoundException("Article not found with id: $id") }
 
         // Validate category exists
         val category =
-            articleCategoryRepository
+            dependencies.articleCategoryRepository
                 .findById(request.categoryId)
                 .orElseThrow { ArticleNotFoundException("Category not found with id: ${request.categoryId}") }
 
         // Validate subcategory if provided
         val subcategory =
             request.subcategoryId?.let {
-                articleSubCategoryRepository
+                dependencies.articleSubCategoryRepository
                     .findById(it)
                     .orElseThrow { ArticleNotFoundException("Subcategory not found with id: $it") }
             }
 
         // Validate supplier exists if provided
         request.supplierId?.let { supplierId ->
-            if (!supplierService.existsById(supplierId)) {
+            if (!dependencies.supplierService.existsById(supplierId)) {
                 throw ArticleNotFoundException("Supplier not found with id: $supplierId")
             }
         }
@@ -222,17 +198,17 @@ class ArticleServiceImpl(
             this.supplierArticleNumber = request.supplierArticleNumber
         }
 
-        val updatedArticle = articleRepository.save(article)
+        val updatedArticle = dependencies.articleRepository.save(article)
 
         // Update type-specific details
         when (article.articleType) {
             ArticleType.MUG ->
                 request.mugDetails?.let {
-                    mugDetailsService.update(updatedArticle, it)
+                    dependencies.mugDetailsService.update(updatedArticle, it)
                 }
             ArticleType.SHIRT ->
                 request.shirtDetails?.let {
-                    shirtDetailsService.update(updatedArticle, it)
+                    dependencies.shirtDetailsService.update(updatedArticle, it)
                 }
         }
 
@@ -246,10 +222,10 @@ class ArticleServiceImpl(
 
     @Transactional
     override fun delete(id: Long) {
-        if (!articleRepository.existsById(id)) {
+        if (!dependencies.articleRepository.existsById(id)) {
             throw ArticleNotFoundException("Article not found with id: $id")
         }
-        articleRepository.deleteById(id)
+        dependencies.articleRepository.deleteById(id)
     }
 
     private fun createMugVariant(
@@ -264,7 +240,7 @@ class ArticleServiceImpl(
                 name = request.name,
             )
 
-        return articleMugVariantRepository.save(variant)
+        return dependencies.articleMugVariantRepository.save(variant)
     }
 
     private fun createShirtVariant(
@@ -279,7 +255,7 @@ class ArticleServiceImpl(
                 exampleImageFilename = request.exampleImageFilename,
             )
 
-        return articleShirtVariantRepository.save(variant)
+        return dependencies.articleShirtVariantRepository.save(variant)
     }
 
     private fun validateTypeSpecificDetails(
@@ -301,14 +277,14 @@ class ArticleServiceImpl(
     private fun buildArticleWithDetailsDto(article: Article): ArticleWithDetailsDto {
         val mugDetails =
             if (article.articleType == ArticleType.MUG) {
-                mugDetailsService.findByArticleId(article.id!!)
+                dependencies.mugDetailsService.findByArticleId(article.id!!)
             } else {
                 null
             }
 
         val shirtDetails =
             if (article.articleType == ArticleType.SHIRT) {
-                shirtDetailsService.findByArticleId(article.id!!)
+                dependencies.shirtDetailsService.findByArticleId(article.id!!)
             } else {
                 null
             }
@@ -325,14 +301,14 @@ class ArticleServiceImpl(
             subcategoryId = article.subcategory?.id,
             subcategoryName = article.subcategory?.name,
             supplierId = article.supplierId,
-            supplierName = article.supplierId?.let { supplierService.getSupplierById(it).name },
+            supplierName = article.supplierId?.let { dependencies.supplierService.getSupplierById(it).name },
             supplierArticleName = article.supplierArticleName,
             supplierArticleNumber = article.supplierArticleNumber,
             mugVariants =
                 if (article.articleType ==
                     ArticleType.MUG
                 ) {
-                    article.mugVariants.map { mugArticleVariantAssembler.toDto(it) }
+                    article.mugVariants.map { dependencies.mugArticleVariantAssembler.toDto(it) }
                 } else {
                     null
                 },
@@ -340,7 +316,7 @@ class ArticleServiceImpl(
                 if (article.articleType ==
                     ArticleType.SHIRT
                 ) {
-                    article.shirtVariants.map { shirtArticleVariantAssembler.toDto(it) }
+                    article.shirtVariants.map { dependencies.shirtArticleVariantAssembler.toDto(it) }
                 } else {
                     null
                 },
@@ -358,13 +334,13 @@ class ArticleServiceImpl(
     ) {
         // Validate VAT rates exist if provided
         request.purchaseVatRateId?.let {
-            if (!vatService.existsById(it)) {
+            if (!dependencies.vatService.existsById(it)) {
                 throw ArticleNotFoundException("Purchase VAT rate not found with id: $it")
             }
         }
 
         request.salesVatRateId?.let {
-            if (!vatService.existsById(it)) {
+            if (!dependencies.vatService.existsById(it)) {
                 throw ArticleNotFoundException("Sales VAT rate not found with id: $it")
             }
         }
@@ -403,7 +379,7 @@ class ArticleServiceImpl(
                 salesActiveRow = request.salesActiveRow,
             )
 
-        costCalculationRepository.save(costCalculation)
+        dependencies.costCalculationRepository.save(costCalculation)
     }
 
     private fun updateCostCalculation(
@@ -411,14 +387,14 @@ class ArticleServiceImpl(
         request: UpdateCostCalculationRequest,
     ) {
         val costCalculation =
-            costCalculationRepository
+            dependencies.costCalculationRepository
                 .findByArticleId(article.id!!)
                 .orElse(null)
 
         if (costCalculation != null) {
             validateVatRatesForCostCalculation(request)
             updateCostCalculationProperties(costCalculation, request)
-            costCalculationRepository.save(costCalculation)
+            dependencies.costCalculationRepository.save(costCalculation)
         } else {
             createCostCalculationFromUpdateRequest(article, request)
         }
@@ -426,13 +402,13 @@ class ArticleServiceImpl(
 
     private fun validateVatRatesForCostCalculation(request: UpdateCostCalculationRequest) {
         request.purchaseVatRateId?.let {
-            if (!vatService.existsById(it)) {
+            if (!dependencies.vatService.existsById(it)) {
                 throw ArticleNotFoundException("Purchase VAT rate not found with id: $it")
             }
         }
 
         request.salesVatRateId?.let {
-            if (!vatService.existsById(it)) {
+            if (!dependencies.vatService.existsById(it)) {
                 throw ArticleNotFoundException("Sales VAT rate not found with id: $it")
             }
         }
@@ -516,11 +492,11 @@ class ArticleServiceImpl(
     @Transactional(readOnly = true)
     override fun findPublicMugs(): List<PublicMugDto> {
         // Find all active mug articles with their details
-        val mugs = articleRepository.findAllActiveMugsWithDetails(ArticleType.MUG)
+        val mugs = dependencies.articleRepository.findAllActiveMugsWithDetails(ArticleType.MUG)
 
         return mugs.mapNotNull { article ->
             // Get mug details
-            val mugDetails = mugDetailsService.findByArticleId(article.id!!)
+            val mugDetails = dependencies.mugDetailsService.findByArticleId(article.id!!)
 
             // Filter only active variants
             val activeVariants = article.mugVariants.filter { it.active }
@@ -545,7 +521,7 @@ class ArticleServiceImpl(
                         name = variant.name,
                         exampleImageUrl =
                             variant.exampleImageFilename?.let { filename ->
-                                storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
+                                dependencies.storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
                             },
                         articleVariantNumber = variant.articleVariantNumber,
                         isDefault = variant.isDefault,
@@ -564,7 +540,7 @@ class ArticleServiceImpl(
                     price = price,
                     image =
                         defaultVariant?.exampleImageFilename?.let { filename ->
-                            storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
+                            dependencies.storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
                         },
                     fillingQuantity = it.fillingQuantity,
                     descriptionShort = article.descriptionShort,
@@ -582,7 +558,7 @@ class ArticleServiceImpl(
 
     override fun getArticlesByIds(ids: Collection<Long>): Map<Long, ArticleDto> {
         if (ids.isEmpty()) return emptyMap()
-        val articles = articleRepository.findAllById(ids)
+        val articles = dependencies.articleRepository.findAllById(ids)
         return articles.associate { a ->
             val dto =
                 ArticleDto(
@@ -597,7 +573,7 @@ class ArticleServiceImpl(
                     subcategoryId = a.subcategory?.id,
                     subcategoryName = a.subcategory?.name,
                     supplierId = a.supplierId,
-                    supplierName = a.supplierId?.let { supplierService.getSupplierById(it).name },
+                    supplierName = a.supplierId?.let { dependencies.supplierService.getSupplierById(it).name },
                     supplierArticleName = a.supplierArticleName,
                     supplierArticleNumber = a.supplierArticleNumber,
                     mugVariants = null,
@@ -611,15 +587,15 @@ class ArticleServiceImpl(
 
     override fun getMugVariantsByIds(ids: Collection<Long>): Map<Long, MugArticleVariantDto> {
         if (ids.isEmpty()) return emptyMap()
-        val variants = articleMugVariantRepository.findAllById(ids)
+        val variants = dependencies.articleMugVariantRepository.findAllById(ids)
         return variants.associate { v ->
-            val dto = mugArticleVariantAssembler.toDto(v)
+            val dto = dependencies.mugArticleVariantAssembler.toDto(v)
             dto.id to dto
         }
     }
 
     override fun getCurrentGrossPrice(articleId: Long): Long {
-        val cost = costCalculationRepository.findByArticleId(articleId).orElse(null)
+        val cost = dependencies.costCalculationRepository.findByArticleId(articleId).orElse(null)
         return cost?.salesTotalGross?.toLong() ?: 0L
     }
 
@@ -627,9 +603,9 @@ class ArticleServiceImpl(
         articleId: Long,
         variantId: Long,
     ): Boolean {
-        val variantOpt = articleMugVariantRepository.findById(variantId)
+        val variantOpt = dependencies.articleMugVariantRepository.findById(variantId)
         return variantOpt.map { it.article.id == articleId }.orElse(false)
     }
 
-    override fun getMugDetailsByArticleId(articleId: Long): MugArticleDetailsDto? = mugDetailsService.findByArticleId(articleId)
+    override fun getMugDetailsByArticleId(articleId: Long): MugArticleDetailsDto? = dependencies.mugDetailsService.findByArticleId(articleId)
 }

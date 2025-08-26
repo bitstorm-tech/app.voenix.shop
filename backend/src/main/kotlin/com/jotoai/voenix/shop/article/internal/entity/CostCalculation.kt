@@ -23,6 +23,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "article_price_calculation")
+@Suppress("LongParameterList")
 class CostCalculation(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

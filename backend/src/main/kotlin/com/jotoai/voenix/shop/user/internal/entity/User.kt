@@ -17,6 +17,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "users")
+@Suppress("LongParameterList")
 class User(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -16,6 +16,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "prompt_slot_variants")
+@Suppress("LongParameterList")
 class PromptSlotVariant(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

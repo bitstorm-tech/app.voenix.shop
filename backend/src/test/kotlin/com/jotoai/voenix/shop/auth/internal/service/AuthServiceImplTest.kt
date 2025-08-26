@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
 import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
+import com.jotoai.voenix.shop.auth.api.dto.UserCreationRequest
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
@@ -367,12 +368,14 @@ class AuthServiceImplTest {
 
         val result =
             authService.createUser(
-                email = "test@example.com",
-                password = "password123",
-                firstName = "John",
-                lastName = "Doe",
-                phoneNumber = "+1234567890",
-                roleNames = setOf("USER", "ADMIN"),
+                UserCreationRequest(
+                    email = "test@example.com",
+                    password = "password123",
+                    firstName = "John",
+                    lastName = "Doe",
+                    phoneNumber = "+1234567890",
+                    roleNames = setOf("USER", "ADMIN"),
+                )
             )
 
         assertEquals(userDto, result)
@@ -396,12 +399,14 @@ class AuthServiceImplTest {
 
         val result =
             authService.createUser(
-                email = "guest@example.com",
-                password = null,
-                firstName = "Guest",
-                lastName = null,
-                phoneNumber = null,
-                roleNames = setOf("USER"),
+                UserCreationRequest(
+                    email = "guest@example.com",
+                    password = null,
+                    firstName = "Guest",
+                    lastName = null,
+                    phoneNumber = null,
+                    roleNames = setOf("USER"),
+                )
             )
 
         assertEquals(userDto, result)

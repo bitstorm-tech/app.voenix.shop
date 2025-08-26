@@ -13,6 +13,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "uploaded_images")
+@Suppress("LongParameterList")
 class UploadedImage(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

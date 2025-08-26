@@ -15,6 +15,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "article_mug_variants")
+@Suppress("LongParameterList")
 class MugArticleVariant(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

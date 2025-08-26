@@ -7,19 +7,19 @@ import com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.article.api.dto.CreateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
-import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.web.dto.ArticleSearchCriteria
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -31,21 +31,16 @@ class AdminArticleController(
 ) {
     @GetMapping
     fun findAll(
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "20") size: Int,
-        @RequestParam(required = false) type: ArticleType?,
-        @RequestParam(required = false) categoryId: Long?,
-        @RequestParam(required = false) subcategoryId: Long?,
-        @RequestParam(required = false) active: Boolean?,
+        @ModelAttribute criteria: ArticleSearchCriteria,
     ): ResponseEntity<ArticlePaginatedResponse<ArticleDto>> {
         val response =
             articleQueryService.findAll(
-                page = page,
-                size = size,
-                articleType = type,
-                categoryId = categoryId,
-                subcategoryId = subcategoryId,
-                active = active,
+                page = criteria.page,
+                size = criteria.size,
+                articleType = criteria.type,
+                categoryId = criteria.categoryId,
+                subcategoryId = criteria.subcategoryId,
+                active = criteria.active,
             )
         return ResponseEntity.ok(response)
     }

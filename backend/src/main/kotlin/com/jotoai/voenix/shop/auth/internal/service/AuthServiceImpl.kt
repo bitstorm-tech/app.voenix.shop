@@ -6,6 +6,7 @@ import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
+import com.jotoai.voenix.shop.auth.api.dto.UserCreationRequest
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
@@ -132,8 +133,10 @@ class AuthServiceImpl(
             throw ResourceAlreadyExistsException("User", "email", registerRequest.email)
         }
         createUser(
-            email = registerRequest.email,
-            password = registerRequest.password,
+            UserCreationRequest(
+                email = registerRequest.email,
+                password = registerRequest.password,
+            )
         )
         return authenticateUser(
             email = registerRequest.email,
@@ -185,11 +188,13 @@ class AuthServiceImpl(
         }
         val savedUser =
             createUser(
-                email = registerGuestRequest.email,
-                password = null,
-                firstName = registerGuestRequest.firstName,
-                lastName = registerGuestRequest.lastName,
-                phoneNumber = registerGuestRequest.phoneNumber,
+                UserCreationRequest(
+                    email = registerGuestRequest.email,
+                    password = null,
+                    firstName = registerGuestRequest.firstName,
+                    lastName = registerGuestRequest.lastName,
+                    phoneNumber = registerGuestRequest.phoneNumber,
+                )
             )
 
         return authenticateGuestUser(
@@ -201,28 +206,23 @@ class AuthServiceImpl(
 
     @Transactional
     override fun createUser(
-        email: String,
-        password: String?,
-        firstName: String?,
-        lastName: String?,
-        phoneNumber: String?,
-        roleNames: Set<String>,
+        request: UserCreationRequest,
     ): UserDto {
         // Create user via unified service
         val userDto =
             userService.createUser(
                 CreateUserRequest(
-                    email = email,
-                    firstName = firstName,
-                    lastName = lastName,
-                    phoneNumber = phoneNumber,
-                    password = password?.let { passwordEncoder.encode(it) },
+                    email = request.email,
+                    firstName = request.firstName,
+                    lastName = request.lastName,
+                    phoneNumber = request.phoneNumber,
+                    password = request.password?.let { passwordEncoder.encode(it) },
                 ),
             )
 
         // Assign roles using the unified service
-        if (roleNames.isNotEmpty()) {
-            userService.setUserRoles(userDto.id, roleNames)
+        if (request.roleNames.isNotEmpty()) {
+            userService.setUserRoles(userDto.id, request.roleNames)
         }
 
         return userDto

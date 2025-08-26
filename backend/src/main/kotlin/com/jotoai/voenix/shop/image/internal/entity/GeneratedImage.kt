@@ -14,6 +14,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "generated_images")
+@Suppress("LongParameterList")
 class GeneratedImage(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

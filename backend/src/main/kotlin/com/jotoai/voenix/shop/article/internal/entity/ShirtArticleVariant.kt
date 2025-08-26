@@ -15,6 +15,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "article_shirt_variants")
+@Suppress("LongParameterList")
 class ShirtArticleVariant(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

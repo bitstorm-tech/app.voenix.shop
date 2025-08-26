@@ -13,6 +13,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "value_added_taxes")
+@Suppress("LongParameterList")
 class ValueAddedTax(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

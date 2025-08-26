@@ -24,6 +24,7 @@ import java.util.UUID
 
 @Entity
 @Table(name = "orders")
+@Suppress("LongParameterList")
 class Order(
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

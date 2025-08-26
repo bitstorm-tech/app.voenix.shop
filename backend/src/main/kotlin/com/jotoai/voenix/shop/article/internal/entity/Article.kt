@@ -3,7 +3,6 @@ package com.jotoai.voenix.shop.article.internal.entity
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleSubCategory
-import com.jotoai.voenix.shop.article.internal.entity.CostCalculation
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -18,13 +17,14 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
+import java.time.OffsetDateTime
 import org.hibernate.annotations.BatchSize
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "articles")
+@Suppress("LongParameterList")
 class Article(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

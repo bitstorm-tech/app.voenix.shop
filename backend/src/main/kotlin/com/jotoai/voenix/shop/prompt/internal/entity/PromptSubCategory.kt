@@ -18,6 +18,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "prompt_subcategories")
+@Suppress("LongParameterList")
 class PromptSubCategory(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

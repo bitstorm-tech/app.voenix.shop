@@ -17,6 +17,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "prompts")
+@Suppress("LongParameterList")
 class Prompt(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -17,6 +17,7 @@ import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "cart_items")
+@Suppress("LongParameterList")
 class CartItem(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
