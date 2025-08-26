@@ -46,10 +46,22 @@ class CartFacadeImpl(
         userId: Long,
         request: AddToCartRequest,
     ): CartDto {
-        // Validate user exists
         userService.getUserById(userId)
-
-        // Validate article and variant exist using ArticleQueryService
+        validateAddToCartRequest(userId, request)
+        
+        val cart = cartInternalService.getOrCreateActiveCartEntity(userId)
+        val currentPrice = articleQueryService.getCurrentGrossPrice(request.articleId)
+        
+        val cartItem = createCartItem(cart, request, currentPrice)
+        cart.addOrUpdateItem(cartItem)
+        
+        val savedCart = saveCartWithOptimisticLocking(cart)
+        logSuccessfulCartOperation(userId, request)
+        
+        return cartAssembler.toDto(savedCart)
+    }
+    
+    private fun validateAddToCartRequest(userId: Long, request: AddToCartRequest) {
         val articlesById = articleQueryService.getArticlesByIds(listOf(request.articleId))
         if (request.articleId !in articlesById) {
             throw ResourceNotFoundException("Article not found with id: ${request.articleId}")
@@ -60,17 +72,15 @@ class CartFacadeImpl(
             throw ResourceNotFoundException("Variant not found with id: ${request.variantId}")
         }
 
-        // Validate that the variant belongs to the article
         if (!articleQueryService.validateVariantBelongsToArticle(request.articleId, request.variantId)) {
             throw CartOperationException("Variant ${request.variantId} does not belong to article ${request.articleId}")
         }
-
-        val cart = cartInternalService.getOrCreateActiveCartEntity(userId)
-
-        // Get current price from cost calculation
-        val currentPrice = articleQueryService.getCurrentGrossPrice(request.articleId)
-
-        // Validate generated image if provided
+        
+        validateGeneratedImageForCart(userId, request)
+        validatePromptForCart(request)
+    }
+    
+    private fun validateGeneratedImageForCart(userId: Long, request: AddToCartRequest) {
         request.generatedImageId?.let { imageId ->
             logger.debug {
                 "Validating generated image for cart operation: userId=$userId, generatedImageId=$imageId, " +
@@ -82,7 +92,6 @@ class CartFacadeImpl(
                     "Generated image validation failed: userId=$userId, generatedImageId=$imageId, reason=ownership_check_failed"
                 }
 
-                // First check if image exists at all
                 if (!imageQueryService.existsGeneratedImageById(imageId)) {
                     throw ImageNotFoundException("Generated image not found with id: $imageId")
                 } else {
@@ -98,33 +107,31 @@ class CartFacadeImpl(
                 "Generated image validation successful: userId=$userId, generatedImageId=$imageId"
             }
         }
-
-        // Validate prompt if provided
+    }
+    
+    private fun validatePromptForCart(request: AddToCartRequest) {
         request.promptId?.let { promptId ->
             if (!promptQueryService.existsById(promptId)) {
                 throw ResourceNotFoundException("Prompt not found with id: $promptId")
             }
         }
-
-        // Create new cart item
-        val cartItem =
-            CartItem(
-                cart = cart,
-                articleId = request.articleId,
-                variantId = request.variantId,
-                quantity = request.quantity,
-                priceAtTime = currentPrice,
-                originalPrice = currentPrice,
-                customData = request.customData,
-                generatedImageId = request.generatedImageId,
-                promptId = request.promptId,
-            )
-
-        // Add or update item in cart
-        cart.addOrUpdateItem(cartItem)
-
-        val savedCart = saveCartWithOptimisticLocking(cart)
-
+    }
+    
+    private fun createCartItem(cart: Cart, request: AddToCartRequest, currentPrice: Long): CartItem {
+        return CartItem(
+            cart = cart,
+            articleId = request.articleId,
+            variantId = request.variantId,
+            quantity = request.quantity,
+            priceAtTime = currentPrice,
+            originalPrice = currentPrice,
+            customData = request.customData,
+            generatedImageId = request.generatedImageId,
+            promptId = request.promptId,
+        )
+    }
+    
+    private fun logSuccessfulCartOperation(userId: Long, request: AddToCartRequest) {
         logger.info {
             "Successfully added item to cart: " + "userId=$userId, " + "articleId=${request.articleId}, " +
                 "variantId=${request.variantId}, " +
@@ -133,8 +140,6 @@ class CartFacadeImpl(
                 "promptId=${request.promptId}, " +
                 "hasCustomData=${request.customData.isNotEmpty()}"
         }
-
-        return cartAssembler.toDto(savedCart)
     }
 
     /**

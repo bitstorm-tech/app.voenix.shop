@@ -526,89 +526,126 @@ class PdfGenerationServiceImpl(
         margin: Float,
     ) {
         try {
-            // Get image data - try generated image first, then fallback to placeholder
-            val imageData =
-                when {
-                    orderItem.generatedImageFilename != null -> {
-                        try {
-                            imageAccessService.getImageData(orderItem.generatedImageFilename, orderData.userId).first
-                        } catch (e: IOException) {
-                            logger.warn(e) {
-                                "Could not load generated image ${orderItem.generatedImageFilename} " +
-                                    "for order ${orderData.orderNumber}, using placeholder"
-                            }
-                            createPlaceholderImage()
-                        } catch (e: IllegalArgumentException) {
-                            logger.warn(e) {
-                                "Invalid image filename ${orderItem.generatedImageFilename} " +
-                                    "for order ${orderData.orderNumber}, using placeholder"
-                            }
-                            createPlaceholderImage()
-                        }
-                    }
-                    else -> {
-                        logger.info { "No generated image for order item ${orderItem.id}, using placeholder" }
-                        createPlaceholderImage()
-                    }
-                }
-
-            // Create PDF image object
+            val imageData = loadProductImage(orderData, orderItem)
             val pdfImage = Image.getInstance(imageData)
-
-            // Use exact print template dimensions from MugArticleDetails
-            val imageWidthMm =
-                orderItem.article.mugDetails
-                    ?.printTemplateWidthMm
-                    ?.toFloat()
-                    ?: ((pageWidth / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)))
-            val imageHeightMm =
-                orderItem.article.mugDetails
-                    ?.printTemplateHeightMm
-                    ?.toFloat()
-                    ?: ((pageHeight / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)) - DEFAULT_IMAGE_MARGIN_MM)
-
-            // Convert exact dimensions to points
-            val imageWidthPt = imageWidthMm * MM_TO_POINTS
-            val imageHeightPt = imageHeightMm * MM_TO_POINTS
-
-            // Scale and position image
-            pdfImage.scaleAbsolute(imageWidthPt, imageHeightPt)
-
-            // Center the image on the page
-            val xPosition = (pageWidth - imageWidthPt) / 2
-            val yPosition = (pageHeight - imageHeightPt) / 2
-
-            pdfImage.setAbsolutePosition(xPosition, yPosition)
-            contentByte.addImage(pdfImage)
-
-            logger.debug {
-                "Added product image with exact dimensions ${imageWidthPt}x$imageHeightPt points " +
-                    "at position ($xPosition, $yPosition)"
+            val dimensions = calculateImageDimensions(orderItem, pageWidth, pageHeight, margin)
+            
+            positionAndAddImage(contentByte, pdfImage, dimensions, pageWidth, pageHeight)
+            logImageAddition(dimensions)
+        } catch (e: Exception) {
+            handleImageAdditionError(e, contentByte, orderItem, pageWidth, pageHeight)
+        }
+    }
+    
+    private fun loadProductImage(orderData: OrderPdfData, orderItem: OrderItemPdfData): ByteArray {
+        return when {
+            orderItem.generatedImageFilename != null -> {
+                try {
+                    imageAccessService.getImageData(orderItem.generatedImageFilename, orderData.userId).first
+                } catch (e: IOException) {
+                    logger.warn(e) {
+                        "Could not load generated image ${orderItem.generatedImageFilename} " +
+                            "for order ${orderData.orderNumber}, using placeholder"
+                    }
+                    createPlaceholderImage()
+                } catch (e: IllegalArgumentException) {
+                    logger.warn(e) {
+                        "Invalid image filename ${orderItem.generatedImageFilename} " +
+                            "for order ${orderData.orderNumber}, using placeholder"
+                    }
+                    createPlaceholderImage()
+                }
             }
-        } catch (e: IOException) {
-            logger.error(e) { "I/O error adding product image for order item ${orderItem.id}" }
-            try {
-                addPlaceholderText(contentByte, "Image not available", pageWidth, pageHeight)
-            } catch (placeholderException: IOException) {
-                logger.error(placeholderException) { "Failed to add placeholder text for order item ${orderItem.id}" }
-                throw PdfGenerationException(
-                    "Failed to add product image and placeholder for order item ${orderItem.id}",
-                    e,
-                )
-            }
-        } catch (e: IllegalArgumentException) {
-            logger.error(e) { "Invalid image data for order item ${orderItem.id}" }
-            try {
-                addPlaceholderText(contentByte, "Image not available", pageWidth, pageHeight)
-            } catch (placeholderException: IOException) {
-                logger.error(placeholderException) { "Failed to add placeholder text for order item ${orderItem.id}" }
-                throw PdfGenerationException(
-                    "Failed to add product image and placeholder for order item ${orderItem.id}",
-                    e,
-                )
+            else -> {
+                logger.info { "No generated image for order item ${orderItem.id}, using placeholder" }
+                createPlaceholderImage()
             }
         }
     }
+    
+    private fun calculateImageDimensions(
+        orderItem: OrderItemPdfData,
+        pageWidth: Float,
+        pageHeight: Float,
+        margin: Float
+    ): ImageDimensions {
+        val imageWidthMm = orderItem.article.mugDetails
+            ?.printTemplateWidthMm
+            ?.toFloat()
+            ?: ((pageWidth / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)))
+            
+        val imageHeightMm = orderItem.article.mugDetails
+            ?.printTemplateHeightMm
+            ?.toFloat()
+            ?: ((pageHeight / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)) - DEFAULT_IMAGE_MARGIN_MM)
+
+        val imageWidthPt = imageWidthMm * MM_TO_POINTS
+        val imageHeightPt = imageHeightMm * MM_TO_POINTS
+        
+        return ImageDimensions(imageWidthPt, imageHeightPt)
+    }
+    
+    private fun positionAndAddImage(
+        contentByte: PdfContentByte,
+        pdfImage: Image,
+        dimensions: ImageDimensions,
+        pageWidth: Float,
+        pageHeight: Float
+    ) {
+        pdfImage.scaleAbsolute(dimensions.width, dimensions.height)
+        
+        val xPosition = (pageWidth - dimensions.width) / 2
+        val yPosition = (pageHeight - dimensions.height) / 2
+        
+        pdfImage.setAbsolutePosition(xPosition, yPosition)
+        contentByte.addImage(pdfImage)
+    }
+    
+    private fun logImageAddition(dimensions: ImageDimensions) {
+        logger.debug {
+            "Added product image with exact dimensions ${dimensions.width}x${dimensions.height} points"
+        }
+    }
+    
+    private fun handleImageAdditionError(
+        e: Exception,
+        contentByte: PdfContentByte,
+        orderItem: OrderItemPdfData,
+        pageWidth: Float,
+        pageHeight: Float
+    ) {
+        when (e) {
+            is IOException -> {
+                logger.error(e) { "I/O error adding product image for order item ${orderItem.id}" }
+                addPlaceholderTextSafely(contentByte, orderItem, pageWidth, pageHeight, e)
+            }
+            is IllegalArgumentException -> {
+                logger.error(e) { "Invalid image data for order item ${orderItem.id}" }
+                addPlaceholderTextSafely(contentByte, orderItem, pageWidth, pageHeight, e)
+            }
+            else -> throw e
+        }
+    }
+    
+    private fun addPlaceholderTextSafely(
+        contentByte: PdfContentByte,
+        orderItem: OrderItemPdfData,
+        pageWidth: Float,
+        pageHeight: Float,
+        originalException: Exception
+    ) {
+        try {
+            addPlaceholderText(contentByte, "Image not available", pageWidth, pageHeight, 0f, 0f)
+        } catch (placeholderException: IOException) {
+            logger.error(placeholderException) { "Failed to add placeholder text for order item ${orderItem.id}" }
+            throw PdfGenerationException(
+                "Failed to add product image and placeholder for order item ${orderItem.id}",
+                originalException,
+            )
+        }
+    }
+    
+    private data class ImageDimensions(val width: Float, val height: Float)
 
     private fun addOrderQrCode(
         contentByte: PdfContentByte,

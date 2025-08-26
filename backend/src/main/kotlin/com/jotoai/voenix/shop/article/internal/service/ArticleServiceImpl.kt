@@ -416,89 +416,101 @@ class ArticleServiceImpl(
                 .orElse(null)
 
         if (costCalculation != null) {
-            // Update existing cost calculation
-            // Validate VAT rates exist if provided
-            request.purchaseVatRateId?.let {
-                if (!vatService.existsById(it)) {
-                    throw ArticleNotFoundException("Purchase VAT rate not found with id: $it")
-                }
-            }
-
-            request.salesVatRateId?.let {
-                if (!vatService.existsById(it)) {
-                    throw ArticleNotFoundException("Sales VAT rate not found with id: $it")
-                }
-            }
-
-            // Update the existing cost calculation properties
-            costCalculation.purchasePriceNet = request.purchasePriceNet
-            costCalculation.purchasePriceTax = request.purchasePriceTax
-            costCalculation.purchasePriceGross = request.purchasePriceGross
-            costCalculation.purchaseCostNet = request.purchaseCostNet
-            costCalculation.purchaseCostTax = request.purchaseCostTax
-            costCalculation.purchaseCostGross = request.purchaseCostGross
-            costCalculation.purchaseCostPercent = request.purchaseCostPercent
-            costCalculation.purchaseTotalNet = request.purchaseTotalNet
-            costCalculation.purchaseTotalTax = request.purchaseTotalTax
-            costCalculation.purchaseTotalGross = request.purchaseTotalGross
-            costCalculation.purchasePriceUnit = request.purchasePriceUnit
-            costCalculation.purchaseVatRateId = request.purchaseVatRateId
-            costCalculation.purchaseVatRatePercent = request.purchaseVatRatePercent
-            costCalculation.purchaseCalculationMode = request.purchaseCalculationMode
-            costCalculation.salesVatRateId = request.salesVatRateId
-            costCalculation.salesVatRatePercent = request.salesVatRatePercent
-            costCalculation.salesMarginNet = request.salesMarginNet
-            costCalculation.salesMarginTax = request.salesMarginTax
-            costCalculation.salesMarginGross = request.salesMarginGross
-            costCalculation.salesMarginPercent = request.salesMarginPercent
-            costCalculation.salesTotalNet = request.salesTotalNet
-            costCalculation.salesTotalTax = request.salesTotalTax
-            costCalculation.salesTotalGross = request.salesTotalGross
-            costCalculation.salesPriceUnit = request.salesPriceUnit
-            costCalculation.salesCalculationMode = request.salesCalculationMode
-            costCalculation.purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum()
-            costCalculation.salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum()
-            costCalculation.purchaseActiveRow = request.purchaseActiveRow
-            costCalculation.salesActiveRow = request.salesActiveRow
-
+            validateVatRatesForCostCalculation(request)
+            updateCostCalculationProperties(costCalculation, request)
             costCalculationRepository.save(costCalculation)
         } else {
-            // Create new cost calculation if it doesn't exist
-            createCostCalculation(
-                article,
-                CreateCostCalculationRequest(
-                    purchasePriceNet = request.purchasePriceNet,
-                    purchasePriceTax = request.purchasePriceTax,
-                    purchasePriceGross = request.purchasePriceGross,
-                    purchaseCostNet = request.purchaseCostNet,
-                    purchaseCostTax = request.purchaseCostTax,
-                    purchaseCostGross = request.purchaseCostGross,
-                    purchaseCostPercent = request.purchaseCostPercent,
-                    purchaseTotalNet = request.purchaseTotalNet,
-                    purchaseTotalTax = request.purchaseTotalTax,
-                    purchaseTotalGross = request.purchaseTotalGross,
-                    purchasePriceUnit = request.purchasePriceUnit,
-                    purchaseVatRateId = request.purchaseVatRateId,
-                    purchaseVatRatePercent = request.purchaseVatRatePercent,
-                    purchaseCalculationMode = request.purchaseCalculationMode,
-                    salesVatRateId = request.salesVatRateId,
-                    salesVatRatePercent = request.salesVatRatePercent,
-                    salesMarginNet = request.salesMarginNet,
-                    salesMarginTax = request.salesMarginTax,
-                    salesMarginGross = request.salesMarginGross,
-                    salesMarginPercent = request.salesMarginPercent,
-                    salesTotalNet = request.salesTotalNet,
-                    salesTotalTax = request.salesTotalTax,
-                    salesTotalGross = request.salesTotalGross,
-                    salesPriceUnit = request.salesPriceUnit,
-                    salesCalculationMode = request.salesCalculationMode,
-                    purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum(),
-                    salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum(),
-                    purchaseActiveRow = request.purchaseActiveRow,
-                    salesActiveRow = request.salesActiveRow,
-                ),
-            )
+            createCostCalculationFromUpdateRequest(article, request)
         }
+    }
+
+    private fun validateVatRatesForCostCalculation(request: UpdateCostCalculationRequest) {
+        request.purchaseVatRateId?.let {
+            if (!vatService.existsById(it)) {
+                throw ArticleNotFoundException("Purchase VAT rate not found with id: $it")
+            }
+        }
+
+        request.salesVatRateId?.let {
+            if (!vatService.existsById(it)) {
+                throw ArticleNotFoundException("Sales VAT rate not found with id: $it")
+            }
+        }
+    }
+
+    private fun updateCostCalculationProperties(
+        costCalculation: CostCalculation,
+        request: UpdateCostCalculationRequest,
+    ) {
+        costCalculation.purchasePriceNet = request.purchasePriceNet
+        costCalculation.purchasePriceTax = request.purchasePriceTax
+        costCalculation.purchasePriceGross = request.purchasePriceGross
+        costCalculation.purchaseCostNet = request.purchaseCostNet
+        costCalculation.purchaseCostTax = request.purchaseCostTax
+        costCalculation.purchaseCostGross = request.purchaseCostGross
+        costCalculation.purchaseCostPercent = request.purchaseCostPercent
+        costCalculation.purchaseTotalNet = request.purchaseTotalNet
+        costCalculation.purchaseTotalTax = request.purchaseTotalTax
+        costCalculation.purchaseTotalGross = request.purchaseTotalGross
+        costCalculation.purchasePriceUnit = request.purchasePriceUnit
+        costCalculation.purchaseVatRateId = request.purchaseVatRateId
+        costCalculation.purchaseVatRatePercent = request.purchaseVatRatePercent
+        costCalculation.purchaseCalculationMode = request.purchaseCalculationMode
+        costCalculation.salesVatRateId = request.salesVatRateId
+        costCalculation.salesVatRatePercent = request.salesVatRatePercent
+        costCalculation.salesMarginNet = request.salesMarginNet
+        costCalculation.salesMarginTax = request.salesMarginTax
+        costCalculation.salesMarginGross = request.salesMarginGross
+        costCalculation.salesMarginPercent = request.salesMarginPercent
+        costCalculation.salesTotalNet = request.salesTotalNet
+        costCalculation.salesTotalTax = request.salesTotalTax
+        costCalculation.salesTotalGross = request.salesTotalGross
+        costCalculation.salesPriceUnit = request.salesPriceUnit
+        costCalculation.salesCalculationMode = request.salesCalculationMode
+        costCalculation.purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum()
+        costCalculation.salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum()
+        costCalculation.purchaseActiveRow = request.purchaseActiveRow
+        costCalculation.salesActiveRow = request.salesActiveRow
+    }
+
+    private fun createCostCalculationFromUpdateRequest(
+        article: Article,
+        request: UpdateCostCalculationRequest,
+    ) {
+        createCostCalculation(
+            article,
+            CreateCostCalculationRequest(
+                purchasePriceNet = request.purchasePriceNet,
+                purchasePriceTax = request.purchasePriceTax,
+                purchasePriceGross = request.purchasePriceGross,
+                purchaseCostNet = request.purchaseCostNet,
+                purchaseCostTax = request.purchaseCostTax,
+                purchaseCostGross = request.purchaseCostGross,
+                purchaseCostPercent = request.purchaseCostPercent,
+                purchaseTotalNet = request.purchaseTotalNet,
+                purchaseTotalTax = request.purchaseTotalTax,
+                purchaseTotalGross = request.purchaseTotalGross,
+                purchasePriceUnit = request.purchasePriceUnit,
+                purchaseVatRateId = request.purchaseVatRateId,
+                purchaseVatRatePercent = request.purchaseVatRatePercent,
+                purchaseCalculationMode = request.purchaseCalculationMode,
+                salesVatRateId = request.salesVatRateId,
+                salesVatRatePercent = request.salesVatRatePercent,
+                salesMarginNet = request.salesMarginNet,
+                salesMarginTax = request.salesMarginTax,
+                salesMarginGross = request.salesMarginGross,
+                salesMarginPercent = request.salesMarginPercent,
+                salesTotalNet = request.salesTotalNet,
+                salesTotalTax = request.salesTotalTax,
+                salesTotalGross = request.salesTotalGross,
+                salesPriceUnit = request.salesPriceUnit,
+                salesCalculationMode = request.salesCalculationMode,
+                purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum(),
+                salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum(),
+                purchaseActiveRow = request.purchaseActiveRow,
+                salesActiveRow = request.salesActiveRow,
+            ),
+        )
     }
 
     @Transactional(readOnly = true)
