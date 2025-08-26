@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.api.admin.prompts
+package com.jotoai.voenix.shop.prompt.web
 
 import com.jotoai.voenix.shop.prompt.api.PromptSubCategoryFacade
 import com.jotoai.voenix.shop.prompt.api.PromptSubCategoryQueryService
