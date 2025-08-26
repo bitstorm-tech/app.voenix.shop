@@ -108,12 +108,7 @@ class PromptSlotVariantServiceImpl(
         // Unfortunately, Kotlin data classes can't distinguish between these two cases.
         // So we use a heuristic: if ANY field is provided in the request,
         // then a null exampleImageFilename means delete.
-        if (request.name != null ||
-            request.prompt != null ||
-            request.description != null ||
-            request.promptSlotTypeId != null ||
-            request.exampleImageFilename != null
-        ) {
+        if (hasAnyFieldProvided(request)) {
             val oldImageFilename = promptSlotVariant.exampleImageFilename
             val newImageFilename = request.exampleImageFilename
 
@@ -159,5 +154,13 @@ class PromptSlotVariantServiceImpl(
 
         // Delete the entity
         promptSlotVariantRepository.deleteById(id)
+    }
+
+    private fun hasAnyFieldProvided(request: UpdatePromptSlotVariantRequest): Boolean {
+        return request.name != null ||
+            request.prompt != null ||
+            request.description != null ||
+            request.promptSlotTypeId != null ||
+            request.exampleImageFilename != null
     }
 }

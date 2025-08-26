@@ -2,6 +2,7 @@ package com.jotoai.voenix.shop.image.web
 
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
+import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
@@ -40,12 +41,7 @@ class PublicImageController(
         logger.info { "Received public image generation request for prompt ID: $promptId" }
 
         // Create crop area if all crop parameters are provided
-        val cropArea =
-            if (cropX != null && cropY != null && cropWidth != null && cropHeight != null) {
-                CropArea(x = cropX, y = cropY, width = cropWidth, height = cropHeight)
-            } else {
-                null
-            }
+        val cropArea = CropAreaUtils.createIfPresent(cropX, cropY, cropWidth, cropHeight)
 
         val generationRequest =
             PublicImageGenerationRequest(
@@ -66,4 +62,5 @@ class PublicImageController(
 
         return imageAccessService.servePublicImage(filename)
     }
+
 }

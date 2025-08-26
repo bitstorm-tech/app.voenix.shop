@@ -66,13 +66,7 @@ class WebConfig(
                             requestedResource
                         } else {
                             // Don't try to serve index.html for images or API routes
-                            if (!resourcePath.startsWith("api/") &&
-                                !resourcePath.endsWith(".png") &&
-                                !resourcePath.endsWith(".jpg") &&
-                                !resourcePath.endsWith(".jpeg") &&
-                                !resourcePath.endsWith(".gif") &&
-                                !resourcePath.endsWith(".webp")
-                            ) {
+                            if (shouldServeIndexHtml(resourcePath)) {
                                 // Only return index.html if it exists
                                 val indexResource = ClassPathResource("/static/index.html")
                                 if (indexResource.exists()) {
@@ -87,5 +81,14 @@ class WebConfig(
                     }
                 },
             )
+    }
+
+    private fun shouldServeIndexHtml(resourcePath: String): Boolean {
+        return !resourcePath.startsWith("api/") &&
+            !resourcePath.endsWith(".png") &&
+            !resourcePath.endsWith(".jpg") &&
+            !resourcePath.endsWith(".jpeg") &&
+            !resourcePath.endsWith(".gif") &&
+            !resourcePath.endsWith(".webp")
     }
 }

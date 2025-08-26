@@ -7,6 +7,7 @@ import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
 import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
+import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
 import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
@@ -86,12 +87,7 @@ class AdminMugVariantController(
         }
 
         // Create crop area if crop parameters are provided
-        val cropArea =
-            if (cropX != null && cropY != null && cropWidth != null && cropHeight != null) {
-                CropArea(x = cropX, y = cropY, width = cropWidth, height = cropHeight)
-            } else {
-                null
-            }
+        val cropArea = CropAreaUtils.createIfPresent(cropX, cropY, cropWidth, cropHeight)
 
         // Store the image directly in the mug variant images directory
         val storedFilename = imageStorageService.storeMugVariantImage(file, cropArea)
@@ -130,4 +126,5 @@ class AdminMugVariantController(
         val copiedVariants = mugVariantFacade.copyVariants(mugId, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(copiedVariants)
     }
+
 }

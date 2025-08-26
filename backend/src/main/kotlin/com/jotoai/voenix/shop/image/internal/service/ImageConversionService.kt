@@ -59,7 +59,7 @@ class ImageConversionService {
         val destY = sourceY - cropY
 
         // If the crop area is entirely within the image bounds, use simple cropping
-        if (cropX >= 0 && cropY >= 0 && cropX + cropWidth <= image.width && cropY + cropHeight <= image.height) {
+        if (isCropAreaWithinBounds(cropX, cropY, cropWidth, cropHeight, image)) {
             val rectangle = Rectangle(cropX, cropY, cropWidth, cropHeight)
             val croppedImage = image.subimage(rectangle)
             val writer: ImageWriter = PngWriter.MaxCompression
@@ -90,4 +90,17 @@ class ImageConversionService {
         val width: Int,
         val height: Int,
     )
+
+    private fun isCropAreaWithinBounds(
+        cropX: Int,
+        cropY: Int,
+        cropWidth: Int,
+        cropHeight: Int,
+        image: ImmutableImage,
+    ): Boolean {
+        return cropX >= 0 &&
+            cropY >= 0 &&
+            cropX + cropWidth <= image.width &&
+            cropY + cropHeight <= image.height
+    }
 }

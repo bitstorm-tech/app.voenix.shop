@@ -3,6 +3,7 @@ package com.jotoai.voenix.shop.image.web
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.dto.CropArea
+import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -46,12 +47,7 @@ class UserImageController(
         logger.info { "Received authenticated image generation request from user ${user.id} for prompt ID: $promptId" }
 
         // Create crop area if all crop parameters are provided
-        val cropArea =
-            if (cropX != null && cropY != null && cropWidth != null && cropHeight != null) {
-                CropArea(x = cropX, y = cropY, width = cropWidth, height = cropHeight)
-            } else {
-                null
-            }
+        val cropArea = CropAreaUtils.createIfPresent(cropX, cropY, cropWidth, cropHeight)
 
         // First upload the image to get UUID
         val uploadedImage = imageFacade.createUploadedImage(imageFile, user.id)
@@ -88,4 +84,5 @@ class UserImageController(
             .headers(response.headers)
             .body(imageBytes)
     }
+
 }
