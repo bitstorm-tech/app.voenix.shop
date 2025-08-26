@@ -9,5 +9,5 @@ import org.springframework.modulith.Modulithic
 class VoenixShopApplication
 
 fun main(args: Array<String>) {
-    runApplication<VoenixShopApplication>(*args)
+    runApplication<VoenixShopApplication>(args = args)
 }

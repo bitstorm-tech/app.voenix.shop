@@ -28,7 +28,11 @@ object UserSpecifications {
             addPhonePredicates(predicates, criteria, root, criteriaBuilder)
             addRolePredicates(predicates, criteria, root, query, criteriaBuilder)
 
-            criteriaBuilder.and(*predicates.toTypedArray())
+            when {
+                predicates.isEmpty() -> criteriaBuilder.conjunction()
+                predicates.size == 1 -> predicates.first()
+                else -> predicates.reduce { acc, predicate -> criteriaBuilder.and(acc, predicate) }
+            }
         }
     
     private fun addDeletedFilter(
