@@ -28,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/api/admin/articles/mugs")
 @PreAuthorize("hasRole('ADMIN')")
-class MugVariantController(
+class AdminMugVariantController(
     private val mugVariantQueryService: MugVariantQueryService,
     private val mugVariantFacade: MugVariantFacade,
     private val imageStorageService: ImageStorageServiceImpl,

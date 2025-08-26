@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/admin/articles")
 @PreAuthorize("hasRole('ADMIN')")
-class ArticleController(
+class AdminArticleController(
     private val articleQueryService: ArticleQueryService,
     private val articleFacade: ArticleFacade,
 ) {

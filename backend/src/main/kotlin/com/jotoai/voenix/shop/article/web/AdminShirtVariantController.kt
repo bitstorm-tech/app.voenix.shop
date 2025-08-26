@@ -27,7 +27,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/api/admin/articles/shirts")
 @PreAuthorize("hasRole('ADMIN')")
-class ShirtVariantController(
+class AdminShirtVariantController(
     private val shirtVariantQueryService: ShirtVariantQueryService,
     private val shirtVariantFacade: ShirtVariantFacade,
     private val imageFacade: ImageFacade,
