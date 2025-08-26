@@ -74,14 +74,14 @@ class TestModeImageGenerationStrategy(
             requestParams =
                 TestPromptRequestParams(
                     model = "test-mode-mock",
-                    size = request.size.apiValue,
+                    size = request.getSize().apiValue,
                     n = 1,
                     responseFormat = "url",
                     masterPrompt = request.masterPrompt,
                     specificPrompt = request.specificPrompt,
                     combinedPrompt = combinedPrompt,
-                    quality = request.quality.name.lowercase(),
-                    background = request.background.name.lowercase(),
+                    quality = request.getQuality().name.lowercase(),
+                    background = request.getBackground().name.lowercase(),
                 ),
         )
     }

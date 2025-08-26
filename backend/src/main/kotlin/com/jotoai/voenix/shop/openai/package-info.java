@@ -13,6 +13,7 @@
  * Named interfaces:
  * <ul>
  *   <li>{@code api} - Public API for OpenAI image operations and queries</li>
+ *   <li>{@code web} - REST controllers for OpenAI admin operations</li>
  * </ul>
  * <p>
  * Other modules should explicitly depend on {@code openai::api} to access OpenAI functionality.

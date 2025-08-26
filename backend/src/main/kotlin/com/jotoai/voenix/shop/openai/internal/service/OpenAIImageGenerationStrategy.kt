@@ -34,15 +34,15 @@ import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
 import io.ktor.http.isSuccess
 import io.ktor.serialization.jackson.jackson
+import java.io.IOException
+import java.net.SocketTimeoutException
+import kotlin.io.encoding.Base64
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.io.IOException
-import java.net.SocketTimeoutException
-import kotlin.io.encoding.Base64
 
 /**
  * OpenAI-based implementation of image generation strategy.
@@ -247,7 +247,7 @@ class OpenAIImageGenerationStrategy(
                     callOpenAIEditAPI(
                         imageFile = imageFile,
                         promptText = combinedPrompt,
-                        size = request.size.apiValue,
+                        size = request.getSize().apiValue,
                         background = null, // testPrompt doesn't use background in API call
                         n = 1,
                         responseFormat = "url",
@@ -261,14 +261,14 @@ class OpenAIImageGenerationStrategy(
                     requestParams =
                         TestPromptRequestParams(
                             model = "dall-e-2",
-                            size = request.size.apiValue,
+                            size = request.getSize().apiValue,
                             n = 1,
                             responseFormat = "url",
                             masterPrompt = request.masterPrompt,
                             specificPrompt = request.specificPrompt,
                             combinedPrompt = combinedPrompt,
-                            quality = request.quality.name.lowercase(),
-                            background = request.background.name.lowercase(),
+                            quality = request.getQuality().name.lowercase(),
+                            background = request.getBackground().name.lowercase(),
                         ),
                 )
             } catch (e: CancellationException) {

@@ -60,9 +60,9 @@ class OpenAIImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = promptId,
                 n = 1,
-                size = ImageSize.LANDSCAPE_1536X1024,
-                quality = ImageQuality.HIGH,
-                background = ImageBackground.AUTO,
+                sizeString = "1536x1024",
+                qualityString = "HIGH",
+                backgroundString = "AUTO",
             )
 
         val mockPrompt =
@@ -100,9 +100,9 @@ class OpenAIImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = promptId,
                 n = 1,
-                size = ImageSize.LANDSCAPE_1536X1024,
-                quality = ImageQuality.HIGH,
-                background = ImageBackground.AUTO,
+                sizeString = "1536x1024",
+                qualityString = "HIGH",
+                backgroundString = "AUTO",
             )
 
         `when`(promptQueryService.getPromptById(promptId)).thenThrow(ResourceNotFoundException("Prompt not found"))
@@ -207,7 +207,7 @@ class OpenAIImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = promptId,
                 n = 1,
-                size = ImageSize.PORTRAIT_1024X1536,
+                sizeString = "1024x1536",
                 quality = ImageQuality.LOW,
                 background = ImageBackground.TRANSPARENT,
             )
@@ -246,9 +246,9 @@ class OpenAIImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = promptId,
                 n = 1,
-                size = ImageSize.LANDSCAPE_1536X1024,
-                quality = ImageQuality.HIGH,
-                background = ImageBackground.AUTO,
+                sizeString = "1536x1024",
+                qualityString = "HIGH",
+                backgroundString = "AUTO",
             )
 
         val slotType =
@@ -306,9 +306,9 @@ class OpenAIImageGenerationStrategyTest {
             TestPromptRequest(
                 masterPrompt = "Create a stunning",
                 specificPrompt = "landscape photograph",
-                size = ImageSize.LANDSCAPE_1536X1024,
-                quality = ImageQuality.HIGH,
-                background = ImageBackground.AUTO,
+                sizeString = "1536x1024",
+                qualityString = "HIGH",
+                backgroundString = "AUTO",
             )
 
         // When/Then - This will fail due to HTTP client call, but we can verify the method signature
@@ -324,9 +324,9 @@ class OpenAIImageGenerationStrategyTest {
             TestPromptRequest(
                 masterPrompt = "Master prompt only",
                 specificPrompt = "",
-                size = ImageSize.SQUARE_1024X1024,
-                quality = ImageQuality.MEDIUM,
-                background = ImageBackground.OPAQUE,
+                sizeString = "1024x1024",
+                qualityString = "MEDIUM",
+                backgroundString = "OPAQUE",
             )
 
         // When/Then
@@ -342,7 +342,7 @@ class OpenAIImageGenerationStrategyTest {
             TestPromptRequest(
                 masterPrompt = "",
                 specificPrompt = "Specific prompt only",
-                size = ImageSize.PORTRAIT_1024X1536,
+                sizeString = "1024x1536",
                 quality = ImageQuality.LOW,
                 background = ImageBackground.TRANSPARENT,
             )
@@ -361,9 +361,9 @@ class OpenAIImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = promptId,
                 n = 5, // Multiple images
-                size = ImageSize.LANDSCAPE_1536X1024,
-                quality = ImageQuality.HIGH,
-                background = ImageBackground.AUTO,
+                sizeString = "1536x1024",
+                qualityString = "HIGH",
+                backgroundString = "AUTO",
             )
 
         val mockPrompt =

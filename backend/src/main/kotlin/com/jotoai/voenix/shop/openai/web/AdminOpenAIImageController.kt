@@ -1,8 +1,5 @@
-package com.jotoai.voenix.shop.api.admin.services
+package com.jotoai.voenix.shop.openai.web
 
-import com.jotoai.voenix.shop.image.api.enums.ImageBackground
-import com.jotoai.voenix.shop.image.api.enums.ImageQuality
-import com.jotoai.voenix.shop.image.api.enums.ImageSize
 import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
 import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.openai.api.dto.ImageEditResponse
@@ -44,15 +41,9 @@ class AdminOpenAIImageController(
             TestPromptRequest(
                 masterPrompt = masterPrompt,
                 specificPrompt = specificPrompt ?: "",
-                background = ImageBackground.valueOf(background.uppercase()),
-                quality = ImageQuality.valueOf(quality.uppercase()),
-                size =
-                    when (size) {
-                        "1024x1024" -> ImageSize.SQUARE_1024X1024
-                        "1536x1024" -> ImageSize.LANDSCAPE_1536X1024
-                        "1024x1536" -> ImageSize.PORTRAIT_1024X1536
-                        else -> ImageSize.SQUARE_1024X1024
-                    },
+                backgroundString = background,
+                qualityString = quality,
+                sizeString = size,
             ),
         )
 }

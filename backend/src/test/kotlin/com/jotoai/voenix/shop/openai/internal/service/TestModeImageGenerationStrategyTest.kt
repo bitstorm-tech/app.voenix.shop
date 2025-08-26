@@ -96,9 +96,9 @@ class TestModeImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = 1L,
                 n = 2,
-                size = ImageSize.SQUARE_1024X1024,
-                quality = ImageQuality.LOW,
-                background = ImageBackground.OPAQUE,
+                sizeString = "1024x1024",
+                qualityString = "LOW",
+                backgroundString = "OPAQUE",
             )
 
         val mockPrompt =
@@ -141,7 +141,7 @@ class TestModeImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = 1L,
                 n = 1,
-                size = ImageSize.PORTRAIT_1024X1536,
+                sizeString = "1024x1536",
                 quality = ImageQuality.MEDIUM,
                 background = ImageBackground.TRANSPARENT,
             )
@@ -250,9 +250,9 @@ class TestModeImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = 1L,
                 n = 2,
-                size = ImageSize.SQUARE_1024X1024,
-                quality = ImageQuality.LOW,
-                background = ImageBackground.OPAQUE,
+                sizeString = "1024x1024",
+                qualityString = "LOW",
+                backgroundString = "OPAQUE",
             )
 
         val mockPrompt =
@@ -298,9 +298,9 @@ class TestModeImageGenerationStrategyTest {
             CreateImageEditRequest(
                 promptId = 1L,
                 n = 1,
-                size = ImageSize.SQUARE_1024X1024,
-                quality = ImageQuality.LOW,
-                background = ImageBackground.OPAQUE,
+                sizeString = "1024x1024",
+                qualityString = "LOW",
+                backgroundString = "OPAQUE",
             )
 
         val mockPrompt =
@@ -336,9 +336,9 @@ class TestModeImageGenerationStrategyTest {
             TestPromptRequest(
                 masterPrompt = "Master prompt text",
                 specificPrompt = "Specific prompt text",
-                size = ImageSize.LANDSCAPE_1536X1024,
-                quality = ImageQuality.HIGH,
-                background = ImageBackground.AUTO,
+                sizeString = "1536x1024",
+                qualityString = "HIGH",
+                backgroundString = "AUTO",
             )
 
         // When
@@ -359,14 +359,14 @@ class TestModeImageGenerationStrategyTest {
         // Verify request params
         val params = result.requestParams
         assertEquals("test-mode-mock", params.model)
-        assertEquals(request.size.apiValue, params.size)
+        assertEquals(request.getSize().apiValue, params.size)
         assertEquals(1, params.n)
         assertEquals("url", params.responseFormat)
         assertEquals(request.masterPrompt, params.masterPrompt)
         assertEquals(request.specificPrompt, params.specificPrompt)
         assertEquals("${request.masterPrompt} ${request.specificPrompt}", params.combinedPrompt)
-        assertEquals(request.quality.name.lowercase(), params.quality)
-        assertEquals(request.background.name.lowercase(), params.background)
+        assertEquals(request.getQuality().name.lowercase(), params.quality)
+        assertEquals(request.getBackground().name.lowercase(), params.background)
     }
 
     @Test
@@ -376,9 +376,9 @@ class TestModeImageGenerationStrategyTest {
             TestPromptRequest(
                 masterPrompt = "Master prompt only",
                 specificPrompt = "",
-                size = ImageSize.SQUARE_1024X1024,
-                quality = ImageQuality.LOW,
-                background = ImageBackground.OPAQUE,
+                sizeString = "1024x1024",
+                qualityString = "LOW",
+                backgroundString = "OPAQUE",
             )
 
         // When
@@ -396,7 +396,7 @@ class TestModeImageGenerationStrategyTest {
             TestPromptRequest(
                 masterPrompt = "",
                 specificPrompt = "Specific prompt only",
-                size = ImageSize.PORTRAIT_1024X1536,
+                sizeString = "1024x1536",
                 quality = ImageQuality.MEDIUM,
                 background = ImageBackground.TRANSPARENT,
             )
@@ -416,9 +416,9 @@ class TestModeImageGenerationStrategyTest {
             TestPromptRequest(
                 masterPrompt = "Create a beautiful",
                 specificPrompt = "landscape painting",
-                size = ImageSize.LANDSCAPE_1536X1024,
-                quality = ImageQuality.HIGH,
-                background = ImageBackground.AUTO,
+                sizeString = "1536x1024",
+                qualityString = "HIGH",
+                backgroundString = "AUTO",
             )
 
         // When
@@ -435,9 +435,9 @@ class TestModeImageGenerationStrategyTest {
             TestPromptRequest(
                 masterPrompt = "Test prompt",
                 specificPrompt = "for uniqueness",
-                size = ImageSize.SQUARE_1024X1024,
-                quality = ImageQuality.LOW,
-                background = ImageBackground.OPAQUE,
+                sizeString = "1024x1024",
+                qualityString = "LOW",
+                backgroundString = "OPAQUE",
             )
 
         // When
