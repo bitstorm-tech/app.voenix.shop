@@ -251,12 +251,12 @@ class ImageStorageServiceImpl(
             logger.info { "Successfully stored mug variant image: $storedFilename" }
 
             return storedFilename
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             logger.error(e) { "Failed to store mug variant image: ${e.message}" }
             // Try to clean up the file if it was partially written
             try {
                 Files.deleteIfExists(filePath)
-            } catch (cleanupEx: Exception) {
+            } catch (cleanupEx: IOException) {
                 logger.warn { "Failed to clean up partial file: ${cleanupEx.message}" }
             }
             throw RuntimeException("Failed to store mug variant image: ${e.message}", e)
@@ -285,7 +285,7 @@ class ImageStorageServiceImpl(
                 logger.debug { "Mug variant image not found for deletion: $filename" }
             }
             deleted
-        } catch (e: Exception) {
+        } catch (e: IOException) {
             logger.error { "Error deleting mug variant image $filename: ${e.message}" }
             false
         }

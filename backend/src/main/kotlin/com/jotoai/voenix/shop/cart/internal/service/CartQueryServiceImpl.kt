@@ -11,6 +11,7 @@ import com.jotoai.voenix.shop.cart.internal.assembler.CartAssembler
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.prompt.api.exceptions.PromptNotFoundException
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -122,7 +123,7 @@ class CartQueryServiceImpl(
                                 item.promptId?.let {
                                     try {
                                         promptQueryService.getPromptById(it).promptText
-                                    } catch (e: Exception) {
+                                    } catch (e: PromptNotFoundException) {
                                         logger.warn(e) { "Failed to fetch prompt text for promptId=$it, prompt may have been deleted" }
                                         null // Handle case where prompt might have been deleted
                                     }

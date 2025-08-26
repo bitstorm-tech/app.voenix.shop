@@ -14,6 +14,7 @@ import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantReposi
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.IOException
 
 @Service
 @Transactional(readOnly = true)
@@ -121,7 +122,7 @@ class PromptSlotVariantServiceImpl(
             if (oldImageFilename != null && oldImageFilename != newImageFilename) {
                 try {
                     imageStorageService.deleteFile(oldImageFilename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
-                } catch (e: Exception) {
+                } catch (e: IOException) {
                     logger.warn(e) { "Failed to delete old example image file '$oldImageFilename' during slot variant update. This may result in orphaned files." }
                     // Don't fail the update if image deletion fails
                     // This prevents orphaned files from blocking updates
@@ -150,7 +151,7 @@ class PromptSlotVariantServiceImpl(
         promptSlotVariant.exampleImageFilename?.let { filename ->
             try {
                 imageStorageService.deleteFile(filename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 logger.warn(e) { "Failed to delete example image file '$filename' during slot variant deletion. This may result in orphaned files." }
                 // Don't fail the deletion if image deletion fails
                 // This prevents orphaned files from blocking entity deletion

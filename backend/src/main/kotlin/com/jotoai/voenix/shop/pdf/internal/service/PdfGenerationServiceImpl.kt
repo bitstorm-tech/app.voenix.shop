@@ -18,6 +18,7 @@ import com.jotoai.voenix.shop.pdf.api.dto.PdfSize
 import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
 import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
 import com.jotoai.voenix.shop.pdf.internal.config.PdfQrProperties
+import com.lowagie.text.BadElementException
 import com.lowagie.text.Document
 import com.lowagie.text.Image
 import com.lowagie.text.Rectangle
@@ -532,7 +533,9 @@ class PdfGenerationServiceImpl(
             
             positionAndAddImage(contentByte, pdfImage, dimensions, pageWidth, pageHeight)
             logImageAddition(dimensions)
-        } catch (e: Exception) {
+        } catch (e: IOException) {
+            handleImageAdditionError(e, contentByte, orderItem, pageWidth, pageHeight)
+        } catch (e: BadElementException) {
             handleImageAdditionError(e, contentByte, orderItem, pageWidth, pageHeight)
         }
     }

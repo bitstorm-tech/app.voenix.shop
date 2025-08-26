@@ -18,6 +18,7 @@ import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.IOException
 
 @Service
 class MugVariantServiceImpl(
@@ -128,7 +129,7 @@ class MugVariantServiceImpl(
         variant.exampleImageFilename?.let { filename ->
             try {
                 imageStorageService.deleteMugVariantImage(filename)
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 logger.warn(e) { "Failed to delete mug variant example image during variant deletion: $filename" }
             }
         }
@@ -165,7 +166,7 @@ class MugVariantServiceImpl(
                 try {
                     imageStorageService.deleteMugVariantImage(oldFilename)
                     logger.debug { "Deleted old mug variant image: $oldFilename" }
-                } catch (e: Exception) {
+                } catch (e: IOException) {
                     logger.warn(e) { "Failed to delete old mug variant image: $oldFilename" }
                 }
             }
@@ -185,7 +186,7 @@ class MugVariantServiceImpl(
         variant.exampleImageFilename?.let { filename ->
             try {
                 imageStorageService.deleteMugVariantImage(filename)
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 logger.warn(e) { "Failed to delete mug variant example image: $filename" }
             }
         }

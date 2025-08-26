@@ -484,7 +484,7 @@ class ImageManagementService(
             )
         } catch (e: BadRequestException) {
             throw e
-        } catch (e: Exception) {
+        } catch (e: ImageStorageException) {
             handleSystemError(e, "user image generation")
         }
     }
@@ -517,7 +517,7 @@ class ImageManagementService(
             )
         } catch (e: BadRequestException) {
             throw e
-        } catch (e: Exception) {
+        } catch (e: ImageStorageException) {
             handleSystemError(e, "public image generation")
         }
     }

@@ -19,6 +19,7 @@ import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.image.api.exceptions.ImageAccessDeniedException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.prompt.api.exceptions.PromptNotFoundException
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.OptimisticLockingFailureException
@@ -350,7 +351,7 @@ class CartFacadeImpl(
                             item.promptId?.let {
                                 try {
                                     promptQueryService.getPromptById(it).promptText
-                                } catch (e: Exception) {
+                                } catch (e: PromptNotFoundException) {
                                     logger.warn(e) { "Failed to fetch prompt text for promptId=$it, prompt may have been deleted" }
                                     null // Handle case where prompt might have been deleted
                                 }
