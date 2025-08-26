@@ -58,27 +58,22 @@ class ImageConversionService {
         val destX = sourceX - cropX
         val destY = sourceY - cropY
 
-        // If the crop area is entirely within the image bounds, use simple cropping
-        if (isCropAreaWithinBounds(cropX, cropY, cropWidth, cropHeight, image)) {
+        // Determine the result image based on crop area bounds
+        val resultImage = if (isCropAreaWithinBounds(cropX, cropY, cropWidth, cropHeight, image)) {
+            // If the crop area is entirely within the image bounds, use simple cropping
             val rectangle = Rectangle(cropX, cropY, cropWidth, cropHeight)
-            val croppedImage = image.subimage(rectangle)
-            val writer: ImageWriter = PngWriter.MaxCompression
-            return croppedImage.bytes(writer)
+            image.subimage(rectangle)
+        } else {
+            // Create a transparent canvas for the final result and overlay the source portion
+            val transparentCanvas = ImmutableImage.create(cropWidth, cropHeight)
+            val sourceRectangle = Rectangle(sourceX, sourceY, sourceWidth, sourceHeight)
+            val sourcePortion = image.subimage(sourceRectangle)
+            transparentCanvas.overlay(sourcePortion, destX, destY)
         }
-
-        // Create a transparent canvas for the final result
-        val resultImage = ImmutableImage.create(cropWidth, cropHeight)
-
-        // Extract the portion of the source image that intersects with the crop area
-        val sourceRectangle = Rectangle(sourceX, sourceY, sourceWidth, sourceHeight)
-        val sourcePortion = image.subimage(sourceRectangle)
-
-        // Overlay the source portion onto the transparent canvas at the correct position
-        val finalImage = resultImage.overlay(sourcePortion, destX, destY)
 
         // Use PNG writer to maintain transparency
         val writer: ImageWriter = PngWriter.MaxCompression
-        return finalImage.bytes(writer)
+        return resultImage.bytes(writer)
     }
 
     fun getImageDimensions(imageBytes: ByteArray): ImageDimensions {
