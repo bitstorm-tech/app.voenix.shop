@@ -343,10 +343,10 @@ class OrderServiceImpl(
             id = requireNotNull(entity.id) { "OrderItem ID cannot be null when converting to DTO" },
             article =
                 articlesById[entity.articleId]
-                    ?: throw IllegalStateException("Missing ArticleDto for id: ${entity.articleId}"),
+                    ?: error("Missing ArticleDto for id: ${entity.articleId}"),
             variant =
                 variantsById[entity.variantId]
-                    ?: throw IllegalStateException("Missing MugArticleVariantDto for id: ${entity.variantId}"),
+                    ?: error("Missing MugArticleVariantDto for id: ${entity.variantId}"),
             quantity = entity.quantity,
             pricePerItem = entity.pricePerItem,
             totalPrice = entity.totalPrice,

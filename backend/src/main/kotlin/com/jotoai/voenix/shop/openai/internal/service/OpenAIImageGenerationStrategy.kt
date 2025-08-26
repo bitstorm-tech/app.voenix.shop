@@ -141,7 +141,7 @@ class OpenAIImageGenerationStrategy(
         if (!httpResponse.status.isSuccess()) {
             val errorBody = httpResponse.bodyAsText()
             logger.error { "OpenAI API returned error status ${httpResponse.status}: $errorBody" }
-            throw IllegalStateException("OpenAI API error: ${httpResponse.status} - $errorBody")
+            error("OpenAI API error: ${httpResponse.status} - $errorBody")
         }
 
         val response = httpResponse.body<OpenAIResponse>()
@@ -154,12 +154,12 @@ class OpenAIImageGenerationStrategy(
     private fun validateOpenAIResponse(response: OpenAIResponse) {
         if (response.error != null) {
             logger.error { "OpenAI API returned error: ${response.error.message}" }
-            throw IllegalStateException("OpenAI API error: ${response.error.message}")
+            error("OpenAI API error: ${response.error.message}")
         }
 
         if (response.data.isNullOrEmpty()) {
             logger.error { "OpenAI API returned empty or null data" }
-            throw IllegalStateException("OpenAI API returned no images")
+            error("OpenAI API returned no images")
         }
     }
 
@@ -180,7 +180,7 @@ class OpenAIImageGenerationStrategy(
                     Base64.decode(openAIImage.b64Json)
                 }
                 else -> {
-                    throw IllegalStateException("OpenAI response contains neither URL nor base64 data")
+                    error("OpenAI response contains neither URL nor base64 data")
                 }
             }
         }
@@ -254,7 +254,7 @@ class OpenAIImageGenerationStrategy(
                     )
 
                 val openAIImage = response.data!!.first()
-                val imageUrl = openAIImage.url ?: throw IllegalStateException("No image URL returned")
+                val imageUrl = openAIImage.url ?: error("No image URL returned")
 
                 TestPromptResponse(
                     imageUrl = imageUrl,

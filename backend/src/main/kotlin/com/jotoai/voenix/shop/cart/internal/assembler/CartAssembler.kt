@@ -58,10 +58,10 @@ class CartAssembler(
             id = requireNotNull(entity.id) { "CartItem ID cannot be null when converting to DTO" },
             article =
                 articlesById[entity.articleId]
-                    ?: throw IllegalStateException("Missing ArticleDto for id: ${entity.articleId}"),
+                    ?: error("Missing ArticleDto for id: ${entity.articleId}"),
             variant =
                 variantsById[entity.variantId]
-                    ?: throw IllegalStateException("Missing MugArticleVariantDto for id: ${entity.variantId}"),
+                    ?: error("Missing MugArticleVariantDto for id: ${entity.variantId}"),
             quantity = entity.quantity,
             priceAtTime = entity.priceAtTime,
             originalPrice = entity.originalPrice,
