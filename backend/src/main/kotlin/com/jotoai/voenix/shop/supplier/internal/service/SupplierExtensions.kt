@@ -30,20 +30,36 @@ fun CreateSupplierRequest.toEntity(): Supplier =
     )
 
 fun Supplier.updateFrom(request: UpdateSupplierRequest) {
+    updateBasicInfo(request)
+    updateAddressInfo(request)
+    updateContactInfo(request)
+    updateAdditionalInfo(request)
+}
+
+private fun Supplier.updateBasicInfo(request: UpdateSupplierRequest) {
     request.name?.let { this.name = it.trim() }
     request.title?.let { this.title = it.trim() }
     request.firstName?.let { this.firstName = it.trim() }
     request.lastName?.let { this.lastName = it.trim() }
+}
+
+private fun Supplier.updateAddressInfo(request: UpdateSupplierRequest) {
     request.street?.let { this.street = it.trim() }
     request.houseNumber?.let { this.houseNumber = it.trim() }
     request.city?.let { this.city = it.trim() }
     request.postalCode?.let { this.postalCode = it }
+    request.countryId?.let { this.countryId = it }
+}
+
+private fun Supplier.updateContactInfo(request: UpdateSupplierRequest) {
     request.phoneNumber1?.let { this.phoneNumber1 = it.trim() }
     request.phoneNumber2?.let { this.phoneNumber2 = it.trim() }
     request.phoneNumber3?.let { this.phoneNumber3 = it.trim() }
     request.email?.let { this.email = it.trim() }
+}
+
+private fun Supplier.updateAdditionalInfo(request: UpdateSupplierRequest) {
     request.website?.let { this.website = it.trim() }
-    request.countryId?.let { this.countryId = it }
 }
 
 fun Supplier.toDtoWithCountry(countryDto: CountryDto?): SupplierDto {
