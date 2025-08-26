@@ -20,6 +20,7 @@ import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
 import com.jotoai.voenix.shop.pdf.internal.config.PdfQrProperties
 import com.lowagie.text.BadElementException
 import com.lowagie.text.Document
+import com.lowagie.text.DocumentException
 import com.lowagie.text.Image
 import com.lowagie.text.Rectangle
 import com.lowagie.text.pdf.BaseFont
@@ -377,6 +378,7 @@ class PdfGenerationServiceImpl(
         }
     }
 
+    @Suppress("ThrowsCount")
     private fun createOrderPage(
         writer: PdfWriter,
         orderData: OrderPdfData,
@@ -421,14 +423,26 @@ class PdfGenerationServiceImpl(
 
             // Add QR code in bottom left
             addOrderQrCode(contentByte, orderData.id.toString(), itemMargin)
-        } catch (e: Exception) {
-            val errorMessage = when (e) {
-                is IOException -> "I/O error creating page $pageNumber for order ${orderData.orderNumber}"
-                is WriterException -> 
-                    "QR code generation error creating page $pageNumber for order ${orderData.orderNumber}"
-                else -> "Error creating page $pageNumber for order ${orderData.orderNumber}"
-            }
-            throw PdfGenerationException(errorMessage, e)
+        } catch (e: IOException) {
+            throw PdfGenerationException(
+                "I/O error creating page $pageNumber for order ${orderData.orderNumber}",
+                e
+            )
+        } catch (e: WriterException) {
+            throw PdfGenerationException(
+                "QR code generation error creating page $pageNumber for order ${orderData.orderNumber}",
+                e
+            )
+        } catch (e: BadElementException) {
+            throw PdfGenerationException(
+                "PDF element error creating page $pageNumber for order ${orderData.orderNumber}",
+                e
+            )
+        } catch (e: DocumentException) {
+            throw PdfGenerationException(
+                "Document error creating page $pageNumber for order ${orderData.orderNumber}",
+                e
+            )
         }
 
         logger.debug { "Created page $pageNumber/$totalPages for order ${orderData.orderNumber}" }
