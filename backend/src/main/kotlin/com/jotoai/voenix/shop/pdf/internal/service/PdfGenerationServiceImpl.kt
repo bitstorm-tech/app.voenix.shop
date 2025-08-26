@@ -260,13 +260,13 @@ class PdfGenerationServiceImpl(
             throw e
         } catch (e: PdfGenerationException) {
             logger.error(e) { "PDF generation error for public user" }
-            throw RuntimeException("Failed to generate PDF. Please try again later.", e)
+            throw PdfGenerationException("Failed to generate PDF. Please try again later.", e)
         } catch (e: IllegalArgumentException) {
             logger.error(e) { "Invalid argument error generating PDF for public user" }
             throw BadRequestException("Invalid request parameters")
         } catch (e: IllegalStateException) {
             logger.error(e) { "Invalid state error generating PDF for public user" }
-            throw RuntimeException("Service temporarily unavailable. Please try again later.", e)
+            throw PdfGenerationException("Service temporarily unavailable. Please try again later.", e)
         }
     }
 

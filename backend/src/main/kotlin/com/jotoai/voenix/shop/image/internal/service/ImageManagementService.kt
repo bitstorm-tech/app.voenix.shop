@@ -15,6 +15,7 @@ import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
+import com.jotoai.voenix.shop.image.api.exceptions.ImageProcessingException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
@@ -745,6 +746,6 @@ class ImageManagementService(
         operation: String,
     ): Nothing {
         logger.error(e) { "Error during $operation" }
-        throw RuntimeException("Failed to generate image. Please try again later.", e)
+        throw ImageProcessingException("Failed to generate image. Please try again later.", e)
     }
 }

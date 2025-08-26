@@ -2,6 +2,7 @@ package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.exceptions.StorageConfigurationException
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -133,7 +134,7 @@ class StoragePathServiceImpl(
                 logger.info { "Created/verified directory for $imageType: ${physicalPath.toAbsolutePath()}" }
             } catch (e: IOException) {
                 logger.error(e) { "Failed to create directory for $imageType: ${e.message}" }
-                throw RuntimeException("Failed to create storage directory for $imageType: ${e.message}", e)
+                throw StorageConfigurationException("Failed to create storage directory for $imageType: ${e.message}", e)
             }
         }
     }

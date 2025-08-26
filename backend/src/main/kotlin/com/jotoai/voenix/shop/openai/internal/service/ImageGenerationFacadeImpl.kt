@@ -5,6 +5,7 @@ import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
+import com.jotoai.voenix.shop.openai.api.exception.ImageGenerationException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
@@ -40,7 +41,7 @@ class ImageGenerationFacadeImpl(
         logger.info { "Delegating user image generation to ImageFacade" }
         requireNotNull(uploadedImageUuid) { "uploadedImageUuid is required for user image generation" }
         val response = imageFacade.generateUserImageWithIds(promptId, uploadedImageUuid, userId, cropArea)
-        return response.imageUrls.firstOrNull() ?: throw RuntimeException("No images generated")
+        return response.imageUrls.firstOrNull() ?: throw ImageGenerationException("No images generated")
     }
 
     override fun generateUserImageWithIds(

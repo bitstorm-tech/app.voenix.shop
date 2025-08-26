@@ -5,6 +5,7 @@ import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
@@ -259,7 +260,7 @@ class ImageStorageServiceImpl(
             } catch (cleanupEx: IOException) {
                 logger.warn { "Failed to clean up partial file: ${cleanupEx.message}" }
             }
-            throw RuntimeException("Failed to store mug variant image: ${e.message}", e)
+            throw ImageStorageException("Failed to store mug variant image: ${e.message}", e)
         }
     }
 
@@ -436,7 +437,7 @@ class ImageStorageServiceImpl(
             }
         } catch (e: IOException) {
             logger.error(e) { "Failed to create directory ${directoryPath.toAbsolutePath()}: ${e.message}" }
-            throw RuntimeException("Failed to create directory: ${e.message}", e)
+            throw ImageStorageException("Failed to create directory: ${e.message}", e)
         }
     }
 
@@ -449,7 +450,7 @@ class ImageStorageServiceImpl(
             logger.debug { "Successfully wrote file: ${filePath.toAbsolutePath()}" }
         } catch (e: IOException) {
             logger.error(e) { "Failed to write file at ${filePath.toAbsolutePath()}: ${e.message}" }
-            throw RuntimeException("Failed to write file: ${e.message}", e)
+            throw ImageStorageException("Failed to write file: ${e.message}", e)
         }
     }
 
@@ -458,7 +459,7 @@ class ImageStorageServiceImpl(
             return Files.readAllBytes(filePath)
         } catch (e: IOException) {
             logger.error(e) { "Failed to read file ${filePath.toAbsolutePath()}: ${e.message}" }
-            throw RuntimeException("Failed to read file: ${e.message}", e)
+            throw ImageStorageException("Failed to read file: ${e.message}", e)
         }
     }
 
@@ -467,7 +468,7 @@ class ImageStorageServiceImpl(
             return Files.deleteIfExists(filePath)
         } catch (e: IOException) {
             logger.error(e) { "Failed to delete file ${filePath.toAbsolutePath()}: ${e.message}" }
-            throw RuntimeException("Failed to delete file: ${e.message}", e)
+            throw ImageStorageException("Failed to delete file: ${e.message}", e)
         }
     }
 
