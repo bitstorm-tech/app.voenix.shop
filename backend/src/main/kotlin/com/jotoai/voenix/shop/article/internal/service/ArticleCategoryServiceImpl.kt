@@ -25,9 +25,6 @@ class ArticleCategoryServiceImpl(
             .map { it.toDto() }
             .orElseThrow { ArticleNotFoundException("ArticleCategory not found with id: $id") }
 
-    override fun searchCategoriesByName(name: String): List<ArticleCategoryDto> =
-        articleCategoryRepository.findByNameContainingIgnoreCase(name).map { it.toDto() }
-
     @Transactional
     override fun createCategory(request: CreateArticleCategoryRequest): ArticleCategoryDto {
         require(!articleCategoryRepository.existsByNameIgnoreCase(request.name)) {

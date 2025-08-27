@@ -9,6 +9,4 @@ interface ArticleCategoryQueryService {
     fun getAllCategories(): List<ArticleCategoryDto>
 
     fun getCategoryById(id: Long): ArticleCategoryDto
-
-    fun searchCategoriesByName(name: String): List<ArticleCategoryDto>
 }

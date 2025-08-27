@@ -6,7 +6,6 @@ import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
 import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
-import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
 import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -36,14 +35,6 @@ class AdminMugVariantController(
 ) {
     companion object {
         private val logger = KotlinLogging.logger {}
-    }
-
-    @GetMapping("/{articleId}/variants")
-    fun findByArticleId(
-        @PathVariable articleId: Long,
-    ): ResponseEntity<List<MugArticleVariantDto>> {
-        val variants = mugVariantQueryService.findByArticleId(articleId)
-        return ResponseEntity.ok(variants)
     }
 
     @PostMapping("/{articleId}/variants")

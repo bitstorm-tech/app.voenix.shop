@@ -18,9 +18,4 @@ interface ShirtVariantFacade {
     ): ShirtArticleVariantDto
 
     fun delete(variantId: Long)
-
-    fun updateExampleImage(
-        variantId: Long,
-        filename: String,
-    ): ShirtArticleVariantDto
 }

@@ -11,6 +11,4 @@ interface ArticleSubCategoryQueryService {
     fun getSubCategoryById(id: Long): ArticleSubCategoryDto
 
     fun getSubCategoriesByCategoryId(categoryId: Long): List<ArticleSubCategoryDto>
-
-    fun searchSubCategoriesByName(name: String): List<ArticleSubCategoryDto>
 }

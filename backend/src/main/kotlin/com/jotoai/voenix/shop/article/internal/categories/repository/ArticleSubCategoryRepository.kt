@@ -8,13 +8,6 @@ import org.springframework.stereotype.Repository
 interface ArticleSubCategoryRepository : JpaRepository<ArticleSubCategory, Long> {
     fun findByArticleCategoryId(articleCategoryId: Long): List<ArticleSubCategory>
 
-    fun findByNameContainingIgnoreCase(name: String): List<ArticleSubCategory>
-
-    fun findByArticleCategoryIdAndNameContainingIgnoreCase(
-        articleCategoryId: Long,
-        name: String,
-    ): List<ArticleSubCategory>
-
     fun existsByArticleCategoryIdAndNameIgnoreCase(
         articleCategoryId: Long,
         name: String,

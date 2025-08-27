@@ -4,7 +4,6 @@ import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.api.variants.ShirtVariantFacade
-import com.jotoai.voenix.shop.article.api.variants.ShirtVariantQueryService
 import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
@@ -12,9 +11,9 @@ import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRep
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.IOException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.io.IOException
 
 @Service
 class ShirtVariantServiceImpl(
@@ -22,8 +21,7 @@ class ShirtVariantServiceImpl(
     private val shirtVariantRepository: ShirtArticleVariantRepository,
     private val imageStorageService: ImageStorageService,
     private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
-) : ShirtVariantQueryService,
-    ShirtVariantFacade {
+) : ShirtVariantFacade {
     companion object {
         private val logger = KotlinLogging.logger {}
     }
@@ -85,23 +83,5 @@ class ShirtVariantServiceImpl(
         }
 
         shirtVariantRepository.deleteById(variantId)
-    }
-
-    @Transactional(readOnly = true)
-    override fun findByArticleId(articleId: Long): List<ShirtArticleVariantDto> =
-        shirtVariantRepository.findByArticleId(articleId).map { shirtArticleVariantAssembler.toDto(it) }
-
-    @Transactional
-    override fun updateExampleImage(
-        variantId: Long,
-        filename: String,
-    ): ShirtArticleVariantDto {
-        val variant =
-            shirtVariantRepository
-                .findById(variantId)
-                .orElseThrow { ArticleNotFoundException("Shirt variant not found with id: $variantId") }
-
-        variant.exampleImageFilename = filename
-        return shirtArticleVariantAssembler.toDto(shirtVariantRepository.save(variant))
     }
 }
