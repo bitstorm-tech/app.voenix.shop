@@ -25,11 +25,6 @@ interface AuthService {
     ): LoginResponse
 
     /**
-     * Logs out the current user and invalidates the session.
-     */
-    fun logout(request: HttpServletRequest)
-
-    /**
      * Gets the current session information for the authenticated user.
      */
     fun getCurrentSession(): SessionInfo

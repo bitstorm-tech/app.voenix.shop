@@ -107,33 +107,14 @@ class AuthServiceImplTest {
     }
 
     @Test
-    fun `login should throw BadCredentialsException for invalid credentials`() {
+    fun `login should throw InvalidCredentialsException for invalid credentials`() {
         val loginRequest = LoginRequest(email = "test@example.com", password = "wrongpassword")
 
         whenever(authenticationManager.authenticate(any())).thenThrow(BadCredentialsException("Invalid credentials"))
 
-        assertThrows<BadCredentialsException> {
+        assertThrows<com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException> {
             authService.login(loginRequest, httpRequest, httpResponse)
         }
-    }
-
-    @Test
-    fun `logout should invalidate session`() {
-        whenever(httpRequest.getSession(false)).thenReturn(httpSession)
-
-        authService.logout(httpRequest)
-
-        verify(httpSession).invalidate()
-        assertTrue(SecurityContextHolder.getContext().authentication == null)
-    }
-
-    @Test
-    fun `logout should handle null session gracefully`() {
-        whenever(httpRequest.getSession(false)).thenReturn(null)
-
-        authService.logout(httpRequest)
-
-        verify(httpSession, never()).invalidate()
     }
 
     @Test
@@ -306,8 +287,15 @@ class AuthServiceImplTest {
             )
 
         whenever(userService.existsByEmail("guest@example.com")).thenReturn(true)
-        whenever(userService.getUserByEmail("guest@example.com")).thenReturn(existingUser)
-        whenever(userService.loadUserByEmail("guest@example.com")).thenReturn(null)
+        whenever(userService.loadUserByEmail("guest@example.com")).thenReturn(
+            UserAuthenticationDto(
+                id = existingUser.id,
+                email = existingUser.email,
+                passwordHash = null,
+                roles = setOf("USER"),
+                isActive = true,
+            ),
+        )
         whenever(httpRequest.getSession(true)).thenReturn(httpSession)
         whenever(httpSession.id).thenReturn("session-123")
         whenever(authenticationManager.authenticate(any())).thenReturn(authentication)
@@ -344,7 +332,6 @@ class AuthServiceImplTest {
         val existingUser = createTestUser(email = "existing@example.com")
 
         whenever(userService.existsByEmail("existing@example.com")).thenReturn(true)
-        whenever(userService.getUserByEmail("existing@example.com")).thenReturn(existingUser)
         whenever(userService.loadUserByEmail("existing@example.com")).thenReturn(
             UserAuthenticationDto(
                 id = existingUser.id,

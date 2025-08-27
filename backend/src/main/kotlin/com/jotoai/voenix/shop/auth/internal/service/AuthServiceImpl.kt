@@ -26,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.context.SecurityContextRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException
 
 @Service
 class AuthServiceImpl(
@@ -41,49 +42,17 @@ class AuthServiceImpl(
         response: HttpServletResponse,
     ): LoginResponse {
         try {
-            val authentication =
-                authenticationManager.authenticate(
-                    UsernamePasswordAuthenticationToken(
-                        loginRequest.email,
-                        loginRequest.password,
-                    ),
-                )
-
-            // Persist the authentication context to the session
-            // This ensures the principal is available in subsequent requests
-            val context = SecurityContextHolder.createEmptyContext()
-            context.authentication = authentication
-            SecurityContextHolder.setContext(context)
-            securityContextRepository.saveContext(context, request, response)
-
-            val userDetails = authentication.principal as CustomUserDetails
-            val userDto = userService.getUserById(userDetails.id)
-            val userRoles = userService.getUserRoles(userDetails.id)
-            val session = request.getSession(true)
-
-            return LoginResponse(
-                user = userDto,
-                sessionId = session.id,
-                roles = userRoles.toList(),
+            return authenticateUser(
+                email = loginRequest.email,
+                password = loginRequest.password,
+                request = request,
+                response = response,
             )
         } catch (_: BadCredentialsException) {
-            throw BadCredentialsException("Invalid email or password")
+            throw InvalidCredentialsException()
         } catch (_: UsernameNotFoundException) {
-            throw BadCredentialsException("Invalid email or password")
+            throw InvalidCredentialsException()
         }
-    }
-
-    @Transactional
-    override fun logout(request: HttpServletRequest) {
-        // Clear security context from thread-local storage
-        SecurityContextHolder.clearContext()
-
-        // Invalidate the HTTP session if it exists
-        request.getSession(false)?.invalidate()
-
-        // Note: SecurityContextRepository clearing needs HttpServletResponse
-        // which is not available in current method signature.
-        // This would require updating the interface to include response parameter.
     }
 
     /**
@@ -152,50 +121,38 @@ class AuthServiceImpl(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ): LoginResponse {
-        // Check if user already exists
-        val existsUser = userService.existsByEmail(registerGuestRequest.email)
+        val email = registerGuestRequest.email
+        if (userService.existsByEmail(email)) {
+            val authInfo = userService.loadUserByEmail(email)
+                ?: throw ResourceAlreadyExistsException("User", "email", email)
 
-        if (existsUser) {
-            try {
-                val existingUser = userService.getUserByEmail(registerGuestRequest.email)
-                // Try to get authentication info to see if they have a password
-                val authInfo = userService.loadUserByEmail(registerGuestRequest.email)
-
-                // If user exists and has no password, update their details
-                if (authInfo?.passwordHash == null) {
-                    updateUser(
-                        userId = existingUser.id,
-                        firstName = registerGuestRequest.firstName,
-                        lastName = registerGuestRequest.lastName,
-                        phoneNumber = registerGuestRequest.phoneNumber,
-                    )
-
-                    return authenticateGuestUser(
-                        userId = existingUser.id,
-                        request = request,
-                        response = response,
-                    )
-                } else {
-                    // User exists with password, cannot register as guest
-                    throw ResourceAlreadyExistsException("User", "email", registerGuestRequest.email)
-                }
-            } catch (_: ResourceNotFoundException) {
-                // User does not exist, proceed to create guest user
-            } catch (_: BadCredentialsException) {
-                // User exists with password, cannot register as guest
-                throw ResourceAlreadyExistsException("User", "email", registerGuestRequest.email)
-            }
-        }
-        val savedUser =
-            createUser(
-                UserCreationRequest(
-                    email = registerGuestRequest.email,
-                    password = null,
+            if (authInfo.passwordHash == null) {
+                // Update profile fields for existing guest
+                updateUser(
+                    userId = authInfo.id,
                     firstName = registerGuestRequest.firstName,
                     lastName = registerGuestRequest.lastName,
                     phoneNumber = registerGuestRequest.phoneNumber,
                 )
-            )
+                return authenticateGuestUser(
+                    userId = authInfo.id,
+                    request = request,
+                    response = response,
+                )
+            } else {
+                throw ResourceAlreadyExistsException("User", "email", email)
+            }
+        }
+
+        val savedUser = createUser(
+            UserCreationRequest(
+                email = email,
+                password = null,
+                firstName = registerGuestRequest.firstName,
+                lastName = registerGuestRequest.lastName,
+                phoneNumber = registerGuestRequest.phoneNumber,
+            ),
+        )
 
         return authenticateGuestUser(
             userId = savedUser.id,
@@ -308,10 +265,13 @@ class AuthServiceImpl(
         // Optimized: Fetch user and roles together (still 2 queries but consolidated)
         val (userDto, userRoles) = fetchUserWithRoles(userDetails.id)
         val session = request.getSession(true)
+        // Protect against session fixation by rotating the session ID
+        request.changeSessionId()
+        val sessionId = request.getSession(false)?.id ?: session.id
 
         return LoginResponse(
             user = userDto,
-            sessionId = session.id,
+            sessionId = sessionId,
             roles = userRoles.toList(),
         )
     }

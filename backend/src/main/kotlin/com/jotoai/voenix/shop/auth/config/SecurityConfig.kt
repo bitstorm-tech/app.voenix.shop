@@ -41,27 +41,8 @@ class SecurityConfig {
                 session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
             }.authorizeHttpRequests { auth ->
                 auth
-                    // Static resources and frontend assets
-                    .requestMatchers(
-                        "/",
-                        "/index.html",
-                        "/assets/**",
-                        "/images/**",
-                        "/*.js",
-                        "/*.css",
-                        "/*.ico",
-                        "/*.png",
-                        "/*.jpg",
-                        "/*.svg",
-                        "/*.webp",
-                        "/*.woff",
-                        "/*.woff2",
-                        "/*.ttf",
-                        "/*.eot",
-                    ).permitAll()
                     // Auth endpoints - No authentication required
-                    .requestMatchers("/api/auth/**")
-                    .permitAll()
+                    .requestMatchers("/api/auth/**").permitAll()
                     // Public API endpoints for e-commerce functionality
                     .requestMatchers(
                         "/api/prompts/**",
@@ -69,25 +50,23 @@ class SecurityConfig {
                         "/api/categories/**",
                         "/api/subcategories/**",
                         "/api/public/**",
-                    ).permitAll()
-                    // Public service endpoints
-                    .requestMatchers(
                         "/api/openai/images/edit",
                         "/api/pdf/generate",
                     ).permitAll()
                     // Admin endpoints - Require ADMIN role
-                    .requestMatchers("/api/admin/**")
-                    .hasRole("ADMIN")
+                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
                     // User endpoints - Require authentication
-                    .requestMatchers("/api/user/**")
-                    .authenticated()
-                    // Frontend routes (for SPA routing)
-                    .requestMatchers("/login", "/editor", "/admin/**")
-                    .permitAll()
-                    // Deny all other requests by default
-                    .anyRequest()
-                    .authenticated()
+                    .requestMatchers("/api/user/**").authenticated()
+                    // Any other API endpoints require authentication by default
+                    .requestMatchers("/api/**").authenticated()
+                    // Non-API requests (frontend assets and routes) are public
+                    .anyRequest().permitAll()
             }.exceptionHandling { exceptions ->
                 exceptions.authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+            }.logout { logout ->
+                logout
+                    .logoutUrl("/api/auth/logout")
+                    .invalidateHttpSession(true)
+                    .clearAuthentication(true)
             }.build()
 }

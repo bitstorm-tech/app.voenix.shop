@@ -11,6 +11,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import java.time.LocalDateTime
+import com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
@@ -116,6 +117,20 @@ class GlobalExceptionHandler {
             )
 
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse)
+    }
+
+    @ExceptionHandler(InvalidCredentialsException::class)
+    fun handleInvalidCredentials(ex: InvalidCredentialsException): ResponseEntity<ErrorResponse> {
+        val errorResponse =
+            ErrorResponse(
+                timestamp = LocalDateTime.now(),
+                status = HttpStatus.UNAUTHORIZED.value(),
+                error = "Unauthorized",
+                message = ex.message ?: "Invalid email or password",
+                path = "",
+            )
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse)
     }
 
     @ExceptionHandler(Exception::class)

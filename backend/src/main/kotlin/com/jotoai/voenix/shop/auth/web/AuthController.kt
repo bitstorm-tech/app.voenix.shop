@@ -27,11 +27,6 @@ class AuthController(
         response: HttpServletResponse,
     ): LoginResponse = authService.login(loginRequest, request, response)
 
-    @PostMapping("/logout")
-    fun logout(request: HttpServletRequest) {
-        authService.logout(request)
-    }
-
     @GetMapping("/session")
     fun getSessionInfo(): SessionInfo = authService.getCurrentSession()
 
