@@ -2,10 +2,7 @@ package com.jotoai.voenix.shop.country.internal.service
 
 import com.jotoai.voenix.shop.country.api.CountryService
 import com.jotoai.voenix.shop.country.api.dto.CountryDto
-import com.jotoai.voenix.shop.country.api.dto.CreateCountryRequest
-import com.jotoai.voenix.shop.country.api.dto.UpdateCountryRequest
 import com.jotoai.voenix.shop.country.api.exceptions.CountryNotFoundException
-import com.jotoai.voenix.shop.country.internal.entity.Country
 import com.jotoai.voenix.shop.country.internal.repository.CountryRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -25,48 +22,5 @@ class CountryServiceImpl(
 
     override fun existsById(id: Long): Boolean = countryRepository.existsById(id)
 
-    @Transactional
-    override fun createCountry(request: CreateCountryRequest): CountryDto {
-        require(!countryRepository.existsByName(request.name)) {
-            "Country with name '${request.name}' already exists"
-        }
-
-        val country =
-            Country(
-                name = request.name,
-            )
-
-        val savedCountry = countryRepository.save(country)
-        return savedCountry.toDto()
-    }
-
-    @Transactional
-    override fun updateCountry(
-        id: Long,
-        request: UpdateCountryRequest,
-    ): CountryDto {
-        val country =
-            countryRepository
-                .findById(id)
-                .orElseThrow { CountryNotFoundException("Country", "id", id) }
-
-        request.name?.let { newName ->
-            require(!countryRepository.existsByNameAndIdNot(newName, id)) {
-                "Country with name '$newName' already exists"
-            }
-            country.name = newName
-        }
-
-        val updatedCountry = countryRepository.save(country)
-        return updatedCountry.toDto()
-    }
-
-    @Transactional
-    override fun deleteCountry(id: Long) {
-        if (!countryRepository.existsById(id)) {
-            throw CountryNotFoundException("Country", "id", id)
-        }
-
-        countryRepository.deleteById(id)
-    }
+    
 }
