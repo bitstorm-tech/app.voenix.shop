@@ -95,11 +95,6 @@ class UserServiceImpl(
         return user.toDto()
     }
 
-    override fun getAllUsers(): List<UserDto> = userRepository.findAllActive().map { it.toDto() }
-
-    override fun getAllUsers(pageable: Pageable): Page<UserDto> =
-        userRepository.findAllActive(pageable).map { it.toDto() }
-
     override fun searchUsers(
         criteria: UserSearchCriteria,
         pageable: Pageable,
@@ -192,10 +187,7 @@ class UserServiceImpl(
         user.markAsDeleted()
     }
 
-    @Transactional
-    override fun deleteUser(id: Long) {
-        userRepository.deleteById(id)
-    }
+    
 
     @Transactional
     override fun restoreUser(id: Long): UserDto {

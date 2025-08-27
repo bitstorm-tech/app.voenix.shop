@@ -63,20 +63,7 @@ interface UserService {
         oneTimePassword: String? = null,
     ): UserDto
 
-    /**
-     * Retrieves all users.
-     *
-     * @return List of all active users
-     */
-    fun getAllUsers(): List<UserDto>
-
-    /**
-     * Retrieves all users with pagination support.
-     *
-     * @param pageable Pagination information
-     * @return Page containing user DTOs
-     */
-    fun getAllUsers(pageable: Pageable): Page<UserDto>
+    
 
     /**
      * Searches for users based on criteria with pagination support.
@@ -161,14 +148,6 @@ interface UserService {
      * @throws ResourceNotFoundException if user doesn't exist
      */
     fun softDeleteUser(id: Long)
-
-    /**
-     * Hard deletes a user (permanently removes from database).
-     *
-     * @param id The user ID
-     * @throws ResourceNotFoundException if user doesn't exist
-     */
-    fun deleteUser(id: Long)
 
     /**
      * Restores a soft-deleted user.

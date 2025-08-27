@@ -37,10 +37,6 @@ class AdminEndpointSecurityWebMvcTest {
     fun testAdminEndpointsRequireAuthentication() {
         // Test that admin endpoints return 401 when not authenticated
         mockMvc
-            .perform(MockMvcRequestBuilders.get("/api/admin/users"))
-            .andExpect(status().isUnauthorized())
-
-        mockMvc
             .perform(MockMvcRequestBuilders.get("/api/admin/prompts"))
             .andExpect(status().isUnauthorized())
 
@@ -54,10 +50,6 @@ class AdminEndpointSecurityWebMvcTest {
     fun testAdminEndpointsRequireAdminRole() {
         // Test that admin endpoints return 403 for non-admin users
         mockMvc
-            .perform(MockMvcRequestBuilders.get("/api/admin/users"))
-            .andExpect(status().isForbidden())
-
-        mockMvc
             .perform(MockMvcRequestBuilders.get("/api/admin/prompts"))
             .andExpect(status().isForbidden())
 
@@ -70,7 +62,6 @@ class AdminEndpointSecurityWebMvcTest {
     @WithMockUser(username = "admin@test.com", roles = ["ADMIN"])
     fun testAdminEndpointsAccessibleWithAdminRole() {
         // Mock service responses
-        `when`(userService.getAllUsers()).thenReturn(emptyList())
         `when`(promptQueryService.getAllPrompts()).thenReturn(emptyList())
         `when`(articleQueryService.findAll(0, 20, null, null, null, null)).thenReturn(
             com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse(
@@ -83,10 +74,6 @@ class AdminEndpointSecurityWebMvcTest {
         )
 
         // Test that admin endpoints are accessible with ADMIN role (200 or other success status)
-        mockMvc
-            .perform(MockMvcRequestBuilders.get("/api/admin/users"))
-            .andExpect(status().isOk())
-
         mockMvc
             .perform(MockMvcRequestBuilders.get("/api/admin/prompts"))
             .andExpect(status().isOk())

@@ -514,14 +514,7 @@ export const userApi = {
   },
 };
 
-// Admin User API endpoints
-export const adminUsersApi = {
-  getAll: () => api.get<UserDto[]>('/admin/users'),
-  getById: (id: number) => api.get<UserDto>(`/admin/users/${id}`),
-  create: (data: CreateUserRequest) => api.post<UserDto>('/admin/users', data),
-  update: (id: number, data: UpdateUserRequest) => api.put<UserDto>(`/admin/users/${id}`, data),
-  delete: (id: number) => api.delete<void>(`/admin/users/${id}`),
-};
+// Admin User API endpoints - Removed (not used)
 
 // VAT API endpoints
 export const vatApi = {
