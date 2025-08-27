@@ -6,6 +6,7 @@ import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.MediaType
+import jakarta.servlet.http.HttpServletRequest
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -30,6 +31,7 @@ class PublicImageController(
         @RequestParam("cropY", required = false) cropY: Double?,
         @RequestParam("cropWidth", required = false) cropWidth: Double?,
         @RequestParam("cropHeight", required = false) cropHeight: Double?,
+        request: HttpServletRequest,
     ): PublicImageGenerationResponse {
         logger.info { "Received public image generation request for prompt ID: $promptId" }
 
@@ -43,7 +45,19 @@ class PublicImageController(
                 cropArea = cropArea,
             )
 
-        val clientIP = "127.0.0.1" // TODO: Extract real IP address
+        val clientIP = extractClientIp(request)
         return imageGenerationService.generatePublicImage(generationRequest, clientIP, imageFile)
+    }
+
+    private fun extractClientIp(request: HttpServletRequest): String {
+        val xForwardedFor = request.getHeader("X-Forwarded-For")
+        if (!xForwardedFor.isNullOrBlank()) {
+            return xForwardedFor.split(',').first().trim()
+        }
+        val xRealIp = request.getHeader("X-Real-IP")
+        if (!xRealIp.isNullOrBlank()) {
+            return xRealIp
+        }
+        return request.remoteAddr
     }
 }

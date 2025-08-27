@@ -2,11 +2,11 @@ package com.jotoai.voenix.shop.image.web
 
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
-import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.core.io.Resource
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -68,21 +68,12 @@ class UserImageController(
     fun getImage(
         @PathVariable filename: String,
         @AuthenticationPrincipal userDetails: UserDetails,
-    ): ResponseEntity<ByteArray> {
+    ): ResponseEntity<Resource> {
         val user = userService.getUserByEmail(userDetails.username)
         logger.info { "User ${user.id} retrieving image: $filename" }
 
-        // Use the serveUserImage method instead which handles validation internally
-        val response = imageAccessService.serveUserImage(filename, user.id)
-
-        // Convert Resource response to ByteArray response for consistency with the API contract
-        val resource = response.body!!
-        val imageBytes = resource.inputStream.readAllBytes()
-
-        return ResponseEntity
-            .ok()
-            .headers(response.headers)
-            .body(imageBytes)
+        // Delegate to access service which validates access and streams the resource
+        return imageAccessService.serveUserImage(filename, user.id)
     }
 
 }

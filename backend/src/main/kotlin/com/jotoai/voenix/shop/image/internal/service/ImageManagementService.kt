@@ -649,14 +649,8 @@ class ImageManagementService(
         ipAddress: String,
         cropArea: CropArea?,
     ): PublicImageGenerationResponse {
-        val storedFilename =
-            if (cropArea != null) {
-                imageStorageService.storeFile(imageFile, ImageType.PUBLIC, cropArea)
-            } else {
-                imageStorageService.storeFile(imageFile, ImageType.PUBLIC)
-            }
-
-        val imageBytes = imageStorageService.loadFileAsBytes(storedFilename, ImageType.PUBLIC)
+        val originalBytes = imageFile.bytes
+        val imageBytes = if (cropArea != null) imageConversionService.cropImage(originalBytes, cropArea) else originalBytes
         val generatedBytes = openAIImageGenerationService.generateImages(imageBytes, promptId)
 
         val generatedImages =
