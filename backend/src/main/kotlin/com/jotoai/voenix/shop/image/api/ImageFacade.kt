@@ -9,8 +9,9 @@ import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
-import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDateTime
 import java.util.*
+import org.springframework.web.multipart.MultipartFile
 
 /**
  * Main facade for Image module operations.
@@ -48,19 +49,9 @@ interface ImageFacade {
     ): UploadedImageDto
 
     /**
-     * Deletes an uploaded image.
-     */
-    fun deleteUploadedImage(
-        uuid: UUID,
-        userId: Long,
-    )
-
-    /**
      * Retrieves all uploaded images for a user.
      */
     fun getUserUploadedImages(userId: Long): List<UploadedImageDto>
-
-    // Generated images management
 
     /**
      * Retrieves a generated image by its UUID.
@@ -113,7 +104,7 @@ interface ImageFacade {
      */
     fun countGeneratedImagesForIpAfter(
         ipAddress: String,
-        after: java.time.LocalDateTime,
+        after: LocalDateTime,
     ): Long
 
     /**
@@ -121,7 +112,7 @@ interface ImageFacade {
      */
     fun countGeneratedImagesForUserAfter(
         userId: Long,
-        after: java.time.LocalDateTime,
+        after: LocalDateTime,
     ): Long
 
     /**
@@ -150,6 +141,6 @@ interface ImageFacade {
     fun generatePublicImage(
         request: PublicImageGenerationRequest,
         ipAddress: String,
-        imageFile: org.springframework.web.multipart.MultipartFile,
+        imageFile: MultipartFile,
     ): PublicImageGenerationResponse
 }

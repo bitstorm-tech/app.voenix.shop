@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.image.api
 
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
-import java.util.UUID
+import java.util.*
 
 /**
  * Query service for Image module read operations.
@@ -10,11 +10,6 @@ import java.util.UUID
  * It serves as the primary read API for other modules to access image information.
  */
 interface ImageQueryService {
-    /**
-     * Retrieves an image by filename.
-     */
-    fun findImageByFilename(filename: String): ImageDto?
-
     /**
      * Retrieves an uploaded image by its UUID.
      */

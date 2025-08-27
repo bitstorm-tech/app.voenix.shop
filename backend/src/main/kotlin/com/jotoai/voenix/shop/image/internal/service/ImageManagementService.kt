@@ -169,34 +169,6 @@ class ImageManagementService(
         )
     }
 
-    @CacheEvict("uploadedImages", key = "#uuid + '_' + #userId")
-    @Transactional
-    override fun deleteUploadedImage(
-        uuid: UUID,
-        userId: Long,
-    ) {
-        val uploadedImage =
-            uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
-                ?: throw ImageNotFoundException("Uploaded image with UUID $uuid not found for user $userId")
-
-        try {
-            // Delete file from storage
-            val storageImpl = imageStorageService as ImageStorageServiceImpl
-            storageImpl.deleteImage(uploadedImage.storedFilename)
-
-            // Delete from database
-            uploadedImageRepository.delete(uploadedImage)
-            logger.debug { "Deleted uploaded image $uuid for user $userId" }
-        } catch (e: DataAccessException) {
-            throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
-        } catch (e: IOException) {
-            throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
-        } catch (e: IllegalStateException) {
-            throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
-        } catch (e: IllegalArgumentException) {
-            throw ImageStorageException("Failed to delete uploaded image: ${e.message}", e)
-        }
-    }
 
     @Cacheable("userUploadedImages", key = "#userId")
     @Transactional(readOnly = true)
@@ -596,35 +568,7 @@ class ImageManagementService(
             }
         }
 
-    /**
-     * Returns raw image data by filename and image type.
-     */
-    fun getImageData(
-        filename: String,
-        imageType: ImageType,
-    ): Pair<ByteArray, String> {
-        val storageImpl = imageStorageService as ImageStorageServiceImpl
-        return storageImpl.getImageData(filename, imageType)
-    }
-
-    /**
-     * Deletes an image by delegating to the storage service.
-     */
-    fun delete(
-        filename: String,
-        imageType: ImageType,
-    ) {
-        val storageImpl = imageStorageService as ImageStorageServiceImpl
-        storageImpl.deleteImage(filename, imageType)
-    }
-
-    /**
-     * Deletes an image by filename only (searches across image types).
-     */
-    fun delete(filename: String) {
-        val storageImpl = imageStorageService as ImageStorageServiceImpl
-        storageImpl.deleteImage(filename)
-    }
+    
 
     /**
      * Extracts UUID from original image filename.

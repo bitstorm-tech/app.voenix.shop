@@ -1,29 +1,18 @@
 package com.jotoai.voenix.shop.image.web
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
-import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
-import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
-import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.user.api.UserService
-import org.springframework.core.io.Resource
-import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestPart
-import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
@@ -32,8 +21,6 @@ import org.springframework.web.multipart.MultipartFile
 @PreAuthorize("hasRole('ADMIN')")
 class AdminImageController(
     private val imageFacade: ImageFacade,
-    private val imageQueryService: ImageQueryService,
-    private val imageAccessService: ImageAccessService,
     private val objectMapper: ObjectMapper,
     private val userService: UserService,
 ) {
@@ -57,33 +44,5 @@ class AdminImageController(
             filename = uploadedImage.filename,
             imageType = uploadedImage.imageType,
         )
-    }
-
-    @GetMapping("/{filename}/download")
-    fun downloadImage(
-        @PathVariable filename: String,
-    ): ResponseEntity<Resource> = imageAccessService.serveImage(filename, ImageType.PUBLIC)
-
-    @DeleteMapping("/{filename}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    fun deleteImage(
-        @PathVariable filename: String,
-        @AuthenticationPrincipal userDetails: UserDetails,
-    ) {
-        val adminUser = userService.getUserByEmail(userDetails.username)
-
-        // Find the image by filename to get its UUID
-        val imageDto = imageQueryService.findImageByFilename(filename)
-            ?: throw IllegalArgumentException("Image with filename '$filename' not found")
-
-        // Admin can delete any uploaded image, but we need the UUID and userId
-        when (imageDto) {
-            is UploadedImageDto -> {
-                imageFacade.deleteUploadedImage(imageDto.uuid, adminUser.id)
-            }
-            else -> {
-                throw IllegalArgumentException("Cannot delete image type: ${imageDto::class.simpleName}")
-            }
-        }
     }
 }
