@@ -2,14 +2,18 @@ package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
+import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
+import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
+import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
@@ -18,13 +22,17 @@ import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
-import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.time.LocalDateTime
 import java.util.*
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.Resource
 import org.springframework.dao.DataAccessException
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -50,11 +58,10 @@ class ImageManagementService(
     private val imageValidationService: ImageValidationService,
     private val openAIImageGenerationService: OpenAIImageGenerationService,
     private val storagePathService: StoragePathService,
-    private val promptQueryService: PromptQueryService,
     private val userService: UserService,
     private val userImageStorageService: UserImageStorageService,
     private val imageConversionService: ImageConversionService,
-) : ImageFacade {
+) : ImageFacade, ImageAccessService, ImageQueryService {
     companion object {
         private val logger = KotlinLogging.logger {}
         private const val ORIGINAL_SUFFIX = "_original"
@@ -422,7 +429,6 @@ class ImageManagementService(
     ): PublicImageGenerationResponse {
         logger.info { "Generating image: user=$userId, prompt=$promptId" }
 
-        validatePrompt(promptId)
         userService.getUserById(userId)
 
         val dayAgo = LocalDateTime.now().minusHours(USER_RATE_LIMIT_HOURS.toLong())
@@ -457,7 +463,6 @@ class ImageManagementService(
         logger.info { "Generating image: public, prompt=${request.promptId}" }
 
         validateImageFile(imageFile)
-        validatePrompt(request.promptId)
 
         val hourAgo = LocalDateTime.now().minusHours(PUBLIC_RATE_LIMIT_HOURS.toLong())
         val count = countGeneratedImagesForIpAfter(ipAddress, hourAgo)
@@ -539,9 +544,9 @@ class ImageManagementService(
     /**
      * Returns raw image data for internal use or public access.
      */
-    fun getImageData(
+    override fun getImageData(
         filename: String,
-        userId: Long? = null,
+        userId: Long?,
     ): Pair<ByteArray, String> =
         when {
             userId != null -> validateAccessAndGetImageData(filename, userId)
@@ -560,7 +565,18 @@ class ImageManagementService(
             }
         }
 
-    
+    override fun serveUserImage(
+        filename: String,
+        userId: Long,
+    ): ResponseEntity<Resource> {
+        val (imageData, contentType) = validateAccessAndGetImageData(filename, userId)
+        return ResponseEntity
+            .ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"$filename\"")
+            .contentType(MediaType.parseMediaType(contentType))
+            .body(ByteArrayResource(imageData))
+    }
+
 
     /**
      * Extracts UUID from original image filename.
@@ -573,13 +589,6 @@ class ImageManagementService(
         } catch (e: IllegalArgumentException) {
             logger.error(e) { "Invalid UUID format in filename: $filename" }
             throw ResourceNotFoundException("Invalid image filename format")
-        }
-    }
-
-    private fun validatePrompt(promptId: Long) {
-        val prompt = promptQueryService.getPromptById(promptId)
-        if (!prompt.active) {
-            throw BadRequestException("The selected prompt is not available")
         }
     }
 
@@ -674,5 +683,62 @@ class ImageManagementService(
     ): Nothing {
         logger.error(e) { "Error during $operation" }
         throw ImageProcessingException("Failed to generate image. Please try again later.", e)
+    }
+
+    // ImageQueryService implementation
+    override fun findUploadedImageByUuid(uuid: UUID): ImageDto? {
+        val uploaded = uploadedImageRepository.findByUuid(uuid)
+        return uploaded?.let {
+            SimpleImageDto(filename = it.storedFilename, imageType = ImageType.PRIVATE)
+        }
+    }
+
+    override fun findUploadedImagesByUserId(userId: Long): List<ImageDto> =
+        uploadedImageRepository.findAllByUserId(userId).map {
+            SimpleImageDto(filename = it.storedFilename, imageType = ImageType.PRIVATE)
+        }
+
+    override fun existsByUuid(uuid: UUID): Boolean = uploadedImageRepository.findByUuid(uuid) != null
+
+    override fun existsByUuidAndUserId(uuid: UUID, userId: Long): Boolean =
+        uploadedImageRepository.findByUserIdAndUuid(userId, uuid) != null
+
+    override fun existsGeneratedImageById(id: Long): Boolean = generatedImageRepository.existsById(id)
+
+    override fun existsGeneratedImageByIdAndUserId(id: Long, userId: Long): Boolean =
+        generatedImageRepository.existsByIdAndUserId(id, userId)
+
+    override fun validateGeneratedImageOwnership(imageId: Long, userId: Long?): Boolean =
+        if (userId != null) existsGeneratedImageByIdAndUserId(imageId, userId) else existsGeneratedImageById(imageId)
+
+    override fun findGeneratedImageById(id: Long): GeneratedImageDto? {
+        val generated = generatedImageRepository.findById(id).orElse(null)
+        return generated?.let {
+            GeneratedImageDto(
+                filename = it.filename,
+                imageType = ImageType.GENERATED,
+                promptId = it.promptId,
+                userId = it.userId,
+                generatedAt = it.generatedAt,
+                ipAddress = it.ipAddress,
+            )
+        }
+    }
+
+    override fun findGeneratedImagesByIds(ids: List<Long>): Map<Long, GeneratedImageDto> {
+        if (ids.isEmpty()) return emptyMap()
+        return generatedImageRepository.findAllById(ids).associateBy(
+            { requireNotNull(it.id) { "GeneratedImage ID cannot be null" } },
+            {
+                GeneratedImageDto(
+                    filename = it.filename,
+                    imageType = ImageType.GENERATED,
+                    promptId = it.promptId,
+                    userId = it.userId,
+                    generatedAt = it.generatedAt,
+                    ipAddress = it.ipAddress,
+                )
+            },
+        )
     }
 }
