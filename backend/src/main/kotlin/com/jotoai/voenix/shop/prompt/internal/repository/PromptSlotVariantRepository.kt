@@ -13,5 +13,4 @@ interface PromptSlotVariantRepository : JpaRepository<PromptSlotVariant, Long> {
         id: Long,
     ): Boolean
 
-    fun findByPromptSlotTypeId(promptSlotTypeId: Long): List<PromptSlotVariant>
 }

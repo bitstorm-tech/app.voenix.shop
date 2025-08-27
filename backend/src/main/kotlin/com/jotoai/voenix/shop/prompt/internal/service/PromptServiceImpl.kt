@@ -7,9 +7,6 @@ import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.CreatePromptRequest
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.UpdatePromptRequest
-import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptDto
-import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.AddSlotVariantsRequest
-import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantsRequest
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
@@ -45,15 +42,6 @@ class PromptServiceImpl(
                 promptAssembler.toDto(prompt)
             }.orElseThrow { PromptNotFoundException("Prompt", "id", id) }
 
-    override fun searchPromptsByTitle(title: String): List<PromptDto> =
-        promptRepository.findByTitleContainingIgnoreCase(title).map {
-            promptAssembler.toDto(it)
-        }
-
-    override fun getAllActivePrompts(): List<PublicPromptDto> =
-        promptRepository.findAllActiveWithRelations().map {
-            promptAssembler.toPublicDto(it)
-        }
 
     override fun existsById(id: Long): Boolean = promptRepository.existsById(id)
 
@@ -164,77 +152,4 @@ class PromptServiceImpl(
         promptRepository.deleteById(id)
     }
 
-    @Transactional
-    override fun addSlotVariantsToPrompt(
-        promptId: Long,
-        request: AddSlotVariantsRequest,
-    ): PromptDto {
-        val prompt =
-            promptRepository
-                .findById(promptId)
-                .orElseThrow { PromptNotFoundException("Prompt", "id", promptId) }
-
-        // Validate all slot variants exist
-        promptValidator.validateSlotVariantsExist(request.slotIds)
-
-        val promptSlotVariants = promptSlotVariantRepository.findAllById(request.slotIds)
-
-        promptSlotVariants.forEach { promptSlotVariant ->
-            prompt.addPromptSlotVariant(promptSlotVariant)
-        }
-
-        val savedPrompt = promptRepository.save(prompt)
-        return getPromptById(savedPrompt.id!!)
-    }
-
-    @Transactional
-    override fun updatePromptSlotVariants(
-        promptId: Long,
-        request: UpdatePromptSlotVariantsRequest,
-    ): PromptDto {
-        val prompt =
-            promptRepository
-                .findById(promptId)
-                .orElseThrow { PromptNotFoundException("Prompt", "id", promptId) }
-
-        // Validate all slot variants exist
-        val slotVariantIds = request.slotVariants.map { it.slotId }
-        promptValidator.validateSlotVariantsExist(slotVariantIds)
-
-        // Clear existing slot variants
-        prompt.clearPromptSlotVariants()
-
-        // Add new slot variants
-        request.slotVariants.forEach { slotVariantRequest ->
-            val promptSlotVariant =
-                promptSlotVariantRepository
-                    .findById(slotVariantRequest.slotId)
-                    .orElseThrow { PromptNotFoundException("Prompt slot variant", "id", slotVariantRequest.slotId) }
-            prompt.addPromptSlotVariant(promptSlotVariant)
-        }
-
-        val savedPrompt = promptRepository.save(prompt)
-        return getPromptById(savedPrompt.id!!)
-    }
-
-    @Transactional
-    override fun removeSlotVariantFromPrompt(
-        promptId: Long,
-        slotId: Long,
-    ): PromptDto {
-        val prompt =
-            promptRepository
-                .findById(promptId)
-                .orElseThrow { PromptNotFoundException("Prompt", "id", promptId) }
-
-        val promptSlotVariant =
-            promptSlotVariantRepository
-                .findById(slotId)
-                .orElseThrow { PromptNotFoundException("Prompt slot variant", "id", slotId) }
-
-        prompt.removePromptSlotVariant(promptSlotVariant)
-
-        val savedPrompt = promptRepository.save(prompt)
-        return getPromptById(savedPrompt.id!!)
-    }
 }

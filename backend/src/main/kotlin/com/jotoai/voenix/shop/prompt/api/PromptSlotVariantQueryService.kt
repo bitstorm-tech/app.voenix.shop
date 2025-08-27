@@ -22,13 +22,6 @@ interface PromptSlotVariantQueryService {
     fun getSlotVariantById(id: Long): PromptSlotVariantDto
 
     /**
-     * Retrieves slot variants by slot type ID.
-     * @param promptSlotTypeId The slot type ID
-     * @return List of slot variants for the slot type
-     */
-    fun getSlotVariantsBySlotType(promptSlotTypeId: Long): List<PromptSlotVariantDto>
-
-    /**
      * Checks if a slot variant exists by its ID.
      * @param id The slot variant ID
      * @return true if the slot variant exists, false otherwise

@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 
@@ -29,20 +28,11 @@ class AdminPromptSubCategoryController(
     @GetMapping
     fun getAllSubCategories(): List<PromptSubCategoryDto> = promptSubCategoryQueryService.getAllPromptSubCategories()
 
-    @GetMapping("/{id}")
-    fun getSubCategoryById(
-        @PathVariable id: Long,
-    ): PromptSubCategoryDto = promptSubCategoryQueryService.getPromptSubCategoryById(id)
 
     @GetMapping("/category/{categoryId}")
     fun getSubCategoriesByCategoryId(
         @PathVariable categoryId: Long,
     ): List<PromptSubCategoryDto> = promptSubCategoryQueryService.getPromptSubCategoriesByCategory(categoryId)
-
-    @GetMapping("/search")
-    fun searchSubCategoriesByName(
-        @RequestParam name: String,
-    ): List<PromptSubCategoryDto> = promptSubCategoryQueryService.searchPromptSubCategoriesByName(name)
 
     @PostMapping
     fun createPromptSubCategory(

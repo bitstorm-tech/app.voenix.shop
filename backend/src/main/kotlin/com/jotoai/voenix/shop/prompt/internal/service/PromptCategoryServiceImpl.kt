@@ -23,18 +23,6 @@ class PromptCategoryServiceImpl(
             promptCategoryAssembler.toDto(category)
         }
 
-    override fun getPromptCategoryById(id: Long): PromptCategoryDto =
-        promptCategoryRepository
-            .findById(id)
-            .map { category ->
-                promptCategoryAssembler.toDto(category)
-            }.orElseThrow { PromptCategoryNotFoundException("PromptCategory", "id", id) }
-
-    override fun searchPromptCategoriesByName(name: String): List<PromptCategoryDto> =
-        promptCategoryRepository.findByNameContainingIgnoreCase(name).map { category ->
-            promptCategoryAssembler.toDto(category)
-        }
-
     override fun existsById(id: Long): Boolean = promptCategoryRepository.existsById(id)
 
     @Transactional

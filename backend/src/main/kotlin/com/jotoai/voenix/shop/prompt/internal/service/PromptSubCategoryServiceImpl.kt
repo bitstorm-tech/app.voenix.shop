@@ -25,17 +25,8 @@ class PromptSubCategoryServiceImpl(
             promptSubCategoryAssembler.toDto(it)
         }
 
-    override fun getPromptSubCategoryById(id: Long): PromptSubCategoryDto =
-        promptSubCategoryRepository
-            .findById(id)
-            .map { promptSubCategoryAssembler.toDto(it) }
-            .orElseThrow { PromptSubCategoryNotFoundException("PromptSubCategory", "id", id) }
-
     override fun getPromptSubCategoriesByCategory(categoryId: Long): List<PromptSubCategoryDto> =
         promptSubCategoryRepository.findByPromptCategoryId(categoryId).map { promptSubCategoryAssembler.toDto(it) }
-
-    override fun searchPromptSubCategoriesByName(name: String): List<PromptSubCategoryDto> =
-        promptSubCategoryRepository.findByNameContainingIgnoreCase(name).map { promptSubCategoryAssembler.toDto(it) }
 
     override fun existsById(id: Long): Boolean = promptSubCategoryRepository.existsById(id)
 
@@ -86,12 +77,5 @@ class PromptSubCategoryServiceImpl(
     }
 
     @Transactional
-    override fun deletePromptSubCategory(id: Long) {
-        val promptSubCategory =
-            promptSubCategoryRepository
-                .findById(id)
-                .orElseThrow { PromptSubCategoryNotFoundException("PromptSubCategory", "id", id) }
-
-        promptSubCategoryRepository.deleteById(id)
-    }
+    override fun deletePromptSubCategory(id: Long) = promptSubCategoryRepository.deleteById(id)
 }

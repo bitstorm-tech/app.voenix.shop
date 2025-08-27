@@ -33,11 +33,6 @@ class AdminPromptSlotVariantController(
         @PathVariable id: Long,
     ): PromptSlotVariantDto = promptSlotVariantQueryService.getSlotVariantById(id)
 
-    @GetMapping("/type/{typeId}")
-    fun getSlotVariantsByTypeId(
-        @PathVariable typeId: Long,
-    ): List<PromptSlotVariantDto> = promptSlotVariantQueryService.getSlotVariantsBySlotType(typeId)
-
     @PostMapping
     fun createSlotVariant(
         @Valid @RequestBody createPromptSlotVariantRequest: CreatePromptSlotVariantRequest,

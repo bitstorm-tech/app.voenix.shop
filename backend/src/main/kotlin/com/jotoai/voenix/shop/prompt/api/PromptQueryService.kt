@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.prompt.api
 
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
-import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptDto
 
 /**
  * Query service for Prompt module read operations.
@@ -22,17 +21,6 @@ interface PromptQueryService {
      */
     fun getPromptById(id: Long): PromptDto
 
-    /**
-     * Searches prompts by title (case-insensitive partial match).
-     * @param title The title search term
-     * @return List of matching prompts
-     */
-    fun searchPromptsByTitle(title: String): List<PromptDto>
-
-    /**
-     * Retrieves all active prompts for public use.
-     */
-    fun getAllActivePrompts(): List<PublicPromptDto>
 
     /**
      * Checks if a prompt exists by its ID.

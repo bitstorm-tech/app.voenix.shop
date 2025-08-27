@@ -14,21 +14,6 @@ interface PromptCategoryQueryService {
     fun getAllPromptCategories(): List<PromptCategoryDto>
 
     /**
-     * Retrieves a prompt category by its ID.
-     * @param id The category ID
-     * @return The prompt category
-     * @throws RuntimeException if the category is not found
-     */
-    fun getPromptCategoryById(id: Long): PromptCategoryDto
-
-    /**
-     * Searches prompt categories by name (case-insensitive partial match).
-     * @param name The name search term
-     * @return List of matching categories
-     */
-    fun searchPromptCategoriesByName(name: String): List<PromptCategoryDto>
-
-    /**
      * Checks if a prompt category exists by its ID.
      * @param id The category ID
      * @return true if the category exists, false otherwise

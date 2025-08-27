@@ -14,26 +14,12 @@ interface PromptSubCategoryQueryService {
     fun getAllPromptSubCategories(): List<PromptSubCategoryDto>
 
     /**
-     * Retrieves a prompt subcategory by its ID.
-     * @param id The subcategory ID
-     * @return The prompt subcategory
-     * @throws RuntimeException if the subcategory is not found
-     */
-    fun getPromptSubCategoryById(id: Long): PromptSubCategoryDto
-
-    /**
      * Retrieves prompt subcategories by category ID.
      * @param categoryId The category ID
      * @return List of subcategories for the category
      */
     fun getPromptSubCategoriesByCategory(categoryId: Long): List<PromptSubCategoryDto>
 
-    /**
-     * Searches prompt subcategories by name (case-insensitive partial match).
-     * @param name The name search term
-     * @return List of matching subcategories
-     */
-    fun searchPromptSubCategoriesByName(name: String): List<PromptSubCategoryDto>
 
     /**
      * Checks if a prompt subcategory exists by its ID.

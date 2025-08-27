@@ -36,15 +36,6 @@ class PromptSlotVariantServiceImpl(
             .map { promptSlotVariantAssembler.toDto(it) }
             .orElseThrow { PromptSlotVariantNotFoundException("Prompt slot variant", "id", id) }
 
-    override fun getSlotVariantsBySlotType(promptSlotTypeId: Long): List<PromptSlotVariantDto> {
-        if (!promptSlotTypeRepository.existsById(promptSlotTypeId)) {
-            throw PromptSlotVariantNotFoundException("PromptSlotType", "id", promptSlotTypeId)
-        }
-        return promptSlotVariantRepository.findByPromptSlotTypeId(promptSlotTypeId).map {
-            promptSlotVariantAssembler.toDto(it)
-        }
-    }
-
     override fun existsById(id: Long): Boolean = promptSlotVariantRepository.existsById(id)
 
     @Transactional
