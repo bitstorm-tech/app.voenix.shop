@@ -369,6 +369,9 @@ class CartFacadeImpl(
         try {
             cartRepository.save(cart)
         } catch (e: OptimisticLockingFailureException) {
-            throw BadRequestException("Cart was modified by another operation. Please try again.")
+            throw BadRequestException(
+                "Cart was modified by another operation. Please try again.",
+                e,
+            )
         }
 }
