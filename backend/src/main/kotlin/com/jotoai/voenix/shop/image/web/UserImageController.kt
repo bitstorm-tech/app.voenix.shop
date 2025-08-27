@@ -49,12 +49,12 @@ class UserImageController(
         // Create crop area if all crop parameters are provided
         val cropArea = CropAreaUtils.createIfPresent(cropX, cropY, cropWidth, cropHeight)
 
-        // First upload the image to get UUID
-        val uploadedImage = imageFacade.createUploadedImage(imageFile, user.id)
+        // First upload the image to get UUID, applying crop if provided
+        val uploadedImage = imageFacade.createUploadedImage(imageFile, user.id, cropArea)
         logger.info { "Uploaded image for user ${user.id} with UUID: ${uploadedImage.uuid}" }
 
-        // Generate all 4 images in one call and get the complete response with IDs
-        val response = imageFacade.generateUserImageWithIds(promptId, uploadedImage.uuid, user.id, cropArea)
+        // Generate all 4 images; crop already applied at upload time, so avoid double-cropping here
+        val response = imageFacade.generateUserImageWithIds(promptId, uploadedImage.uuid, user.id, null)
 
         logger.info {
             "Generated ${response.generatedImageIds.size} images with IDs: " +

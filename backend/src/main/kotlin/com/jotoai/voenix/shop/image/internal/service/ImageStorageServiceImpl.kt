@@ -298,6 +298,7 @@ class ImageStorageServiceImpl(
     override fun storeUploadedImage(
         imageFile: MultipartFile,
         userId: Long,
+        cropArea: CropArea?,
     ): UploadedImage {
         imageValidationService.validateImageFile(imageFile, ImageType.PRIVATE)
 
@@ -319,6 +320,12 @@ class ImageStorageServiceImpl(
         ensureDirectoryExists(userStorageDir)
 
         var imageBytes = imageFile.bytes
+
+        // Apply cropping if provided
+        if (cropArea != null) {
+            logger.debug { "Applying cropping to user upload with area: $cropArea" }
+            imageBytes = imageConversionService.cropImage(imageBytes, cropArea)
+        }
 
         // Convert to PNG if necessary
         if (!isPng) {

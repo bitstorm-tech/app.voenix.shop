@@ -22,6 +22,7 @@ interface ImageFacade {
     fun createUploadedImage(
         file: MultipartFile,
         userId: Long,
+        cropArea: CropArea? = null,
     ): UploadedImageDto
 
     /**
@@ -31,6 +32,7 @@ interface ImageFacade {
         file: MultipartFile,
         userId: Long,
         imageType: ImageType,
+        cropArea: CropArea? = null,
     ): UploadedImageDto
 
     /**

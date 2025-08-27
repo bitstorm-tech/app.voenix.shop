@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.service
 
+import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import org.springframework.web.multipart.MultipartFile
@@ -9,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile
  * This avoids downcasting to implementation classes from higher-level services.
  */
 interface UserImageStorageService {
-    fun storeUploadedImage(imageFile: MultipartFile, userId: Long): UploadedImage
+    fun storeUploadedImage(imageFile: MultipartFile, userId: Long, cropArea: CropArea? = null): UploadedImage
 
     fun storeGeneratedImage(
         imageBytes: ByteArray,
@@ -23,4 +24,3 @@ interface UserImageStorageService {
 
     fun deleteUserImage(filename: String, userId: Long): Boolean
 }
-

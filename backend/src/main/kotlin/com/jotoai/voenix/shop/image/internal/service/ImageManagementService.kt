@@ -79,9 +79,10 @@ class ImageManagementService(
     override fun createUploadedImage(
         file: MultipartFile,
         userId: Long,
+        cropArea: CropArea?,
     ): UploadedImageDto {
         // Delegate to the overloaded method with default PRIVATE type for backward compatibility
-        return createUploadedImage(file, userId, ImageType.PRIVATE)
+        return createUploadedImage(file, userId, ImageType.PRIVATE, cropArea)
     }
 
     @Transactional
@@ -89,6 +90,7 @@ class ImageManagementService(
         file: MultipartFile,
         userId: Long,
         imageType: ImageType,
+        cropArea: CropArea?,
     ): UploadedImageDto {
         try {
             logger.debug { "Creating uploaded image for user $userId with type $imageType" }
@@ -104,7 +106,7 @@ class ImageManagementService(
                 when (imageType) {
                     ImageType.PRIVATE -> {
                         // For private images, use the user-specific storage service
-                        val uploadedImage = userImageStorageService.storeUploadedImage(file, userId)
+                        val uploadedImage = userImageStorageService.storeUploadedImage(file, userId, cropArea)
                         // Return the DTO with the actual UUID from the saved entity
                         return UploadedImageDto(
                             filename = uploadedImage.storedFilename,
@@ -119,7 +121,7 @@ class ImageManagementService(
                     }
                     else -> {
                         // For all other types, use the standard storage with correct path
-                        imageStorageService.storeFile(file, imageType)
+                        imageStorageService.storeFile(file, imageType, cropArea)
                     }
                 }
 
