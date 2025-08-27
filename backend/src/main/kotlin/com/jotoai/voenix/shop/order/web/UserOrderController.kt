@@ -4,7 +4,6 @@ import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import com.jotoai.voenix.shop.order.api.OrderService
 import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
-import com.jotoai.voenix.shop.order.api.enums.OrderStatus
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.user.api.UserService
 import jakarta.servlet.http.HttpServletResponse
@@ -21,7 +20,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
@@ -53,16 +51,11 @@ class UserOrderController(
     @GetMapping("/orders")
     fun getUserOrders(
         @AuthenticationPrincipal userDetails: UserDetails,
-        @RequestParam(required = false) status: OrderStatus?,
         pageable: Pageable,
     ): PaginatedResponse<OrderDto> {
         val userId = getCurrentUserId(userDetails)
 
-        return if (status != null) {
-            orderService.getUserOrdersByStatus(userId, status, pageable)
-        } else {
-            orderService.getUserOrders(userId, pageable)
-        }
+        return orderService.getUserOrders(userId, pageable)
     }
 
     /**
@@ -75,18 +68,6 @@ class UserOrderController(
     ): OrderDto {
         val userId = getCurrentUserId(userDetails)
         return orderService.getOrder(userId, orderId)
-    }
-
-    /**
-     * Cancels an order (if allowed)
-     */
-    @PostMapping("/orders/{orderId}/cancel")
-    fun cancelOrder(
-        @AuthenticationPrincipal userDetails: UserDetails,
-        @PathVariable orderId: UUID,
-    ): OrderDto {
-        val userId = getCurrentUserId(userDetails)
-        return orderService.cancelOrder(userId, orderId)
     }
 
     /**

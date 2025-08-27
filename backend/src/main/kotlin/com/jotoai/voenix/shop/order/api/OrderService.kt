@@ -4,9 +4,8 @@ import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
 import com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto
-import com.jotoai.voenix.shop.order.api.enums.OrderStatus
+import java.util.*
 import org.springframework.data.domain.Pageable
-import java.util.UUID
 
 /**
  * Primary service interface for Order module operations.
@@ -19,8 +18,6 @@ import java.util.UUID
  * cohesive service interface that maintains clear business boundaries.
  */
 interface OrderService {
-    // Command Operations (User-facing)
-
     /**
      * Creates an order from the user's active cart.
      *
@@ -34,39 +31,6 @@ interface OrderService {
         userId: Long,
         request: CreateOrderRequest,
     ): OrderDto
-
-    /**
-     * Cancels an order (if allowed).
-     * Only the order owner can cancel their own orders, and only if the order status permits cancellation.
-     *
-     * @param userId The ID of the user attempting to cancel the order
-     * @param orderId The ID of the order to cancel
-     * @return The updated order DTO
-     * @throws OrderNotFoundException if order not found or doesn't belong to the user
-     * @throws OrderCannotBeCancelledException if the order cannot be cancelled due to its current status
-     */
-    fun cancelOrder(
-        userId: Long,
-        orderId: UUID,
-    ): OrderDto
-
-    // Administrative Operations
-
-    /**
-     * Updates an order status (administrative operation).
-     * This operation should only be accessible by administrators and bypasses user ownership checks.
-     *
-     * @param orderId The ID of the order to update
-     * @param status The new status to set
-     * @return The updated order DTO
-     * @throws OrderNotFoundException if order not found
-     */
-    fun updateOrderStatus(
-        orderId: UUID,
-        status: OrderStatus,
-    ): OrderDto
-
-    // Query Operations
 
     /**
      * Gets an order by ID, ensuring it belongs to the user.
@@ -100,28 +64,9 @@ interface OrderService {
     /**
      * Gets all orders for a user with pagination support.
      * Returns orders sorted by creation date in descending order (newest first).
-     *
-     * @param userId The ID of the user whose orders to retrieve
-     * @param pageable Pagination parameters
-     * @return Paginated response containing the user's orders
      */
     fun getUserOrders(
         userId: Long,
-        pageable: Pageable,
-    ): PaginatedResponse<OrderDto>
-
-    /**
-     * Gets orders for a user with specific status and pagination support.
-     * Returns orders filtered by the specified status, sorted by creation date in descending order.
-     *
-     * @param userId The ID of the user whose orders to retrieve
-     * @param status The order status to filter by
-     * @param pageable Pagination parameters
-     * @return Paginated response containing the user's orders with the specified status
-     */
-    fun getUserOrdersByStatus(
-        userId: Long,
-        status: OrderStatus,
         pageable: Pageable,
     ): PaginatedResponse<OrderDto>
 }

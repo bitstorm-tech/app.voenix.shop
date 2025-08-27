@@ -16,11 +16,11 @@ import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
+import java.time.OffsetDateTime
+import java.util.*
 import org.hibernate.annotations.BatchSize
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import java.time.OffsetDateTime
-import java.util.UUID
 
 @Entity
 @Table(name = "orders")
@@ -88,32 +88,12 @@ class Order(
     var updatedAt: OffsetDateTime? = null,
 ) {
     /**
-     * Gets the total number of items in the order
-     */
-    fun getTotalItemCount(): Int = items.sumOf { it.quantity }
-
-    /**
-     * Checks if the order can be cancelled
-     */
-    fun canBeCancelled(): Boolean = status == OrderStatus.PENDING
-
-    /**
-     * Gets the customer's full name
-     */
-    fun getCustomerFullName(): String = "$customerFirstName $customerLastName"
-
-    /**
      * Adds an item to the order
      */
     fun addItem(item: OrderItem) {
         item.order = this
         items.add(item)
     }
-
-    /**
-     * Calculates the total price from all items (should match totalAmount)
-     */
-    fun calculateItemsTotal(): Long = items.sumOf { it.totalPrice }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

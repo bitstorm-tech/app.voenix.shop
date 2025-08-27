@@ -19,7 +19,6 @@ import com.jotoai.voenix.shop.order.api.dto.OrderItemDto
 import com.jotoai.voenix.shop.order.api.dto.OrderItemForPdfDto
 import com.jotoai.voenix.shop.order.api.enums.OrderStatus
 import com.jotoai.voenix.shop.order.api.exception.OrderAlreadyExistsException
-import com.jotoai.voenix.shop.order.api.exception.OrderCannotBeCancelledException
 import com.jotoai.voenix.shop.order.api.exception.OrderNotFoundException
 import com.jotoai.voenix.shop.order.internal.entity.Order
 import com.jotoai.voenix.shop.order.internal.entity.OrderItem
@@ -27,11 +26,11 @@ import com.jotoai.voenix.shop.order.internal.repository.OrderRepository
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.EntityManager
+import java.util.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @Service
 class OrderServiceImpl(
@@ -165,52 +164,6 @@ class OrderServiceImpl(
     )
 
     /**
-     * Cancels an order (if allowed)
-     */
-    @Transactional
-    override fun cancelOrder(
-        userId: Long,
-        orderId: UUID,
-    ): OrderDto {
-        val order =
-            orderRepository
-                .findByIdAndUserId(orderId, userId)
-                .orElseThrow { OrderNotFoundException("Order", "id", orderId) }
-
-        if (!order.canBeCancelled()) {
-            throw OrderCannotBeCancelledException(orderId.toString(), order.status)
-        }
-
-        order.status = OrderStatus.CANCELLED
-        val savedOrder = orderRepository.save(order)
-
-        logger.info { "Cancelled order $orderId for user $userId" }
-
-        return toDto(savedOrder)
-    }
-
-    /**
-     * Updates an order status (administrative operation)
-     */
-    @Transactional
-    override fun updateOrderStatus(
-        orderId: UUID,
-        status: OrderStatus,
-    ): OrderDto {
-        val order =
-            orderRepository
-                .findById(orderId)
-                .orElseThrow { OrderNotFoundException("Order", "id", orderId) }
-
-        order.status = status
-        val savedOrder = orderRepository.save(order)
-
-        logger.info { "Admin updated order $orderId status to $status" }
-
-        return toDto(savedOrder)
-    }
-
-    /**
      * Gets an order by ID, ensuring it belongs to the user
      */
     @Transactional(readOnly = true)
@@ -263,25 +216,6 @@ class OrderServiceImpl(
         pageable: Pageable,
     ): PaginatedResponse<OrderDto> {
         val ordersPage = orderRepository.findByUserId(userId, pageable)
-        return PaginatedResponse(
-            content = ordersPage.content.map { toDto(it) },
-            currentPage = ordersPage.number,
-            totalPages = ordersPage.totalPages,
-            totalElements = ordersPage.totalElements,
-            size = ordersPage.size,
-        )
-    }
-
-    /**
-     * Gets orders for a user with specific status
-     */
-    @Transactional(readOnly = true)
-    override fun getUserOrdersByStatus(
-        userId: Long,
-        status: OrderStatus,
-        pageable: Pageable,
-    ): PaginatedResponse<OrderDto> {
-        val ordersPage = orderRepository.findByUserIdAndStatus(userId, status, pageable)
         return PaginatedResponse(
             content = ordersPage.content.map { toDto(it) },
             currentPage = ordersPage.number,
