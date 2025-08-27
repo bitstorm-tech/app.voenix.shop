@@ -5,25 +5,21 @@ import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.dto.AddToCartRequest
 import com.jotoai.voenix.shop.cart.api.dto.CartDto
 import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
-import com.jotoai.voenix.shop.cart.api.dto.CartOrderItemInfo
 import com.jotoai.voenix.shop.cart.api.dto.UpdateCartItemRequest
-import com.jotoai.voenix.shop.cart.api.exceptions.CartItemNotFoundException
-import com.jotoai.voenix.shop.cart.api.exceptions.CartNotFoundException
-import com.jotoai.voenix.shop.cart.api.exceptions.CartOperationException
 import com.jotoai.voenix.shop.cart.internal.assembler.CartAssembler
+import com.jotoai.voenix.shop.cart.internal.assembler.OrderInfoAssembler
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.entity.CartItem
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
+import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.image.api.exceptions.ImageAccessDeniedException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
-import com.jotoai.voenix.shop.prompt.api.exceptions.PromptNotFoundException
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.OptimisticLockingFailureException
-import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
@@ -34,6 +30,7 @@ class CartFacadeImpl(
     private val imageQueryService: ImageQueryService,
     private val promptQueryService: PromptQueryService,
     private val cartAssembler: CartAssembler,
+    private val orderInfoAssembler: OrderInfoAssembler,
     private val articleQueryService: ArticleQueryService,
     private val cartInternalService: CartInternalService,
 ) : CartFacade {
@@ -87,7 +84,7 @@ class CartFacadeImpl(
         }
 
         if (!articleQueryService.validateVariantBelongsToArticle(articleId, variantId)) {
-            throw CartOperationException("Variant $variantId does not belong to article $articleId")
+            throw BadRequestException("Variant $variantId does not belong to article $articleId")
         }
     }
     
@@ -163,9 +160,14 @@ class CartFacadeImpl(
         itemId: Long,
         request: UpdateCartItemRequest,
     ): CartDto {
-        val cart = cartRepository.findActiveCartByUserId(userId).orElseThrow { CartNotFoundException(userId, true) }
+        val cart =
+            cartRepository
+                .findActiveCartByUserId(userId)
+                .orElseThrow { ResourceNotFoundException("Active cart not found for user: $userId") }
 
-        val cartItem = cart.items.find { it.id == itemId } ?: throw CartItemNotFoundException(cart.id!!, itemId)
+        val cartItem =
+            cart.items.find { it.id == itemId }
+                ?: throw ResourceNotFoundException("Cart item $itemId not found in cart ${cart.id}")
 
         // Update the cart item
         cartItem.updateQuantity(request.quantity)
@@ -232,7 +234,10 @@ class CartFacadeImpl(
         userId: Long,
         itemId: Long,
     ): CartDto {
-        val cart = cartRepository.findActiveCartByUserId(userId).orElseThrow { CartNotFoundException(userId, true) }
+        val cart =
+            cartRepository
+                .findActiveCartByUserId(userId)
+                .orElseThrow { ResourceNotFoundException("Active cart not found for user: $userId") }
 
         // Log details about the item being removed before removal
         val itemToRemove = cart.items.find { it.id == itemId }
@@ -245,7 +250,7 @@ class CartFacadeImpl(
         }
 
         if (!cart.removeItem(itemId)) {
-            throw CartItemNotFoundException(cart.id!!, itemId)
+            throw ResourceNotFoundException("Cart item $itemId not found in cart ${cart.id}")
         }
 
         val savedCart = saveCartWithOptimisticLocking(cart)
@@ -263,7 +268,10 @@ class CartFacadeImpl(
      */
     @Transactional
     override fun clearCart(userId: Long): CartDto {
-        val cart = cartRepository.findActiveCartByUserId(userId).orElseThrow { CartNotFoundException(userId, true) }
+        val cart =
+            cartRepository
+                .findActiveCartByUserId(userId)
+                .orElseThrow { ResourceNotFoundException("Active cart not found for user: $userId") }
 
         // Log details about items being cleared
         val itemsWithGeneratedImages = cart.items.count { it.generatedImageId != null }
@@ -291,7 +299,10 @@ class CartFacadeImpl(
      */
     @Transactional
     override fun refreshCartPrices(userId: Long): CartDto {
-        val cart = cartRepository.findActiveCartByUserId(userId).orElseThrow { CartNotFoundException(userId, true) }
+        val cart =
+            cartRepository
+                .findActiveCartByUserId(userId)
+                .orElseThrow { ResourceNotFoundException("Active cart not found for user: $userId") }
 
         var pricesUpdated = false
 
@@ -324,7 +335,9 @@ class CartFacadeImpl(
     @Transactional
     override fun refreshCartPricesForOrder(cartId: Long): CartOrderInfo {
         val cart =
-            cartRepository.findById(cartId).orElseThrow { CartNotFoundException(userId = 0, isActiveCart = false) }
+            cartRepository
+                .findById(cartId)
+                .orElseThrow { ResourceNotFoundException("Cart not found with id: $cartId") }
 
         logger.debug {
             "Refreshing cart prices for order: cartId=$cartId, userId=${cart.userId}, " +
@@ -349,46 +362,13 @@ class CartFacadeImpl(
         val savedCart = saveCartWithOptimisticLocking(cart)
 
         // Return cart order info
-        return CartOrderInfo(
-            id = savedCart.id!!,
-            userId = savedCart.userId,
-            status = savedCart.status,
-            items =
-                savedCart.items.map { item ->
-                    CartOrderItemInfo(
-                        id = item.id!!,
-                        articleId = item.articleId,
-                        variantId = item.variantId,
-                        quantity = item.quantity,
-                        priceAtTime = item.priceAtTime,
-                        totalPrice = item.getTotalPrice(),
-                        generatedImageId = item.generatedImageId,
-                        promptId = item.promptId,
-                        promptText =
-                            item.promptId?.let {
-                                try {
-                                    promptQueryService.getPromptById(it).promptText
-                                } catch (e: PromptNotFoundException) {
-                                    logger.warn(e) {
-                                        "Failed to fetch prompt text for promptId=$it, prompt may have been deleted"
-                                    }
-                                    null // Handle case where prompt might have been deleted
-                                }
-                            },
-                        customData = item.customData,
-                    )
-                },
-            totalPrice = savedCart.getTotalPrice(),
-            isEmpty = savedCart.isEmpty(),
-        )
+        return orderInfoAssembler.toOrderInfo(savedCart)
     }
 
     private fun saveCartWithOptimisticLocking(cart: Cart): Cart =
         try {
             cartRepository.save(cart)
         } catch (e: OptimisticLockingFailureException) {
-            throw CartOperationException("Cart was modified by another operation. Please try again.", e)
-        } catch (e: ObjectOptimisticLockingFailureException) {
-            throw CartOperationException("Cart was modified by another operation. Please try again.", e)
+            throw BadRequestException("Cart was modified by another operation. Please try again.")
         }
 }

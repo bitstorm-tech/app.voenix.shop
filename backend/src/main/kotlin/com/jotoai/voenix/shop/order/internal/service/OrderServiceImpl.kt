@@ -132,7 +132,7 @@ class OrderServiceImpl(
             val orderItem = OrderItem(
                 order = order,
                 articleId = cartItem.articleId,
-                variantId = cartItem.variantId ?: 0L,
+                variantId = cartItem.variantId,
                 quantity = cartItem.quantity,
                 pricePerItem = cartItem.priceAtTime,
                 totalPrice = cartItem.totalPrice,

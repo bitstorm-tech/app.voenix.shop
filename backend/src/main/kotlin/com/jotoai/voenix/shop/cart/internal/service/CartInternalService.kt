@@ -4,9 +4,9 @@ import com.jotoai.voenix.shop.cart.api.enums.CartStatus
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.time.OffsetDateTime
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.OffsetDateTime
 
 /**
  * Internal service for cart entity operations.
@@ -18,6 +18,10 @@ class CartInternalService(
     private val cartRepository: CartRepository,
 ) {
     private val logger = KotlinLogging.logger {}
+
+    companion object {
+        private const val DEFAULT_CART_EXPIRY_DAYS = 30L
+    }
 
     /**
      * Gets or creates an active cart entity for the user.
@@ -35,6 +39,7 @@ class CartInternalService(
      * Creates a new cart for the user.
      */
     private fun createNewCart(userId: Long): Cart {
+
         val cart =
             Cart(
                 userId = userId,
@@ -42,19 +47,5 @@ class CartInternalService(
                 expiresAt = OffsetDateTime.now().plusDays(DEFAULT_CART_EXPIRY_DAYS),
             )
         return cartRepository.save(cart)
-    }
-
-    /**
-     * Saves a cart entity.
-     */
-    fun saveCart(cart: Cart): Cart = cartRepository.save(cart)
-
-    /**
-     * Finds an active cart entity by user ID.
-     */
-    fun findActiveCartEntityByUserId(userId: Long): Cart? = cartRepository.findActiveCartByUserId(userId).orElse(null)
-
-    companion object {
-        private const val DEFAULT_CART_EXPIRY_DAYS = 30L
     }
 }

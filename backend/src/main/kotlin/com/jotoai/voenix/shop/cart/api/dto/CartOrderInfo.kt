@@ -22,7 +22,7 @@ data class CartOrderInfo(
 data class CartOrderItemInfo(
     val id: Long,
     val articleId: Long,
-    val variantId: Long?,
+    val variantId: Long,
     val quantity: Int,
     val priceAtTime: Long,
     val totalPrice: Long,

@@ -21,23 +21,6 @@ interface CartQueryService {
     fun getCartSummary(userId: Long): CartSummaryDto
 
     /**
-     * Gets a cart by its ID.
-     * Internal method for other modules to access cart data.
-     */
-    fun getCartById(id: Long): CartDto
-
-    /**
-     * Finds an active cart for the specified user.
-     * Internal method used by order service.
-     */
-    fun findActiveCartByUserId(userId: Long): CartDto?
-
-    /**
-     * Checks if an active cart exists for the user.
-     */
-    fun existsActiveCartForUser(userId: Long): Boolean
-
-    /**
      * Gets active cart internal ID for order creation.
      * Returns cart's internal ID and status for order module integration.
      */

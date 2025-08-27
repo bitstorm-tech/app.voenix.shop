@@ -16,11 +16,11 @@ enum class CartStatus(
 class CartStatusConverter : AttributeConverter<CartStatus, String> {
     override fun convertToDatabaseColumn(attribute: CartStatus?): String? = attribute?.value
 
-    override fun convertToEntityAttribute(dbData: String?): CartStatus? =
+    override fun convertToEntityAttribute(dbData: String?): CartStatus =
         when (dbData) {
             "active" -> CartStatus.ACTIVE
             "abandoned" -> CartStatus.ABANDONED
             "converted" -> CartStatus.CONVERTED
-            else -> null
+            else -> throw IllegalArgumentException("Unknown CartStatus value: $dbData")
         }
 }
