@@ -17,6 +17,18 @@ interface PromptRepository : JpaRepository<Prompt, Long> {
     @Query("SELECT p FROM Prompt p LEFT JOIN FETCH p.category LEFT JOIN FETCH p.subcategory ORDER BY p.id DESC")
     fun findAllWithRelations(): List<Prompt>
 
+    @Query(
+        "SELECT DISTINCT p FROM Prompt p " +
+            "LEFT JOIN FETCH p.category " +
+            "LEFT JOIN FETCH p.subcategory " +
+            "LEFT JOIN FETCH p.promptSlotVariantMappings m " +
+            "LEFT JOIN FETCH m.promptSlotVariant v " +
+            "LEFT JOIN FETCH v.promptSlotType " +
+            "WHERE p.active = true " +
+            "ORDER BY p.id DESC",
+    )
+    fun findAllActiveWithRelations(): List<Prompt>
+
     fun countByCategoryId(categoryId: Long): Int
 
     fun countBySubcategoryId(subcategoryId: Long): Int
