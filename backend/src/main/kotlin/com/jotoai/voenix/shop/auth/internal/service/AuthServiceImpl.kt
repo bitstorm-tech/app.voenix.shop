@@ -122,10 +122,9 @@ class AuthServiceImpl(
         response: HttpServletResponse,
     ): LoginResponse {
         val email = registerGuestRequest.email
-        if (userService.existsByEmail(email)) {
-            val authInfo = userService.loadUserByEmail(email)
-                ?: throw ResourceAlreadyExistsException("User", "email", email)
+        val authInfo = userService.loadUserByEmail(email)
 
+        if (authInfo != null) {
             if (authInfo.passwordHash == null) {
                 // Update profile fields for existing guest
                 updateUser(
