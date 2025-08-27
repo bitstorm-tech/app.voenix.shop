@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.image.api
 
-import com.jotoai.voenix.shop.image.api.dto.ImageFormat
 import org.springframework.core.io.Resource
 import org.springframework.http.ResponseEntity
 
@@ -23,6 +22,5 @@ interface ImageAccessService {
     fun serveUserImage(
         filename: String,
         userId: Long,
-        format: ImageFormat? = null,
     ): ResponseEntity<Resource>
 }

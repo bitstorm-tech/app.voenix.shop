@@ -34,7 +34,7 @@ class ImageStorageServiceImpl(
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
     private val imageValidationService: ImageValidationService,
-) : ImageStorageService {
+) : ImageStorageService, UserImageStorageService {
     private val logger = KotlinLogging.logger {}
 
     companion object {
@@ -59,8 +59,8 @@ class ImageStorageServiceImpl(
 
         val originalFilename = file.originalFilename ?: "unknown"
         val fileExtension = imageType.getFileExtension(originalFilename)
-        val suffix = if (cropArea != null) ORIGINAL_SUFFIX else ""
-        val storedFilename = "${UUID.randomUUID()}$suffix$fileExtension"
+        // Do not mark cropped files as "original"; keep simple unique name
+        val storedFilename = "${UUID.randomUUID()}$fileExtension"
 
         val targetPath = storagePathService.getPhysicalPath(imageType)
         val filePath = targetPath.resolve(storedFilename)
@@ -132,10 +132,7 @@ class ImageStorageServiceImpl(
         return Files.readAllBytes(filePath)
     }
 
-    override fun generateImageUrl(
-        filename: String,
-        imageType: ImageType,
-    ): String = storagePathService.getImageUrl(imageType, filename)
+    // URL generation is handled by StoragePathService directly
 
     override fun deleteFile(
         filename: String,
@@ -412,6 +409,15 @@ class ImageStorageServiceImpl(
         val bytes = readFile(filePath)
         val contentType = probeContentType(filePath, "image/png")
         return Pair(bytes, contentType)
+    }
+
+    override fun deleteUserImage(
+        filename: String,
+        userId: Long,
+    ): Boolean {
+        val userStorageDir = getUserStorageDirectory(userId)
+        val filePath = userStorageDir.resolve(filename)
+        return deleteFile(filePath)
     }
 
     private fun validateFile(

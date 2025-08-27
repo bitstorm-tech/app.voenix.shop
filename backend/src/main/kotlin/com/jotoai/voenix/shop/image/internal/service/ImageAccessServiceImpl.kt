@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.image.api.ImageAccessService
-import com.jotoai.voenix.shop.image.api.dto.ImageFormat
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpHeaders
@@ -24,7 +23,6 @@ class ImageAccessServiceImpl(
     override fun serveUserImage(
         filename: String,
         userId: Long,
-        format: ImageFormat?,
     ): ResponseEntity<Resource> {
         val (imageData, contentType) = imageManagementService.validateAccessAndGetImageData(filename, userId)
         return createImageResponse(imageData, contentType, filename)

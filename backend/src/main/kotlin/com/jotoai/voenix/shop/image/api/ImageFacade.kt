@@ -1,16 +1,14 @@
 package com.jotoai.voenix.shop.image.api
 
-import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
-import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 import org.springframework.web.multipart.MultipartFile
 
 /**
@@ -34,11 +32,6 @@ interface ImageFacade {
         userId: Long,
         imageType: ImageType,
     ): UploadedImageDto
-
-    /**
-     * Creates an image from a create request.
-     */
-    fun createImage(request: CreateImageRequest): ImageDto
 
     /**
      * Retrieves an uploaded image by its UUID.

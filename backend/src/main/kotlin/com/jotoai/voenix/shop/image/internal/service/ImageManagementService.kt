@@ -5,10 +5,8 @@ import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.StoragePathService
-import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
-import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
@@ -56,6 +54,8 @@ class ImageManagementService(
     private val storagePathService: StoragePathService,
     private val promptQueryService: PromptQueryService,
     private val userService: UserService,
+    private val userImageStorageService: UserImageStorageService,
+    private val imageConversionService: ImageConversionService,
 ) : ImageFacade {
     companion object {
         private val logger = KotlinLogging.logger {}
@@ -98,15 +98,14 @@ class ImageManagementService(
             val storedFilename =
                 when (imageType) {
                     ImageType.PRIVATE -> {
-                        // For private images, use the existing user-specific storage
-                        val storageImpl = imageStorageService as ImageStorageServiceImpl
-                        val uploadedImage = storageImpl.storeUploadedImage(file, userId)
+                        // For private images, use the user-specific storage service
+                        val uploadedImage = userImageStorageService.storeUploadedImage(file, userId)
                         // Return the DTO with the actual UUID from the saved entity
                         return UploadedImageDto(
                             filename = uploadedImage.storedFilename,
                             imageType = imageType,
                             id = uploadedImage.id,
-                            uuid = uploadedImage.uuid, // Use the UUID from the saved entity
+                            uuid = uploadedImage.uuid,
                             originalFilename = uploadedImage.originalFilename,
                             contentType = uploadedImage.contentType,
                             fileSize = uploadedImage.fileSize,
@@ -139,15 +138,6 @@ class ImageManagementService(
         }
     }
 
-    override fun createImage(request: CreateImageRequest): ImageDto {
-        // This method is not implemented as it's superseded by createUploadedImage which works with MultipartFile
-        // The CreateImageRequest doesn't contain the actual image data needed for implementation
-        throw UnsupportedOperationException(
-            "This method is not supported. Use createUploadedImage() with MultipartFile for uploading images, " +
-                "or use the appropriate generation methods for creating generated images.",
-        )
-    }
-
     @Cacheable("uploadedImages", key = "#uuid + '_' + #userId")
     @Transactional(readOnly = true)
     override fun getUploadedImageByUuid(
@@ -161,6 +151,7 @@ class ImageManagementService(
         return UploadedImageDto(
             filename = uploadedImage.storedFilename,
             imageType = ImageType.PRIVATE,
+            id = uploadedImage.id,
             uuid = uploadedImage.uuid,
             originalFilename = uploadedImage.originalFilename,
             contentType = uploadedImage.contentType,
@@ -271,9 +262,12 @@ class ImageManagementService(
             }
 
         try {
-            // Delete file from storage
-            val storageImpl = imageStorageService as ImageStorageServiceImpl
-            storageImpl.deleteImage(generatedImage.filename)
+            // Delete file from storage (private vs public)
+            if (generatedImage.userId != null) {
+                userImageStorageService.deleteUserImage(generatedImage.filename, generatedImage.userId!!)
+            } else {
+                imageStorageService.deleteFile(generatedImage.filename, ImageType.PUBLIC)
+            }
 
             // Delete from database
             generatedImageRepository.delete(generatedImage)
@@ -323,9 +317,8 @@ class ImageManagementService(
                     ResourceNotFoundException("Uploaded image with ID $uploadedImageId not found")
                 }
 
-            val storageImpl = imageStorageService as ImageStorageServiceImpl
             val generatedImage =
-                storageImpl.storeGeneratedImage(
+                userImageStorageService.storeGeneratedImage(
                     imageBytes = imageBytes,
                     uploadedImage = uploadedImage,
                     promptId = promptId,
@@ -515,8 +508,7 @@ class ImageManagementService(
         validateImageAccess(filename, userId)
 
         // If validation passes, get the image data through the storage service
-        val storageImpl = imageStorageService as ImageStorageServiceImpl
-        return storageImpl.getUserImageData(filename, userId)
+        return userImageStorageService.getUserImageData(filename, userId)
     }
 
     private fun validateImageAccess(filename: String, userId: Long) {
@@ -563,8 +555,17 @@ class ImageManagementService(
         when {
             userId != null -> validateAccessAndGetImageData(filename, userId)
             else -> {
-                val storageImpl = imageStorageService as ImageStorageServiceImpl
-                storageImpl.getImageData(filename)
+                val imageType =
+                    storagePathService.findImageTypeByFilename(filename)
+                        ?: throw ResourceNotFoundException("Image with filename $filename not found")
+                val bytes = imageStorageService.loadFileAsBytes(filename, imageType)
+                val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+                val contentType = try {
+                    java.nio.file.Files.probeContentType(filePath) ?: "application/octet-stream"
+                } catch (_: java.io.IOException) {
+                    "application/octet-stream"
+                }
+                Pair(bytes, contentType)
             }
         }
 
@@ -610,27 +611,18 @@ class ImageManagementService(
     ): PublicImageGenerationResponse {
         val uploadedImage = getUploadedImageByUuid(uploadedImageUuid, userId)
 
-        val imageBytes =
-            if (cropArea != null) {
-                val originalBytes = imageStorageService.loadFileAsBytes(uploadedImage.filename, ImageType.PRIVATE)
-                val croppedFilename =
-                    imageStorageService.storeFile(
-                        originalBytes,
-                        uploadedImage.originalFilename,
-                        ImageType.PRIVATE,
-                    )
-                imageStorageService.loadFileAsBytes(croppedFilename, ImageType.PRIVATE)
-            } else {
-                imageStorageService.loadFileAsBytes(uploadedImage.filename, ImageType.PRIVATE)
-            }
+        val originalBytes = imageStorageService.loadFileAsBytes(uploadedImage.filename, ImageType.PRIVATE)
+        val imageBytes = if (cropArea != null) imageConversionService.cropImage(originalBytes, cropArea) else originalBytes
 
         val generatedBytes = openAIImageGenerationService.generateImages(imageBytes, promptId)
 
+        val uploadedImageEntity =
+            uploadedImage.id?.let { id -> uploadedImageRepository.findById(id).orElse(null) }
+                ?: uploadedImageRepository.findByUserIdAndUuid(userId, uploadedImageUuid)
+                ?: throw ResourceNotFoundException("Uploaded image not found")
+
         val generatedImages =
             generatedBytes.mapIndexed { index, bytes ->
-                val uploadedImageEntity =
-                    uploadedImageRepository.findByUserIdAndUuid(userId, uploadedImageUuid)
-                        ?: throw ResourceNotFoundException("Uploaded image not found")
                 storeGeneratedImage(
                     imageBytes = bytes,
                     uploadedImageId = uploadedImageEntity.id!!,
@@ -640,10 +632,7 @@ class ImageManagementService(
                 )
             }
 
-        val imageUrls =
-            generatedImages.mapIndexed { index, _ ->
-                "/api/user/images/${uploadedImageUuid}_generated_${index + 1}.png"
-            }
+        val imageUrls = generatedImages.map { dto -> storagePathService.getImageUrl(ImageType.PRIVATE, dto.filename) }
 
         val imageIds = generatedImages.mapNotNull { it.id }
         logger.info { "Generated ${imageIds.size} images" }

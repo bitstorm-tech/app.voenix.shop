@@ -46,14 +46,6 @@ interface ImageStorageService {
     ): ByteArray
 
     /**
-     * Generates a public URL for accessing an image.
-     */
-    fun generateImageUrl(
-        filename: String,
-        imageType: ImageType,
-    ): String
-
-    /**
      * Deletes a file by filename and image type.
      */
     fun deleteFile(
