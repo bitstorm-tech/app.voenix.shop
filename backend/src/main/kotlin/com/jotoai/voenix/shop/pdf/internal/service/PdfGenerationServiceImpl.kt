@@ -4,20 +4,12 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
-import com.jotoai.voenix.shop.common.exception.BadRequestException
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageAccessService
-import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
-import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
-import com.jotoai.voenix.shop.pdf.api.dto.PdfSize
-import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
 import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
-import com.jotoai.voenix.shop.pdf.internal.config.PdfQrProperties
 import com.lowagie.text.BadElementException
 import com.lowagie.text.Document
 import com.lowagie.text.DocumentException
@@ -27,7 +19,6 @@ import com.lowagie.text.pdf.BaseFont
 import com.lowagie.text.pdf.PdfContentByte
 import com.lowagie.text.pdf.PdfWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
-import jakarta.annotation.PostConstruct
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -56,14 +47,10 @@ import org.springframework.transaction.annotation.Transactional
 @Service
 @Transactional(readOnly = true)
 class PdfGenerationServiceImpl(
-    @param:Value("\${app.base-url}") private val appBaseUrl: String,
     @param:Value("\${pdf.size.width:239}") private val defaultPdfWidthMm: Float,
     @param:Value("\${pdf.size.height:99}") private val defaultPdfHeightMm: Float,
     @param:Value("\${pdf.margin:1}") private val defaultPdfMarginMm: Float,
-    private val articleQueryService: ArticleQueryService,
-    private val storagePathService: StoragePathService,
     private val imageAccessService: ImageAccessService,
-    private val pdfQrProperties: PdfQrProperties,
     private val orderDataConverter: OrderDataConverter,
 ) : PdfGenerationService {
     companion object {
@@ -73,8 +60,6 @@ class PdfGenerationServiceImpl(
         private const val MM_TO_POINTS = 2.8346457f
 
         // QR code settings
-        private const val QR_CODE_SIZE_PIXELS = 150
-        private const val QR_CODE_SIZE_POINTS = 150f
         private const val ORDER_QR_SIZE_PIXELS = 100
         private const val ORDER_QR_CODE_SIZE_POINTS = 40f
 
@@ -104,71 +89,7 @@ class PdfGenerationServiceImpl(
         private const val TEXT_ROTATION_VERTICAL = 90f
     }
 
-    @PostConstruct
-    fun init() {
-        // Initialize baseUrl from appBaseUrl if not configured
-        if (pdfQrProperties.baseUrl.isEmpty()) {
-            pdfQrProperties.baseUrl = appBaseUrl
-            logger.info { "Initialized PDF QR base URL with app base URL: $appBaseUrl" }
-        }
-    }
-
-    override fun generatePdf(request: GeneratePdfRequest): ByteArray {
-        try {
-            val article = articleQueryService.findById(request.articleId)
-
-            val mugDetails =
-                article.mugDetails
-                    ?: throw IllegalArgumentException("Article ${request.articleId} is not a mug or has no mug details")
-
-            // Load image data using the filename and StoragePathService
-            val imageData = loadImageData(request.imageFilename)
-
-            // Validate document format fields from database
-            val pdfSize =
-                createPdfSize(
-                    mugDetails.documentFormatWidthMm,
-                    mugDetails.documentFormatHeightMm,
-                    mugDetails.documentFormatMarginBottomMm,
-                    request.articleId,
-                )
-
-            // Create PDF document
-            val outputStream = ByteArrayOutputStream()
-            val document = Document(Rectangle(pdfSize.width, pdfSize.height))
-            val writer = PdfWriter.getInstance(document, outputStream)
-
-            document.open()
-            val contentByte = writer.directContent
-
-            // Generate QR code URL pointing to the article
-            val qrUrl = pdfQrProperties.generateQrUrl("/articles/${request.articleId}")
-            addArticleQrCode(contentByte, qrUrl, pdfSize)
-
-            addCenteredImage(
-                contentByte,
-                imageData,
-                mugDetails.printTemplateWidthMm.toFloat(),
-                mugDetails.printTemplateHeightMm.toFloat(),
-                pdfSize,
-            )
-
-            document.close()
-            return outputStream.toByteArray()
-        } catch (e: PdfGenerationException) {
-            logger.error(e) { "Failed to generate PDF for article ${request.articleId}" }
-            throw e
-        } catch (e: IOException) {
-            logger.error(e) { "I/O error during PDF generation for article ${request.articleId}" }
-            throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
-        } catch (e: WriterException) {
-            logger.error(e) { "QR code generation error during PDF generation for article ${request.articleId}" }
-            throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
-        } catch (e: IllegalArgumentException) {
-            logger.error(e) { "Invalid argument during PDF generation for article ${request.articleId}" }
-            throw PdfGenerationException("PDF generation failed for article ${request.articleId}", e)
-        }
-    }
+    
 
     override fun generateOrderPdf(orderData: OrderPdfData): ByteArray {
         logger.info {
@@ -225,158 +146,6 @@ class PdfGenerationServiceImpl(
         return "order_${orderNumber}_$timestamp.pdf"
     }
 
-    override fun generatePublicPdf(request: PublicPdfGenerationRequest): ByteArray {
-        try {
-            val article =
-                try {
-                    articleQueryService.findById(request.mugId)
-                } catch (_: ResourceNotFoundException) {
-                    throw BadRequestException("Mug not found or unavailable")
-                }
-
-            if (article.mugDetails == null) {
-                throw BadRequestException("The specified article is not a mug")
-            }
-
-            if (!article.active) {
-                throw BadRequestException("This mug is currently unavailable")
-            }
-
-            val filename = request.imageUrl.substringAfterLast("/")
-
-            logger.info { "Processing public PDF generation for mug ID: ${request.mugId}" }
-
-            val pdfRequest =
-                GeneratePdfRequest(
-                    articleId = request.mugId,
-                    imageFilename = filename,
-                )
-
-            return generatePdf(pdfRequest)
-        } catch (e: BadRequestException) {
-            logger.error(e) { "Bad request error generating PDF for public user" }
-            throw e
-        } catch (e: ResourceNotFoundException) {
-            logger.error(e) { "Resource not found error generating PDF for public user" }
-            throw e
-        } catch (e: PdfGenerationException) {
-            logger.error(e) { "PDF generation error for public user" }
-            throw PdfGenerationException("Failed to generate PDF. Please try again later.", e)
-        } catch (e: IllegalArgumentException) {
-            logger.error(e) { "Invalid argument error generating PDF for public user" }
-            throw BadRequestException("Invalid request parameters")
-        } catch (e: IllegalStateException) {
-            logger.error(e) { "Invalid state error generating PDF for public user" }
-            throw PdfGenerationException("Service temporarily unavailable. Please try again later.", e)
-        }
-    }
-
-    private fun loadImageData(imageFilename: String): ByteArray =
-        try {
-            val imageType =
-                storagePathService.findImageTypeByFilename(imageFilename)
-                    ?: throw PdfGenerationException("Could not determine image type for filename: $imageFilename")
-            val imagePath = storagePathService.getPhysicalFilePath(imageType, imageFilename)
-            imagePath.toFile().readBytes()
-        } catch (e: IOException) {
-            throw PdfGenerationException("Failed to load image data for filename: $imageFilename", e)
-        } catch (e: IllegalArgumentException) {
-            throw PdfGenerationException("Invalid image filename: $imageFilename", e)
-        }
-
-    private fun createPdfSize(
-        widthMm: Int?,
-        heightMm: Int?,
-        marginMm: Int?,
-        articleId: Long,
-    ): PdfSize {
-        validatePdfDimensions(widthMm, heightMm, marginMm, articleId)
-        
-        return PdfSize(
-            width = widthMm!!.toFloat() * MM_TO_POINTS,
-            height = heightMm!!.toFloat() * MM_TO_POINTS,
-            margin = marginMm!!.toFloat() * MM_TO_POINTS,
-        )
-    }
-
-    private fun validatePdfDimensions(widthMm: Int?, heightMm: Int?, marginMm: Int?, articleId: Long) {
-        val missingConfig = mutableListOf<String>()
-        
-        if (widthMm == null) missingConfig.add("width")
-        if (heightMm == null) missingConfig.add("height")
-        if (marginMm == null) missingConfig.add("margin")
-        
-        if (missingConfig.isNotEmpty()) {
-            throw PdfGenerationException(
-                "Document format ${missingConfig.joinToString(", ")} not configured for article $articleId"
-            )
-        }
-    }
-
-    private fun addArticleQrCode(
-        contentByte: PdfContentByte,
-        qrContent: String,
-        pdfSize: PdfSize,
-    ) {
-        try {
-            val qrCodeWriter = QRCodeWriter()
-            val bitMatrix =
-                qrCodeWriter.encode(
-                    qrContent,
-                    BarcodeFormat.QR_CODE,
-                    QR_CODE_SIZE_PIXELS,
-                    QR_CODE_SIZE_PIXELS,
-                )
-
-            val bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix)
-            val qrByteArray = ByteArrayOutputStream()
-            ImageIO.write(bufferedImage, IMAGE_FORMAT_PNG, qrByteArray)
-
-            val qrImage = Image.getInstance(qrByteArray.toByteArray())
-            qrImage.scaleAbsolute(QR_CODE_SIZE_POINTS, QR_CODE_SIZE_POINTS)
-
-            val qrX = 0f
-            val qrY = pdfSize.height - QR_CODE_SIZE_POINTS
-
-            qrImage.setAbsolutePosition(qrX, qrY)
-            contentByte.addImage(qrImage)
-            logger.debug { "QR code placed at position ($qrX, $qrY)" }
-        } catch (e: WriterException) {
-            throw PdfGenerationException("Failed to generate QR code for content: $qrContent", e)
-        } catch (e: IOException) {
-            throw PdfGenerationException("I/O error generating QR code for content: $qrContent", e)
-        }
-    }
-
-    private fun addCenteredImage(
-        contentByte: PdfContentByte,
-        imageData: ByteArray,
-        imageWidthMm: Float,
-        imageHeightMm: Float,
-        pdfSize: PdfSize,
-    ) {
-        try {
-            val image = Image.getInstance(imageData)
-
-            val imageWidthPoints = imageWidthMm * MM_TO_POINTS
-            val imageHeightPoints = imageHeightMm * MM_TO_POINTS
-
-            image.scaleAbsolute(imageWidthPoints, imageHeightPoints)
-
-            val x = (pdfSize.width - imageWidthPoints) / 2
-            val y = (pdfSize.height - imageHeightPoints) / 2
-
-            image.setAbsolutePosition(x, y)
-            contentByte.addImage(image)
-            logger.debug {
-                "Image placed at position ($x, $y) with size ${imageWidthPoints}x$imageHeightPoints points"
-            }
-        } catch (e: IOException) {
-            throw PdfGenerationException("I/O error adding centered image to PDF", e)
-        } catch (e: IllegalArgumentException) {
-            throw PdfGenerationException("Invalid image data for centered image", e)
-        }
-    }
 
     @Suppress("ThrowsCount")
     private fun createOrderPage(

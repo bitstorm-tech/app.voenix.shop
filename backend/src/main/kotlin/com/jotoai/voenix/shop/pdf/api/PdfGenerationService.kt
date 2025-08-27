@@ -1,8 +1,6 @@
 package com.jotoai.voenix.shop.pdf.api
 
-import com.jotoai.voenix.shop.pdf.api.dto.GeneratePdfRequest
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
-import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
 
 /**
  * Consolidated interface for all PDF generation operations.
@@ -16,12 +14,6 @@ import com.jotoai.voenix.shop.pdf.api.dto.PublicPdfGenerationRequest
  * - Easier testing and maintenance
  */
 interface PdfGenerationService {
-    /**
-     * Generates a PDF document for the given request.
-     * @param request The PDF generation request
-     * @return The generated PDF as byte array
-     */
-    fun generatePdf(request: GeneratePdfRequest): ByteArray
 
     /**
      * Generates a PDF for the given order.
@@ -37,13 +29,6 @@ interface PdfGenerationService {
      * @return The generated filename
      */
     fun getOrderPdfFilename(orderNumber: String): String
-
-    /**
-     * Generates a PDF for public users.
-     * @param request The public PDF generation request
-     * @return The generated PDF as byte array
-     */
-    fun generatePublicPdf(request: PublicPdfGenerationRequest): ByteArray
 
     /**
      * Converts OrderForPdfDto to OrderPdfData.
