@@ -94,12 +94,11 @@ class UserCartController(
      * Clears all items from the cart
      */
     @DeleteMapping
-    @ResponseStatus(HttpStatus.NO_CONTENT)
     fun clearCart(
         @AuthenticationPrincipal userDetails: UserDetails,
-    ) {
+    ): CartDto {
         val userId = getCurrentUserId(userDetails)
-        cartFacade.clearCart(userId)
+        return cartFacade.clearCart(userId)
     }
 
     /**
