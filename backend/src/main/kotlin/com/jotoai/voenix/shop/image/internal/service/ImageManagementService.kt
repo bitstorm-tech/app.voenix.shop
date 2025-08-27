@@ -24,8 +24,6 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import java.io.IOException
 import java.time.LocalDateTime
 import java.util.*
-import org.springframework.cache.annotation.CacheEvict
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.dao.DataAccessException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -138,7 +136,6 @@ class ImageManagementService(
         }
     }
 
-    @Cacheable("uploadedImages", key = "#uuid + '_' + #userId")
     @Transactional(readOnly = true)
     override fun getUploadedImageByUuid(
         uuid: UUID,
@@ -160,8 +157,6 @@ class ImageManagementService(
         )
     }
 
-
-    @Cacheable("userUploadedImages", key = "#userId")
     @Transactional(readOnly = true)
     override fun getUserUploadedImages(userId: Long): List<UploadedImageDto> =
         uploadedImageRepository
@@ -180,7 +175,6 @@ class ImageManagementService(
 
     // Generated Images Implementation
 
-    @Cacheable("generatedImages", key = "#uuid + '_' + (#userId ?: 'null')")
     @Transactional(readOnly = true)
     override fun getGeneratedImageByUuid(
         uuid: UUID,
@@ -205,7 +199,6 @@ class ImageManagementService(
         )
     }
 
-    @CacheEvict("generatedImages", key = "#uuid + '_' + (#userId ?: 'null')")
     @Transactional
     override fun updateGeneratedImage(
         uuid: UUID,
@@ -246,7 +239,6 @@ class ImageManagementService(
         }
     }
 
-    @CacheEvict("generatedImages", key = "#uuid + '_' + (#userId ?: 'null')")
     @Transactional
     override fun deleteGeneratedImage(
         uuid: UUID,
@@ -283,7 +275,6 @@ class ImageManagementService(
         }
     }
 
-    @Cacheable("userGeneratedImages", key = "#userId")
     @Transactional(readOnly = true)
     override fun getUserGeneratedImages(userId: Long): List<GeneratedImageDto> =
         generatedImageRepository

@@ -11,16 +11,16 @@ import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.core.io.FileSystemResource
-import org.springframework.core.io.Resource
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.util.*
+import org.springframework.core.io.FileSystemResource
+import org.springframework.core.io.Resource
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 
 /**
  * Consolidated implementation of ImageStorageService that handles all storage functionality.
@@ -38,12 +38,8 @@ class ImageStorageServiceImpl(
     private val logger = KotlinLogging.logger {}
 
     companion object {
-        private const val MAX_FILE_SIZE = 10 * 1024 * 1024L // 10MB
-        private val ALLOWED_CONTENT_TYPES = setOf("image/jpeg", "image/jpg", "image/png", "image/webp")
         private const val ORIGINAL_SUFFIX = "_original"
         private const val GENERATED_PREFIX = "_generated_"
-        private const val BYTES_PER_KB = 1024
-        private const val BYTES_PER_MB = BYTES_PER_KB * BYTES_PER_KB
     }
 
     // Public API Interface Methods
@@ -219,8 +215,8 @@ class ImageStorageServiceImpl(
         // Use the public mug variant example image type
         val imageType = ImageType.MUG_VARIANT_EXAMPLE
 
-        // Validate the file
-        validateFile(file, MAX_FILE_SIZE, ALLOWED_CONTENT_TYPES)
+        // Validate the file using centralized rules
+        imageValidationService.validateImageFile(file, imageType)
 
         // Generate a unique filename with PNG extension (we'll convert to PNG)
         val storedFilename = "${UUID.randomUUID()}.png"
@@ -299,11 +295,11 @@ class ImageStorageServiceImpl(
      * Stores an uploaded image file using the user-specific storage pattern.
      */
     @Transactional
-    fun storeUploadedImage(
+    override fun storeUploadedImage(
         imageFile: MultipartFile,
         userId: Long,
     ): UploadedImage {
-        validateFile(imageFile, MAX_FILE_SIZE, ALLOWED_CONTENT_TYPES)
+        imageValidationService.validateImageFile(imageFile, ImageType.PRIVATE)
 
         val uuid = UUID.randomUUID()
         val originalFilename = imageFile.originalFilename ?: "unknown"
@@ -352,12 +348,12 @@ class ImageStorageServiceImpl(
      * Stores a generated image using the user-specific storage pattern.
      */
     @Transactional
-    fun storeGeneratedImage(
+    override fun storeGeneratedImage(
         imageBytes: ByteArray,
         uploadedImage: UploadedImage,
         promptId: Long,
         generationNumber: Int,
-        ipAddress: String? = null,
+        ipAddress: String?,
     ): GeneratedImage {
         val userStorageDir = getUserStorageDirectory(uploadedImage.userId)
         val storedFilename = "${uploadedImage.uuid}$GENERATED_PREFIX$generationNumber.png"
@@ -389,7 +385,7 @@ class ImageStorageServiceImpl(
     /**
      * Retrieves image data for a user's image file.
      */
-    fun getUserImageData(
+    override fun getUserImageData(
         filename: String,
         userId: Long,
     ): Pair<ByteArray, String> {
@@ -420,26 +416,7 @@ class ImageStorageServiceImpl(
         return deleteFile(filePath)
     }
 
-    private fun validateFile(
-        file: MultipartFile,
-        maxFileSize: Long,
-        allowedContentTypes: Set<String>,
-    ) {
-        require(!file.isEmpty) {
-            "Cannot upload empty file"
-        }
-
-        require(file.size <= maxFileSize) {
-            val maxSizeMB = maxFileSize / BYTES_PER_MB
-            "File size exceeds maximum allowed size of ${maxSizeMB}MB"
-        }
-
-        val contentType = file.contentType?.lowercase()
-        require(contentType != null && contentType in allowedContentTypes) {
-            val allowedFormats = allowedContentTypes.joinToString(", ")
-            "Invalid file format. Allowed formats: $allowedFormats"
-        }
-    }
+    // Validation logic centralized in ImageValidationService
 
     private fun ensureDirectoryExists(directoryPath: Path) {
         try {
