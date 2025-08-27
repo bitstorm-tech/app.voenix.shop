@@ -491,11 +491,6 @@ export interface RegisterGuestRequest {
 
 // User API endpoints
 export const userApi = {
-  getProfile: () => api.get<UserDto>('/user/profile'),
-  updateProfile: (data: UpdateUserRequest) => api.put<UserDto>('/user/profile', data),
-  getSession: () => api.get<SessionInfo>('/user/session'),
-  logout: () => api.post<void>('/user/logout', {}),
-  deleteAccount: () => api.delete<void>('/user/account'),
   // Generate images using authenticated endpoint
   generateImage: async (image: File, promptId: number, cropData?: CropData): Promise<PublicImageGenerationResponse> => {
     const formData = new FormData();

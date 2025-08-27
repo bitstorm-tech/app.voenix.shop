@@ -145,12 +145,6 @@ backend/src/main/kotlin/com/jotoai/voenix/shop/
 - `POST /api/auth/logout` - User logout
 - `GET /api/auth/session` - Check session status
 
-### User (`/api/user`)
-- `GET /api/user/profile` - Get user profile
-- `PUT /api/user/profile` - Update user profile
-- `GET /api/user/session` - Get session info
-- `POST /api/user/logout` - Logout user
-- `DELETE /api/user/account` - Delete user account
 
 ### Admin Users (`/api/admin/users`)
 - `GET /api/admin/users` - List all users
