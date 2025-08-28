@@ -46,13 +46,11 @@ class PublicImageController(
 
     private fun extractClientIp(request: HttpServletRequest): String {
         val xForwardedFor = request.getHeader("X-Forwarded-For")
-        if (!xForwardedFor.isNullOrBlank()) {
-            return xForwardedFor.split(',').first().trim()
-        }
         val xRealIp = request.getHeader("X-Real-IP")
-        if (!xRealIp.isNullOrBlank()) {
-            return xRealIp
+        return when {
+            !xForwardedFor.isNullOrBlank() -> xForwardedFor.split(',').first().trim()
+            !xRealIp.isNullOrBlank() -> xRealIp
+            else -> request.remoteAddr
         }
-        return request.remoteAddr
     }
 }
