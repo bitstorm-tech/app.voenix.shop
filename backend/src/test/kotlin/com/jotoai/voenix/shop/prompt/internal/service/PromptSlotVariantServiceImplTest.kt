@@ -654,36 +654,7 @@ class PromptSlotVariantServiceImplTest {
             }
         }
 
-        @Test
-        fun `should get slot variants by slot type`() {
-            // Given
-            val variants = listOf(testPromptSlotVariant)
-            whenever(promptSlotTypeRepository.existsById(1L)).thenReturn(true)
-            whenever(promptSlotVariantRepository.findByPromptSlotTypeId(1L)).thenReturn(variants)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
-
-            // When
-            val result = service.getSlotVariantsBySlotType(1L)
-
-            // Then
-            assertNotNull(result)
-            verify(promptSlotTypeRepository).existsById(1L)
-            verify(promptSlotVariantRepository).findByPromptSlotTypeId(1L)
-            verify(promptSlotVariantAssembler, times(1)).toDto(any())
-        }
-
-        @Test
-        fun `should throw exception when getting variants for non-existent slot type`() {
-            // Given
-            whenever(promptSlotTypeRepository.existsById(999L)).thenReturn(false)
-
-            // When/Then
-            assertThrows<PromptSlotVariantNotFoundException> {
-                service.getSlotVariantsBySlotType(999L)
-            }
-
-            verify(promptSlotVariantRepository, never()).findByPromptSlotTypeId(any())
-        }
+        // Note: retrieval by slot type was removed from service; tests adjusted accordingly
 
         @Test
         fun `should check if variant exists by id`() {

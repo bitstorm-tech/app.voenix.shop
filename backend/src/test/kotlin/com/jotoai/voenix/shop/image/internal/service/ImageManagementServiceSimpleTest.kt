@@ -6,7 +6,6 @@ import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
-import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserService
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -27,8 +26,9 @@ class ImageManagementServiceSimpleTest {
         val imageValidationService: ImageValidationService = mock()
         val openAIImageGenerationService: OpenAIImageGenerationService = mock()
         val storagePathService: StoragePathService = mock()
-        val promptQueryService: PromptQueryService = mock()
         val userService: UserService = mock()
+        val userImageStorageService: UserImageStorageService = mock()
+        val imageConversionService: ImageConversionService = mock()
 
         // When
         val service =
@@ -39,8 +39,9 @@ class ImageManagementServiceSimpleTest {
                 imageValidationService,
                 openAIImageGenerationService,
                 storagePathService,
-                promptQueryService,
                 userService,
+                userImageStorageService,
+                imageConversionService,
             )
 
         // Then
@@ -57,8 +58,9 @@ class ImageManagementServiceSimpleTest {
         val imageValidationService: ImageValidationService = mock()
         val openAIImageGenerationService: OpenAIImageGenerationService = mock()
         val storagePathService: StoragePathService = mock()
-        val promptQueryService: PromptQueryService = mock()
         val userService: UserService = mock()
+        val userImageStorageService: UserImageStorageService = mock()
+        val imageConversionService: ImageConversionService = mock()
 
         // When
         val service =
@@ -69,8 +71,9 @@ class ImageManagementServiceSimpleTest {
                 imageValidationService,
                 openAIImageGenerationService,
                 storagePathService,
-                promptQueryService,
                 userService,
+                userImageStorageService,
+                imageConversionService,
             )
 
         // Then

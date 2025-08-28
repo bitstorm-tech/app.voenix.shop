@@ -11,7 +11,9 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
 
 @SpringBootTest
@@ -33,12 +35,27 @@ class PublicMugControllerTest {
 
         // When & Then
         mockMvc
-            .get("/api/mugs")
-            .andExpect {
-                status { isOk() }
-                verifyClassicMugResponse()
-                verifyTravelMugResponse()
-            }
+            .perform(MockMvcRequestBuilders.get("/api/mugs"))
+            .andExpect(status().isOk)
+            // Classic Mug assertions
+            .andExpect(jsonPath("$[0].id").value(1))
+            .andExpect(jsonPath("$[0].name").value("Classic Mug"))
+            .andExpect(jsonPath("$[0].price").value(12.99))
+            .andExpect(jsonPath("$[0].dishwasherSafe").value(true))
+            .andExpect(jsonPath("$[0].variants").isArray)
+            .andExpect(jsonPath("$[0].variants[0].id").value(1))
+            .andExpect(jsonPath("$[0].variants[0].colorCode").value("#FFFFFF"))
+            .andExpect(jsonPath("$[0].variants[0].isDefault").value(true))
+            .andExpect(jsonPath("$[0].variants[1].id").value(2))
+            .andExpect(jsonPath("$[0].variants[1].colorCode").value("#000000"))
+            .andExpect(jsonPath("$[0].variants[1].isDefault").value(false))
+            // Travel Mug assertions
+            .andExpect(jsonPath("$[1].id").value(2))
+            .andExpect(jsonPath("$[1].name").value("Travel Mug"))
+            .andExpect(jsonPath("$[1].price").value(18.99))
+            .andExpect(jsonPath("$[1].dishwasherSafe").value(false))
+            .andExpect(jsonPath("$[1].variants").isArray)
+            .andExpect(jsonPath("$[1].variants").isEmpty)
     }
 
     private fun createClassicMug() =
@@ -105,29 +122,6 @@ class PublicMugControllerTest {
             variants = emptyList(),
         )
 
-    private fun org.springframework.test.web.servlet.ResultActionsDsl.verifyClassicMugResponse() {
-        jsonPath("$[0].id") { value(1) }
-        jsonPath("$[0].name") { value("Classic Mug") }
-        jsonPath("$[0].price") { value(12.99) }
-        jsonPath("$[0].dishwasherSafe") { value(true) }
-        jsonPath("$[0].variants") { isArray() }
-        jsonPath("$[0].variants[0].id") { value(1) }
-        jsonPath("$[0].variants[0].colorCode") { value("#FFFFFF") }
-        jsonPath("$[0].variants[0].isDefault") { value(true) }
-        jsonPath("$[0].variants[1].id") { value(2) }
-        jsonPath("$[0].variants[1].colorCode") { value("#000000") }
-        jsonPath("$[0].variants[1].isDefault") { value(false) }
-    }
-
-    private fun org.springframework.test.web.servlet.ResultActionsDsl.verifyTravelMugResponse() {
-        jsonPath("$[1].id") { value(2) }
-        jsonPath("$[1].name") { value("Travel Mug") }
-        jsonPath("$[1].price") { value(18.99) }
-        jsonPath("$[1].dishwasherSafe") { value(false) }
-        jsonPath("$[1].variants") { isArray() }
-        jsonPath("$[1].variants") { isEmpty() }
-    }
-
     @Test
     fun `should return empty list when no mugs available`() {
         // Given
@@ -135,11 +129,9 @@ class PublicMugControllerTest {
 
         // When & Then
         mockMvc
-            .get("/api/mugs")
-            .andExpect {
-                status { isOk() }
-                jsonPath("$") { isArray() }
-                jsonPath("$") { isEmpty() }
-            }
+            .perform(MockMvcRequestBuilders.get("/api/mugs"))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$").isArray)
+            .andExpect(jsonPath("$").isEmpty)
     }
 }

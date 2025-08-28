@@ -1,5 +1,7 @@
 package com.jotoai.voenix.shop.image.internal.service
 
+import com.jotoai.voenix.shop.image.api.ImageStorageService
+import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
@@ -7,6 +9,8 @@ import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
+import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
+import com.jotoai.voenix.shop.user.api.UserService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -23,7 +27,7 @@ import java.util.UUID
 class ImageQueryServiceImplTest {
     private lateinit var generatedImageRepository: GeneratedImageRepository
     private lateinit var uploadedImageRepository: UploadedImageRepository
-    private lateinit var imageQueryService: ImageQueryServiceImpl
+    private lateinit var imageQueryService: ImageManagementService
 
     @BeforeEach
     fun setUp() {
@@ -31,45 +35,20 @@ class ImageQueryServiceImplTest {
         uploadedImageRepository = mock()
 
         imageQueryService =
-            ImageQueryServiceImpl(
-                generatedImageRepository = generatedImageRepository,
+            ImageManagementService(
+                imageStorageService = mock<ImageStorageService>(),
                 uploadedImageRepository = uploadedImageRepository,
+                generatedImageRepository = generatedImageRepository,
+                imageValidationService = mock<ImageValidationService>(),
+                openAIImageGenerationService = mock<OpenAIImageGenerationService>(),
+                storagePathService = mock<StoragePathService>(),
+                userService = mock<UserService>(),
+                userImageStorageService = mock<UserImageStorageService>(),
+                imageConversionService = mock<ImageConversionService>(),
             )
     }
 
-    // FIND IMAGE BY FILENAME TESTS
-
-    @Test
-    fun `findImageByFilename should return SimpleImageDto when generated image found`() {
-        // Given
-        val filename = "generated-image.jpg"
-        val generatedImage = createGeneratedImage(GeneratedImageParams(filename = filename))
-
-        whenever(generatedImageRepository.findByFilename(filename)).thenReturn(generatedImage)
-
-        // When
-        val result = imageQueryService.findImageByFilename(filename)
-
-        // Then
-        assertNotNull(result)
-        assertEquals(filename, result!!.filename)
-        assertEquals(ImageType.GENERATED, result.imageType)
-        assertTrue(result is SimpleImageDto)
-    }
-
-    @Test
-    fun `findImageByFilename should return null when generated image not found`() {
-        // Given
-        val filename = "non-existent-image.jpg"
-
-        whenever(generatedImageRepository.findByFilename(filename)).thenReturn(null)
-
-        // When
-        val result = imageQueryService.findImageByFilename(filename)
-
-        // Then
-        assertNull(result)
-    }
+    // Note: findImageByFilename is no longer part of the ImageQueryService API; tests removed.
 
     // FIND UPLOADED IMAGE BY UUID TESTS
 
@@ -667,7 +646,6 @@ class ImageQueryServiceImplTest {
         whenever(uploadedImageRepository.findAllByUserId(0L)).thenReturn(emptyList())
 
         // When & Then - should not throw exceptions
-        assertNull(imageQueryService.findImageByFilename(""))
         assertNull(imageQueryService.findUploadedImageByUuid(UUID.randomUUID()))
         assertEquals(0, imageQueryService.findUploadedImagesByUserId(0L).size)
         assertFalse(imageQueryService.existsByUuid(UUID.randomUUID()))

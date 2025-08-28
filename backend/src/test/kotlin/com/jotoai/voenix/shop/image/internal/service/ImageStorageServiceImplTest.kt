@@ -5,7 +5,6 @@ import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import com.jotoai.voenix.shop.image.internal.service.ImageValidationService
-import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -50,23 +49,6 @@ class ImageStorageServiceImplTest {
                 "image/jpeg",
                 "test content".toByteArray(),
             )
-    }
-
-    @Test
-    fun `generateImageUrl should delegate to StoragePathService`() {
-        // Given
-        val filename = "test-image.jpg"
-        val imageType = ImageType.PRIVATE
-        val expectedUrl = "https://example.com/images/private/test-image.jpg"
-
-        whenever(storagePathService.getImageUrl(imageType, filename)).thenReturn(expectedUrl)
-
-        // When
-        val result = imageStorageService.generateImageUrl(filename, imageType)
-
-        // Then
-        assertEquals(expectedUrl, result)
-        verify(storagePathService).getImageUrl(imageType, filename)
     }
 
     @Test

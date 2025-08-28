@@ -4,6 +4,8 @@ import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.cart.api.dto.CartDto
+import com.jotoai.voenix.shop.cart.api.dto.CartItemDto
 import com.jotoai.voenix.shop.cart.api.enums.CartStatus
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.entity.CartItem

@@ -171,7 +171,10 @@ class PromptSlotVariantIntegrationTest {
                 )
 
             // Then
-            val variants = promptSlotVariantQueryService.getSlotVariantsBySlotType(testSlotTypeId)
+            val variants =
+                promptSlotVariantQueryService
+                    .getAllSlotVariants()
+                    .filter { it.promptSlotTypeId == testSlotTypeId }
             assertEquals(2, variants.size)
             assertTrue(variants.any { it.id == variant1.id })
             assertTrue(variants.any { it.id == variant2.id })
@@ -384,7 +387,10 @@ class PromptSlotVariantIntegrationTest {
             assertTrue(promptSlotVariantQueryService.existsById(variant1.id!!))
             assertFalse(promptSlotVariantQueryService.existsById(variant2.id!!))
 
-            val remaining = promptSlotVariantQueryService.getSlotVariantsBySlotType(testSlotTypeId)
+            val remaining =
+                promptSlotVariantQueryService
+                    .getAllSlotVariants()
+                    .filter { it.promptSlotTypeId == testSlotTypeId }
             assertEquals(1, remaining.size)
             assertEquals(variant1.id, remaining[0].id)
         }
@@ -447,8 +453,14 @@ class PromptSlotVariantIntegrationTest {
             )
 
             // When
-            val type1Variants = promptSlotVariantQueryService.getSlotVariantsBySlotType(testSlotTypeId)
-            val type2Variants = promptSlotVariantQueryService.getSlotVariantsBySlotType(anotherSlotType.id!!)
+            val type1Variants =
+                promptSlotVariantQueryService
+                    .getAllSlotVariants()
+                    .filter { it.promptSlotTypeId == testSlotTypeId }
+            val type2Variants =
+                promptSlotVariantQueryService
+                    .getAllSlotVariants()
+                    .filter { it.promptSlotTypeId == anotherSlotType.id!! }
 
             // Then
             assertEquals(1, type1Variants.size)
@@ -459,11 +471,15 @@ class PromptSlotVariantIntegrationTest {
         }
 
         @Test
-        fun `should throw exception when querying variants for non-existent slot type`() {
-            // When/Then
-            assertThrows<PromptSlotVariantNotFoundException> {
-                promptSlotVariantQueryService.getSlotVariantsBySlotType(99999L)
-            }
+        fun `should return empty when querying variants for non-existent slot type`() {
+            // When
+            val results =
+                promptSlotVariantQueryService
+                    .getAllSlotVariants()
+                    .filter { it.promptSlotTypeId == 99999L }
+
+            // Then
+            assertTrue(results.isEmpty())
         }
 
         @Test
