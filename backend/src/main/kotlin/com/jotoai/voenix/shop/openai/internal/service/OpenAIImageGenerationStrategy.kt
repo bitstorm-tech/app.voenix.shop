@@ -101,34 +101,36 @@ class OpenAIImageGenerationStrategy(
      * Calls the OpenAI image edit API and returns the raw response data.
      * This is the shared implementation used by both public edit methods and test prompt.
      */
-    private suspend fun callOpenAIEditAPI(
-        imageFile: MultipartFile,
-        promptText: String,
-        size: String,
-        background: String? = null,
-        n: Int = 1,
-        responseFormat: String? = null,
-    ): OpenAIResponse {
+    private data class OpenAIEditParams(
+        val imageFile: MultipartFile,
+        val promptText: String,
+        val size: String,
+        val background: String? = null,
+        val n: Int = 1,
+        val responseFormat: String? = null,
+    )
+
+    private suspend fun callOpenAIEditAPI(params: OpenAIEditParams): OpenAIResponse {
         val formData =
             formData {
                 append("model", "gpt-image-1")
                 append(
                     "image",
-                    imageFile.bytes,
+                    params.imageFile.bytes,
                     Headers.build {
-                        append(HttpHeaders.ContentType, getContentType(imageFile.originalFilename ?: "image.png"))
+                        append(HttpHeaders.ContentType, getContentType(params.imageFile.originalFilename ?: "image.png"))
                         append(
                             HttpHeaders.ContentDisposition,
-                            "filename=\"${imageFile.originalFilename ?: "image.png"}\"",
+                            "filename=\"${params.imageFile.originalFilename ?: "image.png"}\"",
                         )
                     },
                 )
 
-                append("prompt", promptText)
-                append("n", n.toString())
-                append("size", size)
-                background?.let { append("background", it) }
-                responseFormat?.let { append("response_format", it) }
+                append("prompt", params.promptText)
+                append("n", params.n.toString())
+                append("size", params.size)
+                params.background?.let { append("background", it) }
+                params.responseFormat?.let { append("response_format", it) }
             }
 
         val httpResponse =
@@ -197,11 +199,13 @@ class OpenAIImageGenerationStrategy(
             try {
                 val response =
                     callOpenAIEditAPI(
-                        imageFile = imageFile,
-                        promptText = buildFinalPrompt(prompt),
-                        size = request.size.apiValue,
-                        background = request.background.apiValue,
-                        n = request.n,
+                        OpenAIEditParams(
+                            imageFile = imageFile,
+                            promptText = buildFinalPrompt(prompt),
+                            size = request.size.apiValue,
+                            background = request.background.apiValue,
+                            n = request.n,
+                        ),
                     )
 
                 val imageBytesList = extractImageBytes(response.data!!)
@@ -245,12 +249,14 @@ class OpenAIImageGenerationStrategy(
 
                 val response =
                     callOpenAIEditAPI(
-                        imageFile = imageFile,
-                        promptText = combinedPrompt,
-                        size = request.getSize().apiValue,
-                        background = null, // testPrompt doesn't use background in API call
-                        n = 1,
-                        responseFormat = "url",
+                        OpenAIEditParams(
+                            imageFile = imageFile,
+                            promptText = combinedPrompt,
+                            size = request.getSize().apiValue,
+                            background = null, // testPrompt doesn't use background in API call
+                            n = 1,
+                            responseFormat = "url",
+                        ),
                     )
 
                 val openAIImage = response.data!!.first()

@@ -185,9 +185,11 @@ class PdfGenerationServiceImpl(
                 contentByte,
                 orderData,
                 orderItem,
-                itemPageWidth,
-                itemPageHeight,
-                itemMargin,
+                PageLayout(
+                    pageWidth = itemPageWidth,
+                    pageHeight = itemPageHeight,
+                    margin = itemMargin,
+                ),
             )
 
             // Add QR code in bottom left
@@ -303,25 +305,25 @@ class PdfGenerationServiceImpl(
         contentByte.endText()
     }
 
+    private data class PageLayout(val pageWidth: Float, val pageHeight: Float, val margin: Float)
+
     private fun addProductImage(
         contentByte: PdfContentByte,
         orderData: OrderPdfData,
         orderItem: OrderItemPdfData,
-        pageWidth: Float,
-        pageHeight: Float,
-        margin: Float,
+        layout: PageLayout,
     ) {
         try {
             val imageData = loadProductImage(orderData, orderItem)
             val pdfImage = Image.getInstance(imageData)
-            val dimensions = calculateImageDimensions(orderItem, pageWidth, pageHeight, margin)
+            val dimensions = calculateImageDimensions(orderItem, layout.pageWidth, layout.pageHeight, layout.margin)
             
-            positionAndAddImage(contentByte, pdfImage, dimensions, pageWidth, pageHeight)
+            positionAndAddImage(contentByte, pdfImage, dimensions, layout.pageWidth, layout.pageHeight)
             logImageAddition(dimensions)
         } catch (e: IOException) {
-            handleImageAdditionError(e, contentByte, orderItem, pageWidth, pageHeight)
+            handleImageAdditionError(e, contentByte, orderItem, layout.pageWidth, layout.pageHeight)
         } catch (e: BadElementException) {
-            handleImageAdditionError(e, contentByte, orderItem, pageWidth, pageHeight)
+            handleImageAdditionError(e, contentByte, orderItem, layout.pageWidth, layout.pageHeight)
         }
     }
     
@@ -423,7 +425,7 @@ class PdfGenerationServiceImpl(
         originalException: Exception
     ) {
         try {
-            addPlaceholderText(contentByte, "Image not available", pageWidth, pageHeight, 0f, 0f)
+            addPlaceholderText(contentByte, PlaceholderText("Image not available", pageWidth, pageHeight, 0f, 0f))
         } catch (placeholderException: IOException) {
             logger.error(placeholderException) { "Failed to add placeholder text for order item ${orderItem.id}" }
             throw PdfGenerationException(
@@ -469,11 +471,13 @@ class PdfGenerationServiceImpl(
             try {
                 addPlaceholderText(
                     contentByte,
-                    "Order ID: $orderId",
-                    Float.MAX_VALUE,
-                    Float.MAX_VALUE,
-                    margin,
-                    margin + FALLBACK_TEXT_OFFSET,
+                    PlaceholderText(
+                        text = "Order ID: $orderId",
+                        pageWidth = Float.MAX_VALUE,
+                        pageHeight = Float.MAX_VALUE,
+                        x = margin,
+                        y = margin + FALLBACK_TEXT_OFFSET,
+                    ),
                 )
             } catch (placeholderException: IOException) {
                 logger.error(placeholderException) { "Failed to add QR code fallback text for order ID $orderId" }
@@ -484,11 +488,13 @@ class PdfGenerationServiceImpl(
             try {
                 addPlaceholderText(
                     contentByte,
-                    "Order ID: $orderId",
-                    Float.MAX_VALUE,
-                    Float.MAX_VALUE,
-                    margin,
-                    margin + FALLBACK_TEXT_OFFSET,
+                    PlaceholderText(
+                        text = "Order ID: $orderId",
+                        pageWidth = Float.MAX_VALUE,
+                        pageHeight = Float.MAX_VALUE,
+                        x = margin,
+                        y = margin + FALLBACK_TEXT_OFFSET,
+                    ),
                 )
             } catch (placeholderException: IOException) {
                 logger.error(placeholderException) { "Failed to add QR code fallback text for order ID $orderId" }
@@ -535,31 +541,36 @@ class PdfGenerationServiceImpl(
         }
     }
 
+    private data class PlaceholderText(
+        val text: String,
+        val pageWidth: Float,
+        val pageHeight: Float,
+        val x: Float? = null,
+        val y: Float? = null,
+    )
+
     private fun addPlaceholderText(
         contentByte: PdfContentByte,
-        text: String,
-        pageWidth: Float,
-        pageHeight: Float,
-        x: Float = pageWidth / 2,
-        y: Float = pageHeight / 2,
+        placement: PlaceholderText,
     ) {
         try {
             val baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED)
             contentByte.beginText()
             contentByte.setFontAndSize(baseFont, PLACEHOLDER_FONT_SIZE)
 
-            if (x == pageWidth / 2) {
-                // Center the text
-                val textWidth = baseFont.getWidthPoint(text, PLACEHOLDER_FONT_SIZE)
-                contentByte.moveText((pageWidth - textWidth) / 2, y)
+            val x = placement.x
+            val y = placement.y ?: (placement.pageHeight / 2)
+            if (x == null) {
+                val textWidth = baseFont.getWidthPoint(placement.text, PLACEHOLDER_FONT_SIZE)
+                contentByte.moveText((placement.pageWidth - textWidth) / 2, y)
             } else {
                 contentByte.moveText(x, y)
             }
 
-            contentByte.showText(text)
+            contentByte.showText(placement.text)
             contentByte.endText()
         } catch (e: IOException) {
-            logger.error(e) { "Failed to add placeholder text: $text" }
+            logger.error(e) { "Failed to add placeholder text: ${placement.text}" }
         }
     }
 

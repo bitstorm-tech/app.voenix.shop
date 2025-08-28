@@ -7,6 +7,7 @@ import com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.article.api.dto.CreateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
+import com.jotoai.voenix.shop.article.api.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.article.web.dto.ArticleSearchCriteria
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -35,12 +36,14 @@ class AdminArticleController(
     ): ResponseEntity<ArticlePaginatedResponse<ArticleDto>> {
         val response =
             articleQueryService.findAll(
-                page = criteria.page,
-                size = criteria.size,
-                articleType = criteria.type,
-                categoryId = criteria.categoryId,
-                subcategoryId = criteria.subcategoryId,
-                active = criteria.active,
+                FindArticlesQuery(
+                    page = criteria.page,
+                    size = criteria.size,
+                    articleType = criteria.type,
+                    categoryId = criteria.categoryId,
+                    subcategoryId = criteria.subcategoryId,
+                    active = criteria.active,
+                ),
             )
         return ResponseEntity.ok(response)
     }

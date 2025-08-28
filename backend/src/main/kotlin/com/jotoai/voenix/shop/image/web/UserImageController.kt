@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import com.jotoai.voenix.shop.image.web.dto.ImageGenerationForm
 
 @RestController
 @RequestMapping("/api/user/images")
@@ -35,30 +37,24 @@ class UserImageController(
 
     @PostMapping("/generate", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun generateImage(
-        @RequestPart("image") imageFile: MultipartFile,
-        @RequestParam("promptId") promptId: Long,
-        @RequestParam("cropX", required = false) cropX: Double?,
-        @RequestParam("cropY", required = false) cropY: Double?,
-        @RequestParam("cropWidth", required = false) cropWidth: Double?,
-        @RequestParam("cropHeight", required = false) cropHeight: Double?,
+        @ModelAttribute form: ImageGenerationForm,
         @AuthenticationPrincipal userDetails: UserDetails,
     ): PublicImageGenerationResponse {
         val user = userService.getUserByEmail(userDetails.username)
-        logger.info { "Received authenticated image generation request from user ${user.id} for prompt ID: $promptId" }
+        logger.info { "Received authenticated image generation request from user ${user.id} for prompt ID: ${form.promptId}" }
 
         // Create crop area if all crop parameters are provided
-        val cropArea = CropAreaUtils.createIfPresent(cropX, cropY, cropWidth, cropHeight)
+        val cropArea = CropAreaUtils.createIfPresent(form.cropX, form.cropY, form.cropWidth, form.cropHeight)
 
         // First upload the image to get UUID, applying crop if provided
-        val uploadedImage = imageFacade.createUploadedImage(imageFile, user.id, cropArea)
+        val uploadedImage = imageFacade.createUploadedImage(form.image, user.id, cropArea)
         logger.info { "Uploaded image for user ${user.id} with UUID: ${uploadedImage.uuid}" }
 
         // Generate all 4 images; crop already applied at upload time, so avoid double-cropping here
-        val response = imageFacade.generateUserImageWithIds(promptId, uploadedImage.uuid, user.id, null)
+        val response = imageFacade.generateUserImageWithIds(form.promptId, uploadedImage.uuid, user.id, null)
 
         logger.info {
-            "Generated ${response.generatedImageIds.size} images with IDs: " +
-                "${response.generatedImageIds} for user ${user.id}"
+            "Generated ${response.generatedImageIds.size} images with IDs: ${response.generatedImageIds} for user ${user.id}"
         }
 
         return response

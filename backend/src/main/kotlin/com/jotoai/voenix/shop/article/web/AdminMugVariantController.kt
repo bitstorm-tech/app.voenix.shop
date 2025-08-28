@@ -6,6 +6,7 @@ import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
 import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
+import com.jotoai.voenix.shop.article.web.dto.MugVariantImageUploadRequest
 import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
 import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.PutMapping
@@ -23,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.multipart.MultipartFile
 
 @RestController
 @RequestMapping("/api/admin/articles/mugs")
@@ -66,22 +67,18 @@ class AdminMugVariantController(
     @PostMapping("/variants/{variantId}/image", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun uploadVariantImage(
         @PathVariable variantId: Long,
-        @RequestParam("image") file: MultipartFile,
-        @RequestParam("cropX", required = false) cropX: Double?,
-        @RequestParam("cropY", required = false) cropY: Double?,
-        @RequestParam("cropWidth", required = false) cropWidth: Double?,
-        @RequestParam("cropHeight", required = false) cropHeight: Double?,
+        @ModelAttribute request: MugVariantImageUploadRequest,
     ): ResponseEntity<MugArticleVariantDto> {
         logger.info {
-            "Received image upload for variant $variantId - File: ${file.originalFilename}, " +
-                "Size: ${file.size} bytes, Crop params: x=$cropX, y=$cropY, width=$cropWidth, height=$cropHeight"
+            "Received image upload for variant $variantId - File: ${request.image.originalFilename}, " +
+                "Size: ${request.image.size} bytes, Crop params: x=${request.cropX}, y=${request.cropY}, width=${request.cropWidth}, height=${request.cropHeight}"
         }
 
         // Create crop area if crop parameters are provided
-        val cropArea = CropAreaUtils.createIfPresent(cropX, cropY, cropWidth, cropHeight)
+        val cropArea = CropAreaUtils.createIfPresent(request.cropX, request.cropY, request.cropWidth, request.cropHeight)
 
         // Store the image directly in the mug variant images directory
-        val storedFilename = imageStorageService.storeMugVariantImage(file, cropArea)
+        val storedFilename = imageStorageService.storeMugVariantImage(request.image, cropArea)
 
         // Update the variant with the new image filename
         val updatedVariant = mugVariantFacade.updateExampleImage(variantId, storedFilename)

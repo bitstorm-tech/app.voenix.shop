@@ -15,6 +15,7 @@ import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.UpdateCostCalculationRequest
+import com.jotoai.voenix.shop.article.api.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.config.ArticleServiceDependencies
@@ -38,21 +39,14 @@ class ArticleServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findAll(
-        page: Int,
-        size: Int,
-        articleType: ArticleType?,
-        categoryId: Long?,
-        subcategoryId: Long?,
-        active: Boolean?,
-    ): ArticlePaginatedResponse<ArticleDto> {
-        val pageable = PageRequest.of(page, size, Sort.by("id").descending())
+    override fun findAll(query: FindArticlesQuery): ArticlePaginatedResponse<ArticleDto> {
+        val pageable = PageRequest.of(query.page, query.size, Sort.by("id").descending())
         val articlesPage =
             dependencies.articleRepository.findAllWithFilters(
-                articleType = articleType,
-                categoryId = categoryId,
-                subcategoryId = subcategoryId,
-                active = active,
+                articleType = query.articleType,
+                categoryId = query.categoryId,
+                subcategoryId = query.subcategoryId,
+                active = query.active,
                 pageable = pageable,
             )
 

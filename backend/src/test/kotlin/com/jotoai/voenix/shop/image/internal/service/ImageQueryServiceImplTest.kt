@@ -43,7 +43,7 @@ class ImageQueryServiceImplTest {
     fun `findImageByFilename should return SimpleImageDto when generated image found`() {
         // Given
         val filename = "generated-image.jpg"
-        val generatedImage = createGeneratedImage(filename = filename)
+        val generatedImage = createGeneratedImage(GeneratedImageParams(filename = filename))
 
         whenever(generatedImageRepository.findByFilename(filename)).thenReturn(generatedImage)
 
@@ -78,7 +78,7 @@ class ImageQueryServiceImplTest {
         // Given
         val uuid = UUID.randomUUID()
         val storedFilename = "uploaded-image.jpg"
-        val uploadedImage = createUploadedImage(uuid = uuid, storedFilename = storedFilename)
+        val uploadedImage = createUploadedImage(UploadedImageParams(uuid = uuid, storedFilename = storedFilename))
 
         whenever(uploadedImageRepository.findByUuid(uuid)).thenReturn(uploadedImage)
 
@@ -114,9 +114,9 @@ class ImageQueryServiceImplTest {
         val userId = 1L
         val uploadedImages =
             listOf(
-                createUploadedImage(storedFilename = "image1.jpg", userId = userId),
-                createUploadedImage(storedFilename = "image2.jpg", userId = userId),
-                createUploadedImage(storedFilename = "image3.png", userId = userId),
+                createUploadedImage(UploadedImageParams(storedFilename = "image1.jpg", userId = userId)),
+                createUploadedImage(UploadedImageParams(storedFilename = "image2.jpg", userId = userId)),
+                createUploadedImage(UploadedImageParams(storedFilename = "image3.png", userId = userId)),
             )
 
         whenever(uploadedImageRepository.findAllByUserId(userId)).thenReturn(uploadedImages)
@@ -154,11 +154,11 @@ class ImageQueryServiceImplTest {
         // Given
         val userId1 = 1L
         val userId2 = 2L
-        val user1Images = listOf(createUploadedImage(storedFilename = "user1-image.jpg", userId = userId1))
+        val user1Images = listOf(createUploadedImage(UploadedImageParams(storedFilename = "user1-image.jpg", userId = userId1)))
         val user2Images =
             listOf(
-                createUploadedImage(storedFilename = "user2-image1.jpg", userId = userId2),
-                createUploadedImage(storedFilename = "user2-image2.jpg", userId = userId2),
+                createUploadedImage(UploadedImageParams(storedFilename = "user2-image1.jpg", userId = userId2)),
+                createUploadedImage(UploadedImageParams(storedFilename = "user2-image2.jpg", userId = userId2)),
             )
 
         whenever(uploadedImageRepository.findAllByUserId(userId1)).thenReturn(user1Images)
@@ -183,7 +183,7 @@ class ImageQueryServiceImplTest {
     fun `existsByUuid should return true when uploaded image exists`() {
         // Given
         val uuid = UUID.randomUUID()
-        val uploadedImage = createUploadedImage(uuid = uuid)
+        val uploadedImage = createUploadedImage(UploadedImageParams(uuid = uuid))
 
         whenever(uploadedImageRepository.findByUuid(uuid)).thenReturn(uploadedImage)
 
@@ -215,7 +215,7 @@ class ImageQueryServiceImplTest {
         // Given
         val uuid = UUID.randomUUID()
         val userId = 1L
-        val uploadedImage = createUploadedImage(uuid = uuid, userId = userId)
+        val uploadedImage = createUploadedImage(UploadedImageParams(uuid = uuid, userId = userId))
 
         whenever(uploadedImageRepository.findByUserIdAndUuid(userId, uuid)).thenReturn(uploadedImage)
 
@@ -408,11 +408,13 @@ class ImageQueryServiceImplTest {
         val imageId = 123L
         val generatedImage =
             createGeneratedImage(
-                id = imageId,
-                filename = "test-image.jpg",
-                promptId = 100L,
-                userId = 1L,
-                ipAddress = "192.168.1.1",
+                GeneratedImageParams(
+                    id = imageId,
+                    filename = "test-image.jpg",
+                    promptId = 100L,
+                    userId = 1L,
+                    ipAddress = "192.168.1.1",
+                ),
             )
 
         whenever(generatedImageRepository.findById(imageId)).thenReturn(Optional.of(generatedImage))
@@ -450,11 +452,13 @@ class ImageQueryServiceImplTest {
         val imageId = 123L
         val generatedImage =
             createGeneratedImage(
-                id = imageId,
-                filename = "anonymous-image.jpg",
-                promptId = 100L,
-                userId = null,
-                ipAddress = "127.0.0.1",
+                GeneratedImageParams(
+                    id = imageId,
+                    filename = "anonymous-image.jpg",
+                    promptId = 100L,
+                    userId = null,
+                    ipAddress = "127.0.0.1",
+                ),
             )
 
         whenever(generatedImageRepository.findById(imageId)).thenReturn(Optional.of(generatedImage))
@@ -481,9 +485,9 @@ class ImageQueryServiceImplTest {
         val imageId3 = 125L
         val ids = listOf(imageId1, imageId2, imageId3)
 
-        val generatedImage1 = createGeneratedImage(id = imageId1, filename = "image1.jpg", promptId = 100L)
-        val generatedImage2 = createGeneratedImage(id = imageId2, filename = "image2.jpg", promptId = 101L)
-        val generatedImage3 = createGeneratedImage(id = imageId3, filename = "image3.jpg", promptId = 102L)
+        val generatedImage1 = createGeneratedImage(GeneratedImageParams(id = imageId1, filename = "image1.jpg", promptId = 100L))
+        val generatedImage2 = createGeneratedImage(GeneratedImageParams(id = imageId2, filename = "image2.jpg", promptId = 101L))
+        val generatedImage3 = createGeneratedImage(GeneratedImageParams(id = imageId3, filename = "image3.jpg", promptId = 102L))
 
         val allImages = listOf(generatedImage1, generatedImage2, generatedImage3)
 
@@ -521,8 +525,8 @@ class ImageQueryServiceImplTest {
         val missingId = 999L
         val ids = listOf(existingId1, existingId2, missingId)
 
-        val generatedImage1 = createGeneratedImage(id = existingId1, filename = "image1.jpg")
-        val generatedImage2 = createGeneratedImage(id = existingId2, filename = "image2.jpg")
+        val generatedImage1 = createGeneratedImage(GeneratedImageParams(id = existingId1, filename = "image1.jpg"))
+        val generatedImage2 = createGeneratedImage(GeneratedImageParams(id = existingId2, filename = "image2.jpg"))
 
         val foundImages = listOf(generatedImage1, generatedImage2)
 
@@ -572,7 +576,7 @@ class ImageQueryServiceImplTest {
         // Given
         val imageId = 123L
         val ids = listOf(imageId)
-        val generatedImage = createGeneratedImage(id = imageId, filename = "single-image.jpg")
+        val generatedImage = createGeneratedImage(GeneratedImageParams(id = imageId, filename = "single-image.jpg"))
 
         whenever(generatedImageRepository.findAllById(ids)).thenReturn(listOf(generatedImage))
 
@@ -592,8 +596,8 @@ class ImageQueryServiceImplTest {
         val anonymousImageId = 124L
         val ids = listOf(userImageId, anonymousImageId)
 
-        val userImage = createGeneratedImage(id = userImageId, filename = "user-image.jpg", userId = 1L)
-        val anonymousImage = createGeneratedImage(id = anonymousImageId, filename = "anon-image.jpg", userId = null)
+        val userImage = createGeneratedImage(GeneratedImageParams(id = userImageId, filename = "user-image.jpg", userId = 1L))
+        val anonymousImage = createGeneratedImage(GeneratedImageParams(id = anonymousImageId, filename = "anon-image.jpg", userId = null))
 
         val allImages = listOf(userImage, anonymousImage)
 
@@ -629,43 +633,47 @@ class ImageQueryServiceImplTest {
 
     // HELPER METHODS
 
-    private fun createUploadedImage(
-        id: Long = 1L,
-        uuid: UUID = UUID.randomUUID(),
-        originalFilename: String = "original-image.jpg",
-        storedFilename: String = "stored-image.jpg",
-        contentType: String = "image/jpeg",
-        fileSize: Long = 1024L,
-        userId: Long = 1L,
-        uploadedAt: LocalDateTime = LocalDateTime.now(),
-    ): UploadedImage =
+    private data class UploadedImageParams(
+        val id: Long = 1L,
+        val uuid: UUID = UUID.randomUUID(),
+        val originalFilename: String = "original-image.jpg",
+        val storedFilename: String = "stored-image.jpg",
+        val contentType: String = "image/jpeg",
+        val fileSize: Long = 1024L,
+        val userId: Long = 1L,
+        val uploadedAt: LocalDateTime = LocalDateTime.now(),
+    )
+
+    private fun createUploadedImage(params: UploadedImageParams = UploadedImageParams()): UploadedImage =
         UploadedImage(
-            id = id,
-            uuid = uuid,
-            originalFilename = originalFilename,
-            storedFilename = storedFilename,
-            contentType = contentType,
-            fileSize = fileSize,
-            userId = userId,
-            uploadedAt = uploadedAt,
+            id = params.id,
+            uuid = params.uuid,
+            originalFilename = params.originalFilename,
+            storedFilename = params.storedFilename,
+            contentType = params.contentType,
+            fileSize = params.fileSize,
+            userId = params.userId,
+            uploadedAt = params.uploadedAt,
         )
 
-    private fun createGeneratedImage(
-        id: Long = 1L,
-        uuid: UUID = UUID.randomUUID(),
-        filename: String = "generated-image.jpg",
-        promptId: Long = 100L,
-        userId: Long? = 1L,
-        generatedAt: LocalDateTime = LocalDateTime.now(),
-        ipAddress: String? = "127.0.0.1",
-    ): GeneratedImage =
+    private data class GeneratedImageParams(
+        val id: Long = 1L,
+        val uuid: UUID = UUID.randomUUID(),
+        val filename: String = "generated-image.jpg",
+        val promptId: Long = 100L,
+        val userId: Long? = 1L,
+        val generatedAt: LocalDateTime = LocalDateTime.now(),
+        val ipAddress: String? = "127.0.0.1",
+    )
+
+    private fun createGeneratedImage(params: GeneratedImageParams = GeneratedImageParams()): GeneratedImage =
         GeneratedImage(
-            id = id,
-            uuid = uuid,
-            filename = filename,
-            promptId = promptId,
-            userId = userId,
-            generatedAt = generatedAt,
-            ipAddress = ipAddress,
+            id = params.id,
+            uuid = params.uuid,
+            filename = params.filename,
+            promptId = params.promptId,
+            userId = params.userId,
+            generatedAt = params.generatedAt,
+            ipAddress = params.ipAddress,
         )
 }

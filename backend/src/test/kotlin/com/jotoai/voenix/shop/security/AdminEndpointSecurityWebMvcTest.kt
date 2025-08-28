@@ -2,6 +2,7 @@ package com.jotoai.voenix.shop.security
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.article.api.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.user.api.UserService
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
@@ -63,7 +64,7 @@ class AdminEndpointSecurityWebMvcTest {
     fun testAdminEndpointsAccessibleWithAdminRole() {
         // Mock service responses
         `when`(promptQueryService.getAllPrompts()).thenReturn(emptyList())
-        `when`(articleQueryService.findAll(0, 20, null, null, null, null)).thenReturn(
+        `when`(articleQueryService.findAll(FindArticlesQuery(page = 0, size = 20))).thenReturn(
             com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse(
                 content = emptyList(),
                 currentPage = 0,

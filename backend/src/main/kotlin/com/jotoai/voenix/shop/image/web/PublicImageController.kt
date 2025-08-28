@@ -9,10 +9,10 @@ import org.springframework.http.MediaType
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import com.jotoai.voenix.shop.image.web.dto.ImageGenerationForm
 
 @RestController
 @RequestMapping("/api/public/images")
@@ -25,28 +25,23 @@ class PublicImageController(
 
     @PostMapping("/generate", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun generateImage(
-        @RequestPart("image") imageFile: MultipartFile,
-        @RequestParam("promptId") promptId: Long,
-        @RequestParam("cropX", required = false) cropX: Double?,
-        @RequestParam("cropY", required = false) cropY: Double?,
-        @RequestParam("cropWidth", required = false) cropWidth: Double?,
-        @RequestParam("cropHeight", required = false) cropHeight: Double?,
+        @ModelAttribute form: ImageGenerationForm,
         request: HttpServletRequest,
     ): PublicImageGenerationResponse {
-        logger.info { "Received public image generation request for prompt ID: $promptId" }
+        logger.info { "Received public image generation request for prompt ID: ${form.promptId}" }
 
         // Create crop area if all crop parameters are provided
-        val cropArea = CropAreaUtils.createIfPresent(cropX, cropY, cropWidth, cropHeight)
+        val cropArea = CropAreaUtils.createIfPresent(form.cropX, form.cropY, form.cropWidth, form.cropHeight)
 
         val generationRequest =
             PublicImageGenerationRequest(
-                promptId = promptId,
+                promptId = form.promptId,
                 n = 4,
                 cropArea = cropArea,
             )
 
         val clientIP = extractClientIp(request)
-        return imageGenerationService.generatePublicImage(generationRequest, clientIP, imageFile)
+        return imageGenerationService.generatePublicImage(generationRequest, clientIP, form.image)
     }
 
     private fun extractClientIp(request: HttpServletRequest): String {

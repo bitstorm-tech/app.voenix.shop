@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
+import com.jotoai.voenix.shop.openai.web.dto.TestPromptForm
 
 @RestController
 @RequestMapping("/api/admin/openai")
@@ -29,21 +31,16 @@ class AdminOpenAIImageController(
 
     @PostMapping("/test-prompt", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun testPrompt(
-        @RequestParam("image") imageFile: MultipartFile,
-        @RequestParam("masterPrompt") masterPrompt: String,
-        @RequestParam("specificPrompt", required = false) specificPrompt: String?,
-        @RequestParam("background") background: String,
-        @RequestParam("quality") quality: String,
-        @RequestParam("size") size: String,
+        @ModelAttribute form: TestPromptForm,
     ): TestPromptResponse =
         openAIImageFacade.testPrompt(
-            imageFile,
+            form.image,
             TestPromptRequest(
-                masterPrompt = masterPrompt,
-                specificPrompt = specificPrompt ?: "",
-                backgroundString = background,
-                qualityString = quality,
-                sizeString = size,
+                masterPrompt = form.masterPrompt,
+                specificPrompt = form.specificPrompt ?: "",
+                backgroundString = form.background,
+                qualityString = form.quality,
+                sizeString = form.size,
             ),
         )
 }

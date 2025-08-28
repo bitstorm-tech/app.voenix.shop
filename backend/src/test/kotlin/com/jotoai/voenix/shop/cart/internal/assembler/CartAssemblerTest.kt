@@ -60,22 +60,26 @@ class CartAssemblerTest {
 
     private fun setupCartItemsWithImages(cart: Cart): Pair<CartItem, CartItem> {
         val item1 = createCartItem(
-            id = 10L,
-            articleId = 1001L,
-            variantId = 2001L,
-            generatedImageId = 3001L,
-            promptId = 4001L,
-            quantity = 2,
-            priceAtTime = 1999L,
+            CartItemConfig(
+                id = 10L,
+                articleId = 1001L,
+                variantId = 2001L,
+                generatedImageId = 3001L,
+                promptId = 4001L,
+                quantity = 2,
+                priceAtTime = 1999L,
+            ),
         )
         val item2 = createCartItem(
-            id = 11L,
-            articleId = 1002L,
-            variantId = 2002L,
-            generatedImageId = 3002L,
-            promptId = 4002L,
-            quantity = 1,
-            priceAtTime = 2499L,
+            CartItemConfig(
+                id = 11L,
+                articleId = 1002L,
+                variantId = 2002L,
+                generatedImageId = 3002L,
+                promptId = 4002L,
+                quantity = 1,
+                priceAtTime = 2499L,
+            ),
         )
         cart.items.add(item1)
         cart.items.add(item2)
@@ -131,13 +135,15 @@ class CartAssemblerTest {
 
         val item =
             createCartItem(
-                id = 10L,
-                articleId = 1001L,
-                variantId = 2001L,
-                generatedImageId = null,
-                promptId = null,
-                quantity = 1,
-                priceAtTime = 1999L,
+                CartItemConfig(
+                    id = 10L,
+                    articleId = 1001L,
+                    variantId = 2001L,
+                    generatedImageId = null,
+                    promptId = null,
+                    quantity = 1,
+                    priceAtTime = 1999L,
+                ),
             )
 
         cart.items.add(item)
@@ -173,24 +179,28 @@ class CartAssemblerTest {
 
         val itemWithImage =
             createCartItem(
-                id = 10L,
-                articleId = 1001L,
-                variantId = 2001L,
-                generatedImageId = 3001L,
-                promptId = 4001L,
-                quantity = 1,
-                priceAtTime = 1999L,
+                CartItemConfig(
+                    id = 10L,
+                    articleId = 1001L,
+                    variantId = 2001L,
+                    generatedImageId = 3001L,
+                    promptId = 4001L,
+                    quantity = 1,
+                    priceAtTime = 1999L,
+                ),
             )
 
         val itemWithoutImage =
             createCartItem(
-                id = 11L,
-                articleId = 1002L,
-                variantId = 2002L,
-                generatedImageId = null,
-                promptId = null,
-                quantity = 2,
-                priceAtTime = 1499L,
+                CartItemConfig(
+                    id = 11L,
+                    articleId = 1002L,
+                    variantId = 2002L,
+                    generatedImageId = null,
+                    promptId = null,
+                    quantity = 2,
+                    priceAtTime = 1499L,
+                ),
             )
 
         cart.items.add(itemWithImage)
@@ -237,13 +247,15 @@ class CartAssemblerTest {
 
         val item =
             createCartItem(
-                id = 10L,
-                articleId = 1001L,
-                variantId = 2001L,
-                generatedImageId = 3001L,
-                promptId = 4001L,
-                quantity = 1,
-                priceAtTime = 1999L,
+                CartItemConfig(
+                    id = 10L,
+                    articleId = 1001L,
+                    variantId = 2001L,
+                    generatedImageId = 3001L,
+                    promptId = 4001L,
+                    quantity = 1,
+                    priceAtTime = 1999L,
+                ),
             )
 
         cart.items.add(item)
@@ -290,28 +302,34 @@ class CartAssemblerTest {
 
     private fun setupBatchLoadTestItems(cart: Cart): List<CartItem> {
         val item1 = createCartItem(
-            id = 10L,
-            articleId = 1001L,
-            variantId = 2001L,
-            generatedImageId = 3001L,
-            quantity = 1,
-            priceAtTime = 1999L,
+            CartItemConfig(
+                id = 10L,
+                articleId = 1001L,
+                variantId = 2001L,
+                generatedImageId = 3001L,
+                quantity = 1,
+                priceAtTime = 1999L,
+            ),
         )
         val item2 = createCartItem(
-            id = 11L,
-            articleId = 1002L,
-            variantId = 2002L,
-            generatedImageId = 3001L,
-            quantity = 1,
-            priceAtTime = 2499L,
+            CartItemConfig(
+                id = 11L,
+                articleId = 1002L,
+                variantId = 2002L,
+                generatedImageId = 3001L,
+                quantity = 1,
+                priceAtTime = 2499L,
+            ),
         )
         val item3 = createCartItem(
-            id = 12L,
-            articleId = 1003L,
-            variantId = 2003L,
-            generatedImageId = 3002L,
-            quantity = 1,
-            priceAtTime = 1899L,
+            CartItemConfig(
+                id = 12L,
+                articleId = 1003L,
+                variantId = 2003L,
+                generatedImageId = 3002L,
+                quantity = 1,
+                priceAtTime = 1899L,
+            ),
         )
 
         val items = listOf(item1, item2, item3)
@@ -366,9 +384,11 @@ class CartAssemblerTest {
         val cart = createCart(id = 1L, userId = 100L)
         val item =
             createCartItem(
-                id = 10L,
-                articleId = 1001L,
-                variantId = 2001L,
+                CartItemConfig(
+                    id = 10L,
+                    articleId = 1001L,
+                    variantId = 2001L,
+                ),
             )
         cart.items.add(item)
         item.cart = cart
@@ -394,9 +414,11 @@ class CartAssemblerTest {
         val cart = createCart(id = 1L, userId = 100L)
         val item =
             createCartItem(
-                id = 10L,
-                articleId = 1001L,
-                variantId = 2001L,
+                CartItemConfig(
+                    id = 10L,
+                    articleId = 1001L,
+                    variantId = 2001L,
+                ),
             )
         cart.items.add(item)
         item.cart = cart
@@ -421,8 +443,8 @@ class CartAssemblerTest {
         // Given
         val cart = createCart(id = 1L, userId = 100L)
 
-        val item1 = createCartItem(quantity = 2, priceAtTime = 1999L)
-        val item2 = createCartItem(quantity = 1, priceAtTime = 2499L)
+        val item1 = createCartItem(CartItemConfig(quantity = 2, priceAtTime = 1999L))
+        val item2 = createCartItem(CartItemConfig(quantity = 1, priceAtTime = 2499L))
 
         cart.items.add(item1)
         cart.items.add(item2)
@@ -471,29 +493,33 @@ class CartAssemblerTest {
             updatedAt = OffsetDateTime.now(),
         )
 
+    private data class CartItemConfig(
+        val id: Long = 1L,
+        val articleId: Long = 1001L,
+        val variantId: Long = 2001L,
+        val quantity: Int = 1,
+        val priceAtTime: Long = 1999L,
+        val generatedImageId: Long? = null,
+        val promptId: Long? = null,
+        val position: Int = 0,
+    )
+
     private fun createCartItem(
-        id: Long = 1L,
-        articleId: Long = 1001L,
-        variantId: Long = 2001L,
-        quantity: Int = 1,
-        priceAtTime: Long = 1999L,
-        generatedImageId: Long? = null,
-        promptId: Long? = null,
-        position: Int = 0,
+        config: CartItemConfig = CartItemConfig(),
     ): CartItem {
         val tempCart = createCart(id = 999L, userId = 999L)
         return CartItem(
-            id = id,
+            id = config.id,
             cart = tempCart,
-            articleId = articleId,
-            variantId = variantId,
-            quantity = quantity,
-            priceAtTime = priceAtTime,
-            originalPrice = priceAtTime,
+            articleId = config.articleId,
+            variantId = config.variantId,
+            quantity = config.quantity,
+            priceAtTime = config.priceAtTime,
+            originalPrice = config.priceAtTime,
             customData = emptyMap(),
-            generatedImageId = generatedImageId,
-            promptId = promptId,
-            position = position,
+            generatedImageId = config.generatedImageId,
+            promptId = config.promptId,
+            position = config.position,
             createdAt = OffsetDateTime.now(),
             updatedAt = OffsetDateTime.now(),
         )
