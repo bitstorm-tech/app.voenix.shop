@@ -15,6 +15,7 @@ import java.nio.file.Path
  * Handles both physical file system paths for storage and URL paths for web access.
  */
 @Service
+@Suppress("TooManyFunctions")
 class StoragePathServiceImpl(
     private val storagePathConfiguration: StoragePathConfiguration,
 ) : StoragePathService {

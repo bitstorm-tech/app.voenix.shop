@@ -33,7 +33,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 class OrderServiceImpl(
     private val orderRepository: OrderRepository,
     private val cartQueryService: CartQueryService,

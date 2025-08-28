@@ -51,7 +51,7 @@ import org.springframework.web.multipart.MultipartFile
  * - Provides caching for performance
  */
 @Service
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 class ImageManagementService(
     private val imageStorageService: ImageStorageService,
     private val uploadedImageRepository: UploadedImageRepository,

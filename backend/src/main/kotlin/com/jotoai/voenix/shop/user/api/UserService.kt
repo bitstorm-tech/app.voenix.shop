@@ -38,6 +38,7 @@ data class PasswordValidationResult(
  *
  * @since 1.0
  */
+@Suppress("TooManyFunctions")
 interface UserService {
     /**
      * Loads user authentication details by email for authentication purposes.

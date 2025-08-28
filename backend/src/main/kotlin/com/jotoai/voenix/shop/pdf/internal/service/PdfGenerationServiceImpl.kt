@@ -46,6 +46,7 @@ import org.springframework.transaction.annotation.Transactional
  */
 @Service
 @Transactional(readOnly = true)
+@Suppress("TooManyFunctions")
 class PdfGenerationServiceImpl(
     @param:Value("\${pdf.size.width:239}") private val defaultPdfWidthMm: Float,
     @param:Value("\${pdf.size.height:99}") private val defaultPdfHeightMm: Float,

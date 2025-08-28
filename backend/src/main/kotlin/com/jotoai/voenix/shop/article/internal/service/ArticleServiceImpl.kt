@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
+@Suppress("TooManyFunctions")
 class ArticleServiceImpl(
     private val dependencies: ArticleServiceDependencies,
 ) : ArticleQueryService,

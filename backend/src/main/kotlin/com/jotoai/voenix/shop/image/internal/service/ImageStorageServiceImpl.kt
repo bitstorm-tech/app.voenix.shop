@@ -28,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile
  * and StoragePathService logic into a single cohesive service.
  */
 @Service
+@Suppress("TooManyFunctions")
 class ImageStorageServiceImpl(
     private val storagePathService: StoragePathService,
     private val imageConversionService: ImageConversionService,

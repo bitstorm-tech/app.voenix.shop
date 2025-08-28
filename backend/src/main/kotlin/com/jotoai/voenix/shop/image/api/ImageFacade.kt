@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile
  * Main facade for Image module operations.
  * This interface defines all administrative operations for managing images.
  */
+@Suppress("TooManyFunctions")
 interface ImageFacade {
     /**
      * Creates a new uploaded image from multipart file.

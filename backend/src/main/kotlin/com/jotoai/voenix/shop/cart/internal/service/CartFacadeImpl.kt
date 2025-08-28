@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Suppress("LongParameterList")
+@Suppress("LongParameterList", "TooManyFunctions")
 class CartFacadeImpl(
     private val cartRepository: CartRepository,
     private val userService: UserService,
