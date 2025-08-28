@@ -13,4 +13,3 @@ data class FindArticlesQuery(
     val subcategoryId: Long? = null,
     val active: Boolean? = null,
 )
-

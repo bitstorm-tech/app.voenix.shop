@@ -25,14 +25,12 @@ data class ArticleServiceDependencies(
     val articleCategoryRepository: ArticleCategoryRepository,
     val articleSubCategoryRepository: ArticleSubCategoryRepository,
     val costCalculationRepository: CostCalculationRepository,
-    
     // Service dependencies
     val supplierService: SupplierService,
     val vatService: VatService,
     val mugDetailsService: MugDetailsService,
     val shirtDetailsService: ShirtDetailsService,
     val storagePathService: StoragePathService,
-    
     // Assembler dependencies
     val articleAssembler: ArticleAssembler,
     val mugArticleVariantAssembler: MugArticleVariantAssembler,

@@ -34,23 +34,23 @@ object UserSpecifications {
                 else -> predicates.reduce { acc, predicate -> criteriaBuilder.and(acc, predicate) }
             }
         }
-    
+
     private fun addDeletedFilter(
         predicates: MutableList<Predicate>,
         criteria: UserSearchCriteria,
         root: Root<User>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ) {
         if (!criteria.includeDeleted) {
             predicates.add(criteriaBuilder.isNull(root.get<Any>("deletedAt")))
         }
     }
-    
+
     private fun addEmailPredicates(
         predicates: MutableList<Predicate>,
         criteria: UserSearchCriteria,
         root: Root<User>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ) {
         criteria.email?.let { email ->
             predicates.add(criteriaBuilder.equal(root.get<String>("email"), email))
@@ -65,12 +65,12 @@ object UserSpecifications {
             )
         }
     }
-    
+
     private fun addNamePredicates(
         predicates: MutableList<Predicate>,
         criteria: UserSearchCriteria,
         root: Root<User>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ) {
         criteria.firstName?.let { firstName ->
             predicates.add(criteriaBuilder.equal(root.get<String>("firstName"), firstName))
@@ -98,24 +98,24 @@ object UserSpecifications {
             )
         }
     }
-    
+
     private fun addPhonePredicates(
         predicates: MutableList<Predicate>,
         criteria: UserSearchCriteria,
         root: Root<User>,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ) {
         criteria.phoneNumber?.let { phoneNumber ->
             predicates.add(criteriaBuilder.equal(root.get<String>("phoneNumber"), phoneNumber))
         }
     }
-    
+
     private fun addRolePredicates(
         predicates: MutableList<Predicate>,
         criteria: UserSearchCriteria,
         root: Root<User>,
         query: CriteriaQuery<*>?,
-        criteriaBuilder: CriteriaBuilder
+        criteriaBuilder: CriteriaBuilder,
     ) {
         criteria.roles?.takeIf { it.isNotEmpty() }?.let { roles ->
             val roleJoin: Join<User, Role> = root.join("roles", JoinType.INNER)

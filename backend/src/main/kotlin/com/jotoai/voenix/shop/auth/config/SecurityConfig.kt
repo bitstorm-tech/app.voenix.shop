@@ -27,8 +27,7 @@ class SecurityConfig {
     fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
     @Bean
-    fun authenticationManager(authConfig: AuthenticationConfiguration): AuthenticationManager =
-        authConfig.authenticationManager
+    fun authenticationManager(authConfig: AuthenticationConfiguration): AuthenticationManager = authConfig.authenticationManager
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain =
@@ -42,7 +41,8 @@ class SecurityConfig {
             }.authorizeHttpRequests { auth ->
                 auth
                     // Auth endpoints - No authentication required
-                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/auth/**")
+                    .permitAll()
                     // Public API endpoints for e-commerce functionality
                     .requestMatchers(
                         "/api/prompts/**",
@@ -54,13 +54,17 @@ class SecurityConfig {
                         "/api/pdf/generate",
                     ).permitAll()
                     // Admin endpoints - Require ADMIN role
-                    .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/api/admin/**")
+                    .hasRole("ADMIN")
                     // User endpoints - Require authentication
-                    .requestMatchers("/api/user/**").authenticated()
+                    .requestMatchers("/api/user/**")
+                    .authenticated()
                     // Any other API endpoints require authentication by default
-                    .requestMatchers("/api/**").authenticated()
+                    .requestMatchers("/api/**")
+                    .authenticated()
                     // Non-API requests (frontend assets and routes) are public
-                    .anyRequest().permitAll()
+                    .anyRequest()
+                    .permitAll()
             }.exceptionHandling { exceptions ->
                 exceptions.authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             }.logout { logout ->

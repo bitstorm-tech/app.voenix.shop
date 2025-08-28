@@ -27,5 +27,4 @@ interface CountryService {
      * @return true if the country exists, false otherwise
      */
     fun existsById(id: Long): Boolean
-
 }

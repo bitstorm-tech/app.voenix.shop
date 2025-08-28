@@ -24,9 +24,6 @@ import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.IOException
-import java.time.LocalDateTime
-import java.util.*
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.dao.DataAccessException
@@ -36,6 +33,9 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
+import java.time.LocalDateTime
+import java.util.UUID
 
 /**
  * Consolidated image management service that handles all image operations.
@@ -62,7 +62,9 @@ class ImageManagementService(
     private val userService: UserService,
     private val userImageStorageService: UserImageStorageService,
     private val imageConversionService: ImageConversionService,
-) : ImageFacade, ImageAccessService, ImageQueryService {
+) : ImageFacade,
+    ImageAccessService,
+    ImageQueryService {
     companion object {
         private val logger = KotlinLogging.logger {}
         private const val ORIGINAL_SUFFIX = "_original"
@@ -510,7 +512,10 @@ class ImageManagementService(
         return userImageStorageService.getUserImageData(filename, userId)
     }
 
-    private fun validateImageAccess(filename: String, userId: Long) {
+    private fun validateImageAccess(
+        filename: String,
+        userId: Long,
+    ) {
         // Check if this is an original image or generated image based on filename pattern
         val isOriginalImage = filename.contains(ORIGINAL_SUFFIX)
         val isGeneratedImage = filename.contains(GENERATED_PREFIX)
@@ -522,7 +527,10 @@ class ImageManagementService(
         }
     }
 
-    private fun validateOriginalImageAccess(filename: String, userId: Long) {
+    private fun validateOriginalImageAccess(
+        filename: String,
+        userId: Long,
+    ) {
         // Extract UUID from filename (format: {uuid}_original.{ext})
         val uuid = extractUuidFromOriginalFilename(filename)
         uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
@@ -531,7 +539,10 @@ class ImageManagementService(
         logger.debug { "Access granted to original image $filename for user $userId" }
     }
 
-    private fun validateGeneratedImageAccess(filename: String, userId: Long) {
+    private fun validateGeneratedImageAccess(
+        filename: String,
+        userId: Long,
+    ) {
         // For generated images, check ownership through the generated_images table
         val generatedImage =
             generatedImageRepository.findByFilename(filename)
@@ -559,11 +570,13 @@ class ImageManagementService(
                         ?: throw ResourceNotFoundException("Image with filename $filename not found")
                 val bytes = imageStorageService.loadFileAsBytes(filename, imageType)
                 val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
-                val contentType = try {
-                    java.nio.file.Files.probeContentType(filePath) ?: "application/octet-stream"
-                } catch (_: java.io.IOException) {
-                    "application/octet-stream"
-                }
+                val contentType =
+                    try {
+                        java.nio.file.Files
+                            .probeContentType(filePath) ?: "application/octet-stream"
+                    } catch (_: java.io.IOException) {
+                        "application/octet-stream"
+                    }
                 Pair(bytes, contentType)
             }
         }
@@ -579,7 +592,6 @@ class ImageManagementService(
             .contentType(MediaType.parseMediaType(contentType))
             .body(ByteArrayResource(imageData))
     }
-
 
     /**
      * Extracts UUID from original image filename.
@@ -713,16 +725,22 @@ class ImageManagementService(
 
     override fun existsByUuid(uuid: UUID): Boolean = uploadedImageRepository.findByUuid(uuid) != null
 
-    override fun existsByUuidAndUserId(uuid: UUID, userId: Long): Boolean =
-        uploadedImageRepository.findByUserIdAndUuid(userId, uuid) != null
+    override fun existsByUuidAndUserId(
+        uuid: UUID,
+        userId: Long,
+    ): Boolean = uploadedImageRepository.findByUserIdAndUuid(userId, uuid) != null
 
     override fun existsGeneratedImageById(id: Long): Boolean = generatedImageRepository.existsById(id)
 
-    override fun existsGeneratedImageByIdAndUserId(id: Long, userId: Long): Boolean =
-        generatedImageRepository.existsByIdAndUserId(id, userId)
+    override fun existsGeneratedImageByIdAndUserId(
+        id: Long,
+        userId: Long,
+    ): Boolean = generatedImageRepository.existsByIdAndUserId(id, userId)
 
-    override fun validateGeneratedImageOwnership(imageId: Long, userId: Long?): Boolean =
-        if (userId != null) existsGeneratedImageByIdAndUserId(imageId, userId) else existsGeneratedImageById(imageId)
+    override fun validateGeneratedImageOwnership(
+        imageId: Long,
+        userId: Long?,
+    ): Boolean = if (userId != null) existsGeneratedImageByIdAndUserId(imageId, userId) else existsGeneratedImageById(imageId)
 
     override fun findGeneratedImageById(id: Long): GeneratedImageDto? {
         val generated = generatedImageRepository.findById(id).orElse(null)

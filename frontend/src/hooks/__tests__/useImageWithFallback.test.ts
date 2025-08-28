@@ -19,8 +19,8 @@ class MockImage {
   }
 }
 
-// Replace global Image with MockImage
-(globalThis as typeof globalThis & { Image: typeof MockImage }).Image = MockImage;
+// Replace global Image with MockImage (cast to avoid DOM constructor type mismatch in Node/JSDOM)
+(globalThis as any).Image = MockImage;
 
 describe('useImageWithFallback', () => {
   beforeEach(() => {
@@ -326,15 +326,15 @@ describe('useImageWithFallback', () => {
 
     it('should calculate exponential backoff correctly', async () => {
       const delays: number[] = [];
-      const originalSetTimeout = globalThis.setTimeout;
+      const originalSetTimeout = globalThis.setTimeout.bind(globalThis);
 
-      // Spy on setTimeout to capture delays
-      jest.spyOn(globalThis, 'setTimeout').mockImplementation((fn: TimerHandler, delay: number | undefined) => {
+      // Spy on setTimeout to capture delays (ensure types align across Node/DOM)
+      jest.spyOn(globalThis as any, 'setTimeout').mockImplementation(((fn: any, delay?: number, ...args: any[]) => {
         if (typeof delay === 'number' && delay > 0) {
           delays.push(delay);
         }
-        return originalSetTimeout(fn, delay);
-      });
+        return originalSetTimeout(fn as any, delay as any, ...args) as any;
+      }) as any);
 
       renderHook(() =>
         useImageWithFallback('https://example.com/error.jpg', {

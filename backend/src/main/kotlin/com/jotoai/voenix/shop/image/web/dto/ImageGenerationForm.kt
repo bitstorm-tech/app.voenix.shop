@@ -13,4 +13,3 @@ data class ImageGenerationForm(
     val cropWidth: Double? = null,
     val cropHeight: Double? = null,
 )
-

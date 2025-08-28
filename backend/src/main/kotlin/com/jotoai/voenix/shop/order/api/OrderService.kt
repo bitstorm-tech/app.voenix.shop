@@ -4,8 +4,8 @@ import com.jotoai.voenix.shop.common.dto.PaginatedResponse
 import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
 import com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto
-import java.util.*
 import org.springframework.data.domain.Pageable
+import java.util.UUID
 
 /**
  * Primary service interface for Order module operations.

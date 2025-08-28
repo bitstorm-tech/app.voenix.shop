@@ -59,28 +59,30 @@ class CartAssemblerTest {
     }
 
     private fun setupCartItemsWithImages(cart: Cart): Pair<CartItem, CartItem> {
-        val item1 = createCartItem(
-            CartItemConfig(
-                id = 10L,
-                articleId = 1001L,
-                variantId = 2001L,
-                generatedImageId = 3001L,
-                promptId = 4001L,
-                quantity = 2,
-                priceAtTime = 1999L,
-            ),
-        )
-        val item2 = createCartItem(
-            CartItemConfig(
-                id = 11L,
-                articleId = 1002L,
-                variantId = 2002L,
-                generatedImageId = 3002L,
-                promptId = 4002L,
-                quantity = 1,
-                priceAtTime = 2499L,
-            ),
-        )
+        val item1 =
+            createCartItem(
+                CartItemConfig(
+                    id = 10L,
+                    articleId = 1001L,
+                    variantId = 2001L,
+                    generatedImageId = 3001L,
+                    promptId = 4001L,
+                    quantity = 2,
+                    priceAtTime = 1999L,
+                ),
+            )
+        val item2 =
+            createCartItem(
+                CartItemConfig(
+                    id = 11L,
+                    articleId = 1002L,
+                    variantId = 2002L,
+                    generatedImageId = 3002L,
+                    promptId = 4002L,
+                    quantity = 1,
+                    priceAtTime = 2499L,
+                ),
+            )
         cart.items.add(item1)
         cart.items.add(item2)
         item1.cart = cart
@@ -301,36 +303,39 @@ class CartAssemblerTest {
     }
 
     private fun setupBatchLoadTestItems(cart: Cart): List<CartItem> {
-        val item1 = createCartItem(
-            CartItemConfig(
-                id = 10L,
-                articleId = 1001L,
-                variantId = 2001L,
-                generatedImageId = 3001L,
-                quantity = 1,
-                priceAtTime = 1999L,
-            ),
-        )
-        val item2 = createCartItem(
-            CartItemConfig(
-                id = 11L,
-                articleId = 1002L,
-                variantId = 2002L,
-                generatedImageId = 3001L,
-                quantity = 1,
-                priceAtTime = 2499L,
-            ),
-        )
-        val item3 = createCartItem(
-            CartItemConfig(
-                id = 12L,
-                articleId = 1003L,
-                variantId = 2003L,
-                generatedImageId = 3002L,
-                quantity = 1,
-                priceAtTime = 1899L,
-            ),
-        )
+        val item1 =
+            createCartItem(
+                CartItemConfig(
+                    id = 10L,
+                    articleId = 1001L,
+                    variantId = 2001L,
+                    generatedImageId = 3001L,
+                    quantity = 1,
+                    priceAtTime = 1999L,
+                ),
+            )
+        val item2 =
+            createCartItem(
+                CartItemConfig(
+                    id = 11L,
+                    articleId = 1002L,
+                    variantId = 2002L,
+                    generatedImageId = 3001L,
+                    quantity = 1,
+                    priceAtTime = 2499L,
+                ),
+            )
+        val item3 =
+            createCartItem(
+                CartItemConfig(
+                    id = 12L,
+                    articleId = 1003L,
+                    variantId = 2003L,
+                    generatedImageId = 3002L,
+                    quantity = 1,
+                    priceAtTime = 1899L,
+                ),
+            )
 
         val items = listOf(item1, item2, item3)
         cart.items.addAll(items)
@@ -339,20 +344,23 @@ class CartAssemblerTest {
     }
 
     private fun setupBatchLoadMockResponses() {
-        val articles = mapOf(
-            1001L to createArticleDto(id = 1001L, name = "Mug 1"),
-            1002L to createArticleDto(id = 1002L, name = "Mug 2"),
-            1003L to createArticleDto(id = 1003L, name = "Mug 3"),
-        )
-        val variants = mapOf(
-            2001L to createMugVariantDto(id = 2001L, articleId = 1001L),
-            2002L to createMugVariantDto(id = 2002L, articleId = 1002L),
-            2003L to createMugVariantDto(id = 2003L, articleId = 1003L),
-        )
-        val images = mapOf(
-            3001L to createGeneratedImageDto(filename = "shared-image.jpg"),
-            3002L to createGeneratedImageDto(filename = "unique-image.jpg"),
-        )
+        val articles =
+            mapOf(
+                1001L to createArticleDto(id = 1001L, name = "Mug 1"),
+                1002L to createArticleDto(id = 1002L, name = "Mug 2"),
+                1003L to createArticleDto(id = 1003L, name = "Mug 3"),
+            )
+        val variants =
+            mapOf(
+                2001L to createMugVariantDto(id = 2001L, articleId = 1001L),
+                2002L to createMugVariantDto(id = 2002L, articleId = 1002L),
+                2003L to createMugVariantDto(id = 2003L, articleId = 1003L),
+            )
+        val images =
+            mapOf(
+                3001L to createGeneratedImageDto(filename = "shared-image.jpg"),
+                3002L to createGeneratedImageDto(filename = "unique-image.jpg"),
+            )
 
         whenever(articleQueryService.getArticlesByIds(listOf(1001L, 1002L, 1003L))).thenReturn(articles)
         whenever(articleQueryService.getMugVariantsByIds(listOf(2001L, 2002L, 2003L))).thenReturn(variants)
@@ -504,9 +512,7 @@ class CartAssemblerTest {
         val position: Int = 0,
     )
 
-    private fun createCartItem(
-        config: CartItemConfig = CartItemConfig(),
-    ): CartItem {
+    private fun createCartItem(config: CartItemConfig = CartItemConfig()): CartItem {
         val tempCart = createCart(id = 999L, userId = 999L)
         return CartItem(
             id = config.id,

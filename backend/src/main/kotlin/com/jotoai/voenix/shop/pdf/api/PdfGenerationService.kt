@@ -14,7 +14,6 @@ import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
  * - Easier testing and maintenance
  */
 interface PdfGenerationService {
-
     /**
      * Generates a PDF for the given order.
      * Creates one page per item quantity with product image, header, and QR code.

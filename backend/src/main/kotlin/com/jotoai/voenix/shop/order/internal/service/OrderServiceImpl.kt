@@ -26,11 +26,11 @@ import com.jotoai.voenix.shop.order.internal.repository.OrderRepository
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.EntityManager
-import java.util.*
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.util.UUID
 
 @Service
 @Suppress("LongParameterList", "TooManyFunctions")
@@ -57,24 +57,25 @@ class OrderServiceImpl(
         userService.getUserById(userId)
         val refreshedCart = validateAndRefreshCart(userId)
         val orderTotals = calculateOrderTotals(refreshedCart)
-        
+
         val order = createOrderEntity(userId, request, refreshedCart, orderTotals)
         createOrderItems(refreshedCart, order)
-        
+
         val savedOrder = saveAndRefreshOrder(order)
         cartQueryService.markCartAsConverted(refreshedCart.id)
-        
+
         logOrderCreation(userId, refreshedCart, savedOrder, orderTotals.totalAmount)
-        
+
         return toDto(savedOrder)
     }
-    
+
     private fun validateAndRefreshCart(userId: Long): CartOrderInfo {
-        val cartInfo = cartQueryService.getActiveCartForOrder(userId)
-            ?: throw BadRequestException("No active cart found for user: $userId")
-        
+        val cartInfo =
+            cartQueryService.getActiveCartForOrder(userId)
+                ?: throw BadRequestException("No active cart found for user: $userId")
+
         validateCartForOrder(cartInfo)
-        
+
         return cartFacade.refreshCartPricesForOrder(cartInfo.id)
     }
 
@@ -82,33 +83,34 @@ class OrderServiceImpl(
         if (cartInfo.isEmpty) {
             throw BadRequestException("Cannot create order from empty cart")
         }
-        
+
         if (orderRepository.existsByCartId(cartInfo.id)) {
             throw OrderAlreadyExistsException(cartInfo.id)
         }
     }
-    
+
     private fun calculateOrderTotals(cart: CartOrderInfo): OrderTotals {
         val subtotal = cart.totalPrice
         val taxAmount = calculateTax(subtotal)
         val shippingAmount = calculateShipping(cart)
         val totalAmount = subtotal + taxAmount + shippingAmount
-        
+
         return OrderTotals(subtotal, taxAmount, shippingAmount, totalAmount)
     }
-    
+
     private fun createOrderEntity(
         userId: Long,
         request: CreateOrderRequest,
         cart: CartOrderInfo,
-        totals: OrderTotals
+        totals: OrderTotals,
     ): Order {
-        val billingAddress = if (request.useShippingAsBilling || request.billingAddress == null) {
-            request.shippingAddress.toEntity()
-        } else {
-            request.billingAddress.toEntity()
-        }
-        
+        val billingAddress =
+            if (request.useShippingAsBilling || request.billingAddress == null) {
+                request.shippingAddress.toEntity()
+            } else {
+                request.billingAddress.toEntity()
+            }
+
         return Order(
             userId = userId,
             customerEmail = request.customerEmail,
@@ -126,42 +128,51 @@ class OrderServiceImpl(
             notes = request.notes,
         )
     }
-    
-    private fun createOrderItems(cart: CartOrderInfo, order: Order) {
+
+    private fun createOrderItems(
+        cart: CartOrderInfo,
+        order: Order,
+    ) {
         cart.items.forEach { cartItem ->
-            val orderItem = OrderItem(
-                order = order,
-                articleId = cartItem.articleId,
-                variantId = cartItem.variantId,
-                quantity = cartItem.quantity,
-                pricePerItem = cartItem.priceAtTime,
-                totalPrice = cartItem.totalPrice,
-                generatedImageId = cartItem.generatedImageId,
-                promptId = cartItem.promptId,
-                customData = cartItem.customData ?: emptyMap(),
-            )
+            val orderItem =
+                OrderItem(
+                    order = order,
+                    articleId = cartItem.articleId,
+                    variantId = cartItem.variantId,
+                    quantity = cartItem.quantity,
+                    pricePerItem = cartItem.priceAtTime,
+                    totalPrice = cartItem.totalPrice,
+                    generatedImageId = cartItem.generatedImageId,
+                    promptId = cartItem.promptId,
+                    customData = cartItem.customData ?: emptyMap(),
+                )
             order.addItem(orderItem)
         }
     }
-    
+
     private fun saveAndRefreshOrder(order: Order): Order {
         val savedOrder = orderRepository.save(order)
         entityManager.flush()
         entityManager.refresh(savedOrder)
         return savedOrder
     }
-    
-    private fun logOrderCreation(userId: Long, cart: CartOrderInfo, order: Order, totalAmount: Long) {
+
+    private fun logOrderCreation(
+        userId: Long,
+        cart: CartOrderInfo,
+        order: Order,
+        totalAmount: Long,
+    ) {
         logger.info {
             "Created order ${order.orderNumber} for user $userId from cart ${cart.id} with total amount $totalAmount"
         }
     }
-    
+
     private data class OrderTotals(
         val subtotal: Long,
         val taxAmount: Long,
         val shippingAmount: Long,
-        val totalAmount: Long
+        val totalAmount: Long,
     )
 
     /**

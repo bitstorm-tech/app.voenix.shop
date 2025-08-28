@@ -27,7 +27,6 @@ import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
 import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.security.authentication.AuthenticationManager
@@ -362,7 +361,7 @@ class AuthServiceImplTest {
                     lastName = "Doe",
                     phoneNumber = "+1234567890",
                     roleNames = setOf("USER", "ADMIN"),
-                )
+                ),
             )
 
         assertEquals(userDto, result)
@@ -393,7 +392,7 @@ class AuthServiceImplTest {
                     lastName = null,
                     phoneNumber = null,
                     roleNames = setOf("USER"),
-                )
+                ),
             )
 
         assertEquals(userDto, result)

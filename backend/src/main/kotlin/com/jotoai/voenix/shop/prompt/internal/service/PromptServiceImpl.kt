@@ -42,7 +42,6 @@ class PromptServiceImpl(
                 promptAssembler.toDto(prompt)
             }.orElseThrow { PromptNotFoundException("Prompt", "id", id) }
 
-
     override fun existsById(id: Long): Boolean = promptRepository.existsById(id)
 
     @Transactional
@@ -151,5 +150,4 @@ class PromptServiceImpl(
 
         promptRepository.deleteById(id)
     }
-
 }

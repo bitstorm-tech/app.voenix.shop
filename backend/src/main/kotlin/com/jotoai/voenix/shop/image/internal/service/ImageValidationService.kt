@@ -31,13 +31,20 @@ class ImageValidationService {
         validateContentType(file.contentType, ALLOWED_CONTENT_TYPES, "JPEG, PNG, WebP")
     }
 
-    private fun validateFileSize(size: Long, maxSize: Long) {
+    private fun validateFileSize(
+        size: Long,
+        maxSize: Long,
+    ) {
         if (size > maxSize) {
             throw BadRequestException("Image file size must be less than ${bytesToMegabytes(maxSize)}MB")
         }
     }
 
-    private fun validateContentType(contentType: String?, allowedTypes: Set<String>, formatDescription: String) {
+    private fun validateContentType(
+        contentType: String?,
+        allowedTypes: Set<String>,
+        formatDescription: String,
+    ) {
         val normalizedContentType = contentType?.lowercase() ?: ""
         if (normalizedContentType !in allowedTypes) {
             throw BadRequestException("Invalid image format. Allowed formats: $formatDescription")
@@ -58,20 +65,26 @@ class ImageValidationService {
         validateTypedContentType(file.contentType, imageType)
     }
 
-    private fun validateTypedFileSize(size: Long, imageType: ImageType) {
+    private fun validateTypedFileSize(
+        size: Long,
+        imageType: ImageType,
+    ) {
         if (size > imageType.maxFileSize) {
             val maxSizeMB = bytesToMegabytes(imageType.maxFileSize)
             throw BadRequestException(
-                "Image file size must be less than ${maxSizeMB}MB for ${imageType.name}"
+                "Image file size must be less than ${maxSizeMB}MB for ${imageType.name}",
             )
         }
     }
 
-    private fun validateTypedContentType(contentType: String?, imageType: ImageType) {
+    private fun validateTypedContentType(
+        contentType: String?,
+        imageType: ImageType,
+    ) {
         val normalizedContentType = contentType?.lowercase() ?: ""
         if (normalizedContentType !in imageType.allowedContentTypes) {
             throw BadRequestException(
-                "Invalid image format for ${imageType.name}. Allowed formats: ${imageType.allowedContentTypes}"
+                "Invalid image format for ${imageType.name}. Allowed formats: ${imageType.allowedContentTypes}",
             )
         }
     }

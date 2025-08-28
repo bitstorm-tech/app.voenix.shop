@@ -59,17 +59,18 @@ class ImageConversionService {
         val destY = sourceY - cropY
 
         // Determine the result image based on crop area bounds
-        val resultImage = if (isCropAreaWithinBounds(cropX, cropY, cropWidth, cropHeight, image)) {
-            // If the crop area is entirely within the image bounds, use simple cropping
-            val rectangle = Rectangle(cropX, cropY, cropWidth, cropHeight)
-            image.subimage(rectangle)
-        } else {
-            // Create a transparent canvas for the final result and overlay the source portion
-            val transparentCanvas = ImmutableImage.create(cropWidth, cropHeight)
-            val sourceRectangle = Rectangle(sourceX, sourceY, sourceWidth, sourceHeight)
-            val sourcePortion = image.subimage(sourceRectangle)
-            transparentCanvas.overlay(sourcePortion, destX, destY)
-        }
+        val resultImage =
+            if (isCropAreaWithinBounds(cropX, cropY, cropWidth, cropHeight, image)) {
+                // If the crop area is entirely within the image bounds, use simple cropping
+                val rectangle = Rectangle(cropX, cropY, cropWidth, cropHeight)
+                image.subimage(rectangle)
+            } else {
+                // Create a transparent canvas for the final result and overlay the source portion
+                val transparentCanvas = ImmutableImage.create(cropWidth, cropHeight)
+                val sourceRectangle = Rectangle(sourceX, sourceY, sourceWidth, sourceHeight)
+                val sourcePortion = image.subimage(sourceRectangle)
+                transparentCanvas.overlay(sourcePortion, destX, destY)
+            }
 
         // Use PNG writer to maintain transparency
         val writer: ImageWriter = PngWriter.MaxCompression
@@ -92,10 +93,9 @@ class ImageConversionService {
         cropWidth: Int,
         cropHeight: Int,
         image: ImmutableImage,
-    ): Boolean {
-        return cropX >= 0 &&
+    ): Boolean =
+        cropX >= 0 &&
             cropY >= 0 &&
             cropX + cropWidth <= image.width &&
             cropY + cropHeight <= image.height
-    }
 }

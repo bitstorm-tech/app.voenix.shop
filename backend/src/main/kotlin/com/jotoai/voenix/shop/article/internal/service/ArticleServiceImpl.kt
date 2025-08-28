@@ -9,13 +9,13 @@ import com.jotoai.voenix.shop.article.api.dto.CreateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.CreateCostCalculationRequest
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
+import com.jotoai.voenix.shop.article.api.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.UpdateCostCalculationRequest
-import com.jotoai.voenix.shop.article.api.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.config.ArticleServiceDependencies

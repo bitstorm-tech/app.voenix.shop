@@ -16,9 +16,9 @@ import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepos
 import com.jotoai.voenix.shop.common.exception.BadRequestException
 import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.IOException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.IOException
 
 @Service
 class MugVariantServiceImpl(

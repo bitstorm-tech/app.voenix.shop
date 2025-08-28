@@ -28,7 +28,6 @@ class AdminPromptSubCategoryController(
     @GetMapping
     fun getAllSubCategories(): List<PromptSubCategoryDto> = promptSubCategoryQueryService.getAllPromptSubCategories()
 
-
     @GetMapping("/category/{categoryId}")
     fun getSubCategoriesByCategoryId(
         @PathVariable categoryId: Long,

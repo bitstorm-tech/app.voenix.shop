@@ -21,6 +21,4 @@ class CountryServiceImpl(
             .orElseThrow { CountryNotFoundException("Country", "id", id) }
 
     override fun existsById(id: Long): Boolean = countryRepository.existsById(id)
-
-    
 }

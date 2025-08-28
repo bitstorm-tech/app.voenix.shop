@@ -5,17 +5,17 @@ import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.openai.api.dto.ImageEditResponse
 import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
 import com.jotoai.voenix.shop.openai.api.dto.TestPromptResponse
+import com.jotoai.voenix.shop.openai.web.dto.TestPromptForm
 import jakarta.validation.Valid
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RequestPart
-import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
-import com.jotoai.voenix.shop.openai.web.dto.TestPromptForm
 
 @RestController
 @RequestMapping("/api/admin/openai")

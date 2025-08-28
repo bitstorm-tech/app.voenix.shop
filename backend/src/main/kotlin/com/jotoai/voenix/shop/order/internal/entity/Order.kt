@@ -16,11 +16,11 @@ import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OrderBy
 import jakarta.persistence.Table
-import java.time.OffsetDateTime
-import java.util.*
 import org.hibernate.annotations.BatchSize
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import java.time.OffsetDateTime
+import java.util.UUID
 
 @Entity
 @Table(name = "orders")

@@ -11,16 +11,16 @@ import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Path
-import java.time.LocalDateTime
-import java.util.*
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.time.LocalDateTime
+import java.util.UUID
 
 /**
  * Consolidated implementation of ImageStorageService that handles all storage functionality.
@@ -35,7 +35,8 @@ class ImageStorageServiceImpl(
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
     private val imageValidationService: ImageValidationService,
-) : ImageStorageService, UserImageStorageService {
+) : ImageStorageService,
+    UserImageStorageService {
     private val logger = KotlinLogging.logger {}
 
     companion object {
@@ -158,10 +159,11 @@ class ImageStorageServiceImpl(
     ): Pair<ByteArray, String> {
         val resource = loadFileAsResource(filename, imageType)
         val bytes = resource.inputStream.use { it.readAllBytes() }
-        val contentType = probeContentType(
-            storagePathService.getPhysicalFilePath(imageType, filename),
-            "application/octet-stream"
-        )
+        val contentType =
+            probeContentType(
+                storagePathService.getPhysicalFilePath(imageType, filename),
+                "application/octet-stream",
+            )
         return Pair(bytes, contentType)
     }
 

@@ -10,7 +10,11 @@ import org.springframework.web.multipart.MultipartFile
  * This avoids downcasting to implementation classes from higher-level services.
  */
 interface UserImageStorageService {
-    fun storeUploadedImage(imageFile: MultipartFile, userId: Long, cropArea: CropArea? = null): UploadedImage
+    fun storeUploadedImage(
+        imageFile: MultipartFile,
+        userId: Long,
+        cropArea: CropArea? = null,
+    ): UploadedImage
 
     fun storeGeneratedImage(
         imageBytes: ByteArray,
@@ -20,7 +24,13 @@ interface UserImageStorageService {
         ipAddress: String? = null,
     ): GeneratedImage
 
-    fun getUserImageData(filename: String, userId: Long): Pair<ByteArray, String>
+    fun getUserImageData(
+        filename: String,
+        userId: Long,
+    ): Pair<ByteArray, String>
 
-    fun deleteUserImage(filename: String, userId: Long): Boolean
+    fun deleteUserImage(
+        filename: String,
+        userId: Long,
+    ): Boolean
 }

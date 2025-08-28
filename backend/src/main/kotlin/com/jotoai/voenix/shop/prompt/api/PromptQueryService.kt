@@ -21,7 +21,6 @@ interface PromptQueryService {
      */
     fun getPromptById(id: Long): PromptDto
 
-
     /**
      * Checks if a prompt exists by its ID.
      * @param id The prompt ID

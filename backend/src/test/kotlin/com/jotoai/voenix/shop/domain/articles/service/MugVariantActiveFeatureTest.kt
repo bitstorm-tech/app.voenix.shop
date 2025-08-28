@@ -13,7 +13,6 @@ import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepos
 import com.jotoai.voenix.shop.article.internal.service.MugDetailsService
 import com.jotoai.voenix.shop.article.internal.service.MugVariantServiceImpl
 import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
-import java.util.*
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -27,6 +26,7 @@ import org.mockito.Mockito.any
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import java.util.Optional
 
 /**
  * Comprehensive test suite for the mug variant activation/deactivation feature.

@@ -83,12 +83,11 @@ class WebConfig(
             )
     }
 
-    private fun shouldServeIndexHtml(resourcePath: String): Boolean {
-        return !resourcePath.startsWith("api/") &&
+    private fun shouldServeIndexHtml(resourcePath: String): Boolean =
+        !resourcePath.startsWith("api/") &&
             !resourcePath.endsWith(".png") &&
             !resourcePath.endsWith(".jpg") &&
             !resourcePath.endsWith(".jpeg") &&
             !resourcePath.endsWith(".gif") &&
             !resourcePath.endsWith(".webp")
-    }
 }

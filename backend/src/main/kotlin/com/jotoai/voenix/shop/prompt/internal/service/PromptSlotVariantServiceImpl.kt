@@ -25,8 +25,8 @@ class PromptSlotVariantServiceImpl(
     private val imageStorageService: ImageStorageService,
 ) : PromptSlotVariantFacade,
     PromptSlotVariantQueryService {
-
     private val logger = KotlinLogging.logger {}
+
     override fun getAllSlotVariants(): List<PromptSlotVariantDto> =
         promptSlotVariantRepository.findAll().map { promptSlotVariantAssembler.toDto(it) }
 
@@ -159,11 +159,10 @@ class PromptSlotVariantServiceImpl(
         promptSlotVariantRepository.deleteById(id)
     }
 
-    private fun hasAnyFieldProvided(request: UpdatePromptSlotVariantRequest): Boolean {
-        return request.name != null ||
+    private fun hasAnyFieldProvided(request: UpdatePromptSlotVariantRequest): Boolean =
+        request.name != null ||
             request.prompt != null ||
             request.description != null ||
             request.promptSlotTypeId != null ||
             request.exampleImageFilename != null
-    }
 }

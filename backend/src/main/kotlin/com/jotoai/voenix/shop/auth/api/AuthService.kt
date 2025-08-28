@@ -50,9 +50,7 @@ interface AuthService {
     /**
      * Creates a new user with the specified details and roles.
      */
-    fun createUser(
-        request: UserCreationRequest,
-    ): UserDto
+    fun createUser(request: UserCreationRequest): UserDto
 
     /**
      * Updates an existing user's details.

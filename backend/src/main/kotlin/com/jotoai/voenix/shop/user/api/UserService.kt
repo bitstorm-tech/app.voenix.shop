@@ -64,8 +64,6 @@ interface UserService {
         oneTimePassword: String? = null,
     ): UserDto
 
-    
-
     /**
      * Searches for users based on criteria with pagination support.
      *

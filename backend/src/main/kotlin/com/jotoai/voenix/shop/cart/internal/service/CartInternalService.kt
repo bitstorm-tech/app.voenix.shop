@@ -4,9 +4,9 @@ import com.jotoai.voenix.shop.cart.api.enums.CartStatus
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.time.OffsetDateTime
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.OffsetDateTime
 
 /**
  * Internal service for cart entity operations.
@@ -39,7 +39,6 @@ class CartInternalService(
      * Creates a new cart for the user.
      */
     private fun createNewCart(userId: Long): Cart {
-
         val cart =
             Cart(
                 userId = userId,

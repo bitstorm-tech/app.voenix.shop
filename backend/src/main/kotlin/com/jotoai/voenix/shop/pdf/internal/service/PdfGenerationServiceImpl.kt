@@ -19,15 +19,15 @@ import com.lowagie.text.pdf.BaseFont
 import com.lowagie.text.pdf.PdfContentByte
 import com.lowagie.text.pdf.PdfWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.imageio.ImageIO
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 /**
  * Consolidated PDF generation service implementation using OpenPDF library.
@@ -90,8 +90,6 @@ class PdfGenerationServiceImpl(
         private const val TEXT_ROTATION_VERTICAL = 90f
     }
 
-    
-
     override fun generateOrderPdf(orderData: OrderPdfData): ByteArray {
         logger.info {
             "Generating PDF for order ${orderData.orderNumber} with " +
@@ -147,7 +145,6 @@ class PdfGenerationServiceImpl(
         return "order_${orderNumber}_$timestamp.pdf"
     }
 
-
     @Suppress("ThrowsCount")
     private fun createOrderPage(
         writer: PdfWriter,
@@ -198,22 +195,22 @@ class PdfGenerationServiceImpl(
         } catch (e: IOException) {
             throw PdfGenerationException(
                 "I/O error creating page $pageNumber for order ${orderData.orderNumber}",
-                e
+                e,
             )
         } catch (e: WriterException) {
             throw PdfGenerationException(
                 "QR code generation error creating page $pageNumber for order ${orderData.orderNumber}",
-                e
+                e,
             )
         } catch (e: BadElementException) {
             throw PdfGenerationException(
                 "PDF element error creating page $pageNumber for order ${orderData.orderNumber}",
-                e
+                e,
             )
         } catch (e: DocumentException) {
             throw PdfGenerationException(
                 "Document error creating page $pageNumber for order ${orderData.orderNumber}",
-                e
+                e,
             )
         }
 
@@ -306,7 +303,11 @@ class PdfGenerationServiceImpl(
         contentByte.endText()
     }
 
-    private data class PageLayout(val pageWidth: Float, val pageHeight: Float, val margin: Float)
+    private data class PageLayout(
+        val pageWidth: Float,
+        val pageHeight: Float,
+        val margin: Float,
+    )
 
     private fun addProductImage(
         contentByte: PdfContentByte,
@@ -318,7 +319,7 @@ class PdfGenerationServiceImpl(
             val imageData = loadProductImage(orderData, orderItem)
             val pdfImage = Image.getInstance(imageData)
             val dimensions = calculateImageDimensions(orderItem, layout.pageWidth, layout.pageHeight, layout.margin)
-            
+
             positionAndAddImage(contentByte, pdfImage, dimensions, layout.pageWidth, layout.pageHeight)
             logImageAddition(dimensions)
         } catch (e: IOException) {
@@ -327,9 +328,12 @@ class PdfGenerationServiceImpl(
             handleImageAdditionError(e, contentByte, orderItem, layout.pageWidth, layout.pageHeight)
         }
     }
-    
-    private fun loadProductImage(orderData: OrderPdfData, orderItem: OrderItemPdfData): ByteArray {
-        return when {
+
+    private fun loadProductImage(
+        orderData: OrderPdfData,
+        orderItem: OrderItemPdfData,
+    ): ByteArray =
+        when {
             orderItem.generatedImageFilename != null -> {
                 try {
                     imageAccessService.getImageData(orderItem.generatedImageFilename, orderData.userId).first
@@ -352,58 +356,59 @@ class PdfGenerationServiceImpl(
                 createPlaceholderImage()
             }
         }
-    }
-    
+
     private fun calculateImageDimensions(
         orderItem: OrderItemPdfData,
         pageWidth: Float,
         pageHeight: Float,
-        margin: Float
+        margin: Float,
     ): ImageDimensions {
-        val imageWidthMm = orderItem.article.mugDetails
-            ?.printTemplateWidthMm
-            ?.toFloat()
-            ?: ((pageWidth / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)))
-            
-        val imageHeightMm = orderItem.article.mugDetails
-            ?.printTemplateHeightMm
-            ?.toFloat()
-            ?: ((pageHeight / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)) - DEFAULT_IMAGE_MARGIN_MM)
+        val imageWidthMm =
+            orderItem.article.mugDetails
+                ?.printTemplateWidthMm
+                ?.toFloat()
+                ?: ((pageWidth / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)))
+
+        val imageHeightMm =
+            orderItem.article.mugDetails
+                ?.printTemplateHeightMm
+                ?.toFloat()
+                ?: ((pageHeight / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)) - DEFAULT_IMAGE_MARGIN_MM)
 
         val imageWidthPt = imageWidthMm * MM_TO_POINTS
         val imageHeightPt = imageHeightMm * MM_TO_POINTS
-        
+
         return ImageDimensions(imageWidthPt, imageHeightPt)
     }
-    
+
     private fun positionAndAddImage(
         contentByte: PdfContentByte,
         pdfImage: Image,
         dimensions: ImageDimensions,
         pageWidth: Float,
-        pageHeight: Float
+        pageHeight: Float,
     ) {
         pdfImage.scaleAbsolute(dimensions.width, dimensions.height)
-        
+
         val xPosition = (pageWidth - dimensions.width) / 2
         val yPosition = (pageHeight - dimensions.height) / 2
-        
+
         pdfImage.setAbsolutePosition(xPosition, yPosition)
         contentByte.addImage(pdfImage)
     }
-    
+
     private fun logImageAddition(dimensions: ImageDimensions) {
         logger.debug {
             "Added product image with exact dimensions ${dimensions.width}x${dimensions.height} points"
         }
     }
-    
+
     private fun handleImageAdditionError(
         e: Exception,
         contentByte: PdfContentByte,
         orderItem: OrderItemPdfData,
         pageWidth: Float,
-        pageHeight: Float
+        pageHeight: Float,
     ) {
         when (e) {
             is IOException -> {
@@ -417,13 +422,13 @@ class PdfGenerationServiceImpl(
             else -> throw e
         }
     }
-    
+
     private fun addPlaceholderTextSafely(
         contentByte: PdfContentByte,
         orderItem: OrderItemPdfData,
         pageWidth: Float,
         pageHeight: Float,
-        originalException: Exception
+        originalException: Exception,
     ) {
         try {
             addPlaceholderText(contentByte, PlaceholderText("Image not available", pageWidth, pageHeight, 0f, 0f))
@@ -435,8 +440,11 @@ class PdfGenerationServiceImpl(
             )
         }
     }
-    
-    private data class ImageDimensions(val width: Float, val height: Float)
+
+    private data class ImageDimensions(
+        val width: Float,
+        val height: Float,
+    )
 
     private fun addOrderQrCode(
         contentByte: PdfContentByte,
@@ -575,6 +583,5 @@ class PdfGenerationServiceImpl(
         }
     }
 
-    override fun convertToOrderPdfData(orderForPdf: OrderForPdfDto) =
-        orderDataConverter.convertToOrderPdfData(orderForPdf)
+    override fun convertToOrderPdfData(orderForPdf: OrderForPdfDto) = orderDataConverter.convertToOrderPdfData(orderForPdf)
 }

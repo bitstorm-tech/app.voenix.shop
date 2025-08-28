@@ -12,5 +12,4 @@ interface PromptSlotVariantRepository : JpaRepository<PromptSlotVariant, Long> {
         name: String,
         id: Long,
     ): Boolean
-
 }

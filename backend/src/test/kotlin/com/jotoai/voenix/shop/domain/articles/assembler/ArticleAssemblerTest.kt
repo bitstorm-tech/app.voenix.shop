@@ -13,7 +13,6 @@ import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
-import java.time.OffsetDateTime
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
@@ -24,6 +23,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.verifyNoInteractions
 import org.mockito.Mockito.`when`
+import java.time.OffsetDateTime
 
 @Suppress("LongMethod", "LargeClass")
 class ArticleAssemblerTest {
@@ -88,7 +88,7 @@ class ArticleAssemblerTest {
         val entity = createTestShirtArticle()
         val testShirtVariant = createTestShirtVariant(entity)
         entity.shirtVariants.add(testShirtVariant)
-        
+
         val expectedShirtVariantDto = createExpectedShirtVariantDto()
         setupShirtArticleTestMocks(testShirtVariant, expectedShirtVariantDto)
 
@@ -271,7 +271,7 @@ class ArticleAssemblerTest {
         val entity = createMultiVariantMugArticle()
         val (mugVariant1, mugVariant2) = createMultipleMugVariants(entity)
         entity.mugVariants.addAll(listOf(mugVariant1, mugVariant2))
-        
+
         val (expectedDto1, expectedDto2) = createExpectedMultipleMugVariantDtos()
         setupMultipleMugVariantMocks(mugVariant1, mugVariant2, expectedDto1, expectedDto2)
 
@@ -289,7 +289,7 @@ class ArticleAssemblerTest {
         val entity = createMultiVariantShirtArticle()
         val (shirtVariant1, shirtVariant2) = createMultipleShirtVariants(entity)
         entity.shirtVariants.addAll(listOf(shirtVariant1, shirtVariant2))
-        
+
         val (expectedDto1, expectedDto2) = createExpectedMultipleShirtVariantDtos()
         setupMultipleShirtVariantMocks(shirtVariant1, shirtVariant2, expectedDto1, expectedDto2)
 
@@ -404,22 +404,24 @@ class ArticleAssemblerTest {
         assertNull(result.updatedAt)
     }
 
-    private fun createTestMugArticle(createdAt: OffsetDateTime, updatedAt: OffsetDateTime) =
-        Article(
-            id = 1L,
-            name = "Test Mug Article",
-            descriptionShort = "Short description",
-            descriptionLong = "Long description",
-            active = true,
-            articleType = ArticleType.MUG,
-            category = testCategory,
-            subcategory = testSubcategory,
-            supplierId = 1L,
-            supplierArticleName = "Supplier Mug Name",
-            supplierArticleNumber = "SMN-001",
-            createdAt = createdAt,
-            updatedAt = updatedAt,
-        )
+    private fun createTestMugArticle(
+        createdAt: OffsetDateTime,
+        updatedAt: OffsetDateTime,
+    ) = Article(
+        id = 1L,
+        name = "Test Mug Article",
+        descriptionShort = "Short description",
+        descriptionLong = "Long description",
+        active = true,
+        articleType = ArticleType.MUG,
+        category = testCategory,
+        subcategory = testSubcategory,
+        supplierId = 1L,
+        supplierArticleName = "Supplier Mug Name",
+        supplierArticleNumber = "SMN-001",
+        createdAt = createdAt,
+        updatedAt = updatedAt,
+    )
 
     private fun createTestMugVariant(entity: Article) =
         MugArticleVariant(
@@ -446,7 +448,10 @@ class ArticleAssemblerTest {
             updatedAt = null,
         )
 
-    private fun setupMugArticleTestMocks(testMugVariant: MugArticleVariant, expectedDto: MugArticleVariantDto) {
+    private fun setupMugArticleTestMocks(
+        testMugVariant: MugArticleVariant,
+        expectedDto: MugArticleVariantDto,
+    ) {
         `when`(mugArticleVariantAssembler.toDto(testMugVariant)).thenReturn(expectedDto)
         `when`(supplierService.getSupplierById(1L)).thenReturn(createTestSupplierDto())
     }
@@ -506,9 +511,9 @@ class ArticleAssemblerTest {
         verify(supplierService).getSupplierById(1L)
         verifyNoInteractions(shirtArticleVariantAssembler)
     }
-    
+
     // Helper methods for SHIRT article test
-    private fun createTestShirtArticle() = 
+    private fun createTestShirtArticle() =
         Article(
             id = 2L,
             name = "Test Shirt Article",
@@ -522,7 +527,7 @@ class ArticleAssemblerTest {
             supplierArticleName = "Supplier Shirt Name",
             supplierArticleNumber = "SSN-002",
         )
-        
+
     private fun createTestShirtVariant(entity: Article) =
         ShirtArticleVariant(
             id = 1L,
@@ -530,7 +535,7 @@ class ArticleAssemblerTest {
             color = "Red",
             size = "M",
         )
-        
+
     private fun createExpectedShirtVariantDto() =
         ShirtArticleVariantDto(
             id = 1L,
@@ -541,12 +546,15 @@ class ArticleAssemblerTest {
             createdAt = null,
             updatedAt = null,
         )
-        
-    private fun setupShirtArticleTestMocks(testShirtVariant: ShirtArticleVariant, expectedDto: ShirtArticleVariantDto) {
+
+    private fun setupShirtArticleTestMocks(
+        testShirtVariant: ShirtArticleVariant,
+        expectedDto: ShirtArticleVariantDto,
+    ) {
         `when`(shirtArticleVariantAssembler.toDto(testShirtVariant)).thenReturn(expectedDto)
         `when`(supplierService.getSupplierById(1L)).thenReturn(createTestSupplierDto())
     }
-    
+
     private fun verifyShirtArticleFields(
         result: com.jotoai.voenix.shop.article.api.dto.ArticleDto,
         expectedVariant: ShirtArticleVariantDto,
@@ -559,12 +567,12 @@ class ArticleAssemblerTest {
         assertEquals(1, result.shirtVariants!!.size)
         assertEquals(expectedVariant, result.shirtVariants!![0])
     }
-    
+
     private fun verifyShirtArticleInteractions(testShirtVariant: ShirtArticleVariant) {
         verify(shirtArticleVariantAssembler).toDto(testShirtVariant)
         verifyNoInteractions(mugArticleVariantAssembler)
     }
-    
+
     // Helper methods for multiple MUG variants test
     private fun createMultiVariantMugArticle() =
         Article(
@@ -576,75 +584,79 @@ class ArticleAssemblerTest {
             articleType = ArticleType.MUG,
             category = testCategory,
         )
-        
+
     private fun createMultipleMugVariants(entity: Article): Pair<MugArticleVariant, MugArticleVariant> {
-        val mugVariant1 = MugArticleVariant(
-            id = 1L,
-            article = entity,
-            insideColorCode = "#ffffff",
-            outsideColorCode = "#000000",
-            name = "Black & White",
-            isDefault = true,
-        )
-        
-        val mugVariant2 = MugArticleVariant(
-            id = 2L,
-            article = entity,
-            insideColorCode = "#ff0000",
-            outsideColorCode = "#ffffff",
-            name = "Red & White",
-            isDefault = false,
-        )
-        
+        val mugVariant1 =
+            MugArticleVariant(
+                id = 1L,
+                article = entity,
+                insideColorCode = "#ffffff",
+                outsideColorCode = "#000000",
+                name = "Black & White",
+                isDefault = true,
+            )
+
+        val mugVariant2 =
+            MugArticleVariant(
+                id = 2L,
+                article = entity,
+                insideColorCode = "#ff0000",
+                outsideColorCode = "#ffffff",
+                name = "Red & White",
+                isDefault = false,
+            )
+
         return Pair(mugVariant1, mugVariant2)
     }
-    
+
     private fun createExpectedMultipleMugVariantDtos(): Pair<MugArticleVariantDto, MugArticleVariantDto> {
-        val expectedDto1 = MugArticleVariantDto(
-            id = 1L,
-            articleId = 8L,
-            insideColorCode = "#ffffff",
-            outsideColorCode = "#000000",
-            name = "Black & White",
-            exampleImageUrl = null,
-            articleVariantNumber = null,
-            isDefault = true,
-            active = true,
-            createdAt = null,
-            updatedAt = null,
-        )
-        
-        val expectedDto2 = MugArticleVariantDto(
-            id = 2L,
-            articleId = 8L,
-            insideColorCode = "#ff0000",
-            outsideColorCode = "#ffffff",
-            name = "Red & White",
-            exampleImageUrl = null,
-            articleVariantNumber = null,
-            isDefault = false,
-            active = true,
-            createdAt = null,
-            updatedAt = null,
-        )
-        
+        val expectedDto1 =
+            MugArticleVariantDto(
+                id = 1L,
+                articleId = 8L,
+                insideColorCode = "#ffffff",
+                outsideColorCode = "#000000",
+                name = "Black & White",
+                exampleImageUrl = null,
+                articleVariantNumber = null,
+                isDefault = true,
+                active = true,
+                createdAt = null,
+                updatedAt = null,
+            )
+
+        val expectedDto2 =
+            MugArticleVariantDto(
+                id = 2L,
+                articleId = 8L,
+                insideColorCode = "#ff0000",
+                outsideColorCode = "#ffffff",
+                name = "Red & White",
+                exampleImageUrl = null,
+                articleVariantNumber = null,
+                isDefault = false,
+                active = true,
+                createdAt = null,
+                updatedAt = null,
+            )
+
         return Pair(expectedDto1, expectedDto2)
     }
-    
+
     private fun setupMultipleMugVariantMocks(
-        variant1: MugArticleVariant, 
-        variant2: MugArticleVariant, 
-        dto1: MugArticleVariantDto, 
-        dto2: MugArticleVariantDto
+        variant1: MugArticleVariant,
+        variant2: MugArticleVariant,
+        dto1: MugArticleVariantDto,
+        dto2: MugArticleVariantDto,
     ) {
         `when`(mugArticleVariantAssembler.toDto(variant1)).thenReturn(dto1)
         `when`(mugArticleVariantAssembler.toDto(variant2)).thenReturn(dto2)
     }
-    
+
     private fun verifyMultipleMugVariantsFields(
-        result: com.jotoai.voenix.shop.article.api.dto.ArticleDto, 
-        expectedDto1: MugArticleVariantDto, 
-        expectedDto2: MugArticleVariantDto
+        result: com.jotoai.voenix.shop.article.api.dto.ArticleDto,
+        expectedDto1: MugArticleVariantDto,
+        expectedDto2: MugArticleVariantDto,
     ) {
         assertEquals(8L, result.id)
         assertEquals(ArticleType.MUG, result.articleType)
@@ -654,13 +666,16 @@ class ArticleAssemblerTest {
         assertEquals(expectedDto2, result.mugVariants!![1])
         assertNull(result.shirtVariants)
     }
-    
-    private fun verifyMultipleMugVariantsInteractions(variant1: MugArticleVariant, variant2: MugArticleVariant) {
+
+    private fun verifyMultipleMugVariantsInteractions(
+        variant1: MugArticleVariant,
+        variant2: MugArticleVariant,
+    ) {
         verify(mugArticleVariantAssembler).toDto(variant1)
         verify(mugArticleVariantAssembler).toDto(variant2)
         verifyNoInteractions(shirtArticleVariantAssembler)
     }
-    
+
     // Helper methods for multiple SHIRT variants test
     private fun createMultiVariantShirtArticle() =
         Article(
@@ -672,63 +687,67 @@ class ArticleAssemblerTest {
             articleType = ArticleType.SHIRT,
             category = testCategory,
         )
-        
+
     private fun createMultipleShirtVariants(entity: Article): Pair<ShirtArticleVariant, ShirtArticleVariant> {
-        val shirtVariant1 = ShirtArticleVariant(
-            id = 1L,
-            article = entity,
-            color = "Red",
-            size = "M",
-        )
-        
-        val shirtVariant2 = ShirtArticleVariant(
-            id = 2L,
-            article = entity,
-            color = "Blue",
-            size = "L",
-        )
-        
+        val shirtVariant1 =
+            ShirtArticleVariant(
+                id = 1L,
+                article = entity,
+                color = "Red",
+                size = "M",
+            )
+
+        val shirtVariant2 =
+            ShirtArticleVariant(
+                id = 2L,
+                article = entity,
+                color = "Blue",
+                size = "L",
+            )
+
         return Pair(shirtVariant1, shirtVariant2)
     }
-    
+
     private fun createExpectedMultipleShirtVariantDtos(): Pair<ShirtArticleVariantDto, ShirtArticleVariantDto> {
-        val expectedDto1 = ShirtArticleVariantDto(
-            id = 1L,
-            articleId = 9L,
-            color = "Red",
-            size = "M",
-            exampleImageUrl = null,
-            createdAt = null,
-            updatedAt = null,
-        )
-        
-        val expectedDto2 = ShirtArticleVariantDto(
-            id = 2L,
-            articleId = 9L,
-            color = "Blue",
-            size = "L",
-            exampleImageUrl = null,
-            createdAt = null,
-            updatedAt = null,
-        )
-        
+        val expectedDto1 =
+            ShirtArticleVariantDto(
+                id = 1L,
+                articleId = 9L,
+                color = "Red",
+                size = "M",
+                exampleImageUrl = null,
+                createdAt = null,
+                updatedAt = null,
+            )
+
+        val expectedDto2 =
+            ShirtArticleVariantDto(
+                id = 2L,
+                articleId = 9L,
+                color = "Blue",
+                size = "L",
+                exampleImageUrl = null,
+                createdAt = null,
+                updatedAt = null,
+            )
+
         return Pair(expectedDto1, expectedDto2)
     }
-    
+
     private fun setupMultipleShirtVariantMocks(
-        variant1: ShirtArticleVariant, 
-        variant2: ShirtArticleVariant, 
-        dto1: ShirtArticleVariantDto, 
-        dto2: ShirtArticleVariantDto
+        variant1: ShirtArticleVariant,
+        variant2: ShirtArticleVariant,
+        dto1: ShirtArticleVariantDto,
+        dto2: ShirtArticleVariantDto,
     ) {
         `when`(shirtArticleVariantAssembler.toDto(variant1)).thenReturn(dto1)
         `when`(shirtArticleVariantAssembler.toDto(variant2)).thenReturn(dto2)
     }
-    
+
     private fun verifyMultipleShirtVariantsFields(
-        result: com.jotoai.voenix.shop.article.api.dto.ArticleDto, 
-        expectedDto1: ShirtArticleVariantDto, 
-        expectedDto2: ShirtArticleVariantDto
+        result: com.jotoai.voenix.shop.article.api.dto.ArticleDto,
+        expectedDto1: ShirtArticleVariantDto,
+        expectedDto2: ShirtArticleVariantDto,
     ) {
         assertEquals(9L, result.id)
         assertEquals(ArticleType.SHIRT, result.articleType)
@@ -738,46 +757,53 @@ class ArticleAssemblerTest {
         assertEquals(expectedDto1, result.shirtVariants!![0])
         assertEquals(expectedDto2, result.shirtVariants!![1])
     }
-    
-    private fun verifyMultipleShirtVariantsInteractions(variant1: ShirtArticleVariant, variant2: ShirtArticleVariant) {
+
+    private fun verifyMultipleShirtVariantsInteractions(
+        variant1: ShirtArticleVariant,
+        variant2: ShirtArticleVariant,
+    ) {
         verify(shirtArticleVariantAssembler).toDto(variant1)
         verify(shirtArticleVariantAssembler).toDto(variant2)
         verifyNoInteractions(mugArticleVariantAssembler)
     }
-    
+
     // Helper methods for complex category and supplier test
     private fun createComplexCategoryAndSubcategory(): Pair<ArticleCategory, ArticleSubCategory> {
-        val complexCategory = ArticleCategory(
-            id = 999L,
-            name = "Complex & Special Characters",
-            description = "Category with special chars",
-        )
-        
-        val complexSubcategory = ArticleSubCategory(
-            id = 888L,
-            articleCategory = complexCategory,
-            name = "Complex Sub & Category",
-            description = "Subcategory with special chars",
-        )
-        
+        val complexCategory =
+            ArticleCategory(
+                id = 999L,
+                name = "Complex & Special Characters",
+                description = "Category with special chars",
+            )
+
+        val complexSubcategory =
+            ArticleSubCategory(
+                id = 888L,
+                articleCategory = complexCategory,
+                name = "Complex Sub & Category",
+                description = "Subcategory with special chars",
+            )
+
         return Pair(complexCategory, complexSubcategory)
     }
-    
-    private fun createComplexArticle(complexCategory: ArticleCategory, complexSubcategory: ArticleSubCategory) =
-        Article(
-            id = 11L,
-            name = "Complex Article",
-            descriptionShort = "Complex short",
-            descriptionLong = "Complex long",
-            active = true,
-            articleType = ArticleType.MUG,
-            category = complexCategory,
-            subcategory = complexSubcategory,
-            supplierId = 777L,
-            supplierArticleName = "Complex & Supplier Article",
-            supplierArticleNumber = "CSA-999",
-        )
-        
+
+    private fun createComplexArticle(
+        complexCategory: ArticleCategory,
+        complexSubcategory: ArticleSubCategory,
+    ) = Article(
+        id = 11L,
+        name = "Complex Article",
+        descriptionShort = "Complex short",
+        descriptionLong = "Complex long",
+        active = true,
+        articleType = ArticleType.MUG,
+        category = complexCategory,
+        subcategory = complexSubcategory,
+        supplierId = 777L,
+        supplierArticleName = "Complex & Supplier Article",
+        supplierArticleNumber = "CSA-999",
+    )
+
     private fun setupComplexSupplierMock() {
         `when`(supplierService.getSupplierById(777L))
             .thenReturn(
@@ -803,7 +829,7 @@ class ArticleAssemblerTest {
                 ),
             )
     }
-    
+
     private fun verifyComplexCategoryAndSupplierFields(result: com.jotoai.voenix.shop.article.api.dto.ArticleDto) {
         assertEquals(11L, result.id)
         assertEquals(999L, result.categoryId)

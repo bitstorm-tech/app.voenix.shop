@@ -17,10 +17,10 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
-import java.time.OffsetDateTime
 import org.hibernate.annotations.BatchSize
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
+import java.time.OffsetDateTime
 
 @Entity
 @Table(name = "articles")

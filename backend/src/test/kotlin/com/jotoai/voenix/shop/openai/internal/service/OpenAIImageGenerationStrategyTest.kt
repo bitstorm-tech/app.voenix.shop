@@ -123,7 +123,7 @@ class OpenAIImageGenerationStrategyTest {
         val (slotType1, slotType2) = createTestSlotTypes()
         val (slot1, slot2) = createTestSlotVariants(slotType1, slotType2)
         val mockPrompt = createMockPromptWithSlots(promptId, slot1, slot2)
-        
+
         `when`(promptQueryService.getPromptById(promptId)).thenReturn(mockPrompt)
 
         // When/Then - This will fail due to HTTP call, but we verify prompt building logic
@@ -527,7 +527,7 @@ class OpenAIImageGenerationStrategyTest {
         // Verify prompt service called for each file type test
         verify(promptQueryService, org.mockito.Mockito.times(imageFiles.size)).getPromptById(promptId)
     }
-    
+
     // Helper methods for complex prompt with slots test
     private fun createTestImageEditRequest(promptId: Long) =
         CreateImageEditRequest(
@@ -537,75 +537,78 @@ class OpenAIImageGenerationStrategyTest {
             quality = ImageQuality.MEDIUM,
             background = ImageBackground.OPAQUE,
         )
-    
+
     private fun createTestSlotTypes(): Pair<PromptSlotTypeDto, PromptSlotTypeDto> {
-        val slotType1 = PromptSlotTypeDto(
-            id = 1L,
-            name = "Style",
-            position = 1,
-            createdAt = null,
-            updatedAt = null,
-        )
-        
-        val slotType2 = PromptSlotTypeDto(
-            id = 2L,
-            name = "Subject",
-            position = 2,
-            createdAt = null,
-            updatedAt = null,
-        )
-        
+        val slotType1 =
+            PromptSlotTypeDto(
+                id = 1L,
+                name = "Style",
+                position = 1,
+                createdAt = null,
+                updatedAt = null,
+            )
+
+        val slotType2 =
+            PromptSlotTypeDto(
+                id = 2L,
+                name = "Subject",
+                position = 2,
+                createdAt = null,
+                updatedAt = null,
+            )
+
         return Pair(slotType1, slotType2)
     }
-    
+
     private fun createTestSlotVariants(
         slotType1: PromptSlotTypeDto,
         slotType2: PromptSlotTypeDto,
     ): Pair<PromptSlotVariantDto, PromptSlotVariantDto> {
-        val slot1 = PromptSlotVariantDto(
-            id = 1L,
-            promptSlotTypeId = 1L,
-            promptSlotType = slotType1,
-            name = "Watercolor Style",
-            prompt = "in watercolor style",
-            description = null,
-            exampleImageUrl = null,
-            createdAt = null,
-            updatedAt = null,
-        )
-        
-        val slot2 = PromptSlotVariantDto(
-            id = 2L,
-            promptSlotTypeId = 2L,
-            promptSlotType = slotType2,
-            name = "Mountain Landscape",
-            prompt = "featuring a mountain landscape",
-            description = null,
-            exampleImageUrl = null,
-            createdAt = null,
-            updatedAt = null,
-        )
-        
+        val slot1 =
+            PromptSlotVariantDto(
+                id = 1L,
+                promptSlotTypeId = 1L,
+                promptSlotType = slotType1,
+                name = "Watercolor Style",
+                prompt = "in watercolor style",
+                description = null,
+                exampleImageUrl = null,
+                createdAt = null,
+                updatedAt = null,
+            )
+
+        val slot2 =
+            PromptSlotVariantDto(
+                id = 2L,
+                promptSlotTypeId = 2L,
+                promptSlotType = slotType2,
+                name = "Mountain Landscape",
+                prompt = "featuring a mountain landscape",
+                description = null,
+                exampleImageUrl = null,
+                createdAt = null,
+                updatedAt = null,
+            )
+
         return Pair(slot1, slot2)
     }
-    
+
     private fun createMockPromptWithSlots(
         promptId: Long,
         slot1: PromptSlotVariantDto,
         slot2: PromptSlotVariantDto,
-    ) =
-        PromptDto(
-            id = promptId,
-            title = "Beautiful Painting",
-            promptText = "Create a beautiful painting",
-            categoryId = null,
-            category = null,
-            subcategoryId = null,
-            subcategory = null,
-            active = true,
-            slots = listOf(slot1, slot2),
-            exampleImageUrl = null,
-            createdAt = null,
-            updatedAt = null,
-        )
+    ) = PromptDto(
+        id = promptId,
+        title = "Beautiful Painting",
+        promptText = "Create a beautiful painting",
+        categoryId = null,
+        category = null,
+        subcategoryId = null,
+        subcategory = null,
+        active = true,
+        slots = listOf(slot1, slot2),
+        exampleImageUrl = null,
+        createdAt = null,
+        updatedAt = null,
+    )
 }

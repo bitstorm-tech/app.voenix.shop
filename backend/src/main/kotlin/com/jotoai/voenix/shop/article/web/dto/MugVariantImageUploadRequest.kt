@@ -9,4 +9,3 @@ data class MugVariantImageUploadRequest(
     val cropWidth: Double? = null,
     val cropHeight: Double? = null,
 )
-

@@ -28,7 +28,6 @@ class SupplierServiceImpl(
     private val supplierRepository: SupplierRepository,
     private val countryService: CountryService,
 ) : SupplierService {
-
     private val logger = KotlinLogging.logger {}
 
     // Query operations

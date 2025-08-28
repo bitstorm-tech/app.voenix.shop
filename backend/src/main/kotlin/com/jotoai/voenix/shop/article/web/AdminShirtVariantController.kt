@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RestController
 class AdminShirtVariantController(
     private val shirtVariantFacade: ShirtVariantFacade,
 ) {
-
     @PostMapping("/{articleId}/variants")
     fun create(
         @PathVariable articleId: Long,

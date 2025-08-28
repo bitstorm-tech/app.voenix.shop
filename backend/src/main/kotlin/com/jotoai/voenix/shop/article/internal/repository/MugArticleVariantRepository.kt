@@ -1,12 +1,12 @@
 package com.jotoai.voenix.shop.article.internal.repository
 
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
-import java.util.*
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.util.Optional
 
 @Repository
 interface MugArticleVariantRepository : JpaRepository<MugArticleVariant, Long> {

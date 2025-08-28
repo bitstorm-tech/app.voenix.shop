@@ -10,4 +10,3 @@ data class TestPromptForm(
     val quality: String,
     val size: String,
 )
-

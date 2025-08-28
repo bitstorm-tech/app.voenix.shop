@@ -11,9 +11,9 @@ import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRep
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import io.github.oshai.kotlinlogging.KotlinLogging
-import java.io.IOException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.IOException
 
 @Service
 class ShirtVariantServiceImpl(

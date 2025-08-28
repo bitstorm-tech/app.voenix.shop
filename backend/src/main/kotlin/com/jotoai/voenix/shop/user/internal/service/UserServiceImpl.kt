@@ -19,13 +19,13 @@ import com.jotoai.voenix.shop.user.internal.entity.User
 import com.jotoai.voenix.shop.user.internal.repository.RoleRepository
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository
 import com.jotoai.voenix.shop.user.internal.repository.UserSpecifications
-import java.time.OffsetDateTime
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.OffsetDateTime
 
 /**
  * Unified implementation of UserService that combines all user-related operations.
@@ -187,8 +187,6 @@ class UserServiceImpl(
 
         user.markAsDeleted()
     }
-
-    
 
     @Transactional
     override fun restoreUser(id: Long): UserDto {

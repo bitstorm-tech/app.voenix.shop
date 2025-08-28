@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.common.exception
 
+import com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException
 import com.jotoai.voenix.shop.common.dto.ErrorResponse
 import com.jotoai.voenix.shop.image.api.exceptions.ImageAccessDeniedException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
@@ -11,7 +12,6 @@ import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import java.time.LocalDateTime
-import com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {

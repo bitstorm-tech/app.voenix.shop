@@ -47,25 +47,28 @@ class CartFacadeImpl(
     ): CartDto {
         userService.getUserById(userId)
         validateAddToCartRequest(userId, request)
-        
+
         val cart = cartInternalService.getOrCreateActiveCartEntity(userId)
         val currentPrice = articleQueryService.getCurrentGrossPrice(request.articleId)
-        
+
         val cartItem = createCartItem(cart, request, currentPrice)
         cart.addOrUpdateItem(cartItem)
-        
+
         val savedCart = saveCartWithOptimisticLocking(cart)
         logSuccessfulCartOperation(userId, request)
-        
+
         return cartAssembler.toDto(savedCart)
     }
-    
-    private fun validateAddToCartRequest(userId: Long, request: AddToCartRequest) {
+
+    private fun validateAddToCartRequest(
+        userId: Long,
+        request: AddToCartRequest,
+    ) {
         validateArticleAndVariant(request)
         validateGeneratedImageForCart(userId, request)
         validatePromptForCart(request)
     }
-    
+
     private fun validateArticleAndVariant(request: AddToCartRequest) {
         validateArticleExists(request.articleId)
         validateVariantAndAssociation(request.articleId, request.variantId)
@@ -78,7 +81,10 @@ class CartFacadeImpl(
         }
     }
 
-    private fun validateVariantAndAssociation(articleId: Long, variantId: Long) {
+    private fun validateVariantAndAssociation(
+        articleId: Long,
+        variantId: Long,
+    ) {
         val variantsById = articleQueryService.getMugVariantsByIds(listOf(variantId))
         if (variantId !in variantsById) {
             throw ResourceNotFoundException("Variant not found with id: $variantId")
@@ -88,8 +94,11 @@ class CartFacadeImpl(
             throw BadRequestException("Variant $variantId does not belong to article $articleId")
         }
     }
-    
-    private fun validateGeneratedImageForCart(userId: Long, request: AddToCartRequest) {
+
+    private fun validateGeneratedImageForCart(
+        userId: Long,
+        request: AddToCartRequest,
+    ) {
         request.generatedImageId?.let { imageId ->
             logger.debug {
                 "Validating generated image for cart operation: userId=$userId, generatedImageId=$imageId, " +
@@ -118,7 +127,7 @@ class CartFacadeImpl(
             }
         }
     }
-    
+
     private fun validatePromptForCart(request: AddToCartRequest) {
         request.promptId?.let { promptId ->
             if (!promptQueryService.existsById(promptId)) {
@@ -126,9 +135,13 @@ class CartFacadeImpl(
             }
         }
     }
-    
-    private fun createCartItem(cart: Cart, request: AddToCartRequest, currentPrice: Long): CartItem {
-        return CartItem(
+
+    private fun createCartItem(
+        cart: Cart,
+        request: AddToCartRequest,
+        currentPrice: Long,
+    ): CartItem =
+        CartItem(
             cart = cart,
             articleId = request.articleId,
             variantId = request.variantId,
@@ -139,9 +152,11 @@ class CartFacadeImpl(
             generatedImageId = request.generatedImageId,
             promptId = request.promptId,
         )
-    }
-    
-    private fun logSuccessfulCartOperation(userId: Long, request: AddToCartRequest) {
+
+    private fun logSuccessfulCartOperation(
+        userId: Long,
+        request: AddToCartRequest,
+    ) {
         logger.info {
             "Successfully added item to cart: " + "userId=$userId, " + "articleId=${request.articleId}, " +
                 "variantId=${request.variantId}, " +

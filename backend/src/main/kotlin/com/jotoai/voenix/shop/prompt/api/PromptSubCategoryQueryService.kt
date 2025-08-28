@@ -20,7 +20,6 @@ interface PromptSubCategoryQueryService {
      */
     fun getPromptSubCategoriesByCategory(categoryId: Long): List<PromptSubCategoryDto>
 
-
     /**
      * Checks if a prompt subcategory exists by its ID.
      * @param id The subcategory ID

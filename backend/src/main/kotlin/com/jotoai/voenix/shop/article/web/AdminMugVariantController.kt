@@ -75,8 +75,7 @@ class AdminMugVariantController(
                 Received image upload for variant $variantId
                 File: ${request.image.originalFilename}, Size: ${request.image.size} bytes
                 Crop params: x=${request.cropX}, y=${request.cropY}, width=${request.cropWidth}, height=${request.cropHeight}
-                """
-                .trimIndent()
+                """.trimIndent()
             )
         }
 
@@ -126,5 +125,4 @@ class AdminMugVariantController(
         val copiedVariants = mugVariantFacade.copyVariants(mugId, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(copiedVariants)
     }
-
 }

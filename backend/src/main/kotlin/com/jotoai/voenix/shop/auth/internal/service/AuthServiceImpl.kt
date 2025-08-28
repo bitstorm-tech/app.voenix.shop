@@ -7,6 +7,7 @@ import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
 import com.jotoai.voenix.shop.auth.api.dto.UserCreationRequest
+import com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
@@ -26,7 +27,6 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.context.SecurityContextRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException
 
 @Service
 class AuthServiceImpl(
@@ -105,7 +105,7 @@ class AuthServiceImpl(
             UserCreationRequest(
                 email = registerRequest.email,
                 password = registerRequest.password,
-            )
+            ),
         )
         return authenticateUser(
             email = registerRequest.email,
@@ -143,15 +143,16 @@ class AuthServiceImpl(
             }
         }
 
-        val savedUser = createUser(
-            UserCreationRequest(
-                email = email,
-                password = null,
-                firstName = registerGuestRequest.firstName,
-                lastName = registerGuestRequest.lastName,
-                phoneNumber = registerGuestRequest.phoneNumber,
-            ),
-        )
+        val savedUser =
+            createUser(
+                UserCreationRequest(
+                    email = email,
+                    password = null,
+                    firstName = registerGuestRequest.firstName,
+                    lastName = registerGuestRequest.lastName,
+                    phoneNumber = registerGuestRequest.phoneNumber,
+                ),
+            )
 
         return authenticateGuestUser(
             userId = savedUser.id,
@@ -161,9 +162,7 @@ class AuthServiceImpl(
     }
 
     @Transactional
-    override fun createUser(
-        request: UserCreationRequest,
-    ): UserDto {
+    override fun createUser(request: UserCreationRequest): UserDto {
         // Create user via unified service
         val userDto =
             userService.createUser(

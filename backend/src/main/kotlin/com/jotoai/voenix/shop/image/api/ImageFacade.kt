@@ -7,9 +7,9 @@ import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
 import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
+import org.springframework.web.multipart.MultipartFile
 import java.time.LocalDateTime
 import java.util.UUID
-import org.springframework.web.multipart.MultipartFile
 
 /**
  * Main facade for Image module operations.
