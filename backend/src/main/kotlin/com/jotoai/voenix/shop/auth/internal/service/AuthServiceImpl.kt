@@ -101,15 +101,17 @@ class AuthServiceImpl(
         if (userService.existsByEmail(registerRequest.email)) {
             throw ResourceAlreadyExistsException("User", "email", registerRequest.email)
         }
-        createUser(
+        val userDto = createUser(
             UserCreationRequest(
                 email = registerRequest.email,
                 password = registerRequest.password,
             ),
         )
-        return authenticateUser(
-            email = registerRequest.email,
-            password = registerRequest.password,
+        
+        // Create authentication directly using the newly created user data
+        // to avoid database lookup issues with transaction boundaries
+        return authenticateRegisteredUser(
+            userId = userDto.id,
             request = request,
             response = response,
         )
@@ -231,6 +233,35 @@ class AuthServiceImpl(
                 id = userDto.id,
                 email = userDto.email,
                 passwordHash = null,
+                userRoles = userRoles,
+            )
+
+        val authentication =
+            UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.authorities,
+            )
+
+        return createAuthenticatedSession(authentication, request, response)
+    }
+
+    /**
+     * Creates an authenticated session for a newly registered user (without password authentication)
+     * This avoids database lookup issues when authenticating immediately after user creation
+     */
+    private fun authenticateRegisteredUser(
+        userId: Long,
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+    ): LoginResponse {
+        val (userDto, userRoles) = fetchUserWithRoles(userId)
+
+        val userDetails =
+            CustomUserDetails(
+                id = userDto.id,
+                email = userDto.email,
+                passwordHash = "registered", // Not used for authentication token, just a marker
                 userRoles = userRoles,
             )
 
