@@ -14,7 +14,9 @@ import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UserAuthenticationDto
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.slot
 import io.mockk.verify
 import jakarta.servlet.http.HttpServletRequest
@@ -85,7 +87,10 @@ class AuthServiceImplTest {
             )
 
         every { httpRequest.getSession(true) } returns httpSession
+        every { httpRequest.getSession(false) } returns httpSession
         every { httpSession.id } returns "session-123"
+        every { httpRequest.changeSessionId() } returns "session-123"
+        every { securityContextRepository.saveContext(any(), any(), any()) } just runs
         every { authenticationManager.authenticate(any()) } returns authentication
         every { authentication.principal } returns principal
         every { userService.getUserById(1L) } returns userDto
@@ -197,8 +202,13 @@ class AuthServiceImplTest {
             )
 
         every { passwordEncoder.encode("password123") } returns "encoded-password"
+        every { userService.existsByEmail("newuser@example.com") } returns false
+        every { userService.setUserRoles(1L, setOf("USER")) } just runs
         every { httpRequest.getSession(true) } returns httpSession
+        every { httpRequest.getSession(false) } returns httpSession
         every { httpSession.id } returns "session-123"
+        every { httpRequest.changeSessionId() } returns "session-123"
+        every { securityContextRepository.saveContext(any(), any(), any()) } just runs
         every { authenticationManager.authenticate(any()) } returns authentication
         every { authentication.principal } returns principal
         every { userService.createUser(any()) } returns userDto
@@ -239,8 +249,13 @@ class AuthServiceImplTest {
             )
 
         every { userService.existsByEmail("guest@example.com") } returns false
+        every { userService.loadUserByEmail("guest@example.com") } returns null
+        every { userService.setUserRoles(1L, setOf("USER")) } just runs
         every { httpRequest.getSession(true) } returns httpSession
+        every { httpRequest.getSession(false) } returns httpSession
         every { httpSession.id } returns "session-123"
+        every { httpRequest.changeSessionId() } returns "session-123"
+        every { securityContextRepository.saveContext(any(), any(), any()) } just runs
         every { authenticationManager.authenticate(any()) } returns authentication
         every { authentication.principal } returns principal
         every { userService.createUser(any()) } returns userDto
@@ -292,7 +307,10 @@ class AuthServiceImplTest {
                 isActive = true,
             )
         every { httpRequest.getSession(true) } returns httpSession
+        every { httpRequest.getSession(false) } returns httpSession
         every { httpSession.id } returns "session-123"
+        every { httpRequest.changeSessionId() } returns "session-123"
+        every { securityContextRepository.saveContext(any(), any(), any()) } just runs
         every { authenticationManager.authenticate(any()) } returns authentication
         every { authentication.principal } returns principal
         every { userService.updateUser(any(), any()) } returns updatedUser
@@ -345,6 +363,7 @@ class AuthServiceImplTest {
         val userDto = createTestUser()
 
         every { userService.createUser(any()) } returns userDto
+        every { userService.setUserRoles(1L, setOf("USER", "ADMIN")) } just runs
         every { passwordEncoder.encode("password123") } returns "encoded-password"
 
         val result =
@@ -377,6 +396,7 @@ class AuthServiceImplTest {
         val userDto = createTestUser()
 
         every { userService.createUser(any()) } returns userDto
+        every { userService.setUserRoles(1L, setOf("USER")) } just runs
 
         val result =
             authService.createUser(
