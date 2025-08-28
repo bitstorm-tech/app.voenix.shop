@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.image.api
 
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
-import java.util.*
+import java.util.UUID
 
 /**
  * Query service for Image module read operations.

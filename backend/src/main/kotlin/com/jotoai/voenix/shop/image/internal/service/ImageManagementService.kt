@@ -35,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 /**
  * Consolidated image management service that handles all image operations.

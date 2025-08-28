@@ -583,5 +583,5 @@ class PdfGenerationServiceImpl(
         }
     }
 
-    override fun convertToOrderPdfData(orderForPdf: OrderForPdfDto) = orderDataConverter.convertToOrderPdfData(orderForPdf)
+    override fun convertToOrderPdfData(orderForPdf: OrderForPdfDto): OrderPdfData = orderDataConverter.convertToOrderPdfData(orderForPdf)
 }

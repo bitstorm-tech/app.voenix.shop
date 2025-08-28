@@ -9,7 +9,7 @@ import com.jotoai.voenix.shop.openai.api.exception.ImageGenerationException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
-import java.util.*
+import java.util.UUID
 
 /**
  * Implementation of ImageGenerationService that delegates to the ImageFacade.
