@@ -154,7 +154,15 @@ class ImageQueryServiceImplTest {
         // Given
         val userId1 = 1L
         val userId2 = 2L
-        val user1Images = listOf(createUploadedImage(UploadedImageParams(storedFilename = "user1-image.jpg", userId = userId1)))
+        val user1Images =
+            listOf(
+                createUploadedImage(
+                    UploadedImageParams(
+                        storedFilename = "user1-image.jpg",
+                        userId = userId1,
+                    ),
+                ),
+            )
         val user2Images =
             listOf(
                 createUploadedImage(UploadedImageParams(storedFilename = "user2-image1.jpg", userId = userId2)),
@@ -485,9 +493,30 @@ class ImageQueryServiceImplTest {
         val imageId3 = 125L
         val ids = listOf(imageId1, imageId2, imageId3)
 
-        val generatedImage1 = createGeneratedImage(GeneratedImageParams(id = imageId1, filename = "image1.jpg", promptId = 100L))
-        val generatedImage2 = createGeneratedImage(GeneratedImageParams(id = imageId2, filename = "image2.jpg", promptId = 101L))
-        val generatedImage3 = createGeneratedImage(GeneratedImageParams(id = imageId3, filename = "image3.jpg", promptId = 102L))
+        val generatedImage1 =
+            createGeneratedImage(
+                GeneratedImageParams(
+                    id = imageId1,
+                    filename = "image1.jpg",
+                    promptId = 100L,
+                ),
+            )
+        val generatedImage2 =
+            createGeneratedImage(
+                GeneratedImageParams(
+                    id = imageId2,
+                    filename = "image2.jpg",
+                    promptId = 101L,
+                ),
+            )
+        val generatedImage3 =
+            createGeneratedImage(
+                GeneratedImageParams(
+                    id = imageId3,
+                    filename = "image3.jpg",
+                    promptId = 102L,
+                ),
+            )
 
         val allImages = listOf(generatedImage1, generatedImage2, generatedImage3)
 
@@ -596,8 +625,22 @@ class ImageQueryServiceImplTest {
         val anonymousImageId = 124L
         val ids = listOf(userImageId, anonymousImageId)
 
-        val userImage = createGeneratedImage(GeneratedImageParams(id = userImageId, filename = "user-image.jpg", userId = 1L))
-        val anonymousImage = createGeneratedImage(GeneratedImageParams(id = anonymousImageId, filename = "anon-image.jpg", userId = null))
+        val userImage =
+            createGeneratedImage(
+                GeneratedImageParams(
+                    id = userImageId,
+                    filename = "user-image.jpg",
+                    userId = 1L,
+                ),
+            )
+        val anonymousImage =
+            createGeneratedImage(
+                GeneratedImageParams(
+                    id = anonymousImageId,
+                    filename = "anon-image.jpg",
+                    userId = null,
+                ),
+            )
 
         val allImages = listOf(userImage, anonymousImage)
 

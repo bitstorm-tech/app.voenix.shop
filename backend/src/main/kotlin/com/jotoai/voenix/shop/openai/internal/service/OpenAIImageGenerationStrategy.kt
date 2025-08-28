@@ -118,7 +118,8 @@ class OpenAIImageGenerationStrategy(
                     "image",
                     params.imageFile.bytes,
                     Headers.build {
-                        append(HttpHeaders.ContentType, getContentType(params.imageFile.originalFilename ?: "image.png"))
+                        val contentFilename = params.imageFile.originalFilename ?: "image.png"
+                        append(HttpHeaders.ContentType, getContentType(contentFilename))
                         append(
                             HttpHeaders.ContentDisposition,
                             "filename=\"${params.imageFile.originalFilename ?: "image.png"}\"",

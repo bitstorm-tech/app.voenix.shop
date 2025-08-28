@@ -615,7 +615,12 @@ class ImageManagementService(
         val uploadedImage = getUploadedImageByUuid(uploadedImageUuid, userId)
 
         val originalBytes = imageStorageService.loadFileAsBytes(uploadedImage.filename, ImageType.PRIVATE)
-        val imageBytes = if (cropArea != null) imageConversionService.cropImage(originalBytes, cropArea) else originalBytes
+        val imageBytes =
+            if (cropArea != null) {
+                imageConversionService.cropImage(originalBytes, cropArea)
+            } else {
+                originalBytes
+            }
 
         val generatedBytes = openAIImageGenerationService.generateImages(imageBytes, promptId)
 
@@ -653,7 +658,12 @@ class ImageManagementService(
         cropArea: CropArea?,
     ): PublicImageGenerationResponse {
         val originalBytes = imageFile.bytes
-        val imageBytes = if (cropArea != null) imageConversionService.cropImage(originalBytes, cropArea) else originalBytes
+        val imageBytes =
+            if (cropArea != null) {
+                imageConversionService.cropImage(originalBytes, cropArea)
+            } else {
+                originalBytes
+            }
         val generatedBytes = openAIImageGenerationService.generateImages(imageBytes, promptId)
 
         val generatedImages =

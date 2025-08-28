@@ -70,12 +70,24 @@ class AdminMugVariantController(
         @ModelAttribute request: MugVariantImageUploadRequest,
     ): ResponseEntity<MugArticleVariantDto> {
         logger.info {
-            "Received image upload for variant $variantId - File: ${request.image.originalFilename}, " +
-                "Size: ${request.image.size} bytes, Crop params: x=${request.cropX}, y=${request.cropY}, width=${request.cropWidth}, height=${request.cropHeight}"
+            (
+                """
+                Received image upload for variant $variantId
+                File: ${request.image.originalFilename}, Size: ${request.image.size} bytes
+                Crop params: x=${request.cropX}, y=${request.cropY}, width=${request.cropWidth}, height=${request.cropHeight}
+                """
+                .trimIndent()
+            )
         }
 
         // Create crop area if crop parameters are provided
-        val cropArea = CropAreaUtils.createIfPresent(request.cropX, request.cropY, request.cropWidth, request.cropHeight)
+        val cropArea =
+            CropAreaUtils.createIfPresent(
+                request.cropX,
+                request.cropY,
+                request.cropWidth,
+                request.cropHeight,
+            )
 
         // Store the image directly in the mug variant images directory
         val storedFilename = imageStorageService.storeMugVariantImage(request.image, cropArea)

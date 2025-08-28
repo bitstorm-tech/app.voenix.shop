@@ -41,7 +41,15 @@ class UserImageController(
         @AuthenticationPrincipal userDetails: UserDetails,
     ): PublicImageGenerationResponse {
         val user = userService.getUserByEmail(userDetails.username)
-        logger.info { "Received authenticated image generation request from user ${user.id} for prompt ID: ${form.promptId}" }
+        logger.info {
+            (
+                """
+                Received authenticated image generation request from user ${user.id}
+                Prompt ID: ${form.promptId}
+                """
+                .trimIndent()
+            )
+        }
 
         // Create crop area if all crop parameters are provided
         val cropArea = CropAreaUtils.createIfPresent(form.cropX, form.cropY, form.cropWidth, form.cropHeight)
@@ -54,7 +62,14 @@ class UserImageController(
         val response = imageFacade.generateUserImageWithIds(form.promptId, uploadedImage.uuid, user.id, null)
 
         logger.info {
-            "Generated ${response.generatedImageIds.size} images with IDs: ${response.generatedImageIds} for user ${user.id}"
+            (
+                """
+                Generated ${response.generatedImageIds.size} images
+                IDs: ${response.generatedImageIds}
+                User: ${user.id}
+                """
+                .trimIndent()
+            )
         }
 
         return response
