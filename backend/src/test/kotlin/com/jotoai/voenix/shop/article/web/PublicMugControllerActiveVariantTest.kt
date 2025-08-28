@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
 import com.ninjasquad.springmockk.MockkBean
+import io.mockk.confirmVerified
 import io.mockk.every
 import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
@@ -226,7 +227,7 @@ class PublicMugControllerActiveVariantTest {
     fun getAllMugs_DefaultVariantIsActive() {
         // Given
         val mugs = listOf(testMugWithMixedVariants)
-        `when`(articleQueryService.findPublicMugs()).thenReturn(mugs)
+        every { articleQueryService.findPublicMugs() } returns mugs
 
         // When & Then
         mockMvc
@@ -244,7 +245,7 @@ class PublicMugControllerActiveVariantTest {
         // active/inactive filtering - it's handled at the service layer
 
         // Given
-        `when`(articleQueryService.findPublicMugs()).thenReturn(listOf(testMugWithMixedVariants))
+        every { articleQueryService.findPublicMugs() } returns listOf(testMugWithMixedVariants)
 
         // When
         mockMvc
@@ -254,7 +255,7 @@ class PublicMugControllerActiveVariantTest {
         // Then
         // Controller just passes through what service returns
         // Service is responsible for filtering
-        verify(articleQueryService, times(1)).findPublicMugs()
-        verifyNoMoreInteractions(articleQueryService)
+        verify(exactly = 1) { articleQueryService.findPublicMugs() }
+        confirmVerified(articleQueryService)
     }
 }

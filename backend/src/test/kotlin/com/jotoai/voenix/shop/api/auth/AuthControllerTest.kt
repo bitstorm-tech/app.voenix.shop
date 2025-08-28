@@ -7,7 +7,6 @@ import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import com.ninjasquad.springmockk.MockkBean
-import io.mockk.any
 import io.mockk.every
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

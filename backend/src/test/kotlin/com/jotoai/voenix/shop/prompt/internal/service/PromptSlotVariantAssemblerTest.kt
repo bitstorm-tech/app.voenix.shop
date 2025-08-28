@@ -4,7 +4,6 @@ import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
-import io.mockk.any
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -267,7 +266,7 @@ class PromptSlotVariantAssemblerTest {
         assertNotNull(result.slotType)
 
         // Verify StoragePathService has no interactions when filename is null
-        verifyNoInteractions(storagePathService)
+        verify(exactly = 0) { storagePathService.getImageUrl(any(), any()) }
     }
 
     @Test

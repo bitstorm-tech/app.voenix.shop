@@ -12,6 +12,7 @@ import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariantMapping
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariantMappingId
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSubCategory
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -33,8 +34,8 @@ class PromptAssemblerTest {
 
     @BeforeEach
     fun setUp() {
-        promptSlotVariantAssembler = mock(PromptSlotVariantAssembler::class.java)
-        storagePathService = mock(StoragePathService::class.java)
+        promptSlotVariantAssembler = mockk()
+        storagePathService = mockk()
         assembler = PromptAssembler(promptSlotVariantAssembler, storagePathService)
 
         // Setup test data
@@ -167,7 +168,7 @@ class PromptAssemblerTest {
         assertEquals(false, result.active)
         assertNull(result.exampleImageUrl)
 
-        verifyNoInteractions(storagePathService)
+        verify(exactly = 0) { storagePathService.getImageUrl(any(), any()) }
     }
 
     @Test
@@ -269,10 +270,13 @@ class PromptAssemblerTest {
                 slotType = null,
             )
 
-        `when`(storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename))
-            .thenReturn(expectedImageUrl)
-        `when`(promptSlotVariantAssembler.toPublicDto(testSlotVariant))
-            .thenReturn(expectedPublicSlotDto)
+        every {
+            storagePathService.getImageUrl(
+                ImageType.PROMPT_EXAMPLE,
+                exampleImageFilename,
+            )
+        } returns expectedImageUrl
+        every { promptSlotVariantAssembler.toPublicDto(testSlotVariant) } returns expectedPublicSlotDto
 
         // When
         val result = assembler.toPublicDto(entity)
@@ -290,8 +294,8 @@ class PromptAssemblerTest {
         assertEquals(1, result.slots.size)
         assertEquals(expectedPublicSlotDto, result.slots[0])
 
-        verify(storagePathService).getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename)
-        verify(promptSlotVariantAssembler).toPublicDto(testSlotVariant)
+        verify { storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename) }
+        verify { promptSlotVariantAssembler.toPublicDto(testSlotVariant) }
     }
 
     @Test
@@ -338,7 +342,7 @@ class PromptAssemblerTest {
         assertNull(result.exampleImageUrl)
         assertNotNull(result.category)
 
-        verifyNoInteractions(storagePathService)
+        verify(exactly = 0) { storagePathService.getImageUrl(any(), any()) }
     }
 
     @Test
@@ -525,10 +529,13 @@ class PromptAssemblerTest {
         expectedImageUrl: String,
         expectedSlotDto: PromptSlotVariantDto,
     ) {
-        `when`(storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename))
-            .thenReturn(expectedImageUrl)
-        `when`(promptSlotVariantAssembler.toDto(testSlotVariant))
-            .thenReturn(expectedSlotDto)
+        every {
+            storagePathService.getImageUrl(
+                ImageType.PROMPT_EXAMPLE,
+                exampleImageFilename,
+            )
+        } returns expectedImageUrl
+        every { promptSlotVariantAssembler.toDto(testSlotVariant) } returns expectedSlotDto
     }
 
     private fun verifyPromptDtoFields(
@@ -558,8 +565,8 @@ class PromptAssemblerTest {
     }
 
     private fun verifyPromptTestInteractions(exampleImageFilename: String) {
-        verify(storagePathService).getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename)
-        verify(promptSlotVariantAssembler).toDto(testSlotVariant)
+        verify { storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename) }
+        verify { promptSlotVariantAssembler.toDto(testSlotVariant) }
     }
 
     // Helper methods for multiple slot variants test
@@ -637,10 +644,8 @@ class PromptAssemblerTest {
         expectedDto1: PromptSlotVariantDto,
         expectedDto2: PromptSlotVariantDto,
     ) {
-        `when`(promptSlotVariantAssembler.toDto(testSlotVariant))
-            .thenReturn(expectedDto1)
-        `when`(promptSlotVariantAssembler.toDto(slotVariant2))
-            .thenReturn(expectedDto2)
+        every { promptSlotVariantAssembler.toDto(testSlotVariant) } returns expectedDto1
+        every { promptSlotVariantAssembler.toDto(slotVariant2) } returns expectedDto2
     }
 
     private fun verifyMultipleSlotVariantsFields(
@@ -655,7 +660,7 @@ class PromptAssemblerTest {
     }
 
     private fun verifyMultipleSlotVariantsInteractions(slotVariant2: PromptSlotVariant) {
-        verify(promptSlotVariantAssembler).toDto(testSlotVariant)
-        verify(promptSlotVariantAssembler).toDto(slotVariant2)
+        verify { promptSlotVariantAssembler.toDto(testSlotVariant) }
+        verify { promptSlotVariantAssembler.toDto(slotVariant2) }
     }
 }

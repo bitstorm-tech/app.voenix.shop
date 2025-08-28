@@ -7,7 +7,6 @@ import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleDetails
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleDetailsRepository
-import io.mockk.any
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -73,7 +72,7 @@ class MugDetailsServiceTest {
             // Then
             verify(exactly = 1) { mugDetailsRepository.saveAndFlush(any()) }
 
-            val savedDetails = savedDetailsCaptor.value
+            val savedDetails = savedDetailsCaptor.captured
             assertThat(savedDetails.articleId).isEqualTo(1L)
             assertThat(savedDetails.heightMm).isEqualTo(95)
             assertThat(savedDetails.diameterMm).isEqualTo(82)
@@ -110,7 +109,7 @@ class MugDetailsServiceTest {
             val result = mugDetailsService.create(article, request)
 
             // Then
-            val savedDetails = savedDetailsCaptor.value
+            val savedDetails = savedDetailsCaptor.captured
             assertThat(savedDetails.documentFormatWidthMm).isNull()
             assertThat(savedDetails.documentFormatHeightMm).isNull()
             assertThat(savedDetails.documentFormatMarginBottomMm).isNull()
@@ -272,8 +271,8 @@ class MugDetailsServiceTest {
             val result = mugDetailsService.update(article, request)
 
             // Then
-            verify(mugDetailsRepository, times(1)).findByArticleId(1L)
-            verify(mugDetailsRepository, times(1)).saveAndFlush(any(MugArticleDetails::class.java))
+            verify(exactly = 1) { mugDetailsRepository.findByArticleId(1L) }
+            verify(exactly = 1) { mugDetailsRepository.saveAndFlush(any()) }
         }
 
         @Test

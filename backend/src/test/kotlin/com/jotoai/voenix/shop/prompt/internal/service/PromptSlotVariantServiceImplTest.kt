@@ -9,7 +9,6 @@ import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
-import io.mockk.any
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -653,7 +652,7 @@ class PromptSlotVariantServiceImplTest {
         @Test
         fun `should throw exception when getting non-existent variant by id`() {
             // Given
-            whenever(promptSlotVariantRepository.findById(999L)).thenReturn(Optional.empty())
+            every { promptSlotVariantRepository.findById(999L) } returns Optional.empty()
 
             // When/Then
             assertThrows<PromptSlotVariantNotFoundException> {
@@ -666,8 +665,8 @@ class PromptSlotVariantServiceImplTest {
         @Test
         fun `should check if variant exists by id`() {
             // Given
-            whenever(promptSlotVariantRepository.existsById(1L)).thenReturn(true)
-            whenever(promptSlotVariantRepository.existsById(999L)).thenReturn(false)
+            every { promptSlotVariantRepository.existsById(1L) } returns true
+            every { promptSlotVariantRepository.existsById(999L) } returns false
 
             // When
             val existsResult = service.existsById(1L)
@@ -714,10 +713,10 @@ class PromptSlotVariantServiceImplTest {
             // Then
             assertNotNull(result)
 
-            val entityCaptor = argumentCaptor<PromptSlotVariant>()
+            val entityCaptor = slot<PromptSlotVariant>()
             verify { promptSlotVariantRepository.save(capture(entityCaptor)) }
-            assertEquals(longText, entityCaptor.firstValue.prompt)
-            assertEquals(longText, entityCaptor.firstValue.description)
+            assertEquals(longText, entityCaptor.captured.prompt)
+            assertEquals(longText, entityCaptor.captured.description)
         }
 
         @Test

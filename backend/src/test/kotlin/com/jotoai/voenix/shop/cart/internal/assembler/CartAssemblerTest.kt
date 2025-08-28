@@ -384,9 +384,9 @@ class CartAssemblerTest {
                 3002L to createGeneratedImageDto(filename = "unique-image.jpg"),
             )
 
-        whenever(articleQueryService.getArticlesByIds(listOf(1001L, 1002L, 1003L))).thenReturn(articles)
-        whenever(articleQueryService.getMugVariantsByIds(listOf(2001L, 2002L, 2003L))).thenReturn(variants)
-        whenever(imageQueryService.findGeneratedImagesByIds(listOf(3001L, 3002L))).thenReturn(images)
+        every { articleQueryService.getArticlesByIds(listOf(1001L, 1002L, 1003L)) } returns articles
+        every { articleQueryService.getMugVariantsByIds(listOf(2001L, 2002L, 2003L)) } returns variants
+        every { imageQueryService.findGeneratedImagesByIds(listOf(3001L, 3002L)) } returns images
     }
 
     private fun verifyBatchLoadResults(result: CartDto) {

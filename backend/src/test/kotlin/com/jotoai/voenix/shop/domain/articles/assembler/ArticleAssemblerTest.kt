@@ -13,7 +13,6 @@ import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
-import io.mockk.any
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -126,8 +125,8 @@ class ArticleAssemblerTest {
         assertEquals(0, result.mugVariants!!.size)
         assertNull(result.shirtVariants) // Will be null for non-SHIRT type
 
-        verifyNoInteractions(mugArticleVariantAssembler)
-        verifyNoInteractions(shirtArticleVariantAssembler)
+        verify(exactly = 0) { mugArticleVariantAssembler.toDto(any()) }
+        verify(exactly = 0) { shirtArticleVariantAssembler.toDto(any()) }
     }
 
     @Test
@@ -452,8 +451,8 @@ class ArticleAssemblerTest {
         testMugVariant: MugArticleVariant,
         expectedDto: MugArticleVariantDto,
     ) {
-        `when`(mugArticleVariantAssembler.toDto(testMugVariant)).thenReturn(expectedDto)
-        `when`(supplierService.getSupplierById(1L)).thenReturn(createTestSupplierDto())
+        every { mugArticleVariantAssembler.toDto(testMugVariant) } returns expectedDto
+        every { supplierService.getSupplierById(1L) } returns createTestSupplierDto()
     }
 
     private fun createTestSupplierDto() =
@@ -507,9 +506,9 @@ class ArticleAssemblerTest {
     }
 
     private fun verifyMugArticleInteractions(testMugVariant: MugArticleVariant) {
-        verify(mugArticleVariantAssembler).toDto(testMugVariant)
-        verify(supplierService).getSupplierById(1L)
-        verifyNoInteractions(shirtArticleVariantAssembler)
+        verify { mugArticleVariantAssembler.toDto(testMugVariant) }
+        verify { supplierService.getSupplierById(1L) }
+        verify(exactly = 0) { shirtArticleVariantAssembler.toDto(any()) }
     }
 
     // Helper methods for SHIRT article test
@@ -740,8 +739,8 @@ class ArticleAssemblerTest {
         dto1: ShirtArticleVariantDto,
         dto2: ShirtArticleVariantDto,
     ) {
-        `when`(shirtArticleVariantAssembler.toDto(variant1)).thenReturn(dto1)
-        `when`(shirtArticleVariantAssembler.toDto(variant2)).thenReturn(dto2)
+        every { shirtArticleVariantAssembler.toDto(variant1) } returns dto1
+        every { shirtArticleVariantAssembler.toDto(variant2) } returns dto2
     }
 
     private fun verifyMultipleShirtVariantsFields(
@@ -762,9 +761,9 @@ class ArticleAssemblerTest {
         variant1: ShirtArticleVariant,
         variant2: ShirtArticleVariant,
     ) {
-        verify(shirtArticleVariantAssembler).toDto(variant1)
-        verify(shirtArticleVariantAssembler).toDto(variant2)
-        verifyNoInteractions(mugArticleVariantAssembler)
+        verify { shirtArticleVariantAssembler.toDto(variant1) }
+        verify { shirtArticleVariantAssembler.toDto(variant2) }
+        verify(exactly = 0) { mugArticleVariantAssembler.toDto(any()) }
     }
 
     // Helper methods for complex category and supplier test
@@ -805,28 +804,26 @@ class ArticleAssemblerTest {
     )
 
     private fun setupComplexSupplierMock() {
-        `when`(supplierService.getSupplierById(777L))
-            .thenReturn(
-                SupplierDto(
-                    id = 777L,
-                    name = "Complex & Special Supplier",
-                    title = null,
-                    firstName = null,
-                    lastName = null,
-                    street = null,
-                    houseNumber = null,
-                    city = null,
-                    postalCode = null,
-                    countryId = null,
-                    countryName = null,
-                    phoneNumber1 = null,
-                    phoneNumber2 = null,
-                    phoneNumber3 = null,
-                    email = null,
-                    website = null,
-                    createdAt = null,
-                    updatedAt = null,
-                ),
+        every { supplierService.getSupplierById(777L) } returns
+            SupplierDto(
+                id = 777L,
+                name = "Complex & Special Supplier",
+                title = null,
+                firstName = null,
+                lastName = null,
+                street = null,
+                houseNumber = null,
+                city = null,
+                postalCode = null,
+                countryId = null,
+                countryName = null,
+                phoneNumber1 = null,
+                phoneNumber2 = null,
+                phoneNumber3 = null,
+                email = null,
+                website = null,
+                createdAt = null,
+                updatedAt = null,
             )
     }
 

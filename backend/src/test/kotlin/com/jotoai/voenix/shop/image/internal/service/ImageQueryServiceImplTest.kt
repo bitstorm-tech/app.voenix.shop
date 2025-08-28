@@ -204,7 +204,7 @@ class ImageQueryServiceImplTest {
         val userId = 1L
         val uploadedImage = createUploadedImage(UploadedImageParams(uuid = uuid, userId = userId))
 
-        whenever(uploadedImageRepository.findByUserIdAndUuid(userId, uuid)).thenReturn(uploadedImage)
+        every { uploadedImageRepository.findByUserIdAndUuid(userId, uuid) } returns uploadedImage
 
         // When
         val result = imageQueryService.existsByUuidAndUserId(uuid, userId)
@@ -219,7 +219,7 @@ class ImageQueryServiceImplTest {
         val uuid = UUID.randomUUID()
         val userId = 1L
 
-        whenever(uploadedImageRepository.findByUserIdAndUuid(userId, uuid)).thenReturn(null)
+        every { uploadedImageRepository.findByUserIdAndUuid(userId, uuid) } returns null
 
         // When
         val result = imageQueryService.existsByUuidAndUserId(uuid, userId)
@@ -235,7 +235,7 @@ class ImageQueryServiceImplTest {
         val ownerId = 1L
         val requesterId = 2L
 
-        whenever(uploadedImageRepository.findByUserIdAndUuid(requesterId, uuid)).thenReturn(null)
+        every { uploadedImageRepository.findByUserIdAndUuid(requesterId, uuid) } returns null
 
         // When
         val result = imageQueryService.existsByUuidAndUserId(uuid, requesterId)
@@ -333,7 +333,7 @@ class ImageQueryServiceImplTest {
         val imageId = 123L
         val userId = 1L
 
-        whenever(generatedImageRepository.existsByIdAndUserId(imageId, userId)).thenReturn(true)
+        every { generatedImageRepository.existsByIdAndUserId(imageId, userId) } returns true
 
         // When
         val result = imageQueryService.validateGeneratedImageOwnership(imageId, userId)
@@ -348,7 +348,7 @@ class ImageQueryServiceImplTest {
         val imageId = 123L
         val userId = 1L
 
-        whenever(generatedImageRepository.existsByIdAndUserId(imageId, userId)).thenReturn(false)
+        every { generatedImageRepository.existsByIdAndUserId(imageId, userId) } returns false
 
         // When
         val result = imageQueryService.validateGeneratedImageOwnership(imageId, userId)
@@ -363,7 +363,7 @@ class ImageQueryServiceImplTest {
         val imageId = 123L
         val userId = null
 
-        whenever(generatedImageRepository.existsById(imageId)).thenReturn(true)
+        every { generatedImageRepository.existsById(imageId) } returns true
 
         // When
         val result = imageQueryService.validateGeneratedImageOwnership(imageId, userId)
@@ -378,7 +378,7 @@ class ImageQueryServiceImplTest {
         val imageId = 123L
         val userId = null
 
-        whenever(generatedImageRepository.existsById(imageId)).thenReturn(false)
+        every { generatedImageRepository.existsById(imageId) } returns false
 
         // When
         val result = imageQueryService.validateGeneratedImageOwnership(imageId, userId)

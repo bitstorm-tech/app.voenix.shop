@@ -7,7 +7,6 @@ import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import io.mockk.any
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -199,7 +198,7 @@ class ShirtArticleVariantAssemblerTest {
 
         // Then
         assertEquals(expectedUrl, result.exampleImageUrl)
-        verify(storagePathService).getImageUrl(ImageType.SHIRT_VARIANT_EXAMPLE, filename)
+        verify { storagePathService.getImageUrl(ImageType.SHIRT_VARIANT_EXAMPLE, filename) }
     }
 
     @Test
@@ -291,8 +290,12 @@ class ShirtArticleVariantAssemblerTest {
             )
 
         val expectedUrl = "https://example.com/images/mint-lime-shirt.png"
-        `when`(storagePathService.getImageUrl(ImageType.SHIRT_VARIANT_EXAMPLE, "mint-lime-shirt.png"))
-            .thenReturn(expectedUrl)
+        every {
+            storagePathService.getImageUrl(
+                ImageType.SHIRT_VARIANT_EXAMPLE,
+                "mint-lime-shirt.png",
+            )
+        } returns expectedUrl
 
         // When
         val result = assembler.toDto(entity)

@@ -12,7 +12,6 @@ import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
-import io.mockk.any
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -122,9 +121,9 @@ class MugVariantServiceTest {
 
         // Then
         assertTrue(result.isDefault)
-        val variantCaptor = ArgumentCaptor.forClass(MugArticleVariant::class.java)
-        verify(mugVariantRepository).save(variantCaptor.capture())
-        assertTrue(variantCaptor.value.isDefault)
+        val variantCaptor = slot<MugArticleVariant>()
+        verify { mugVariantRepository.save(capture(variantCaptor)) }
+        assertTrue(variantCaptor.captured.isDefault)
     }
 
     @Test
@@ -149,8 +148,8 @@ class MugVariantServiceTest {
                 isDefault = true,
             )
 
-        `when`(articleRepository.findById(1L)).thenReturn(Optional.of(testArticle))
-        `when`(mugVariantRepository.findByArticleId(1L)).thenReturn(listOf(existingVariant))
+        every { articleRepository.findById(1L) } returns Optional.of(testArticle)
+        every { mugVariantRepository.findByArticleId(1L) } returns listOf(existingVariant)
 
         val savedVariant =
             MugArticleVariant(
@@ -163,7 +162,7 @@ class MugVariantServiceTest {
                 isDefault = true,
             )
 
-        `when`(mugVariantRepository.save(any(MugArticleVariant::class.java))).thenReturn(savedVariant)
+        every { mugVariantRepository.save(any<MugArticleVariant>()) } returns savedVariant
 
         val expectedDto =
             MugArticleVariantDto(
@@ -179,7 +178,7 @@ class MugVariantServiceTest {
                 createdAt = null,
                 updatedAt = null,
             )
-        `when`(mugArticleVariantAssembler.toDto(savedVariant)).thenReturn(expectedDto)
+        every { mugArticleVariantAssembler.toDto(savedVariant) } returns expectedDto
 
         // When
         val result = mugVariantService.create(1L, request)

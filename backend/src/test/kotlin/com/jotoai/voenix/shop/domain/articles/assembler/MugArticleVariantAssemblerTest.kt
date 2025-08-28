@@ -7,7 +7,6 @@ import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import io.mockk.any
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

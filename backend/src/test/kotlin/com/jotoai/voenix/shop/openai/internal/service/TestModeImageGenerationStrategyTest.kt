@@ -319,7 +319,7 @@ class TestModeImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptQueryService.getPromptById(1L)).thenReturn(mockPrompt)
+        every { promptQueryService.getPromptById(1L) } returns mockPrompt
 
         // When
         val result = testModeStrategy.generateImages(emptyImageFile, request)

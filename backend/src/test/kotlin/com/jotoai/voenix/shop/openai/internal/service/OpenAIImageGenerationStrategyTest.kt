@@ -131,7 +131,7 @@ class OpenAIImageGenerationStrategyTest {
             openAIStrategy.generateImages(mockImageFile, request)
         }
 
-        verify(promptQueryService).getPromptById(promptId)
+        verify { promptQueryService.getPromptById(promptId) }
     }
 
     @Test
@@ -231,7 +231,7 @@ class OpenAIImageGenerationStrategyTest {
             openAIStrategy.generateImages(mockImageFile, request)
         }
 
-        verify(promptQueryService).getPromptById(promptId)
+        verify { promptQueryService.getPromptById(promptId) }
     }
 
     @Test
@@ -317,14 +317,14 @@ class OpenAIImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptQueryService.getPromptById(promptId)).thenReturn(mockPrompt)
+        every { promptQueryService.getPromptById(promptId) } returns mockPrompt
 
         // When/Then
         assertThrows<RuntimeException> {
             openAIStrategy.generateImages(mockImageFile, request)
         }
 
-        verify(promptQueryService).getPromptById(promptId)
+        verify { promptQueryService.getPromptById(promptId) }
     }
 
     @Test
@@ -347,7 +347,7 @@ class OpenAIImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptQueryService.getPromptById(promptId)).thenReturn(mockPrompt)
+        every { promptQueryService.getPromptById(promptId) } returns mockPrompt
 
         // Test different image sizes
         val sizes =
@@ -424,7 +424,7 @@ class OpenAIImageGenerationStrategyTest {
         }
 
         // Verify prompt service called for each quality test
-        verify(promptQueryService, org.mockito.Mockito.times(qualities.size)).getPromptById(promptId)
+        verify(exactly = qualities.size) { promptQueryService.getPromptById(promptId) }
     }
 
     @Test
@@ -447,7 +447,7 @@ class OpenAIImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptQueryService.getPromptById(promptId)).thenReturn(mockPrompt)
+        every { promptQueryService.getPromptById(promptId) } returns mockPrompt
 
         // Test different background settings
         val backgrounds =
@@ -474,7 +474,7 @@ class OpenAIImageGenerationStrategyTest {
         }
 
         // Verify prompt service called for each background test
-        verify(promptQueryService, org.mockito.Mockito.times(backgrounds.size)).getPromptById(promptId)
+        verify(exactly = backgrounds.size) { promptQueryService.getPromptById(promptId) }
     }
 
     @Test
@@ -497,7 +497,7 @@ class OpenAIImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptQueryService.getPromptById(promptId)).thenReturn(mockPrompt)
+        every { promptQueryService.getPromptById(promptId) } returns mockPrompt
 
         val request =
             CreateImageEditRequest(

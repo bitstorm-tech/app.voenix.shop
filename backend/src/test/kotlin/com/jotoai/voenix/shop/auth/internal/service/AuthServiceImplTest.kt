@@ -13,7 +13,6 @@ import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UserAuthenticationDto
 import com.jotoai.voenix.shop.user.api.dto.UserDto
-import io.mockk.any
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
