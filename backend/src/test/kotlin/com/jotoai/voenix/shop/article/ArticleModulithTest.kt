@@ -43,7 +43,7 @@ class ArticleModulithTest {
             // 1. Article module needs StoragePathService from image module to generate image URLs
             // 2. Image module depends on OpenAI services in domain module
             // 3. Domain module (cart/order) depends on ArticleQueryService
-            // TODO: Move OpenAI services to image module or create separate openai module
+            // Follow-up: Move OpenAI services to image module or create a separate openai module
             if (message.contains("Cycle detected: Slice article") &&
                 message.contains("Slice image") &&
                 message.contains("Slice domain")

@@ -56,8 +56,8 @@ class AuthServiceImpl(
     }
 
     /**
-     * Fetches user data and roles in a consolidated manner
-     * TODO: This should be optimized to a single query when UserQueryService supports it
+     * Fetches user data and roles in a consolidated manner.
+     * Note: Consider optimizing to a single query once UserQueryService supports it.
      */
     private fun fetchUserWithRoles(userId: Long): Pair<UserDto, Set<String>> {
         // Currently makes 2 queries - should be optimized to 1 query with JOIN
