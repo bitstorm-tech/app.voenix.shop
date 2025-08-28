@@ -28,7 +28,8 @@ class SecurityConfig {
 
     @Bean
     fun authenticationManager(authConfig: AuthenticationConfiguration): AuthenticationManager =
-        authConfig.authenticationManager
+        authConfig
+            .authenticationManager
 
     @Bean
     fun filterChain(http: HttpSecurity): SecurityFilterChain =

@@ -13,16 +13,16 @@ import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
+import io.mockk.any
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoInteractions
-import org.mockito.Mockito.`when`
 import java.time.OffsetDateTime
 
 @Suppress("LongMethod", "LargeClass")
@@ -38,9 +38,9 @@ class ArticleAssemblerTest {
 
     @BeforeEach
     fun setUp() {
-        mugArticleVariantAssembler = mock(MugArticleVariantAssembler::class.java)
-        shirtArticleVariantAssembler = mock(ShirtArticleVariantAssembler::class.java)
-        supplierService = mock(SupplierService::class.java)
+        mugArticleVariantAssembler = mockk()
+        shirtArticleVariantAssembler = mockk()
+        supplierService = mockk()
         assembler = ArticleAssembler(mugArticleVariantAssembler, shirtArticleVariantAssembler, supplierService)
 
         // Setup test data
@@ -551,8 +551,8 @@ class ArticleAssemblerTest {
         testShirtVariant: ShirtArticleVariant,
         expectedDto: ShirtArticleVariantDto,
     ) {
-        `when`(shirtArticleVariantAssembler.toDto(testShirtVariant)).thenReturn(expectedDto)
-        `when`(supplierService.getSupplierById(1L)).thenReturn(createTestSupplierDto())
+        every { shirtArticleVariantAssembler.toDto(testShirtVariant) } returns expectedDto
+        every { supplierService.getSupplierById(1L) } returns createTestSupplierDto()
     }
 
     private fun verifyShirtArticleFields(
@@ -569,8 +569,8 @@ class ArticleAssemblerTest {
     }
 
     private fun verifyShirtArticleInteractions(testShirtVariant: ShirtArticleVariant) {
-        verify(shirtArticleVariantAssembler).toDto(testShirtVariant)
-        verifyNoInteractions(mugArticleVariantAssembler)
+        verify { shirtArticleVariantAssembler.toDto(testShirtVariant) }
+        verify(exactly = 0) { mugArticleVariantAssembler.toDto(any()) }
     }
 
     // Helper methods for multiple MUG variants test
@@ -649,8 +649,8 @@ class ArticleAssemblerTest {
         dto1: MugArticleVariantDto,
         dto2: MugArticleVariantDto,
     ) {
-        `when`(mugArticleVariantAssembler.toDto(variant1)).thenReturn(dto1)
-        `when`(mugArticleVariantAssembler.toDto(variant2)).thenReturn(dto2)
+        every { mugArticleVariantAssembler.toDto(variant1) } returns dto1
+        every { mugArticleVariantAssembler.toDto(variant2) } returns dto2
     }
 
     private fun verifyMultipleMugVariantsFields(
@@ -671,9 +671,9 @@ class ArticleAssemblerTest {
         variant1: MugArticleVariant,
         variant2: MugArticleVariant,
     ) {
-        verify(mugArticleVariantAssembler).toDto(variant1)
-        verify(mugArticleVariantAssembler).toDto(variant2)
-        verifyNoInteractions(shirtArticleVariantAssembler)
+        verify { mugArticleVariantAssembler.toDto(variant1) }
+        verify { mugArticleVariantAssembler.toDto(variant2) }
+        verify(exactly = 0) { shirtArticleVariantAssembler.toDto(any()) }
     }
 
     // Helper methods for multiple SHIRT variants test

@@ -6,16 +6,15 @@ import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
 import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.user.api.dto.UserDto
+import com.ninjasquad.springmockk.MockkBean
+import io.mockk.any
+import io.mockk.every
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.any
-import org.mockito.kotlin.eq
-import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -34,7 +33,7 @@ class AuthControllerTest {
     @Autowired
     private lateinit var objectMapper: ObjectMapper
 
-    @MockitoBean
+    @MockkBean
     private lateinit var authService: AuthService
 
     @Test
@@ -64,7 +63,7 @@ class AuthControllerTest {
                 roles = listOf("USER"),
             )
 
-        whenever(authService.register(eq(registerRequest), any(), any())).thenReturn(loginResponse)
+        every { authService.register(registerRequest, any(), any()) } returns loginResponse
 
         // When & Then
         mockMvc
@@ -87,8 +86,9 @@ class AuthControllerTest {
                 password = "Test123!@&",
             )
 
-        whenever(authService.register(eq(registerRequest), any(), any()))
-            .thenThrow(ResourceAlreadyExistsException("User", "email", "existing@example.com"))
+        every {
+            authService.register(registerRequest, any(), any())
+        } throws ResourceAlreadyExistsException("User", "email", "existing@example.com")
 
         // When & Then
         mockMvc

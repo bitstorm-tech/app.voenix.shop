@@ -7,6 +7,11 @@ import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleDetails
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleDetailsRepository
+import io.mockk.any
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
@@ -15,12 +20,6 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.mockito.ArgumentCaptor
-import org.mockito.Mockito.any
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
 
 @DisplayName("MugDetailsService Tests")
 class MugDetailsServiceTest {
@@ -29,12 +28,12 @@ class MugDetailsServiceTest {
 
     @BeforeEach
     fun setUp() {
-        mugDetailsRepository = mock(MugArticleDetailsRepository::class.java)
+        mugDetailsRepository = mockk()
         mugDetailsService = MugDetailsService(mugDetailsRepository)
     }
 
     private fun createTestArticle(id: Long = 1L): Article {
-        val category = mock(ArticleCategory::class.java)
+        val category = mockk<ArticleCategory>()
         return Article(
             id = id,
             name = "Test Mug",
@@ -65,16 +64,14 @@ class MugDetailsServiceTest {
                     dishwasherSafe = true,
                 )
 
-            val savedDetailsCaptor = ArgumentCaptor.forClass(MugArticleDetails::class.java)
-            `when`(mugDetailsRepository.saveAndFlush(savedDetailsCaptor.capture())).thenAnswer { invocation ->
-                invocation.getArgument<MugArticleDetails>(0)
-            }
+            val savedDetailsCaptor = slot<MugArticleDetails>()
+            every { mugDetailsRepository.saveAndFlush(capture(savedDetailsCaptor)) } answers { firstArg() }
 
             // When
             val result = mugDetailsService.create(article, request)
 
             // Then
-            verify(mugDetailsRepository, times(1)).saveAndFlush(any(MugArticleDetails::class.java))
+            verify(exactly = 1) { mugDetailsRepository.saveAndFlush(any()) }
 
             val savedDetails = savedDetailsCaptor.value
             assertThat(savedDetails.articleId).isEqualTo(1L)
@@ -106,10 +103,8 @@ class MugDetailsServiceTest {
                     dishwasherSafe = true,
                 )
 
-            val savedDetailsCaptor = ArgumentCaptor.forClass(MugArticleDetails::class.java)
-            `when`(mugDetailsRepository.saveAndFlush(savedDetailsCaptor.capture())).thenAnswer { invocation ->
-                invocation.getArgument<MugArticleDetails>(0)
-            }
+            val savedDetailsCaptor = slot<MugArticleDetails>()
+            every { mugDetailsRepository.saveAndFlush(capture(savedDetailsCaptor)) } answers { firstArg() }
 
             // When
             val result = mugDetailsService.create(article, request)
@@ -232,17 +227,15 @@ class MugDetailsServiceTest {
                     dishwasherSafe = false,
                 )
 
-            `when`(mugDetailsRepository.findByArticleId(1L)).thenReturn(existingDetails)
-            `when`(mugDetailsRepository.saveAndFlush(any(MugArticleDetails::class.java))).thenAnswer { invocation ->
-                invocation.getArgument<MugArticleDetails>(0)
-            }
+            every { mugDetailsRepository.findByArticleId(1L) } returns existingDetails
+            every { mugDetailsRepository.saveAndFlush(any()) } answers { firstArg() }
 
             // When
             val result = mugDetailsService.update(article, request)
 
             // Then
-            verify(mugDetailsRepository, times(1)).findByArticleId(1L)
-            verify(mugDetailsRepository, times(1)).saveAndFlush(existingDetails)
+            verify(exactly = 1) { mugDetailsRepository.findByArticleId(1L) }
+            verify(exactly = 1) { mugDetailsRepository.saveAndFlush(existingDetails) }
 
             assertThat(existingDetails.heightMm).isEqualTo(95)
             assertThat(existingDetails.diameterMm).isEqualTo(82)
@@ -272,10 +265,8 @@ class MugDetailsServiceTest {
                     dishwasherSafe = true,
                 )
 
-            `when`(mugDetailsRepository.findByArticleId(1L)).thenReturn(null)
-            `when`(mugDetailsRepository.saveAndFlush(any(MugArticleDetails::class.java))).thenAnswer { invocation ->
-                invocation.getArgument<MugArticleDetails>(0)
-            }
+            every { mugDetailsRepository.findByArticleId(1L) } returns null
+            every { mugDetailsRepository.saveAndFlush(any()) } answers { firstArg() }
 
             // When
             val result = mugDetailsService.update(article, request)
@@ -313,10 +304,8 @@ class MugDetailsServiceTest {
                     dishwasherSafe = true,
                 )
 
-            `when`(mugDetailsRepository.findByArticleId(1L)).thenReturn(existingDetails)
-            `when`(mugDetailsRepository.saveAndFlush(any(MugArticleDetails::class.java))).thenAnswer { invocation ->
-                invocation.getArgument<MugArticleDetails>(0)
-            }
+            every { mugDetailsRepository.findByArticleId(1L) } returns existingDetails
+            every { mugDetailsRepository.saveAndFlush(any()) } answers { firstArg() }
 
             // When
             mugDetailsService.update(article, request)
@@ -352,7 +341,7 @@ class MugDetailsServiceTest {
                     dishwasherSafe = true,
                 )
 
-            `when`(mugDetailsRepository.findByArticleId(1L)).thenReturn(existingDetails)
+            every { mugDetailsRepository.findByArticleId(1L) } returns existingDetails
 
             // When/Then
             assertThatThrownBy { mugDetailsService.update(article, request) }
@@ -380,9 +369,7 @@ class MugDetailsServiceTest {
                     dishwasherSafe = true,
                 )
 
-            `when`(mugDetailsRepository.saveAndFlush(any(MugArticleDetails::class.java))).thenAnswer { invocation ->
-                invocation.getArgument<MugArticleDetails>(0)
-            }
+            every { mugDetailsRepository.saveAndFlush(any()) } answers { firstArg() }
 
             // When/Then - should not throw
             val result = mugDetailsService.create(article, request)
@@ -407,9 +394,7 @@ class MugDetailsServiceTest {
                     dishwasherSafe = true,
                 )
 
-            `when`(mugDetailsRepository.saveAndFlush(any(MugArticleDetails::class.java))).thenAnswer { invocation ->
-                invocation.getArgument<MugArticleDetails>(0)
-            }
+            every { mugDetailsRepository.saveAndFlush(any()) } answers { firstArg() }
 
             // When - Currently no max validation, so this should pass
             val result = mugDetailsService.create(article, request)

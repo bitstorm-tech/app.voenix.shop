@@ -11,17 +11,14 @@ import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariantMapping
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariantMappingId
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSubCategory
+import io.mockk.every
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoInteractions
-import org.mockito.Mockito.`when`
 import java.time.OffsetDateTime
 
 class PromptAssemblerTest {
@@ -400,8 +397,7 @@ class PromptAssemblerTest {
                 exampleImageFilename = filename,
             )
 
-        `when`(storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, filename))
-            .thenReturn(expectedUrl)
+        every { storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, filename) } returns expectedUrl
 
         // When
         val dtoResult = assembler.toDto(entity)
@@ -410,7 +406,7 @@ class PromptAssemblerTest {
         // Then
         assertEquals(expectedUrl, dtoResult.exampleImageUrl)
         assertEquals(expectedUrl, publicDtoResult.exampleImageUrl)
-        verify(storagePathService, times(2)).getImageUrl(ImageType.PROMPT_EXAMPLE, filename)
+        verify(exactly = 2) { storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, filename) }
     }
 
     @Test
@@ -467,8 +463,7 @@ class PromptAssemblerTest {
             )
 
         val expectedUrl = "https://example.com/complex.webp"
-        `when`(storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, "complex.webp"))
-            .thenReturn(expectedUrl)
+        every { storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, "complex.webp") } returns expectedUrl
 
         // When
         val dtoResult = assembler.toDto(entity)

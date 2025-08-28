@@ -9,6 +9,11 @@ import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
+import io.mockk.any
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -18,13 +23,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.kotlin.any
-import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.never
-import org.mockito.kotlin.times
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import java.time.OffsetDateTime
 import java.util.Optional
 
@@ -58,10 +56,10 @@ class PromptSlotVariantServiceImplTest {
 
     @BeforeEach
     fun setUp() {
-        promptSlotVariantRepository = mock()
-        promptSlotTypeRepository = mock()
-        promptSlotVariantAssembler = mock()
-        imageStorageService = mock()
+        promptSlotVariantRepository = mockk()
+        promptSlotTypeRepository = mockk()
+        promptSlotVariantAssembler = mockk()
+        imageStorageService = mockk()
 
         service =
             PromptSlotVariantServiceImpl(
@@ -97,10 +95,10 @@ class PromptSlotVariantServiceImplTest {
                     exampleImageFilename = request.exampleImageFilename,
                 )
 
-            whenever(promptSlotTypeRepository.existsById(1L)).thenReturn(true)
-            whenever(promptSlotVariantRepository.existsByName("New Variant")).thenReturn(false)
-            whenever(promptSlotVariantRepository.save(any())).thenReturn(savedEntity)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            every { promptSlotTypeRepository.existsById(1L) } returns true
+            every { promptSlotVariantRepository.existsByName("New Variant") } returns false
+            every { promptSlotVariantRepository.save(any()) } returns savedEntity
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
 
             // When
             val result = service.createSlotVariant(request)
@@ -108,10 +106,10 @@ class PromptSlotVariantServiceImplTest {
             // Then
             assertNotNull(result)
 
-            val entityCaptor = argumentCaptor<PromptSlotVariant>()
-            verify(promptSlotVariantRepository).save(entityCaptor.capture())
+            val entityCaptor = slot<PromptSlotVariant>()
+            verify { promptSlotVariantRepository.save(capture(entityCaptor)) }
 
-            val capturedEntity = entityCaptor.firstValue
+            val capturedEntity = entityCaptor.captured
             assertEquals(request.promptSlotTypeId, capturedEntity.promptSlotTypeId)
             assertEquals(request.name, capturedEntity.name)
             assertEquals(request.prompt, capturedEntity.prompt)
@@ -138,17 +136,17 @@ class PromptSlotVariantServiceImplTest {
                     name = request.name,
                 )
 
-            whenever(promptSlotTypeRepository.existsById(1L)).thenReturn(true)
-            whenever(promptSlotVariantRepository.existsByName("Minimal Variant")).thenReturn(false)
-            whenever(promptSlotVariantRepository.save(any())).thenReturn(savedEntity)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            every { promptSlotTypeRepository.existsById(1L) } returns true
+            every { promptSlotVariantRepository.existsByName("Minimal Variant") } returns false
+            every { promptSlotVariantRepository.save(any()) } returns savedEntity
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
 
             // When
             val result = service.createSlotVariant(request)
 
             // Then
             assertNotNull(result)
-            verify(promptSlotVariantRepository).save(any())
+            verify { promptSlotVariantRepository.save(any()) }
         }
 
         @Test
@@ -160,7 +158,7 @@ class PromptSlotVariantServiceImplTest {
                     name = "Invalid Variant",
                 )
 
-            whenever(promptSlotTypeRepository.existsById(999L)).thenReturn(false)
+            every { promptSlotTypeRepository.existsById(999L) } returns false
 
             // When/Then
             val exception =
@@ -169,7 +167,7 @@ class PromptSlotVariantServiceImplTest {
                 }
 
             assertEquals("PromptSlotType with id '999' does not exist", exception.message)
-            verify(promptSlotVariantRepository, never()).save(any())
+            verify(exactly = 0) { promptSlotVariantRepository.save(any()) }
         }
 
         @Test
@@ -181,8 +179,8 @@ class PromptSlotVariantServiceImplTest {
                     name = "Duplicate Name",
                 )
 
-            whenever(promptSlotTypeRepository.existsById(1L)).thenReturn(true)
-            whenever(promptSlotVariantRepository.existsByName("Duplicate Name")).thenReturn(true)
+            every { promptSlotTypeRepository.existsById(1L) } returns true
+            every { promptSlotVariantRepository.existsByName("Duplicate Name") } returns true
 
             // When/Then
             val exception =
@@ -191,7 +189,7 @@ class PromptSlotVariantServiceImplTest {
                 }
 
             assertEquals("PromptSlotVariant with name 'Duplicate Name' already exists", exception.message)
-            verify(promptSlotVariantRepository, never()).save(any())
+            verify(exactly = 0) { promptSlotVariantRepository.save(any()) }
         }
 
         @Test
@@ -212,17 +210,17 @@ class PromptSlotVariantServiceImplTest {
                     prompt = request.prompt,
                 )
 
-            whenever(promptSlotTypeRepository.existsById(1L)).thenReturn(true)
-            whenever(promptSlotVariantRepository.existsByName(request.name)).thenReturn(false)
-            whenever(promptSlotVariantRepository.save(any())).thenReturn(savedEntity)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            every { promptSlotTypeRepository.existsById(1L) } returns true
+            every { promptSlotVariantRepository.existsByName(request.name) } returns false
+            every { promptSlotVariantRepository.save(any()) } returns savedEntity
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
 
             // When
             val result = service.createSlotVariant(request)
 
             // Then
             assertNotNull(result)
-            verify(promptSlotVariantRepository).save(any())
+            verify { promptSlotVariantRepository.save(any()) }
         }
     }
 
@@ -251,11 +249,11 @@ class PromptSlotVariantServiceImplTest {
                     exampleImageFilename = "new.jpg",
                 )
 
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
-            whenever(promptSlotTypeRepository.existsById(2L)).thenReturn(true)
-            whenever(promptSlotVariantRepository.existsByNameAndIdNot("New Name", 1L)).thenReturn(false)
-            whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
+            every { promptSlotTypeRepository.existsById(2L) } returns true
+            every { promptSlotVariantRepository.existsByNameAndIdNot("New Name", 1L) } returns false
+            every { promptSlotVariantRepository.save(any()) } returns existingEntity
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
 
             // When
             val result = service.updateSlotVariant(1L, request)
@@ -268,7 +266,7 @@ class PromptSlotVariantServiceImplTest {
             assertEquals("New description", existingEntity.description)
             assertEquals("new.jpg", existingEntity.exampleImageFilename)
 
-            verify(promptSlotVariantRepository).save(existingEntity)
+            verify { promptSlotVariantRepository.save(existingEntity) }
         }
 
         @Test
@@ -288,10 +286,10 @@ class PromptSlotVariantServiceImplTest {
                     name = "Updated Name",
                 )
 
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
-            whenever(promptSlotVariantRepository.existsByNameAndIdNot("Updated Name", 1L)).thenReturn(false)
-            whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
+            every { promptSlotVariantRepository.existsByNameAndIdNot("Updated Name", 1L) } returns false
+            every { promptSlotVariantRepository.save(any()) } returns existingEntity
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
 
             // When
             val result = service.updateSlotVariant(1L, request)
@@ -303,7 +301,7 @@ class PromptSlotVariantServiceImplTest {
             assertEquals("Keep this description", existingEntity.description)
             assertEquals(1L, existingEntity.promptSlotTypeId)
 
-            verify(promptSlotTypeRepository, never()).existsById(any())
+            verify(exactly = 0) { promptSlotTypeRepository.existsById(any()) }
         }
 
         @Test
@@ -311,7 +309,7 @@ class PromptSlotVariantServiceImplTest {
             // Given
             val request = UpdatePromptSlotVariantRequest(name = "New Name")
 
-            whenever(promptSlotVariantRepository.findById(999L)).thenReturn(Optional.empty())
+            every { promptSlotVariantRepository.findById(999L) } returns Optional.empty()
 
             // When/Then
             val exception =
@@ -319,7 +317,7 @@ class PromptSlotVariantServiceImplTest {
                     service.updateSlotVariant(999L, request)
                 }
 
-            verify(promptSlotVariantRepository, never()).save(any())
+            verify(exactly = 0) { promptSlotVariantRepository.save(any()) }
         }
 
         @Test
@@ -337,8 +335,8 @@ class PromptSlotVariantServiceImplTest {
                     promptSlotTypeId = 999L,
                 )
 
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
-            whenever(promptSlotTypeRepository.existsById(999L)).thenReturn(false)
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
+            every { promptSlotTypeRepository.existsById(999L) } returns false
 
             // When/Then
             val exception =
@@ -347,7 +345,7 @@ class PromptSlotVariantServiceImplTest {
                 }
 
             assertEquals("PromptSlotType with id '999' does not exist", exception.message)
-            verify(promptSlotVariantRepository, never()).save(any())
+            verify(exactly = 0) { promptSlotVariantRepository.save(any()) }
         }
 
         @Test
@@ -365,8 +363,8 @@ class PromptSlotVariantServiceImplTest {
                     name = "Duplicate Name",
                 )
 
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
-            whenever(promptSlotVariantRepository.existsByNameAndIdNot("Duplicate Name", 1L)).thenReturn(true)
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
+            every { promptSlotVariantRepository.existsByNameAndIdNot("Duplicate Name", 1L) } returns true
 
             // When/Then
             val exception =
@@ -375,7 +373,7 @@ class PromptSlotVariantServiceImplTest {
                 }
 
             assertEquals("PromptSlotVariant with name 'Duplicate Name' already exists", exception.message)
-            verify(promptSlotVariantRepository, never()).save(any())
+            verify(exactly = 0) { promptSlotVariantRepository.save(any()) }
         }
 
         @Test
@@ -397,13 +395,16 @@ class PromptSlotVariantServiceImplTest {
                     exampleImageFilename = null,
                 )
 
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
-            whenever(promptSlotVariantRepository.existsByNameAndIdNot("Updated Name", 1L)).thenReturn(false)
-            whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
-            whenever(
-                imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE),
-            ).thenReturn(true)
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
+            every { promptSlotVariantRepository.existsByNameAndIdNot("Updated Name", 1L) } returns false
+            every { promptSlotVariantRepository.save(any()) } returns existingEntity
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
+            every {
+                imageStorageService.deleteFile(
+                    "old-image.jpg",
+                    ImageType.PROMPT_SLOT_VARIANT_EXAMPLE,
+                )
+            } returns true
 
             // When
             val result = service.updateSlotVariant(1L, request)
@@ -416,7 +417,7 @@ class PromptSlotVariantServiceImplTest {
             assertEquals(null, existingEntity.exampleImageFilename) // Should be cleared
 
             // Verify the old image was deleted
-            verify(imageStorageService).deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+            verify { imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) }
         }
 
         @Test
@@ -435,10 +436,10 @@ class PromptSlotVariantServiceImplTest {
                     prompt = "Updated prompt",
                 )
 
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
-            whenever(promptSlotVariantRepository.existsByNameAndIdNot("Same Name", 1L)).thenReturn(false)
-            whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
+            every { promptSlotVariantRepository.existsByNameAndIdNot("Same Name", 1L) } returns false
+            every { promptSlotVariantRepository.save(any()) } returns existingEntity
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
 
             // When
             val result = service.updateSlotVariant(1L, request)
@@ -466,12 +467,15 @@ class PromptSlotVariantServiceImplTest {
                     exampleImageFilename = "new-image.jpg",
                 )
 
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
-            whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
-            whenever(
-                imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE),
-            ).thenReturn(true)
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
+            every { promptSlotVariantRepository.save(any()) } returns existingEntity
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
+            every {
+                imageStorageService.deleteFile(
+                    "old-image.jpg",
+                    ImageType.PROMPT_SLOT_VARIANT_EXAMPLE,
+                )
+            } returns true
 
             // When
             val result = service.updateSlotVariant(1L, request)
@@ -481,7 +485,7 @@ class PromptSlotVariantServiceImplTest {
             assertEquals("new-image.jpg", existingEntity.exampleImageFilename)
 
             // Verify the old image was deleted
-            verify(imageStorageService).deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+            verify { imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) }
         }
 
         @Test
@@ -502,10 +506,10 @@ class PromptSlotVariantServiceImplTest {
                     exampleImageFilename = "same-image.jpg",
                 )
 
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
-            whenever(promptSlotVariantRepository.existsByNameAndIdNot("Updated Name", 1L)).thenReturn(false)
-            whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
+            every { promptSlotVariantRepository.existsByNameAndIdNot("Updated Name", 1L) } returns false
+            every { promptSlotVariantRepository.save(any()) } returns existingEntity
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
 
             // When
             val result = service.updateSlotVariant(1L, request)
@@ -515,7 +519,7 @@ class PromptSlotVariantServiceImplTest {
             assertEquals("same-image.jpg", existingEntity.exampleImageFilename)
 
             // Verify the image was NOT deleted since it's the same
-            verify(imageStorageService, never()).deleteFile(any(), any())
+            verify(exactly = 0) { imageStorageService.deleteFile(any(), any()) }
         }
     }
 
@@ -534,18 +538,21 @@ class PromptSlotVariantServiceImplTest {
                     exampleImageFilename = "image-to-delete.jpg",
                 )
 
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
-            whenever(
-                imageStorageService.deleteFile("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE),
-            ).thenReturn(true)
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
+            every {
+                imageStorageService.deleteFile(
+                    "image-to-delete.jpg",
+                    ImageType.PROMPT_SLOT_VARIANT_EXAMPLE,
+                )
+            } returns true
 
             // When
             service.deleteSlotVariant(1L)
 
             // Then
-            verify(promptSlotVariantRepository).findById(1L)
-            verify(imageStorageService).deleteFile("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
-            verify(promptSlotVariantRepository).deleteById(1L)
+            verify { promptSlotVariantRepository.findById(1L) }
+            verify { imageStorageService.deleteFile("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) }
+            verify { promptSlotVariantRepository.deleteById(1L) }
         }
 
         @Test
@@ -560,21 +567,21 @@ class PromptSlotVariantServiceImplTest {
                     exampleImageFilename = null,
                 )
 
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
 
             // When
             service.deleteSlotVariant(1L)
 
             // Then
-            verify(promptSlotVariantRepository).findById(1L)
-            verify(imageStorageService, never()).deleteFile(any(), any())
-            verify(promptSlotVariantRepository).deleteById(1L)
+            verify { promptSlotVariantRepository.findById(1L) }
+            verify(exactly = 0) { imageStorageService.deleteFile(any(), any()) }
+            verify { promptSlotVariantRepository.deleteById(1L) }
         }
 
         @Test
         fun `should throw exception when trying to delete non-existent variant`() {
             // Given
-            whenever(promptSlotVariantRepository.findById(999L)).thenReturn(Optional.empty())
+            every { promptSlotVariantRepository.findById(999L) } returns Optional.empty()
 
             // When/Then
             val exception =
@@ -582,9 +589,9 @@ class PromptSlotVariantServiceImplTest {
                     service.deleteSlotVariant(999L)
                 }
 
-            verify(promptSlotVariantRepository).findById(999L)
-            verify(promptSlotVariantRepository, never()).deleteById(any())
-            verify(imageStorageService, never()).deleteFile(any(), any())
+            verify { promptSlotVariantRepository.findById(999L) }
+            verify(exactly = 0) { promptSlotVariantRepository.deleteById(any()) }
+            verify(exactly = 0) { imageStorageService.deleteFile(any(), any()) }
         }
 
         @Test
@@ -599,13 +606,13 @@ class PromptSlotVariantServiceImplTest {
                     exampleImageFilename = null,
                 )
 
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
 
             // When
             service.deleteSlotVariant(1L)
 
             // Then
-            verify(promptSlotVariantRepository).deleteById(1L)
+            verify { promptSlotVariantRepository.deleteById(1L) }
         }
     }
 
@@ -616,31 +623,31 @@ class PromptSlotVariantServiceImplTest {
         fun `should get all slot variants`() {
             // Given
             val variants = listOf(testPromptSlotVariant)
-            whenever(promptSlotVariantRepository.findAll()).thenReturn(variants)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            every { promptSlotVariantRepository.findAll() } returns variants
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
 
             // When
             val result = service.getAllSlotVariants()
 
             // Then
             assertNotNull(result)
-            verify(promptSlotVariantRepository).findAll()
-            verify(promptSlotVariantAssembler, times(1)).toDto(any())
+            verify { promptSlotVariantRepository.findAll() }
+            verify(exactly = 1) { promptSlotVariantAssembler.toDto(any()) }
         }
 
         @Test
         fun `should get slot variant by id`() {
             // Given
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(testPromptSlotVariant))
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(testPromptSlotVariant)
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
 
             // When
             val result = service.getSlotVariantById(1L)
 
             // Then
             assertNotNull(result)
-            verify(promptSlotVariantRepository).findById(1L)
-            verify(promptSlotVariantAssembler).toDto(testPromptSlotVariant)
+            verify { promptSlotVariantRepository.findById(1L) }
+            verify { promptSlotVariantAssembler.toDto(testPromptSlotVariant) }
         }
 
         @Test
@@ -696,10 +703,10 @@ class PromptSlotVariantServiceImplTest {
                     description = request.description,
                 )
 
-            whenever(promptSlotTypeRepository.existsById(1L)).thenReturn(true)
-            whenever(promptSlotVariantRepository.existsByName("Long Text Variant")).thenReturn(false)
-            whenever(promptSlotVariantRepository.save(any())).thenReturn(savedEntity)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            every { promptSlotTypeRepository.existsById(1L) } returns true
+            every { promptSlotVariantRepository.existsByName("Long Text Variant") } returns false
+            every { promptSlotVariantRepository.save(any()) } returns savedEntity
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
 
             // When
             val result = service.createSlotVariant(request)
@@ -708,7 +715,7 @@ class PromptSlotVariantServiceImplTest {
             assertNotNull(result)
 
             val entityCaptor = argumentCaptor<PromptSlotVariant>()
-            verify(promptSlotVariantRepository).save(entityCaptor.capture())
+            verify { promptSlotVariantRepository.save(capture(entityCaptor)) }
             assertEquals(longText, entityCaptor.firstValue.prompt)
             assertEquals(longText, entityCaptor.firstValue.description)
         }
@@ -728,10 +735,10 @@ class PromptSlotVariantServiceImplTest {
                     name = "Concurrent Name",
                 )
 
-            whenever(promptSlotVariantRepository.findById(1L)).thenReturn(Optional.of(existingEntity))
-            whenever(promptSlotVariantRepository.existsByNameAndIdNot("Concurrent Name", 1L)).thenReturn(false)
-            whenever(promptSlotVariantRepository.save(any())).thenReturn(existingEntity)
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
+            every { promptSlotVariantRepository.existsByNameAndIdNot("Concurrent Name", 1L) } returns false
+            every { promptSlotVariantRepository.save(any()) } returns existingEntity
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
 
             // When
             val result = service.updateSlotVariant(1L, request)
@@ -751,10 +758,10 @@ class PromptSlotVariantServiceImplTest {
                     prompt = "Test",
                 )
 
-            whenever(promptSlotTypeRepository.existsById(1L)).thenReturn(true)
-            whenever(promptSlotVariantRepository.existsByName("  ")).thenReturn(false)
-            whenever(promptSlotVariantRepository.save(any())).thenReturn(mock())
-            whenever(promptSlotVariantAssembler.toDto(any())).thenReturn(mock())
+            every { promptSlotTypeRepository.existsById(1L) } returns true
+            every { promptSlotVariantRepository.existsByName("  ") } returns false
+            every { promptSlotVariantRepository.save(any()) } returns mockk()
+            every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
 
             // When - The validation should be handled by Jakarta validation annotations
             // This test verifies the service handles the value as-is

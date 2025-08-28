@@ -7,10 +7,10 @@ import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
 import com.jotoai.voenix.shop.user.api.UserService
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.mock
 import org.springframework.test.util.ReflectionTestUtils
 
 /**
@@ -20,15 +20,15 @@ class ImageManagementServiceSimpleTest {
     @Test
     fun `ImageManagementService should implement ImageFacade`() {
         // Given
-        val imageStorageService: ImageStorageService = mock()
-        val uploadedImageRepository: UploadedImageRepository = mock()
-        val generatedImageRepository: GeneratedImageRepository = mock()
-        val imageValidationService: ImageValidationService = mock()
-        val openAIImageGenerationService: OpenAIImageGenerationService = mock()
-        val storagePathService: StoragePathService = mock()
-        val userService: UserService = mock()
-        val userImageStorageService: UserImageStorageService = mock()
-        val imageConversionService: ImageConversionService = mock()
+        val imageStorageService: ImageStorageService = mockk()
+        val uploadedImageRepository: UploadedImageRepository = mockk()
+        val generatedImageRepository: GeneratedImageRepository = mockk()
+        val imageValidationService: ImageValidationService = mockk()
+        val openAIImageGenerationService: OpenAIImageGenerationService = mockk()
+        val storagePathService: StoragePathService = mockk()
+        val userService: UserService = mockk()
+        val userImageStorageService: UserImageStorageService = mockk()
+        val imageConversionService: ImageConversionService = mockk()
 
         // When
         val service =
@@ -52,15 +52,15 @@ class ImageManagementServiceSimpleTest {
     @Test
     fun `ImageManagementService should be properly initialized`() {
         // Given
-        val imageStorageService: ImageStorageService = mock()
-        val uploadedImageRepository: UploadedImageRepository = mock()
-        val generatedImageRepository: GeneratedImageRepository = mock()
-        val imageValidationService: ImageValidationService = mock()
-        val openAIImageGenerationService: OpenAIImageGenerationService = mock()
-        val storagePathService: StoragePathService = mock()
-        val userService: UserService = mock()
-        val userImageStorageService: UserImageStorageService = mock()
-        val imageConversionService: ImageConversionService = mock()
+        val imageStorageService: ImageStorageService = mockk()
+        val uploadedImageRepository: UploadedImageRepository = mockk()
+        val generatedImageRepository: GeneratedImageRepository = mockk()
+        val imageValidationService: ImageValidationService = mockk()
+        val openAIImageGenerationService: OpenAIImageGenerationService = mockk()
+        val storagePathService: StoragePathService = mockk()
+        val userService: UserService = mockk()
+        val userImageStorageService: UserImageStorageService = mockk()
+        val imageConversionService: ImageConversionService = mockk()
 
         // When
         val service =

@@ -64,10 +64,18 @@ dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.12")
 
     // Testing
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        // Exclude Mockito since we use MockK
+        exclude(group = "org.mockito", module = "mockito-core")
+        exclude(group = "org.mockito", module = "mockito-junit-jupiter")
+        exclude(group = "org.mockito", module = "mockito-inline")
+    }
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("com.h2database:h2")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    // MockK for Kotlin mocking
+    testImplementation("io.mockk:mockk:1.13.12")
+    // Spring Boot + MockK integration for @MockkBean
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
     testImplementation("org.springframework.modulith:spring-modulith-starter-test:1.4.2")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.12.2")
 }

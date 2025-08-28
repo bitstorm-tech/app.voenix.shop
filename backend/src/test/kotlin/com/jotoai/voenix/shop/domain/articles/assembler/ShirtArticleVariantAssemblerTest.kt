@@ -7,15 +7,15 @@ import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
+import io.mockk.any
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.verifyNoInteractions
-import org.mockito.Mockito.`when`
 import java.time.OffsetDateTime
 
 class ShirtArticleVariantAssemblerTest {
@@ -27,7 +27,7 @@ class ShirtArticleVariantAssemblerTest {
 
     @BeforeEach
     fun setUp() {
-        storagePathService = mock(StoragePathService::class.java)
+        storagePathService = mockk()
         assembler = ShirtArticleVariantAssembler(storagePathService)
 
         // Setup test data
@@ -71,8 +71,12 @@ class ShirtArticleVariantAssemblerTest {
                 updatedAt = updatedAt,
             )
 
-        `when`(storagePathService.getImageUrl(ImageType.SHIRT_VARIANT_EXAMPLE, exampleImageFilename))
-            .thenReturn(expectedImageUrl)
+        every {
+            storagePathService.getImageUrl(
+                ImageType.SHIRT_VARIANT_EXAMPLE,
+                exampleImageFilename,
+            )
+        } returns expectedImageUrl
 
         // When
         val result = assembler.toDto(entity)
@@ -86,7 +90,7 @@ class ShirtArticleVariantAssemblerTest {
         assertEquals(createdAt, result.createdAt)
         assertEquals(updatedAt, result.updatedAt)
 
-        verify(storagePathService).getImageUrl(ImageType.SHIRT_VARIANT_EXAMPLE, exampleImageFilename)
+        verify { storagePathService.getImageUrl(ImageType.SHIRT_VARIANT_EXAMPLE, exampleImageFilename) }
     }
 
     @Test
@@ -112,7 +116,7 @@ class ShirtArticleVariantAssemblerTest {
         assertNull(result.exampleImageUrl)
 
         // Verify StoragePathService has no interactions when filename is null
-        verifyNoInteractions(storagePathService)
+        verify(exactly = 0) { storagePathService.getImageUrl(any(), any()) }
     }
 
     @Test
@@ -130,8 +134,12 @@ class ShirtArticleVariantAssemblerTest {
             )
 
         val expectedImageUrl = "https://example.com/images/shirt-variants/green-shirt-small.png"
-        `when`(storagePathService.getImageUrl(ImageType.SHIRT_VARIANT_EXAMPLE, "green-shirt-small.png"))
-            .thenReturn(expectedImageUrl)
+        every {
+            storagePathService.getImageUrl(
+                ImageType.SHIRT_VARIANT_EXAMPLE,
+                "green-shirt-small.png",
+            )
+        } returns expectedImageUrl
 
         // When
         val result = assembler.toDto(entity)
@@ -179,8 +187,12 @@ class ShirtArticleVariantAssemblerTest {
             )
 
         val expectedUrl = "https://storage.example.com/shirts/custom-shirt-variant.webp"
-        `when`(storagePathService.getImageUrl(ImageType.SHIRT_VARIANT_EXAMPLE, filename))
-            .thenReturn(expectedUrl)
+        every {
+            storagePathService.getImageUrl(
+                ImageType.SHIRT_VARIANT_EXAMPLE,
+                filename,
+            )
+        } returns expectedUrl
 
         // When
         val result = assembler.toDto(entity)
@@ -225,8 +237,12 @@ class ShirtArticleVariantAssemblerTest {
             )
 
         val expectedUrl = "https://cdn.example.com/shirt-variants/white-shirt-3xl.jpg"
-        `when`(storagePathService.getImageUrl(ImageType.SHIRT_VARIANT_EXAMPLE, "white-shirt-3xl.jpg"))
-            .thenReturn(expectedUrl)
+        every {
+            storagePathService.getImageUrl(
+                ImageType.SHIRT_VARIANT_EXAMPLE,
+                "white-shirt-3xl.jpg",
+            )
+        } returns expectedUrl
 
         // When
         val result = assembler.toDto(entity)

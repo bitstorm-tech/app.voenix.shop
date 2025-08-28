@@ -19,15 +19,15 @@ import com.lowagie.text.pdf.BaseFont
 import com.lowagie.text.pdf.PdfContentByte
 import com.lowagie.text.pdf.PdfWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.imageio.ImageIO
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 
 /**
  * Consolidated PDF generation service implementation using OpenPDF library.
@@ -584,5 +584,6 @@ class PdfGenerationServiceImpl(
     }
 
     override fun convertToOrderPdfData(orderForPdf: OrderForPdfDto): OrderPdfData =
-        orderDataConverter.convertToOrderPdfData(orderForPdf)
+        orderDataConverter
+            .convertToOrderPdfData(orderForPdf)
 }

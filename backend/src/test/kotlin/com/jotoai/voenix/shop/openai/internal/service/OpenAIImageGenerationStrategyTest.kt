@@ -10,12 +10,12 @@ import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.PromptSlotTypeDto
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.PromptSlotVariantDto
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
 
@@ -33,7 +33,7 @@ class OpenAIImageGenerationStrategyTest {
 
     @BeforeEach
     fun setUp() {
-        promptQueryService = mock(PromptQueryService::class.java)
+        promptQueryService = mockk()
 
         // Initialize with test API key
         openAIStrategy =
@@ -81,7 +81,7 @@ class OpenAIImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptQueryService.getPromptById(promptId)).thenReturn(mockPrompt)
+        every { promptQueryService.getPromptById(promptId) } returns mockPrompt
 
         // When/Then - This will fail due to HTTP client call, but we verify prompt validation happens
         assertThrows<RuntimeException> {
@@ -89,7 +89,7 @@ class OpenAIImageGenerationStrategyTest {
         }
 
         // Verify prompt service was called for validation
-        verify(promptQueryService).getPromptById(promptId)
+        verify { promptQueryService.getPromptById(promptId) }
     }
 
     @Test
@@ -105,14 +105,14 @@ class OpenAIImageGenerationStrategyTest {
                 background = ImageBackground.AUTO,
             )
 
-        `when`(promptQueryService.getPromptById(promptId)).thenThrow(ResourceNotFoundException("Prompt not found"))
+        every { promptQueryService.getPromptById(promptId) } throws ResourceNotFoundException("Prompt not found")
 
         // When/Then
         assertThrows<ResourceNotFoundException> {
             openAIStrategy.generateImages(mockImageFile, request)
         }
 
-        verify(promptQueryService).getPromptById(promptId)
+        verify { promptQueryService.getPromptById(promptId) }
     }
 
     @Test
@@ -124,7 +124,7 @@ class OpenAIImageGenerationStrategyTest {
         val (slot1, slot2) = createTestSlotVariants(slotType1, slotType2)
         val mockPrompt = createMockPromptWithSlots(promptId, slot1, slot2)
 
-        `when`(promptQueryService.getPromptById(promptId)).thenReturn(mockPrompt)
+        every { promptQueryService.getPromptById(promptId) } returns mockPrompt
 
         // When/Then - This will fail due to HTTP call, but we verify prompt building logic
         assertThrows<RuntimeException> {
@@ -163,14 +163,14 @@ class OpenAIImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptQueryService.getPromptById(promptId)).thenReturn(mockPrompt)
+        every { promptQueryService.getPromptById(promptId) } returns mockPrompt
 
         // When/Then - This will fail due to HTTP call, but we verify prompt handling
         assertThrows<RuntimeException> {
             openAIStrategy.generateImages(mockImageFile, request)
         }
 
-        verify(promptQueryService).getPromptById(promptId)
+        verify { promptQueryService.getPromptById(promptId) }
     }
 
     @Test
@@ -224,7 +224,7 @@ class OpenAIImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptQueryService.getPromptById(promptId)).thenReturn(mockPrompt)
+        every { promptQueryService.getPromptById(promptId) } returns mockPrompt
 
         // When/Then - Should handle null prompt text gracefully
         assertThrows<RuntimeException> {
@@ -374,7 +374,7 @@ class OpenAIImageGenerationStrategyTest {
         }
 
         // Verify prompt service called for each size test
-        verify(promptQueryService, org.mockito.Mockito.times(sizes.size)).getPromptById(promptId)
+        verify(exactly = sizes.size) { promptQueryService.getPromptById(promptId) }
     }
 
     @Test
@@ -397,7 +397,7 @@ class OpenAIImageGenerationStrategyTest {
                 updatedAt = null,
             )
 
-        `when`(promptQueryService.getPromptById(promptId)).thenReturn(mockPrompt)
+        every { promptQueryService.getPromptById(promptId) } returns mockPrompt
 
         // Test different quality settings
         val qualities =
@@ -525,7 +525,7 @@ class OpenAIImageGenerationStrategyTest {
         }
 
         // Verify prompt service called for each file type test
-        verify(promptQueryService, org.mockito.Mockito.times(imageFiles.size)).getPromptById(promptId)
+        verify(exactly = imageFiles.size) { promptQueryService.getPromptById(promptId) }
     }
 
     // Helper methods for complex prompt with slots test

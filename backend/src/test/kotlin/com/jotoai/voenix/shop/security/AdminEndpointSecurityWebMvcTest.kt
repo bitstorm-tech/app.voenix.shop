@@ -3,14 +3,14 @@ package com.jotoai.voenix.shop.security
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.ninjasquad.springmockk.MockkBean
+import io.mockk.every
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.security.test.context.support.WithMockUser
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
@@ -24,10 +24,10 @@ class AdminEndpointSecurityWebMvcTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
 
-    @MockitoBean
+    @MockkBean
     private lateinit var promptQueryService: PromptQueryService
 
-    @MockitoBean
+    @MockkBean
     private lateinit var articleQueryService: ArticleQueryService
 
     @Test
@@ -59,16 +59,15 @@ class AdminEndpointSecurityWebMvcTest {
     @WithMockUser(username = "admin@test.com", roles = ["ADMIN"])
     fun testAdminEndpointsAccessibleWithAdminRole() {
         // Mock service responses
-        `when`(promptQueryService.getAllPrompts()).thenReturn(emptyList())
-        `when`(articleQueryService.findAll(FindArticlesQuery(page = 0, size = 20))).thenReturn(
+        every { promptQueryService.getAllPrompts() } returns emptyList()
+        every { articleQueryService.findAll(FindArticlesQuery(page = 0, size = 20)) } returns
             com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse(
                 content = emptyList(),
                 currentPage = 0,
                 totalPages = 0,
                 totalElements = 0,
                 size = 20,
-            ),
-        )
+            )
 
         // Test that admin endpoints are accessible with ADMIN role (200 or other success status)
         mockMvc

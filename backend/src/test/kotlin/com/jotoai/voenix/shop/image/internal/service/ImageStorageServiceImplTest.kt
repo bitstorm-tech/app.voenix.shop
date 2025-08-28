@@ -5,12 +5,12 @@ import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import com.jotoai.voenix.shop.image.internal.service.ImageValidationService
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.verify
-import org.mockito.kotlin.whenever
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
 import java.nio.file.Paths
@@ -27,11 +27,11 @@ class ImageStorageServiceImplTest {
 
     @BeforeEach
     fun setUp() {
-        storagePathService = mock()
-        imageConversionService = mock()
-        uploadedImageRepository = mock()
-        generatedImageRepository = mock()
-        imageValidationService = mock()
+        storagePathService = mockk()
+        imageConversionService = mockk()
+        uploadedImageRepository = mockk()
+        generatedImageRepository = mockk()
+        imageValidationService = mockk()
 
         imageStorageService =
             ImageStorageServiceImpl(
@@ -58,13 +58,13 @@ class ImageStorageServiceImplTest {
         val imageType = ImageType.PUBLIC
         val mockPath = Paths.get("/tmp/test-image.jpg")
 
-        whenever(storagePathService.getPhysicalFilePath(imageType, filename)).thenReturn(mockPath)
+        every { storagePathService.getPhysicalFilePath(imageType, filename) } returns mockPath
 
         // When
         val result = imageStorageService.fileExists(filename, imageType)
 
         // Then - will return false since the file doesn't exist at the mock path
         assertTrue(!result) // File doesn't exist in test environment
-        verify(storagePathService).getPhysicalFilePath(imageType, filename)
+        verify { storagePathService.getPhysicalFilePath(imageType, filename) }
     }
 }

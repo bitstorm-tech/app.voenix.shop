@@ -11,6 +11,8 @@ import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
 import com.jotoai.voenix.shop.user.api.UserService
+import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -18,8 +20,6 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 import java.time.LocalDateTime
 import java.util.Optional
 import java.util.UUID
@@ -31,20 +31,20 @@ class ImageQueryServiceImplTest {
 
     @BeforeEach
     fun setUp() {
-        generatedImageRepository = mock()
-        uploadedImageRepository = mock()
+        generatedImageRepository = mockk()
+        uploadedImageRepository = mockk()
 
         imageQueryService =
             ImageManagementService(
-                imageStorageService = mock<ImageStorageService>(),
+                imageStorageService = mockk<ImageStorageService>(),
                 uploadedImageRepository = uploadedImageRepository,
                 generatedImageRepository = generatedImageRepository,
-                imageValidationService = mock<ImageValidationService>(),
-                openAIImageGenerationService = mock<OpenAIImageGenerationService>(),
-                storagePathService = mock<StoragePathService>(),
-                userService = mock<UserService>(),
-                userImageStorageService = mock<UserImageStorageService>(),
-                imageConversionService = mock<ImageConversionService>(),
+                imageValidationService = mockk<ImageValidationService>(),
+                openAIImageGenerationService = mockk<OpenAIImageGenerationService>(),
+                storagePathService = mockk<StoragePathService>(),
+                userService = mockk<UserService>(),
+                userImageStorageService = mockk<UserImageStorageService>(),
+                imageConversionService = mockk<ImageConversionService>(),
             )
     }
 
@@ -59,7 +59,7 @@ class ImageQueryServiceImplTest {
         val storedFilename = "uploaded-image.jpg"
         val uploadedImage = createUploadedImage(UploadedImageParams(uuid = uuid, storedFilename = storedFilename))
 
-        whenever(uploadedImageRepository.findByUuid(uuid)).thenReturn(uploadedImage)
+        every { uploadedImageRepository.findByUuid(uuid) } returns uploadedImage
 
         // When
         val result = imageQueryService.findUploadedImageByUuid(uuid)
@@ -76,7 +76,7 @@ class ImageQueryServiceImplTest {
         // Given
         val uuid = UUID.randomUUID()
 
-        whenever(uploadedImageRepository.findByUuid(uuid)).thenReturn(null)
+        every { uploadedImageRepository.findByUuid(uuid) } returns null
 
         // When
         val result = imageQueryService.findUploadedImageByUuid(uuid)
@@ -98,7 +98,7 @@ class ImageQueryServiceImplTest {
                 createUploadedImage(UploadedImageParams(storedFilename = "image3.png", userId = userId)),
             )
 
-        whenever(uploadedImageRepository.findAllByUserId(userId)).thenReturn(uploadedImages)
+        every { uploadedImageRepository.findAllByUserId(userId) } returns uploadedImages
 
         // When
         val result = imageQueryService.findUploadedImagesByUserId(userId)
@@ -119,7 +119,7 @@ class ImageQueryServiceImplTest {
         // Given
         val userId = 1L
 
-        whenever(uploadedImageRepository.findAllByUserId(userId)).thenReturn(emptyList())
+        every { uploadedImageRepository.findAllByUserId(userId) } returns emptyList()
 
         // When
         val result = imageQueryService.findUploadedImagesByUserId(userId)
@@ -148,8 +148,8 @@ class ImageQueryServiceImplTest {
                 createUploadedImage(UploadedImageParams(storedFilename = "user2-image2.jpg", userId = userId2)),
             )
 
-        whenever(uploadedImageRepository.findAllByUserId(userId1)).thenReturn(user1Images)
-        whenever(uploadedImageRepository.findAllByUserId(userId2)).thenReturn(user2Images)
+        every { uploadedImageRepository.findAllByUserId(userId1) } returns user1Images
+        every { uploadedImageRepository.findAllByUserId(userId2) } returns user2Images
 
         // When
         val result1 = imageQueryService.findUploadedImagesByUserId(userId1)
@@ -172,7 +172,7 @@ class ImageQueryServiceImplTest {
         val uuid = UUID.randomUUID()
         val uploadedImage = createUploadedImage(UploadedImageParams(uuid = uuid))
 
-        whenever(uploadedImageRepository.findByUuid(uuid)).thenReturn(uploadedImage)
+        every { uploadedImageRepository.findByUuid(uuid) } returns uploadedImage
 
         // When
         val result = imageQueryService.existsByUuid(uuid)
@@ -186,7 +186,7 @@ class ImageQueryServiceImplTest {
         // Given
         val uuid = UUID.randomUUID()
 
-        whenever(uploadedImageRepository.findByUuid(uuid)).thenReturn(null)
+        every { uploadedImageRepository.findByUuid(uuid) } returns null
 
         // When
         val result = imageQueryService.existsByUuid(uuid)
@@ -251,7 +251,7 @@ class ImageQueryServiceImplTest {
         // Given
         val imageId = 123L
 
-        whenever(generatedImageRepository.existsById(imageId)).thenReturn(true)
+        every { generatedImageRepository.existsById(imageId) } returns true
 
         // When
         val result = imageQueryService.existsGeneratedImageById(imageId)
@@ -265,7 +265,7 @@ class ImageQueryServiceImplTest {
         // Given
         val imageId = 123L
 
-        whenever(generatedImageRepository.existsById(imageId)).thenReturn(false)
+        every { generatedImageRepository.existsById(imageId) } returns false
 
         // When
         val result = imageQueryService.existsGeneratedImageById(imageId)
@@ -282,7 +282,7 @@ class ImageQueryServiceImplTest {
         val imageId = 123L
         val userId = 1L
 
-        whenever(generatedImageRepository.existsByIdAndUserId(imageId, userId)).thenReturn(true)
+        every { generatedImageRepository.existsByIdAndUserId(imageId, userId) } returns true
 
         // When
         val result = imageQueryService.existsGeneratedImageByIdAndUserId(imageId, userId)
@@ -297,7 +297,7 @@ class ImageQueryServiceImplTest {
         val imageId = 123L
         val userId = 1L
 
-        whenever(generatedImageRepository.existsByIdAndUserId(imageId, userId)).thenReturn(false)
+        every { generatedImageRepository.existsByIdAndUserId(imageId, userId) } returns false
 
         // When
         val result = imageQueryService.existsGeneratedImageByIdAndUserId(imageId, userId)
@@ -313,8 +313,8 @@ class ImageQueryServiceImplTest {
         val ownerId = 1L
         val requesterId = 2L
 
-        whenever(generatedImageRepository.existsByIdAndUserId(imageId, ownerId)).thenReturn(true)
-        whenever(generatedImageRepository.existsByIdAndUserId(imageId, requesterId)).thenReturn(false)
+        every { generatedImageRepository.existsByIdAndUserId(imageId, ownerId) } returns true
+        every { generatedImageRepository.existsByIdAndUserId(imageId, requesterId) } returns false
 
         // When
         val ownerResult = imageQueryService.existsGeneratedImageByIdAndUserId(imageId, ownerId)
@@ -404,7 +404,7 @@ class ImageQueryServiceImplTest {
                 ),
             )
 
-        whenever(generatedImageRepository.findById(imageId)).thenReturn(Optional.of(generatedImage))
+        every { generatedImageRepository.findById(imageId) } returns Optional.of(generatedImage)
 
         // When
         val result = imageQueryService.findGeneratedImageById(imageId)
@@ -424,7 +424,7 @@ class ImageQueryServiceImplTest {
         // Given
         val imageId = 123L
 
-        whenever(generatedImageRepository.findById(imageId)).thenReturn(Optional.empty())
+        every { generatedImageRepository.findById(imageId) } returns Optional.empty()
 
         // When
         val result = imageQueryService.findGeneratedImageById(imageId)
@@ -448,7 +448,7 @@ class ImageQueryServiceImplTest {
                 ),
             )
 
-        whenever(generatedImageRepository.findById(imageId)).thenReturn(Optional.of(generatedImage))
+        every { generatedImageRepository.findById(imageId) } returns Optional.of(generatedImage)
 
         // When
         val result = imageQueryService.findGeneratedImageById(imageId)
@@ -499,7 +499,7 @@ class ImageQueryServiceImplTest {
 
         val allImages = listOf(generatedImage1, generatedImage2, generatedImage3)
 
-        whenever(generatedImageRepository.findAllById(ids)).thenReturn(allImages)
+        every { generatedImageRepository.findAllById(ids) } returns allImages
 
         // When
         val result = imageQueryService.findGeneratedImagesByIds(ids)
@@ -538,7 +538,7 @@ class ImageQueryServiceImplTest {
 
         val foundImages = listOf(generatedImage1, generatedImage2)
 
-        whenever(generatedImageRepository.findAllById(ids)).thenReturn(foundImages)
+        every { generatedImageRepository.findAllById(ids) } returns foundImages
 
         // When
         val result = imageQueryService.findGeneratedImagesByIds(ids)
@@ -558,7 +558,7 @@ class ImageQueryServiceImplTest {
         // Given
         val ids = listOf(123L, 124L, 125L)
 
-        whenever(generatedImageRepository.findAllById(ids)).thenReturn(emptyList())
+        every { generatedImageRepository.findAllById(ids) } returns emptyList()
 
         // When
         val result = imageQueryService.findGeneratedImagesByIds(ids)
@@ -586,7 +586,7 @@ class ImageQueryServiceImplTest {
         val ids = listOf(imageId)
         val generatedImage = createGeneratedImage(GeneratedImageParams(id = imageId, filename = "single-image.jpg"))
 
-        whenever(generatedImageRepository.findAllById(ids)).thenReturn(listOf(generatedImage))
+        every { generatedImageRepository.findAllById(ids) } returns listOf(generatedImage)
 
         // When
         val result = imageQueryService.findGeneratedImagesByIds(ids)
@@ -623,7 +623,7 @@ class ImageQueryServiceImplTest {
 
         val allImages = listOf(userImage, anonymousImage)
 
-        whenever(generatedImageRepository.findAllById(ids)).thenReturn(allImages)
+        every { generatedImageRepository.findAllById(ids) } returns allImages
 
         // When
         val result = imageQueryService.findGeneratedImagesByIds(ids)
@@ -641,9 +641,9 @@ class ImageQueryServiceImplTest {
     @Test
     fun `methods should handle null values gracefully`() {
         // Given - repositories return null for all queries
-        whenever(generatedImageRepository.findByFilename("")).thenReturn(null)
-        whenever(uploadedImageRepository.findByUuid(UUID.randomUUID())).thenReturn(null)
-        whenever(uploadedImageRepository.findAllByUserId(0L)).thenReturn(emptyList())
+        every { generatedImageRepository.findByFilename("") } returns null
+        every { uploadedImageRepository.findByUuid(any()) } returns null
+        every { uploadedImageRepository.findAllByUserId(0L) } returns emptyList()
 
         // When & Then - should not throw exceptions
         assertNull(imageQueryService.findUploadedImageByUuid(UUID.randomUUID()))

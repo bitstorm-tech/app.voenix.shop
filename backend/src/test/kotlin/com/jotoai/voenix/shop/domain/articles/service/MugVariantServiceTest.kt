@@ -12,17 +12,16 @@ import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
+import io.mockk.any
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.slot
+import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.mockito.ArgumentCaptor
-import org.mockito.Mockito.any
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.times
-import org.mockito.Mockito.verify
-import org.mockito.Mockito.`when`
 import java.util.Optional
 
 class MugVariantServiceTest {
@@ -38,11 +37,11 @@ class MugVariantServiceTest {
 
     @BeforeEach
     fun setUp() {
-        articleRepository = mock(ArticleRepository::class.java)
-        mugVariantRepository = mock(MugArticleVariantRepository::class.java)
-        imageStorageService = mock(ImageStorageServiceImpl::class.java)
-        mugArticleVariantAssembler = mock(MugArticleVariantAssembler::class.java)
-        mugWithVariantsSummaryAssembler = mock(MugWithVariantsSummaryAssembler::class.java)
+        articleRepository = mockk()
+        mugVariantRepository = mockk()
+        imageStorageService = mockk()
+        mugArticleVariantAssembler = mockk()
+        mugWithVariantsSummaryAssembler = mockk()
         mugVariantService =
             com.jotoai.voenix.shop.article.internal.service.MugVariantServiceImpl(
                 articleRepository,
@@ -86,8 +85,8 @@ class MugVariantServiceTest {
                 isDefault = false, // Not requesting default
             )
 
-        `when`(articleRepository.findById(1L)).thenReturn(Optional.of(testArticle))
-        `when`(mugVariantRepository.findByArticleId(1L)).thenReturn(emptyList()) // No existing variants
+        every { articleRepository.findById(1L) } returns Optional.of(testArticle)
+        every { mugVariantRepository.findByArticleId(1L) } returns emptyList() // No existing variants
 
         val savedVariant =
             MugArticleVariant(
@@ -100,7 +99,7 @@ class MugVariantServiceTest {
                 isDefault = true, // Should be set to true
             )
 
-        `when`(mugVariantRepository.save(any(MugArticleVariant::class.java))).thenReturn(savedVariant)
+        every { mugVariantRepository.save(any<MugArticleVariant>()) } returns savedVariant
 
         val expectedDto =
             MugArticleVariantDto(
@@ -116,7 +115,7 @@ class MugVariantServiceTest {
                 createdAt = null,
                 updatedAt = null,
             )
-        `when`(mugArticleVariantAssembler.toDto(savedVariant)).thenReturn(expectedDto)
+        every { mugArticleVariantAssembler.toDto(savedVariant) } returns expectedDto
 
         // When
         val result = mugVariantService.create(1L, request)
@@ -187,7 +186,7 @@ class MugVariantServiceTest {
 
         // Then
         assertTrue(result.isDefault)
-        verify(mugVariantRepository).unsetDefaultForArticle(1L)
+        verify { mugVariantRepository.unsetDefaultForArticle(1L) }
     }
 
     @Test
@@ -212,10 +211,8 @@ class MugVariantServiceTest {
                 isDefault = true,
             )
 
-        `when`(mugVariantRepository.findByIdWithArticle(1L)).thenReturn(Optional.of(existingVariant))
-        `when`(mugVariantRepository.save(any(MugArticleVariant::class.java))).thenAnswer { invocation ->
-            invocation.arguments[0] as MugArticleVariant
-        }
+        every { mugVariantRepository.findByIdWithArticle(1L) } returns Optional.of(existingVariant)
+        every { mugVariantRepository.save(any<MugArticleVariant>()) } answers { firstArg() }
 
         val expectedDto =
             MugArticleVariantDto(
@@ -231,14 +228,14 @@ class MugVariantServiceTest {
                 createdAt = null,
                 updatedAt = null,
             )
-        `when`(mugArticleVariantAssembler.toDto(existingVariant)).thenReturn(expectedDto)
+        every { mugArticleVariantAssembler.toDto(existingVariant) } returns expectedDto
 
         // When
         val result = mugVariantService.update(1L, request)
 
         // Then
         assertTrue(result.isDefault)
-        verify(mugVariantRepository).unsetDefaultForArticle(1L)
+        verify { mugVariantRepository.unsetDefaultForArticle(1L) }
     }
 
     @Test
@@ -273,17 +270,15 @@ class MugVariantServiceTest {
                 isDefault = false, // Unsetting default
             )
 
-        `when`(mugVariantRepository.findByIdWithArticle(1L)).thenReturn(Optional.of(currentDefaultVariant))
-        `when`(mugVariantRepository.findByArticleId(1L)).thenReturn(listOf(currentDefaultVariant, otherVariant))
-        `when`(mugVariantRepository.save(any(MugArticleVariant::class.java))).thenAnswer { invocation ->
-            invocation.arguments[0] as MugArticleVariant
-        }
+        every { mugVariantRepository.findByIdWithArticle(1L) } returns Optional.of(currentDefaultVariant)
+        every { mugVariantRepository.findByArticleId(1L) } returns listOf(currentDefaultVariant, otherVariant)
+        every { mugVariantRepository.save(any<MugArticleVariant>()) } answers { firstArg() }
 
         // When
         mugVariantService.update(1L, request)
 
         // Then
-        verify(mugVariantRepository, times(2)).save(any(MugArticleVariant::class.java))
+        verify(exactly = 2) { mugVariantRepository.save(any<MugArticleVariant>()) }
         // Save both the updated variant and the new default
     }
 
@@ -310,21 +305,19 @@ class MugVariantServiceTest {
                 isDefault = false,
             )
 
-        `when`(mugVariantRepository.findByIdWithArticle(1L)).thenReturn(Optional.of(defaultVariant))
-        `when`(mugVariantRepository.findByArticleId(1L)).thenReturn(listOf(otherVariant))
-        `when`(mugVariantRepository.save(any(MugArticleVariant::class.java))).thenAnswer { invocation ->
-            invocation.arguments[0] as MugArticleVariant
-        }
+        every { mugVariantRepository.findByIdWithArticle(1L) } returns Optional.of(defaultVariant)
+        every { mugVariantRepository.findByArticleId(1L) } returns listOf(otherVariant)
+        every { mugVariantRepository.save(any<MugArticleVariant>()) } answers { firstArg() }
 
         // When
         mugVariantService.delete(1L)
 
         // Then
-        verify(mugVariantRepository).deleteById(1L)
-        val variantCaptor = ArgumentCaptor.forClass(MugArticleVariant::class.java)
-        verify(mugVariantRepository).save(variantCaptor.capture())
-        assertEquals(2L, variantCaptor.value.id)
-        assertTrue(variantCaptor.value.isDefault)
+        verify { mugVariantRepository.deleteById(1L) }
+        val variantCaptor = slot<MugArticleVariant>()
+        verify { mugVariantRepository.save(capture(variantCaptor)) }
+        assertEquals(2L, variantCaptor.captured.id)
+        assertTrue(variantCaptor.captured.isDefault)
     }
 
     @Test
@@ -340,15 +333,15 @@ class MugVariantServiceTest {
                 isDefault = true,
             )
 
-        `when`(mugVariantRepository.findByIdWithArticle(1L)).thenReturn(Optional.of(defaultVariant))
-        `when`(mugVariantRepository.findByArticleId(1L)).thenReturn(emptyList())
+        every { mugVariantRepository.findByIdWithArticle(1L) } returns Optional.of(defaultVariant)
+        every { mugVariantRepository.findByArticleId(1L) } returns emptyList()
 
         // When
         mugVariantService.delete(1L)
 
         // Then
-        verify(mugVariantRepository).deleteById(1L)
-        verify(mugVariantRepository, times(0)).save(any(MugArticleVariant::class.java)) // No save should occur
+        verify { mugVariantRepository.deleteById(1L) }
+        verify(exactly = 0) { mugVariantRepository.save(any<MugArticleVariant>()) }
     }
 
     @Test
@@ -363,7 +356,7 @@ class MugVariantServiceTest {
                 isDefault = false,
             )
 
-        `when`(articleRepository.findById(999L)).thenReturn(Optional.empty())
+        every { articleRepository.findById(999L) } returns Optional.empty()
 
         // When/Then
         assertThrows<ArticleNotFoundException> {
@@ -383,7 +376,7 @@ class MugVariantServiceTest {
                 isDefault = false,
             )
 
-        `when`(mugVariantRepository.findByIdWithArticle(999L)).thenReturn(Optional.empty())
+        every { mugVariantRepository.findByIdWithArticle(999L) } returns Optional.empty()
 
         // When/Then
         assertThrows<ArticleNotFoundException> {

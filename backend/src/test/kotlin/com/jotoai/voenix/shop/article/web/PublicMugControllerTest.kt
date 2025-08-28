@@ -3,13 +3,13 @@ package com.jotoai.voenix.shop.article.web
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
+import com.ninjasquad.springmockk.MockkBean
+import io.mockk.every
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
@@ -24,14 +24,14 @@ class PublicMugControllerTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
 
-    @MockitoBean
+    @MockkBean
     private lateinit var articleQueryService: ArticleQueryService
 
     @Test
     fun `should return list of public mugs without authentication`() {
         // Given
         val mugs = listOf(createClassicMug(), createTravelMug())
-        `when`(articleQueryService.findPublicMugs()).thenReturn(mugs)
+        every { articleQueryService.findPublicMugs() } returns mugs
 
         // When & Then
         mockMvc
@@ -125,7 +125,7 @@ class PublicMugControllerTest {
     @Test
     fun `should return empty list when no mugs available`() {
         // Given
-        `when`(articleQueryService.findPublicMugs()).thenReturn(emptyList())
+        every { articleQueryService.findPublicMugs() } returns emptyList()
 
         // When & Then
         mockMvc
