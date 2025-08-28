@@ -13,6 +13,20 @@
 - Frontend: `cd frontend && npm install && npm run dev` – start app at `http://localhost:3000`.
 - Frontend (build): `npm run build` and preview with `npm run preview`.
 
+## Quality Gates
+A task is only considered completed if all of the following succeed. Run commands from the respective app directories unless noted.
+
+### Backend (from `backend/`)
+- `./gradlew build` returns without errors
+- `./gradlew ktlintFormat` returns without errors
+
+### Frontend (from `frontend/`)
+- `npm run type-check` returns without errors
+- `npm run build` returns without errors
+- `npm run format` is executed
+
+If any of these commands return errors, fix them immediately before considering the task done.
+
 ## Coding Style & Naming Conventions
 - Kotlin: `ktlint` and `detekt` enforced. Run `./gradlew ktlintCheck`, `./gradlew ktlintFormat`, `./gradlew detekt`.
 - TypeScript/React: `eslint` + `prettier`. Run `npm run lint`, `npm run format`, `npm run type-check`.
@@ -32,4 +46,3 @@
 - Frontend talks to API at `http://localhost:8080`. Do not store secrets in `localStorage`.
 - Validate inputs on both sides; keep error messages non-sensitive.
 - When migrating modules, preserve Spring Modulith boundaries and update docs.
-
