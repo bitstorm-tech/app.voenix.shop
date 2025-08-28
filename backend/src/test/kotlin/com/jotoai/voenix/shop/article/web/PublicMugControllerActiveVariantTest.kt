@@ -11,25 +11,35 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.MediaType
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import org.springframework.transaction.annotation.Transactional
 import java.time.OffsetDateTime
+import com.jotoai.voenix.shop.article.api.ArticleFacade
 
 /**
  * Test suite for the PublicMugController with focus on active variant filtering.
  * Ensures that customers only see active variants through the public API.
  */
-@WebMvcTest(PublicMugController::class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test") 
+@Transactional
 class PublicMugControllerActiveVariantTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
 
     @MockkBean
     private lateinit var articleQueryService: ArticleQueryService
+
+    @MockkBean
+    private lateinit var articleFacade: ArticleFacade
 
     private lateinit var testMugWithMixedVariants: PublicMugDto
     private lateinit var testMugWithOnlyActiveVariants: PublicMugDto

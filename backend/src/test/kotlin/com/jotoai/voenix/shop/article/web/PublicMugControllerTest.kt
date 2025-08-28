@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
+import com.jotoai.voenix.shop.article.api.ArticleFacade
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -26,6 +27,9 @@ class PublicMugControllerTest {
 
     @MockkBean
     private lateinit var articleQueryService: ArticleQueryService
+
+    @MockkBean
+    private lateinit var articleFacade: ArticleFacade
 
     @Test
     fun `should return list of public mugs without authentication`() {
