@@ -1,9 +1,8 @@
 package com.jotoai.voenix.shop.security
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
-import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.article.api.dto.FindArticlesQuery
-import com.jotoai.voenix.shop.user.api.UserService
+import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,9 +23,6 @@ import org.springframework.transaction.annotation.Transactional
 class AdminEndpointSecurityWebMvcTest {
     @Autowired
     private lateinit var mockMvc: MockMvc
-
-    @MockitoBean
-    private lateinit var userService: UserService
 
     @MockitoBean
     private lateinit var promptQueryService: PromptQueryService
