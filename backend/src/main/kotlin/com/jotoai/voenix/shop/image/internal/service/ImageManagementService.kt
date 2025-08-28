@@ -24,6 +24,9 @@ import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
+import java.io.IOException
+import java.time.LocalDateTime
+import java.util.*
 import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.Resource
 import org.springframework.dao.DataAccessException
@@ -33,9 +36,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.io.IOException
-import java.time.LocalDateTime
-import java.util.UUID
 
 /**
  * Consolidated image management service that handles all image operations.
@@ -51,7 +51,7 @@ import java.util.UUID
  * - Provides caching for performance
  */
 @Service
-@Suppress("LongParameterList", "TooManyFunctions")
+@Suppress("LongParameterList", "TooManyFunctions", "LargeClass")
 class ImageManagementService(
     private val imageStorageService: ImageStorageService,
     private val uploadedImageRepository: UploadedImageRepository,
@@ -740,7 +740,12 @@ class ImageManagementService(
     override fun validateGeneratedImageOwnership(
         imageId: Long,
         userId: Long?,
-    ): Boolean = if (userId != null) existsGeneratedImageByIdAndUserId(imageId, userId) else existsGeneratedImageById(imageId)
+    ): Boolean =
+        if (userId != null) {
+            existsGeneratedImageByIdAndUserId(imageId, userId)
+        } else {
+            existsGeneratedImageById(imageId)
+        }
 
     override fun findGeneratedImageById(id: Long): GeneratedImageDto? {
         val generated = generatedImageRepository.findById(id).orElse(null)

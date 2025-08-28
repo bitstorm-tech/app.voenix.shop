@@ -17,7 +17,10 @@ class PromptSlotTypeServiceImpl(
     private val promptSlotTypeRepository: PromptSlotTypeRepository,
 ) : PromptSlotTypeFacade,
     PromptSlotTypeQueryService {
-    override fun getAllPromptSlotTypes(): List<PromptSlotTypeDto> = promptSlotTypeRepository.findAll().map { it.toDto() }
+    override fun getAllPromptSlotTypes(): List<PromptSlotTypeDto> =
+        promptSlotTypeRepository
+            .findAll()
+            .map { it.toDto() }
 
     override fun getPromptSlotTypeById(id: Long): PromptSlotTypeDto =
         promptSlotTypeRepository

@@ -17,7 +17,11 @@ class VatServiceImpl(
 ) : VatService {
     override fun getAllVats(): List<ValueAddedTaxDto> = valueAddedTaxRepository.findAll().map { it.toDto() }
 
-    override fun getDefaultVat(): ValueAddedTaxDto? = valueAddedTaxRepository.findByIsDefaultTrue().map { it.toDto() }.orElse(null)
+    override fun getDefaultVat(): ValueAddedTaxDto? =
+        valueAddedTaxRepository
+            .findByIsDefaultTrue()
+            .map { it.toDto() }
+            .orElse(null)
 
     override fun getVatById(id: Long): ValueAddedTaxDto =
         valueAddedTaxRepository
