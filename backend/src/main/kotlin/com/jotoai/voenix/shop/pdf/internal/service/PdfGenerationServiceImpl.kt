@@ -321,9 +321,9 @@ class PdfGenerationServiceImpl(
                 ?.printTemplateHeightMm
                 ?.toFloat()
                 ?: (
-                    (pageHeight / PdfConfig.MM_TO_POINTS) - 
-                    (2 * (margin / PdfConfig.MM_TO_POINTS)) - 
-                    DEFAULT_IMAGE_MARGIN_MM
+                    (pageHeight / PdfConfig.MM_TO_POINTS) -
+                        (2 * (margin / PdfConfig.MM_TO_POINTS)) -
+                        DEFAULT_IMAGE_MARGIN_MM
                 )
 
         val imageWidthPt = imageWidthMm * PdfConfig.MM_TO_POINTS

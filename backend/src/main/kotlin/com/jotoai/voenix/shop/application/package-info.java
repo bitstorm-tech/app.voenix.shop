@@ -16,7 +16,6 @@
  * <ul>
  *   <li>{@code com.jotoai.voenix.shop.application.api.exception} - Base exception types and contracts</li>
  *   <li>{@code com.jotoai.voenix.shop.application.api.dto} - Common data transfer objects (ErrorResponse, PaginatedResponse)</li>
- *   <li>{@code com.jotoai.voenix.shop.application.api.config} - Configuration interfaces (ApplicationConfiguration)</li>
  * </ul>
  * 
  * <h2>Internal Implementation</h2>
@@ -32,7 +31,7 @@
  * <ul>
  *   <li>Base exception types extended by multiple modules</li>
  *   <li>Common DTOs for standard patterns (pagination, errors)</li>
- *   <li>Application-wide configuration interfaces</li>
+ *   <li>Application-wide configuration properties</li>
  *   <li>Common exception handlers (for framework and validation exceptions)</li>
  * </ul>
  * <p>

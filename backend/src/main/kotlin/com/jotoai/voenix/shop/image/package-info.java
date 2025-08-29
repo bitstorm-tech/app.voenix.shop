@@ -13,8 +13,7 @@
  *   <li>{@code api} - Public API for image operations and queries</li>
  * </ul>
  * <p>
- * Other modules should explicitly depend on {@code image::api} to access image functionality
-.
+ * Other modules should explicitly depend on {@code image::api} to access image functionality.
  */
 @org.springframework.modulith.ApplicationModule(
     displayName = "Image Management"
