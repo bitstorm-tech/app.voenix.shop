@@ -9,8 +9,8 @@ import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
 import com.jotoai.voenix.shop.auth.api.dto.UserCreationRequest
 import com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
-import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.common.api.exception.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.common.api.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.user.api.UserService
 import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
@@ -101,13 +101,14 @@ class AuthServiceImpl(
         if (userService.existsByEmail(registerRequest.email)) {
             throw ResourceAlreadyExistsException("User", "email", registerRequest.email)
         }
-        val userDto = createUser(
-            UserCreationRequest(
-                email = registerRequest.email,
-                password = registerRequest.password,
-            ),
-        )
-        
+        val userDto =
+            createUser(
+                UserCreationRequest(
+                    email = registerRequest.email,
+                    password = registerRequest.password,
+                ),
+            )
+
         // Create authentication directly using the newly created user data
         // to avoid database lookup issues with transaction boundaries
         return authenticateRegisteredUser(

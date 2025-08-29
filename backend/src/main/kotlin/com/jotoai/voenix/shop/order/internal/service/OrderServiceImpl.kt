@@ -6,8 +6,8 @@ import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.CartQueryService
 import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
-import com.jotoai.voenix.shop.common.dto.PaginatedResponse
-import com.jotoai.voenix.shop.common.exception.BadRequestException
+import com.jotoai.voenix.shop.common.api.dto.PaginatedResponse
+import com.jotoai.voenix.shop.common.api.exception.BadRequestException
 import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.order.api.OrderService
@@ -230,10 +230,14 @@ class OrderServiceImpl(
         val ordersPage = orderRepository.findByUserId(userId, pageable)
         return PaginatedResponse(
             content = ordersPage.content.map { toDto(it) },
-            currentPage = ordersPage.number,
-            totalPages = ordersPage.totalPages,
             totalElements = ordersPage.totalElements,
+            totalPages = ordersPage.totalPages,
             size = ordersPage.size,
+            number = ordersPage.number,
+            first = ordersPage.isFirst,
+            last = ordersPage.isLast,
+            numberOfElements = ordersPage.numberOfElements,
+            empty = ordersPage.isEmpty,
         )
     }
 

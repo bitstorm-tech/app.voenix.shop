@@ -1,8 +1,12 @@
-package com.jotoai.voenix.shop.common.dto
+package com.jotoai.voenix.shop.common.api.dto
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import java.time.LocalDateTime
 
+/**
+ * Standard error response DTO for API endpoints.
+ * Provides consistent error messaging across all modules.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ErrorResponse(
     val timestamp: LocalDateTime,

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
-import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.common.api.exception.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.common.config
+package com.jotoai.voenix.shop.common.internal.config
 
 import org.springframework.cache.CacheManager
 import org.springframework.cache.annotation.CacheEvict
@@ -12,7 +12,7 @@ import org.springframework.scheduling.annotation.Scheduled
 @Configuration
 @EnableCaching
 @EnableScheduling
-class CacheConfig {
+class CacheConfigImpl {
     @Bean
     fun cacheManager(): CacheManager =
         ConcurrentMapCacheManager(

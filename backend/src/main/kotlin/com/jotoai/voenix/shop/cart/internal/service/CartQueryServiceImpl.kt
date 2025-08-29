@@ -8,7 +8,7 @@ import com.jotoai.voenix.shop.cart.api.enums.CartStatus
 import com.jotoai.voenix.shop.cart.internal.assembler.CartAssembler
 import com.jotoai.voenix.shop.cart.internal.assembler.OrderInfoAssembler
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.common.api.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service

@@ -13,7 +13,7 @@ import com.jotoai.voenix.shop.article.internal.assembler.MugWithVariantsSummaryA
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
-import com.jotoai.voenix.shop.common.exception.BadRequestException
+import com.jotoai.voenix.shop.common.api.exception.BadRequestException
 import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service

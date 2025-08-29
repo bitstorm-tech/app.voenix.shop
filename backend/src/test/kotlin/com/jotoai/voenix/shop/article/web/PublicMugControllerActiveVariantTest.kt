@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.article.web
 
+import com.jotoai.voenix.shop.article.api.ArticleFacade
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
@@ -21,7 +22,6 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPat
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import org.springframework.transaction.annotation.Transactional
 import java.time.OffsetDateTime
-import com.jotoai.voenix.shop.article.api.ArticleFacade
 
 /**
  * Test suite for the PublicMugController with focus on active variant filtering.
@@ -29,7 +29,7 @@ import com.jotoai.voenix.shop.article.api.ArticleFacade
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test") 
+@ActiveProfiles("test")
 @Transactional
 class PublicMugControllerActiveVariantTest {
     @Autowired

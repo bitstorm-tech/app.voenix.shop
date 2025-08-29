@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.prompt.api.exceptions
 
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.common.api.exception.ResourceNotFoundException
 
 /**
  * Exception thrown when a prompt category is not found.

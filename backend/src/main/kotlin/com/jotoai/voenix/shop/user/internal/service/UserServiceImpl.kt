@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.user.internal.service
 
-import com.jotoai.voenix.shop.common.exception.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.common.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.common.api.exception.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.common.api.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.user.api.PasswordValidationResult
 import com.jotoai.voenix.shop.user.api.UserService
 import com.jotoai.voenix.shop.user.api.dto.BulkCreateUsersRequest

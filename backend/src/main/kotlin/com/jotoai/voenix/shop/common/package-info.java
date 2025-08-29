@@ -1,26 +1,28 @@
 /**
  * Common module providing shared utilities and cross-cutting concerns.
  * <p>
- * This module contains shared components used across all other modules including
- * exception handling, DTOs, configuration, and utilities. As an OPEN module type,
- * it can be accessed by all other modules without explicit dependency declaration.
+ * This module provides a clean API for shared components used across all other modules including
+ * exception handling, DTOs, and configuration interfaces. It follows proper Spring Modulith architecture
+ * with clear API boundaries and internal implementation details.
  * </p>
  * 
- * <h2>Module Boundaries</h2>
+ * <h2>Module Architecture</h2>
  * <ul>
- *   <li><b>Exceptions:</b> {@code com.jotoai.voenix.shop.common.exception} - Shared exception types</li>
- *   <li><b>DTOs:</b> {@code com.jotoai.voenix.shop.common.dto} - Common data transfer objects</li>
- *   <li><b>Config:</b> {@code com.jotoai.voenix.shop.common.config} - Shared configuration</li>
+ *   <li><b>Public API:</b> {@code com.jotoai.voenix.shop.common.api} - Public interfaces and contracts</li>
+ *   <li><b>Internal Implementation:</b> {@code com.jotoai.voenix.shop.common.internal} - Private implementation details</li>
  * </ul>
  * 
- * <h2>Exposed Types</h2>
+ * <h2>Public API</h2>
  * <ul>
- *   <li>{@code ResourceNotFoundException} - Used when resources cannot be found</li>
- *   <li>{@code ResourceAlreadyExistsException} - Used for duplicate resource creation</li>
- *   <li>{@code BadRequestException} - Used for invalid request data</li>
- *   <li>{@code PaginatedResponse} - Common pagination wrapper</li>
- *   <li>{@code ErrorResponse} - Standard error response format</li>
- *   <li>{@code GlobalExceptionHandler} - Application-wide exception handling</li>
+ *   <li>{@code com.jotoai.voenix.shop.common.api.exception} - Base exception types and contracts</li>
+ *   <li>{@code com.jotoai.voenix.shop.common.api.dto} - Common data transfer objects (ErrorResponse, PaginatedResponse)</li>
+ *   <li>{@code com.jotoai.voenix.shop.common.api.config} - Configuration interfaces (ApplicationConfiguration)</li>
+ * </ul>
+ * 
+ * <h2>Internal Implementation</h2>
+ * <ul>
+ *   <li>{@code com.jotoai.voenix.shop.common.internal.config} - Configuration implementations</li>
+ *   <li>{@code com.jotoai.voenix.shop.common.internal.exception} - Exception handler implementations</li>
  * </ul>
  * 
  * <h2>Module Guidelines</h2>
@@ -28,21 +30,20 @@
  * Only truly cross-cutting concerns should be placed in this module:
  * </p>
  * <ul>
- *   <li>Generic exceptions used by multiple modules</li>
+ *   <li>Base exception types extended by multiple modules</li>
  *   <li>Common DTOs for standard patterns (pagination, errors)</li>
- *   <li>Application-wide configuration (CORS, caching, etc.)</li>
- *   <li>Global exception handlers</li>
+ *   <li>Application-wide configuration interfaces</li>
+ *   <li>Common exception handlers (for framework and validation exceptions)</li>
  * </ul>
  * <p>
  * Domain-specific exceptions and utilities should be placed in their respective modules.
- * For example, PdfGenerationException belongs in the pdf module, not here.
+ * Module-specific exception handlers should be implemented in each module with higher precedence.
  * </p>
  * 
  * @since 1.0.0
  */
 @org.springframework.modulith.ApplicationModule(
         displayName = "Common Utilities",
-        allowedDependencies = {},
-        type = org.springframework.modulith.ApplicationModule.Type.OPEN
+        allowedDependencies = {}
 )
 package com.jotoai.voenix.shop.common;

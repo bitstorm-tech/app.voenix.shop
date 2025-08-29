@@ -1,6 +1,5 @@
-package com.jotoai.voenix.shop.common.config
+package com.jotoai.voenix.shop.common.internal.config
 
-import com.jotoai.voenix.shop.image.api.StoragePathService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration
 import org.springframework.core.io.ClassPathResource
@@ -11,9 +10,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import org.springframework.web.servlet.resource.PathResourceResolver
 
 @Configuration
-class WebConfig(
+class BaseWebConfig(
     @param:Value("\${spring.profiles.active:default}") private val activeProfile: String,
-    private val storagePathService: StoragePathService,
 ) : WebMvcConfigurer {
     companion object {
         private const val CORS_MAX_AGE_SECONDS = 3600L
@@ -34,24 +32,11 @@ class WebConfig(
     }
 
     override fun addResourceHandlers(registry: ResourceHandlerRegistry) {
-        // Configure resource handlers for publicly accessible image types
-        storagePathService
-            .getAllConfiguredImageTypes()
-            .filter { storagePathService.isPubliclyAccessible(it) }
-            .forEach { imageType ->
-                val urlPath = storagePathService.getUrlPath(imageType)
-                val physicalPath = storagePathService.getPhysicalPath(imageType)
-
-                registry
-                    .addResourceHandler("$urlPath/**")
-                    .addResourceLocations("file:${physicalPath.toAbsolutePath()}/")
-                    .setCachePeriod(CACHE_PERIOD_SECONDS)
-            }
-
-        // Serve static resources
+        // Serve static resources (frontend assets)
         registry
             .addResourceHandler("/**")
             .addResourceLocations("classpath:/static/")
+            .setCachePeriod(CACHE_PERIOD_SECONDS)
             .resourceChain(true)
             .addResolver(
                 object : PathResourceResolver() {

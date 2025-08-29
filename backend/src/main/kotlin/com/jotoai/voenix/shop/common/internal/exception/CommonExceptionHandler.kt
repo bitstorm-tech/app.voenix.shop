@@ -1,10 +1,11 @@
-package com.jotoai.voenix.shop.common.exception
+package com.jotoai.voenix.shop.common.internal.exception
 
-import com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException
-import com.jotoai.voenix.shop.common.dto.ErrorResponse
-import com.jotoai.voenix.shop.image.api.exceptions.ImageAccessDeniedException
-import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
+import com.jotoai.voenix.shop.common.api.dto.ErrorResponse
+import com.jotoai.voenix.shop.common.api.exception.BadRequestException
+import com.jotoai.voenix.shop.common.api.exception.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.common.api.exception.ResourceNotFoundException
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.FieldError
@@ -14,7 +15,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 import java.time.LocalDateTime
 
 @RestControllerAdvice
-class GlobalExceptionHandler {
+@Order(100) // Lower priority to let module-specific handlers take precedence
+class CommonExceptionHandler {
     private val log = KotlinLogging.logger {}
 
     @ExceptionHandler(ResourceNotFoundException::class)
@@ -83,54 +85,6 @@ class GlobalExceptionHandler {
             )
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
-    }
-
-    @ExceptionHandler(ImageNotFoundException::class)
-    fun handleImageNotFoundException(ex: ImageNotFoundException): ResponseEntity<ErrorResponse> {
-        log.warn { "Image not found: ${ex.message}" }
-
-        val errorResponse =
-            ErrorResponse(
-                timestamp = LocalDateTime.now(),
-                status = HttpStatus.NOT_FOUND.value(),
-                error = "Not Found",
-                message = ex.message ?: "Generated image not found",
-                path = "",
-            )
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse)
-    }
-
-    @ExceptionHandler(ImageAccessDeniedException::class)
-    fun handleImageAccessDeniedException(ex: ImageAccessDeniedException): ResponseEntity<ErrorResponse> {
-        log.warn {
-            "Access denied to image: userId=${ex.userId}, resourceId=${ex.resourceId}, message=${ex.message}"
-        }
-
-        val errorResponse =
-            ErrorResponse(
-                timestamp = LocalDateTime.now(),
-                status = HttpStatus.FORBIDDEN.value(),
-                error = "Forbidden",
-                message = ex.message ?: "You don't have permission to access this image",
-                path = "",
-            )
-
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse)
-    }
-
-    @ExceptionHandler(InvalidCredentialsException::class)
-    fun handleInvalidCredentials(ex: InvalidCredentialsException): ResponseEntity<ErrorResponse> {
-        val errorResponse =
-            ErrorResponse(
-                timestamp = LocalDateTime.now(),
-                status = HttpStatus.UNAUTHORIZED.value(),
-                error = "Unauthorized",
-                message = ex.message ?: "Invalid email or password",
-                path = "",
-            )
-
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse)
     }
 
     @ExceptionHandler(Exception::class)
