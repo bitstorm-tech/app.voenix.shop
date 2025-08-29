@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.common.api.exception
+package com.jotoai.voenix.shop.application.api.exception
 
 /**
  * Base exception for when attempting to create a resource that already exists.

@@ -1,24 +1,24 @@
-package com.jotoai.voenix.shop.common
+package com.jotoai.voenix.shop.application
 
 import org.junit.jupiter.api.Test
 import org.springframework.modulith.core.ApplicationModules
 import org.springframework.modulith.docs.Documenter
 
-class CommonModulithTest {
+class ApplicationModulithTest {
     private val modules = ApplicationModules.of(com.jotoai.voenix.shop.VoenixShopApplication::class.java)
 
     @Test
-    fun `should detect common module`() {
-        // Simple test to ensure the common module is detected by Spring Modulith
-        val commonModule = modules.getModuleByName("common")
-        assert(commonModule.isPresent) {
-            "Common module should be present in the application modules"
+    fun `should detect application module`() {
+        // Simple test to ensure the application module is detected by Spring Modulith
+        val applicationModule = modules.getModuleByName("application")
+        assert(applicationModule.isPresent) {
+            "Application module should be present in the application modules"
         }
 
-        // Verify the module has the expected name (it gets detected as "Common" by default)
-        val module = commonModule.get()
-        assert(module.displayName == "Common") {
-            "Expected 'Common', got '${module.displayName}'"
+        // Verify the module has the expected name (it gets detected as "Application Utilities" by default)
+        val module = applicationModule.get()
+        assert(module.displayName == "Application") {
+            "Expected 'Application', got '${module.displayName}'"
         }
     }
 

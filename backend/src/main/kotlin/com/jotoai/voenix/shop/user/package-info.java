@@ -35,7 +35,7 @@
  * <h2>Module Dependencies</h2>
  * <ul>
  *   <li>No dependencies on other domain modules</li>
- *   <li>Uses common module for shared exceptions</li>
+ *   <li>Uses application module for shared exceptions</li>
  *   <li>Spring Security for password encoding</li>
  * </ul>
  * 
@@ -51,6 +51,6 @@
  */
 @org.springframework.modulith.ApplicationModule(
         displayName = "User Management",
-        allowedDependencies = {"common"}
+        allowedDependencies = {"application"}
 )
 package com.jotoai.voenix.shop.user;

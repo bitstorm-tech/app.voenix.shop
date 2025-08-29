@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.common.internal.config
+package com.jotoai.voenix.shop.application.internal.config
 
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Configuration

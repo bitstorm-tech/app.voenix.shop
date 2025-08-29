@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.common.internal.config
+package com.jotoai.voenix.shop.application.internal.config
 
-import com.jotoai.voenix.shop.common.api.config.ApplicationConfiguration
+import com.jotoai.voenix.shop.application.api.config.ApplicationConfiguration
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Configuration

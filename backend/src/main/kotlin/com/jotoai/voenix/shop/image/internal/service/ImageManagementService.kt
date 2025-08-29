@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.image.internal.service
 
-import com.jotoai.voenix.shop.common.api.exception.BadRequestException
-import com.jotoai.voenix.shop.common.api.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.application.api.exception.BadRequestException
+import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageAccessService
 import com.jotoai.voenix.shop.image.api.ImageFacade
 import com.jotoai.voenix.shop.image.api.ImageQueryService

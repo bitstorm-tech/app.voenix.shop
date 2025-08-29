@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.exception
 
-import com.jotoai.voenix.shop.common.api.dto.ErrorResponse
+import com.jotoai.voenix.shop.application.api.dto.ErrorResponse
 import com.jotoai.voenix.shop.image.api.exceptions.ImageAccessDeniedException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import io.github.oshai.kotlinlogging.KotlinLogging

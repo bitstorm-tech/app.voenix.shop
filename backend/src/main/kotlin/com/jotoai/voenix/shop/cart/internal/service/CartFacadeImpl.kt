@@ -11,8 +11,8 @@ import com.jotoai.voenix.shop.cart.internal.assembler.OrderInfoAssembler
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.entity.CartItem
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
-import com.jotoai.voenix.shop.common.api.exception.BadRequestException
-import com.jotoai.voenix.shop.common.api.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.application.api.exception.BadRequestException
+import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.image.api.exceptions.ImageAccessDeniedException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException

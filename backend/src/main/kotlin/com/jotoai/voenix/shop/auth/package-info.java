@@ -25,6 +25,6 @@
  */
 @org.springframework.modulith.ApplicationModule(
         displayName = "Authentication",
-        allowedDependencies = {"common", "user::api"}
+        allowedDependencies = {"application", "user::api"}
 )
 package com.jotoai.voenix.shop.auth;

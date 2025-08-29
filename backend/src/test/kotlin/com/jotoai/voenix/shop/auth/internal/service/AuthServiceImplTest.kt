@@ -6,8 +6,8 @@ import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.api.dto.UserCreationRequest
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
-import com.jotoai.voenix.shop.common.api.exception.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.common.api.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.application.api.exception.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.user.api.UserService
 import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
 import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest

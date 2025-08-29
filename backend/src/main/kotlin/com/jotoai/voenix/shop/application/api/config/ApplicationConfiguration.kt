@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.common.api.config
+package com.jotoai.voenix.shop.application.api.config
 
 /**
  * Interface for application-wide configuration properties.

@@ -1,14 +1,14 @@
-package com.jotoai.voenix.shop.common
+package com.jotoai.voenix.shop.application
 
-import com.jotoai.voenix.shop.common.api.dto.ErrorResponse
-import com.jotoai.voenix.shop.common.api.dto.PaginatedResponse
-import com.jotoai.voenix.shop.common.api.exception.BadRequestException
-import com.jotoai.voenix.shop.common.api.exception.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.common.api.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.application.api.dto.ErrorResponse
+import com.jotoai.voenix.shop.application.api.dto.PaginatedResponse
+import com.jotoai.voenix.shop.application.api.exception.BadRequestException
+import com.jotoai.voenix.shop.application.api.exception.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 
-class CommonModuleIntegrationTest {
+class ApplicationModuleIntegrationTest {
     @Test
     fun `should create ErrorResponse with all fields`() {
         val errorResponse =

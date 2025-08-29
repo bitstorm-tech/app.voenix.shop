@@ -6,8 +6,8 @@ import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.CartQueryService
 import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
-import com.jotoai.voenix.shop.common.api.dto.PaginatedResponse
-import com.jotoai.voenix.shop.common.api.exception.BadRequestException
+import com.jotoai.voenix.shop.application.api.dto.PaginatedResponse
+import com.jotoai.voenix.shop.application.api.exception.BadRequestException
 import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.order.api.OrderService

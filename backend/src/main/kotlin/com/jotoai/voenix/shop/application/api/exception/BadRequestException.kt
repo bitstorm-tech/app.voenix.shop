@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.common.api.exception
+package com.jotoai.voenix.shop.application.api.exception
 
 /**
  * Exception for invalid request scenarios.

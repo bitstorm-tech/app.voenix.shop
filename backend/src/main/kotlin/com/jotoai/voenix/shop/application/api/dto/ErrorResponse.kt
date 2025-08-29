@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.common.api.dto
+package com.jotoai.voenix.shop.application.api.dto
 
 import com.fasterxml.jackson.annotation.JsonInclude
 import java.time.LocalDateTime

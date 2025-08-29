@@ -18,13 +18,13 @@
  * - Public API for customer-facing article queries
  * 
  * Dependencies:
- * - common: Shared utilities and base classes
+ * - application: Shared utilities and base classes
  * - vat::api: VAT calculation services for pricing
  * - supplier::api: Supplier information for articles
  * - user::api: User context for admin operations
  */
 @org.springframework.modulith.ApplicationModule(
     displayName = "Article Management",
-    allowedDependencies = {"common", "vat::api", "supplier::api", "user::api"}
+    allowedDependencies = {"application", "vat::api", "supplier::api", "user::api"}
 )
 package com.jotoai.voenix.shop.article;

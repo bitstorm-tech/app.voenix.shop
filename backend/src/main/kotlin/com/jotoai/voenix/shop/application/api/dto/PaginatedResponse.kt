@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.common.api.dto
+package com.jotoai.voenix.shop.application.api.dto
 
 /**
  * Generic paginated response wrapper for API endpoints.

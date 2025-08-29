@@ -1,5 +1,5 @@
 /**
- * Common module providing shared utilities and cross-cutting concerns.
+ * Application module providing shared utilities and cross-cutting concerns.
  * <p>
  * This module provides a clean API for shared components used across all other modules including
  * exception handling, DTOs, and configuration interfaces. It follows proper Spring Modulith architecture
@@ -8,21 +8,21 @@
  * 
  * <h2>Module Architecture</h2>
  * <ul>
- *   <li><b>Public API:</b> {@code com.jotoai.voenix.shop.common.api} - Public interfaces and contracts</li>
- *   <li><b>Internal Implementation:</b> {@code com.jotoai.voenix.shop.common.internal} - Private implementation details</li>
+ *   <li><b>Public API:</b> {@code com.jotoai.voenix.shop.application.api} - Public interfaces and contracts</li>
+ *   <li><b>Internal Implementation:</b> {@code com.jotoai.voenix.shop.application.internal} - Private implementation details</li>
  * </ul>
  * 
  * <h2>Public API</h2>
  * <ul>
- *   <li>{@code com.jotoai.voenix.shop.common.api.exception} - Base exception types and contracts</li>
- *   <li>{@code com.jotoai.voenix.shop.common.api.dto} - Common data transfer objects (ErrorResponse, PaginatedResponse)</li>
- *   <li>{@code com.jotoai.voenix.shop.common.api.config} - Configuration interfaces (ApplicationConfiguration)</li>
+ *   <li>{@code com.jotoai.voenix.shop.application.api.exception} - Base exception types and contracts</li>
+ *   <li>{@code com.jotoai.voenix.shop.application.api.dto} - Common data transfer objects (ErrorResponse, PaginatedResponse)</li>
+ *   <li>{@code com.jotoai.voenix.shop.application.api.config} - Configuration interfaces (ApplicationConfiguration)</li>
  * </ul>
  * 
  * <h2>Internal Implementation</h2>
  * <ul>
- *   <li>{@code com.jotoai.voenix.shop.common.internal.config} - Configuration implementations</li>
- *   <li>{@code com.jotoai.voenix.shop.common.internal.exception} - Exception handler implementations</li>
+ *   <li>{@code com.jotoai.voenix.shop.application.internal.config} - Configuration implementations</li>
+ *   <li>{@code com.jotoai.voenix.shop.application.internal.exception} - Exception handler implementations</li>
  * </ul>
  * 
  * <h2>Module Guidelines</h2>
@@ -43,7 +43,7 @@
  * @since 1.0.0
  */
 @org.springframework.modulith.ApplicationModule(
-        displayName = "Common Utilities",
+        displayName = "Application Utilities",
         allowedDependencies = {}
 )
-package com.jotoai.voenix.shop.common;
+package com.jotoai.voenix.shop.application;
