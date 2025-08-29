@@ -13,7 +13,9 @@ import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.Runs
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -86,6 +88,7 @@ class MugVariantServiceTest {
 
         every { articleRepository.findById(1L) } returns Optional.of(testArticle)
         every { mugVariantRepository.findByArticleId(1L) } returns emptyList() // No existing variants
+        every { mugVariantRepository.unsetDefaultForArticle(1L) } just Runs
 
         val savedVariant =
             MugArticleVariant(
@@ -150,6 +153,7 @@ class MugVariantServiceTest {
 
         every { articleRepository.findById(1L) } returns Optional.of(testArticle)
         every { mugVariantRepository.findByArticleId(1L) } returns listOf(existingVariant)
+        every { mugVariantRepository.unsetDefaultForArticle(1L) } just Runs
 
         val savedVariant =
             MugArticleVariant(
@@ -212,6 +216,7 @@ class MugVariantServiceTest {
 
         every { mugVariantRepository.findByIdWithArticle(1L) } returns Optional.of(existingVariant)
         every { mugVariantRepository.save(any<MugArticleVariant>()) } answers { firstArg() }
+        every { mugVariantRepository.unsetDefaultForArticle(1L) } just Runs
 
         val expectedDto =
             MugArticleVariantDto(
@@ -273,6 +278,22 @@ class MugVariantServiceTest {
         every { mugVariantRepository.findByArticleId(1L) } returns listOf(currentDefaultVariant, otherVariant)
         every { mugVariantRepository.save(any<MugArticleVariant>()) } answers { firstArg() }
 
+        val expectedDto =
+            MugArticleVariantDto(
+                id = 1L,
+                articleId = 1L,
+                insideColorCode = request.insideColorCode,
+                outsideColorCode = request.outsideColorCode,
+                name = request.name,
+                exampleImageUrl = null,
+                articleVariantNumber = request.articleVariantNumber,
+                isDefault = false,
+                active = true,
+                createdAt = null,
+                updatedAt = null,
+            )
+        every { mugArticleVariantAssembler.toDto(any<MugArticleVariant>()) } returns expectedDto
+
         // When
         mugVariantService.update(1L, request)
 
@@ -307,6 +328,7 @@ class MugVariantServiceTest {
         every { mugVariantRepository.findByIdWithArticle(1L) } returns Optional.of(defaultVariant)
         every { mugVariantRepository.findByArticleId(1L) } returns listOf(otherVariant)
         every { mugVariantRepository.save(any<MugArticleVariant>()) } answers { firstArg() }
+        every { mugVariantRepository.deleteById(1L) } just Runs
 
         // When
         mugVariantService.delete(1L)
@@ -334,6 +356,7 @@ class MugVariantServiceTest {
 
         every { mugVariantRepository.findByIdWithArticle(1L) } returns Optional.of(defaultVariant)
         every { mugVariantRepository.findByArticleId(1L) } returns emptyList()
+        every { mugVariantRepository.deleteById(1L) } just Runs
 
         // When
         mugVariantService.delete(1L)
