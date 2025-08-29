@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.openai.api
 
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
+import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
 
 /**
  * Simplified service interface for AI image generation operations using OpenAI.
@@ -13,7 +13,7 @@ interface OpenAIImageGenerationService {
      */
     fun generateImages(
         imageBytes: ByteArray,
-        request: PublicImageGenerationRequest,
+        request: ImageGenerationRequest,
     ): List<ByteArray>
 
     /**

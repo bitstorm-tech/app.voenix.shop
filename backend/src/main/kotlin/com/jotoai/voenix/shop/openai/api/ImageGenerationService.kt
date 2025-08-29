@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.openai.api
 
 import com.jotoai.voenix.shop.image.api.dto.CropArea
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
+import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
+import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationResponse
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 
@@ -15,10 +15,10 @@ interface ImageGenerationService {
      * Generates an AI image from a prompt and optional uploaded image for public users.
      */
     fun generatePublicImage(
-        request: PublicImageGenerationRequest,
+        request: ImageGenerationRequest,
         ipAddress: String,
         imageFile: MultipartFile,
-    ): PublicImageGenerationResponse
+    ): ImageGenerationResponse
 
     /**
      * Generates an AI image for authenticated users.
@@ -40,7 +40,7 @@ interface ImageGenerationService {
         uploadedImageUuid: UUID?,
         userId: Long,
         cropArea: CropArea? = null,
-    ): PublicImageGenerationResponse
+    ): ImageGenerationResponse
 
     /**
      * Checks rate limiting for image generation.

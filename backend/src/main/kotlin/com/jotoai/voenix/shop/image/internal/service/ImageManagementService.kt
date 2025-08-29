@@ -411,8 +411,6 @@ class ImageManagementService(
         }
     }
 
-
-
     // Additional methods for access validation (from ImageAccessValidationService)
 
     /**
@@ -528,7 +526,6 @@ class ImageManagementService(
             throw ResourceNotFoundException("Invalid image filename format")
         }
     }
-
 
     // ImageQueryService implementation
     override fun findUploadedImageByUuid(uuid: UUID): ImageDto? {

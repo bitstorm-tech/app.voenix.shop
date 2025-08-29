@@ -1,11 +1,12 @@
-package com.jotoai.voenix.shop.image.api.dto
+package com.jotoai.voenix.shop.openai.api.dto
 
+import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.enums.ImageBackground
 import com.jotoai.voenix.shop.image.api.enums.ImageQuality
 import com.jotoai.voenix.shop.image.api.enums.ImageSize
 import jakarta.validation.constraints.NotNull
 
-data class PublicImageGenerationRequest(
+data class ImageGenerationRequest(
     @field:NotNull(message = "Prompt ID is required")
     val promptId: Long,
     val background: ImageBackground = ImageBackground.AUTO,

@@ -7,12 +7,12 @@ import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
 import com.jotoai.voenix.shop.image.api.exceptions.ImageProcessingException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
 import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
+import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
+import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationResponse
 import com.jotoai.voenix.shop.openai.api.exception.ImageGenerationException
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -44,10 +44,10 @@ class ImageGenerationFacadeImpl(
 
     @Transactional
     override fun generatePublicImage(
-        request: PublicImageGenerationRequest,
+        request: ImageGenerationRequest,
         ipAddress: String,
         imageFile: MultipartFile,
-    ): PublicImageGenerationResponse {
+    ): ImageGenerationResponse {
         logger.info { "Generating image: public, prompt=${request.promptId}" }
 
         imageFacade.validateImageFile(imageFile)
@@ -90,7 +90,7 @@ class ImageGenerationFacadeImpl(
         uploadedImageUuid: UUID?,
         userId: Long,
         cropArea: CropArea?,
-    ): PublicImageGenerationResponse {
+    ): ImageGenerationResponse {
         logger.info { "Generating image: user=$userId, prompt=$promptId" }
         requireNotNull(uploadedImageUuid) { "uploadedImageUuid is required for user image generation" }
 
@@ -122,7 +122,7 @@ class ImageGenerationFacadeImpl(
         ipAddress: String?,
     ): Boolean {
         logger.debug { "Rate limit check for userId=$userId, ipAddress=$ipAddress" }
-        
+
         return try {
             if (userId != null) {
                 val dayAgo = LocalDateTime.now().minusHours(USER_RATE_LIMIT_HOURS.toLong())
@@ -161,7 +161,7 @@ class ImageGenerationFacadeImpl(
         userId: Long,
         ipAddress: String?,
         cropArea: CropArea?,
-    ): PublicImageGenerationResponse {
+    ): ImageGenerationResponse {
         val uploadedImage = imageFacade.getUploadedImageByUuid(uploadedImageUuid, userId)
 
         val originalBytes = imageStorageService.loadFileAsBytes(uploadedImage.filename, ImageType.PRIVATE)
@@ -170,27 +170,30 @@ class ImageGenerationFacadeImpl(
         val generatedBytes = openAIImageGenerationService.generateImages(imageBytes, promptId)
 
         // Get the uploaded image entity ID for storage
-        val uploadedImageId = uploadedImage.id
-            ?: throw ResourceNotFoundException("Uploaded image ID not found")
+        val uploadedImageId =
+            uploadedImage.id
+                ?: throw ResourceNotFoundException("Uploaded image ID not found")
 
-        val generatedImages = generatedBytes.mapIndexed { index, bytes ->
-            imageFacade.storeGeneratedImage(
-                imageBytes = bytes,
-                uploadedImageId = uploadedImageId,
-                promptId = promptId,
-                generationNumber = index + 1,
-                ipAddress = ipAddress,
-            )
-        }
+        val generatedImages =
+            generatedBytes.mapIndexed { index, bytes ->
+                imageFacade.storeGeneratedImage(
+                    imageBytes = bytes,
+                    uploadedImageId = uploadedImageId,
+                    promptId = promptId,
+                    generationNumber = index + 1,
+                    ipAddress = ipAddress,
+                )
+            }
 
-        val imageUrls = generatedImages.map { dto -> 
-            storagePathService.getImageUrl(ImageType.PRIVATE, dto.filename) 
-        }
+        val imageUrls =
+            generatedImages.map { dto ->
+                storagePathService.getImageUrl(ImageType.PRIVATE, dto.filename)
+            }
 
         val imageIds = generatedImages.mapNotNull { it.id }
         logger.info { "Generated ${imageIds.size} images" }
 
-        return PublicImageGenerationResponse(
+        return ImageGenerationResponse(
             imageUrls = imageUrls,
             generatedImageIds = imageIds,
         )
@@ -202,29 +205,31 @@ class ImageGenerationFacadeImpl(
         promptId: Long,
         ipAddress: String,
         cropArea: CropArea?,
-    ): PublicImageGenerationResponse {
+    ): ImageGenerationResponse {
         val originalBytes = imageFile.bytes
         val imageBytes = originalBytes
-        
+
         val generatedBytes = openAIImageGenerationService.generateImages(imageBytes, promptId)
 
-        val generatedImages = generatedBytes.mapIndexed { index, bytes ->
-            imageFacade.storePublicGeneratedImage(
-                imageBytes = bytes,
-                promptId = promptId,
-                ipAddress = ipAddress,
-                generationNumber = index + 1,
-            )
-        }
+        val generatedImages =
+            generatedBytes.mapIndexed { index, bytes ->
+                imageFacade.storePublicGeneratedImage(
+                    imageBytes = bytes,
+                    promptId = promptId,
+                    ipAddress = ipAddress,
+                    generationNumber = index + 1,
+                )
+            }
 
-        val imageUrls = generatedImages.map { generatedImageDto ->
-            storagePathService.getImageUrl(ImageType.PUBLIC, generatedImageDto.filename)
-        }
+        val imageUrls =
+            generatedImages.map { generatedImageDto ->
+                storagePathService.getImageUrl(ImageType.PUBLIC, generatedImageDto.filename)
+            }
 
         val imageIds = generatedImages.mapNotNull { it.id }
         logger.info { "Generated ${imageIds.size} images" }
 
-        return PublicImageGenerationResponse(
+        return ImageGenerationResponse(
             imageUrls = imageUrls,
             generatedImageIds = imageIds,
         )

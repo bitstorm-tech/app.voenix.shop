@@ -1,8 +1,8 @@
-package com.jotoai.voenix.shop.image.api.dto
+package com.jotoai.voenix.shop.openai.api.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
-data class PublicImageGenerationResponse(
+data class ImageGenerationResponse(
     @JsonProperty("imageUrls")
     val imageUrls: List<String>,
     @JsonProperty("generatedImageIds")

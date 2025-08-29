@@ -1,10 +1,11 @@
-package com.jotoai.voenix.shop.image.web
+package com.jotoai.voenix.shop.openai.web
 
+import com.jotoai.voenix.shop.application.internal.service.ClientIpResolver
 import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationRequest
-import com.jotoai.voenix.shop.image.api.dto.PublicImageGenerationResponse
-import com.jotoai.voenix.shop.image.web.dto.ImageGenerationForm
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
+import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
+import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationResponse
+import com.jotoai.voenix.shop.openai.web.dto.ImageGenerationForm
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.MediaType
@@ -14,9 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/public/images")
-class PublicImageController(
+@RequestMapping("/api/public/openai/images")
+class PublicImageGenerationController(
     private val imageGenerationService: ImageGenerationService,
+    private val clientIpResolver: ClientIpResolver,
 ) {
     companion object {
         private val logger = KotlinLogging.logger {}
@@ -26,30 +28,20 @@ class PublicImageController(
     fun generateImage(
         @ModelAttribute form: ImageGenerationForm,
         request: HttpServletRequest,
-    ): PublicImageGenerationResponse {
-        logger.info { "Received public image generation request for prompt ID: ${form.promptId}" }
+    ): ImageGenerationResponse {
+        logger.info { "Public image generation request: promptId=${form.promptId}" }
 
         // Create crop area if all crop parameters are provided
         val cropArea = CropAreaUtils.createIfPresent(form.cropX, form.cropY, form.cropWidth, form.cropHeight)
 
         val generationRequest =
-            PublicImageGenerationRequest(
+            ImageGenerationRequest(
                 promptId = form.promptId,
                 n = 4,
                 cropArea = cropArea,
             )
 
-        val clientIP = extractClientIp(request)
+        val clientIP = clientIpResolver.resolve(request)
         return imageGenerationService.generatePublicImage(generationRequest, clientIP, form.image)
-    }
-
-    private fun extractClientIp(request: HttpServletRequest): String {
-        val xForwardedFor = request.getHeader("X-Forwarded-For")
-        val xRealIp = request.getHeader("X-Real-IP")
-        return when {
-            !xForwardedFor.isNullOrBlank() -> xForwardedFor.split(',').first().trim()
-            !xRealIp.isNullOrBlank() -> xRealIp
-            else -> request.remoteAddr
-        }
     }
 }
