@@ -102,6 +102,7 @@ class MugVariantActiveFeatureTest {
 
             every { articleRepository.findById(1L) } returns Optional.of(testArticle)
             every { mugVariantRepository.findByArticleId(1L) } returns emptyList()
+            every { mugVariantRepository.unsetDefaultForArticle(1L) } returns Unit
 
             val savedVariant =
                 MugArticleVariant(
@@ -344,7 +345,24 @@ class MugVariantActiveFeatureTest {
                 )
 
             every { mugVariantRepository.findByIdWithArticle(1L) } returns Optional.of(defaultVariant)
+            every { mugVariantRepository.unsetDefaultForArticle(1L) } returns Unit
             every { mugVariantRepository.save(any<MugArticleVariant>()) } answers { firstArg() }
+
+            val expectedDto =
+                MugArticleVariantDto(
+                    id = 1L,
+                    articleId = 1L,
+                    insideColorCode = "#ffffff",
+                    outsideColorCode = "#000000",
+                    name = "Default Black & White",
+                    exampleImageUrl = null,
+                    articleVariantNumber = "BW-001",
+                    isDefault = true,
+                    active = false,
+                    createdAt = null,
+                    updatedAt = null,
+                )
+            every { mugArticleVariantAssembler.toDto(any()) } returns expectedDto
 
             // When
             mugVariantService.update(1L, request)
