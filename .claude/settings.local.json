@@ -79,7 +79,8 @@
       "Bash(backend/gradlew:*)",
       "Bash(npx vite:*)",
       "Bash(npm --prefix frontend run lint)",
-      "Bash(popd:*)"
+      "Bash(popd:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
