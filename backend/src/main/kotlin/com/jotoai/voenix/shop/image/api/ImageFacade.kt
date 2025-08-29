@@ -121,22 +121,4 @@ interface ImageFacade {
         generationNumber: Int,
     ): GeneratedImageDto
 
-    /**
-     * Generates images for a user using an uploaded image and prompt with rate limiting and validation.
-     */
-    fun generateUserImageWithIds(
-        promptId: Long,
-        uploadedImageUuid: UUID,
-        userId: Long,
-        cropArea: CropArea?,
-    ): PublicImageGenerationResponse
-
-    /**
-     * Generates public images from uploaded file with rate limiting and validation.
-     */
-    fun generatePublicImage(
-        request: PublicImageGenerationRequest,
-        ipAddress: String,
-        imageFile: MultipartFile,
-    ): PublicImageGenerationResponse
 }

@@ -15,8 +15,7 @@
  *   <li>{@code web} - REST controllers for PDF endpoints</li>
  * </ul>
  * <p>
- * Other modules should explicitly depend on {@code pdf::api} to access PDF functionality
-.
+ * Other modules should explicitly depend on {@code pdf::api} to access PDF functionality.
  */
 @org.springframework.modulith.ApplicationModule(
     displayName = "PDF Generation"

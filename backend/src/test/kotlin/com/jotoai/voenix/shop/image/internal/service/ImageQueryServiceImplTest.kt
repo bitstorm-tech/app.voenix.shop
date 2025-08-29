@@ -9,8 +9,6 @@ import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
-import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
-import com.jotoai.voenix.shop.user.api.UserService
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -40,11 +38,8 @@ class ImageQueryServiceImplTest {
                 uploadedImageRepository = uploadedImageRepository,
                 generatedImageRepository = generatedImageRepository,
                 imageValidationService = mockk<ImageValidationService>(),
-                openAIImageGenerationService = mockk<OpenAIImageGenerationService>(),
                 storagePathService = mockk<StoragePathService>(),
-                userService = mockk<UserService>(),
                 userImageStorageService = mockk<UserImageStorageService>(),
-                imageConversionService = mockk<ImageConversionService>(),
             )
     }
 

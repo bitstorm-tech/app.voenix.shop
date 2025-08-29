@@ -5,8 +5,6 @@ import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
-import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
-import com.jotoai.voenix.shop.user.api.UserService
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -24,11 +22,8 @@ class ImageManagementServiceSimpleTest {
         val uploadedImageRepository: UploadedImageRepository = mockk()
         val generatedImageRepository: GeneratedImageRepository = mockk()
         val imageValidationService: ImageValidationService = mockk()
-        val openAIImageGenerationService: OpenAIImageGenerationService = mockk()
         val storagePathService: StoragePathService = mockk()
-        val userService: UserService = mockk()
         val userImageStorageService: UserImageStorageService = mockk()
-        val imageConversionService: ImageConversionService = mockk()
 
         // When
         val service =
@@ -37,11 +32,8 @@ class ImageManagementServiceSimpleTest {
                 uploadedImageRepository,
                 generatedImageRepository,
                 imageValidationService,
-                openAIImageGenerationService,
                 storagePathService,
-                userService,
                 userImageStorageService,
-                imageConversionService,
             )
 
         // Then
@@ -56,11 +48,8 @@ class ImageManagementServiceSimpleTest {
         val uploadedImageRepository: UploadedImageRepository = mockk()
         val generatedImageRepository: GeneratedImageRepository = mockk()
         val imageValidationService: ImageValidationService = mockk()
-        val openAIImageGenerationService: OpenAIImageGenerationService = mockk()
         val storagePathService: StoragePathService = mockk()
-        val userService: UserService = mockk()
         val userImageStorageService: UserImageStorageService = mockk()
-        val imageConversionService: ImageConversionService = mockk()
 
         // When
         val service =
@@ -69,11 +58,8 @@ class ImageManagementServiceSimpleTest {
                 uploadedImageRepository,
                 generatedImageRepository,
                 imageValidationService,
-                openAIImageGenerationService,
                 storagePathService,
-                userService,
                 userImageStorageService,
-                imageConversionService,
             )
 
         // Then
