@@ -14,19 +14,11 @@ class UserModuleArchitectureTest {
         val userApiPackage = "com.jotoai.voenix.shop.user.api"
         val userInternalPackage = "com.jotoai.voenix.shop.user.internal"
 
-        // These classes should exist in the API package
-        assertClassExists("$userApiPackage.UserFacade")
-        assertClassExists("$userApiPackage.UserQueryService")
-        assertClassExists("$userApiPackage.UserAuthenticationService")
-        assertClassExists("$userApiPackage.UserRoleManagementService")
-        assertClassExists("$userApiPackage.UserPasswordService")
+        // The unified UserService interface should exist in the API package
+        assertClassExists("$userApiPackage.UserService")
 
-        // These classes should exist in the internal package
-        assertClassExists("$userInternalPackage.service.UserCommandService")
-        assertClassExists("$userInternalPackage.service.UserQueryServiceImpl")
-        assertClassExists("$userInternalPackage.service.UserAuthServiceImpl")
-        assertClassExists("$userInternalPackage.service.UserRoleServiceImpl")
-        assertClassExists("$userInternalPackage.service.UserPasswordServiceImpl")
+        // The unified UserServiceImpl should exist in the internal package
+        assertClassExists("$userInternalPackage.service.UserServiceImpl")
 
         println("✓ User module structure verified")
     }
@@ -34,20 +26,8 @@ class UserModuleArchitectureTest {
     @Test
     fun `verify user API classes are interfaces`() {
         // Verify that the API classes are properly designed as interfaces
-        val userFacade = Class.forName("com.jotoai.voenix.shop.user.api.UserFacade")
-        assertTrue(userFacade.isInterface, "UserFacade should be an interface")
-
-        val userQueryService = Class.forName("com.jotoai.voenix.shop.user.api.UserQueryService")
-        assertTrue(userQueryService.isInterface, "UserQueryService should be an interface")
-
-        val userAuthService = Class.forName("com.jotoai.voenix.shop.user.api.UserAuthenticationService")
-        assertTrue(userAuthService.isInterface, "UserAuthenticationService should be an interface")
-
-        val userRoleService = Class.forName("com.jotoai.voenix.shop.user.api.UserRoleManagementService")
-        assertTrue(userRoleService.isInterface, "UserRoleManagementService should be an interface")
-
-        val userPasswordService = Class.forName("com.jotoai.voenix.shop.user.api.UserPasswordService")
-        assertTrue(userPasswordService.isInterface, "UserPasswordService should be an interface")
+        val userService = Class.forName("com.jotoai.voenix.shop.user.api.UserService")
+        assertTrue(userService.isInterface, "UserService should be an interface")
 
         println("✓ User API interfaces verified")
     }
