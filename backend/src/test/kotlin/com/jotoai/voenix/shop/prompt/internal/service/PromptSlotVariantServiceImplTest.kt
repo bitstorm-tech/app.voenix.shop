@@ -10,7 +10,9 @@ import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.Runs
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -253,6 +255,7 @@ class PromptSlotVariantServiceImplTest {
             every { promptSlotVariantRepository.existsByNameAndIdNot("New Name", 1L) } returns false
             every { promptSlotVariantRepository.save(any()) } returns existingEntity
             every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
+            every { imageStorageService.deleteFile("old.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) } returns true
 
             // When
             val result = service.updateSlotVariant(1L, request)
@@ -544,6 +547,7 @@ class PromptSlotVariantServiceImplTest {
                     ImageType.PROMPT_SLOT_VARIANT_EXAMPLE,
                 )
             } returns true
+            every { promptSlotVariantRepository.deleteById(1L) } just Runs
 
             // When
             service.deleteSlotVariant(1L)
@@ -567,6 +571,7 @@ class PromptSlotVariantServiceImplTest {
                 )
 
             every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
+            every { promptSlotVariantRepository.deleteById(1L) } just Runs
 
             // When
             service.deleteSlotVariant(1L)
@@ -606,6 +611,7 @@ class PromptSlotVariantServiceImplTest {
                 )
 
             every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
+            every { promptSlotVariantRepository.deleteById(1L) } just Runs
 
             // When
             service.deleteSlotVariant(1L)
