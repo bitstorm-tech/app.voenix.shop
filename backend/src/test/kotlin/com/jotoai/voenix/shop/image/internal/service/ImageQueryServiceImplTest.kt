@@ -644,6 +644,7 @@ class ImageQueryServiceImplTest {
         every { generatedImageRepository.findByFilename("") } returns null
         every { uploadedImageRepository.findByUuid(any()) } returns null
         every { uploadedImageRepository.findAllByUserId(0L) } returns emptyList()
+        every { uploadedImageRepository.findByUserIdAndUuid(any(), any()) } returns null
 
         // When & Then - should not throw exceptions
         assertNull(imageQueryService.findUploadedImageByUuid(UUID.randomUUID()))

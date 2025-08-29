@@ -8,7 +8,8 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("org.flywaydb.flyway") version "11.10.5"
     id("org.jlleitschuh.gradle.ktlint") version "13.0.0"
-    id("io.gitlab.arturbosch.detekt") version ("1.23.8")
+    id("io.gitlab.arturbosch.detekt") version "1.23.8"
+    id("org.jetbrains.kotlinx.kover") version "0.9.1"
 }
 
 group = "com.jotoai.voenix"
