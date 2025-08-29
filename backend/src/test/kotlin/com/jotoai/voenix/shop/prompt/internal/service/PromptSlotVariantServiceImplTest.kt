@@ -9,10 +9,10 @@ import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
+import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
-import io.mockk.Runs
 import io.mockk.slot
 import io.mockk.verify
 import org.junit.jupiter.api.Assertions.assertEquals

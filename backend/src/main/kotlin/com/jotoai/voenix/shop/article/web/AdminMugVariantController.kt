@@ -7,8 +7,9 @@ import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
 import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
 import com.jotoai.voenix.shop.article.web.dto.MugVariantImageUploadRequest
+import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
-import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
+import com.jotoai.voenix.shop.image.api.dto.ImageType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -32,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController
 class AdminMugVariantController(
     private val mugVariantQueryService: MugVariantQueryService,
     private val mugVariantFacade: MugVariantFacade,
-    private val imageStorageService: ImageStorageServiceImpl,
+    private val imageStorageService: ImageStorageService,
 ) {
     companion object {
         private val logger = KotlinLogging.logger {}
@@ -89,7 +90,7 @@ class AdminMugVariantController(
             )
 
         // Store the image directly in the mug variant images directory
-        val storedFilename = imageStorageService.storeMugVariantImage(request.image, cropArea)
+        val storedFilename = imageStorageService.storeFile(request.image, ImageType.MUG_VARIANT_EXAMPLE, cropArea)
 
         // Update the variant with the new image filename
         val updatedVariant = mugVariantFacade.updateExampleImage(variantId, storedFilename)

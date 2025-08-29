@@ -1,17 +1,16 @@
 package com.jotoai.voenix.shop.order.internal.service
 
+import com.jotoai.voenix.shop.application.api.dto.PaginatedResponse
+import com.jotoai.voenix.shop.application.api.exception.BadRequestException
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.CartQueryService
 import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
-import com.jotoai.voenix.shop.application.api.dto.PaginatedResponse
-import com.jotoai.voenix.shop.application.api.exception.BadRequestException
 import com.jotoai.voenix.shop.image.api.ImageQueryService
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.order.api.OrderService
-import com.jotoai.voenix.shop.order.api.dto.AddressDto
 import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
 import com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto
@@ -20,6 +19,7 @@ import com.jotoai.voenix.shop.order.api.dto.OrderItemForPdfDto
 import com.jotoai.voenix.shop.order.api.enums.OrderStatus
 import com.jotoai.voenix.shop.order.api.exception.OrderAlreadyExistsException
 import com.jotoai.voenix.shop.order.api.exception.OrderNotFoundException
+import com.jotoai.voenix.shop.order.internal.assembler.AddressAssembler
 import com.jotoai.voenix.shop.order.internal.entity.Order
 import com.jotoai.voenix.shop.order.internal.entity.OrderItem
 import com.jotoai.voenix.shop.order.internal.repository.OrderRepository
@@ -42,6 +42,7 @@ class OrderServiceImpl(
     private val articleQueryService: ArticleQueryService,
     private val imageQueryService: ImageQueryService,
     private val entityManager: EntityManager,
+    private val addressAssembler: AddressAssembler,
     @param:Value("\${app.base-url:http://localhost:8080}") private val appBaseUrl: String,
 ) : OrderService {
     private val logger = KotlinLogging.logger {}
@@ -106,9 +107,9 @@ class OrderServiceImpl(
     ): Order {
         val billingAddress =
             if (request.useShippingAsBilling || request.billingAddress == null) {
-                request.shippingAddress.toEntity()
+                addressAssembler.toEntity(request.shippingAddress)
             } else {
-                request.billingAddress.toEntity()
+                addressAssembler.toEntity(request.billingAddress)
             }
 
         return Order(
@@ -117,7 +118,7 @@ class OrderServiceImpl(
             customerFirstName = request.customerFirstName,
             customerLastName = request.customerLastName,
             customerPhone = request.customerPhone,
-            shippingAddress = request.shippingAddress.toEntity(),
+            shippingAddress = addressAssembler.toEntity(request.shippingAddress),
             billingAddress = billingAddress,
             subtotal = totals.subtotal,
             taxAmount = totals.taxAmount,
@@ -257,8 +258,8 @@ class OrderServiceImpl(
             customerFirstName = entity.customerFirstName,
             customerLastName = entity.customerLastName,
             customerPhone = entity.customerPhone,
-            shippingAddress = AddressDto.fromEntity(entity.shippingAddress),
-            billingAddress = entity.billingAddress?.let { AddressDto.fromEntity(it) },
+            shippingAddress = addressAssembler.toDto(entity.shippingAddress),
+            billingAddress = entity.billingAddress?.let { addressAssembler.toDto(it) },
             subtotal = entity.subtotal,
             taxAmount = entity.taxAmount,
             shippingAmount = entity.shippingAmount,

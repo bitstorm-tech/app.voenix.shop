@@ -7,6 +7,7 @@ import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.CreatePromptRequest
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.UpdatePromptRequest
+import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptDto
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
@@ -43,6 +44,11 @@ class PromptServiceImpl(
             }.orElseThrow { PromptNotFoundException("Prompt", "id", id) }
 
     override fun existsById(id: Long): Boolean = promptRepository.existsById(id)
+
+    override fun getAllPublicPrompts(): List<PublicPromptDto> =
+        promptRepository.findAllActiveWithRelations().map { prompt ->
+            promptAssembler.toPublicDto(prompt)
+        }
 
     @Transactional
     override fun createPrompt(request: CreatePromptRequest): PromptDto {

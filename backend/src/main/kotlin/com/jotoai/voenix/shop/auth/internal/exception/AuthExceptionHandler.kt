@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.auth.internal.exception
 
-import com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException
 import com.jotoai.voenix.shop.application.api.dto.ErrorResponse
+import com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
