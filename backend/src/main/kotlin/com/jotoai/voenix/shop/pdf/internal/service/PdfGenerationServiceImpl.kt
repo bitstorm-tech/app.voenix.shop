@@ -5,11 +5,12 @@ import com.google.zxing.WriterException
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
 import com.jotoai.voenix.shop.image.api.ImageAccessService
-import com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
 import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
+import com.jotoai.voenix.shop.pdf.internal.config.PdfConfig
+import com.jotoai.voenix.shop.pdf.internal.util.PlaceholderImage
 import com.lowagie.text.BadElementException
 import com.lowagie.text.Document
 import com.lowagie.text.DocumentException
@@ -19,10 +20,8 @@ import com.lowagie.text.pdf.BaseFont
 import com.lowagie.text.pdf.PdfContentByte
 import com.lowagie.text.pdf.PdfWriter
 import io.github.oshai.kotlinlogging.KotlinLogging
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.time.LocalDateTime
@@ -30,63 +29,22 @@ import java.time.format.DateTimeFormatter
 import javax.imageio.ImageIO
 
 /**
- * Consolidated PDF generation service implementation using OpenPDF library.
- * This service replaces and consolidates functionality from:
- * - PdfServiceImpl (PdfFacade, PdfQueryService)
- * - OrderPdfServiceImpl (OrderPdfService)
- * - PublicPdfServiceImpl (PublicPdfService)
- *
- * Benefits of consolidation:
- * - Shared utility methods for QR generation, document creation, and image handling
- * - Consistent error handling across all PDF operations
- * - Simplified dependency injection and testing
- * - Reduced code duplication
- *
- * Migrated from Apache PDFBox to OpenPDF for improved memory efficiency and performance.
+ * Simplified PDF generation service implementation.
+ * This service focuses on core PDF generation functionality with minimal complexity.
  */
 @Service
 @Transactional(readOnly = true)
-@Suppress("TooManyFunctions")
 class PdfGenerationServiceImpl(
-    @param:Value("\${pdf.size.width:239}") private val defaultPdfWidthMm: Float,
-    @param:Value("\${pdf.size.height:99}") private val defaultPdfHeightMm: Float,
-    @param:Value("\${pdf.margin:1}") private val defaultPdfMarginMm: Float,
+    private val pdfConfig: PdfConfig,
     private val imageAccessService: ImageAccessService,
-    private val orderDataConverter: OrderDataConverter,
 ) : PdfGenerationService {
     companion object {
         private val logger = KotlinLogging.logger {}
-
-        // PDF conversion and layout constants
-        private const val MM_TO_POINTS = 2.8346457f
-
-        // QR code settings
-        private const val ORDER_QR_SIZE_PIXELS = 100
-        private const val ORDER_QR_CODE_SIZE_POINTS = 40f
-
-        // Image format constants
         private const val IMAGE_FORMAT_PNG = "PNG"
-
-        // Order PDF layout constants - removed unused positioning constants
-
-        // Font settings
-        private const val HEADER_FONT_SIZE = 14f
-        private const val PLACEHOLDER_FONT_SIZE = 12f
-
-        // Placeholder image settings
-        private const val PLACEHOLDER_IMAGE_WIDTH = 400
-        private const val PLACEHOLDER_IMAGE_HEIGHT = 300
-        private const val PLACEHOLDER_FONT_SIZE_PIXELS = 24
-
-        // Default image margins when mug details are not available
         private const val DEFAULT_IMAGE_MARGIN_MM = 15f
-
-        // Text positioning
         private const val FALLBACK_TEXT_OFFSET = 10f
         private const val LEFT_HEADER_X_OFFSET = 15f
         private const val RIGHT_INFO_X_OFFSET = 5f
-
-        // Text rotation constants
         private const val TEXT_ROTATION_VERTICAL = 90f
     }
 
@@ -220,20 +178,20 @@ class PdfGenerationServiceImpl(
     private fun getPageWidth(orderItem: OrderItemPdfData): Float =
         orderItem.article.mugDetails
             ?.documentFormatWidthMm
-            ?.let { it * MM_TO_POINTS }
-            ?: (defaultPdfWidthMm * MM_TO_POINTS)
+            ?.let { it * PdfConfig.MM_TO_POINTS }
+            ?: pdfConfig.size.widthPt
 
     private fun getPageHeight(orderItem: OrderItemPdfData): Float =
         orderItem.article.mugDetails
             ?.documentFormatHeightMm
-            ?.let { it * MM_TO_POINTS }
-            ?: (defaultPdfHeightMm * MM_TO_POINTS)
+            ?.let { it * PdfConfig.MM_TO_POINTS }
+            ?: pdfConfig.size.heightPt
 
     private fun getMargin(orderItem: OrderItemPdfData): Float =
         orderItem.article.mugDetails
             ?.documentFormatMarginBottomMm
-            ?.let { it * MM_TO_POINTS }
-            ?: (defaultPdfMarginMm * MM_TO_POINTS)
+            ?.let { it * PdfConfig.MM_TO_POINTS }
+            ?: (pdfConfig.marginMm * PdfConfig.MM_TO_POINTS)
 
     private fun addOrderHeader(
         contentByte: PdfContentByte,
@@ -243,7 +201,7 @@ class PdfGenerationServiceImpl(
         pageHeight: Float,
     ) {
         val baseFont = BaseFont.createFont(BaseFont.HELVETICA_BOLD, BaseFont.CP1252, BaseFont.NOT_EMBEDDED)
-        val fontSize = HEADER_FONT_SIZE
+        val fontSize = pdfConfig.fonts.headerSizePt
 
         // Create the combined text on one line
         val headerText = "$orderNumber ($pageNumber/$totalPages)"
@@ -268,7 +226,7 @@ class PdfGenerationServiceImpl(
         pageHeight: Float,
     ) {
         val baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED)
-        val fontSize = HEADER_FONT_SIZE
+        val fontSize = pdfConfig.fonts.headerSizePt
 
         // Build product info text lines
         val productInfoLines = mutableListOf<String>()
@@ -333,29 +291,18 @@ class PdfGenerationServiceImpl(
         orderData: OrderPdfData,
         orderItem: OrderItemPdfData,
     ): ByteArray =
-        when {
-            orderItem.generatedImageFilename != null -> {
-                try {
-                    imageAccessService.getImageData(orderItem.generatedImageFilename, orderData.userId).first
-                } catch (e: IOException) {
-                    logger.warn(e) {
-                        "Could not load generated image ${orderItem.generatedImageFilename} " +
-                            "for order ${orderData.orderNumber}, using placeholder"
-                    }
-                    createPlaceholderImage()
-                } catch (e: IllegalArgumentException) {
-                    logger.warn(e) {
-                        "Invalid image filename ${orderItem.generatedImageFilename} " +
-                            "for order ${orderData.orderNumber}, using placeholder"
-                    }
-                    createPlaceholderImage()
-                }
+        orderItem.generatedImageFilename
+            ?.let { filename ->
+                runCatching { imageAccessService.getImageData(filename, orderData.userId).first }
+                    .onFailure { e ->
+                        logger.warn(e) {
+                            "Could not load image $filename for order ${orderData.orderNumber}, using placeholder"
+                        }
+                    }.getOrNull()
             }
-            else -> {
+            ?: PlaceholderImage.DEFAULT_BYTES.also {
                 logger.info { "No generated image for order item ${orderItem.id}, using placeholder" }
-                createPlaceholderImage()
             }
-        }
 
     private fun calculateImageDimensions(
         orderItem: OrderItemPdfData,
@@ -367,16 +314,20 @@ class PdfGenerationServiceImpl(
             orderItem.article.mugDetails
                 ?.printTemplateWidthMm
                 ?.toFloat()
-                ?: ((pageWidth / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)))
+                ?: ((pageWidth / PdfConfig.MM_TO_POINTS) - (2 * (margin / PdfConfig.MM_TO_POINTS)))
 
         val imageHeightMm =
             orderItem.article.mugDetails
                 ?.printTemplateHeightMm
                 ?.toFloat()
-                ?: ((pageHeight / MM_TO_POINTS) - (2 * (margin / MM_TO_POINTS)) - DEFAULT_IMAGE_MARGIN_MM)
+                ?: (
+                    (pageHeight / PdfConfig.MM_TO_POINTS) - 
+                    (2 * (margin / PdfConfig.MM_TO_POINTS)) - 
+                    DEFAULT_IMAGE_MARGIN_MM
+                )
 
-        val imageWidthPt = imageWidthMm * MM_TO_POINTS
-        val imageHeightPt = imageHeightMm * MM_TO_POINTS
+        val imageWidthPt = imageWidthMm * PdfConfig.MM_TO_POINTS
+        val imageHeightPt = imageHeightMm * PdfConfig.MM_TO_POINTS
 
         return ImageDimensions(imageWidthPt, imageHeightPt)
     }
@@ -457,8 +408,8 @@ class PdfGenerationServiceImpl(
                 qrCodeWriter.encode(
                     orderId,
                     BarcodeFormat.QR_CODE,
-                    ORDER_QR_SIZE_PIXELS,
-                    ORDER_QR_SIZE_PIXELS,
+                    pdfConfig.qrCode.sizePixels,
+                    pdfConfig.qrCode.sizePixels,
                 )
 
             val bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix)
@@ -466,7 +417,7 @@ class PdfGenerationServiceImpl(
             ImageIO.write(bufferedImage, IMAGE_FORMAT_PNG, qrByteArray)
 
             val qrImage = Image.getInstance(qrByteArray.toByteArray())
-            qrImage.scaleAbsolute(ORDER_QR_CODE_SIZE_POINTS, ORDER_QR_CODE_SIZE_POINTS)
+            qrImage.scaleAbsolute(pdfConfig.qrCode.sizePt, pdfConfig.qrCode.sizePt)
 
             val xPosition = 0f
             val yPosition = 0f
@@ -512,44 +463,6 @@ class PdfGenerationServiceImpl(
         }
     }
 
-    private fun createPlaceholderImage(): ByteArray {
-        val width = PLACEHOLDER_IMAGE_WIDTH
-        val height = PLACEHOLDER_IMAGE_HEIGHT
-        val image = BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
-        val graphics = image.createGraphics()
-
-        // Fill with light gray background
-        graphics.color = java.awt.Color.LIGHT_GRAY
-        graphics.fillRect(0, 0, width, height)
-
-        // Add border
-        graphics.color = java.awt.Color.DARK_GRAY
-        graphics.drawRect(0, 0, width - 1, height - 1)
-
-        // Add placeholder text
-        graphics.color = java.awt.Color.BLACK
-        val font = java.awt.Font("Arial", java.awt.Font.BOLD, PLACEHOLDER_FONT_SIZE_PIXELS)
-        graphics.font = font
-        val fontMetrics = graphics.getFontMetrics(font)
-        val text = "No Image Available"
-        val textWidth = fontMetrics.stringWidth(text)
-        val textHeight = fontMetrics.ascent
-        val x = (width - textWidth) / 2
-        val y = (height + textHeight) / 2
-        graphics.drawString(text, x, y)
-
-        graphics.dispose()
-
-        // Convert to byte array
-        val outputStream = ByteArrayOutputStream()
-        try {
-            ImageIO.write(image, IMAGE_FORMAT_PNG, outputStream)
-            return outputStream.toByteArray()
-        } catch (e: IOException) {
-            throw PdfGenerationException("Failed to create placeholder image", e)
-        }
-    }
-
     private data class PlaceholderText(
         val text: String,
         val pageWidth: Float,
@@ -565,12 +478,12 @@ class PdfGenerationServiceImpl(
         try {
             val baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED)
             contentByte.beginText()
-            contentByte.setFontAndSize(baseFont, PLACEHOLDER_FONT_SIZE)
+            contentByte.setFontAndSize(baseFont, pdfConfig.fonts.placeholderSizePt)
 
             val x = placement.x
             val y = placement.y ?: (placement.pageHeight / 2)
             if (x == null) {
-                val textWidth = baseFont.getWidthPoint(placement.text, PLACEHOLDER_FONT_SIZE)
+                val textWidth = baseFont.getWidthPoint(placement.text, pdfConfig.fonts.placeholderSizePt)
                 contentByte.moveText((placement.pageWidth - textWidth) / 2, y)
             } else {
                 contentByte.moveText(x, y)
@@ -582,8 +495,4 @@ class PdfGenerationServiceImpl(
             logger.error(e) { "Failed to add placeholder text: ${placement.text}" }
         }
     }
-
-    override fun convertToOrderPdfData(orderForPdf: OrderForPdfDto): OrderPdfData =
-        orderDataConverter
-            .convertToOrderPdfData(orderForPdf)
 }

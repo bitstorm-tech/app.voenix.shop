@@ -35,7 +35,6 @@ class PdfGenerationServiceConsolidationTest(
         // These would fail compilation if methods are missing
         assert(service::generateOrderPdf is kotlin.reflect.KFunction<*>)
         assert(service::getOrderPdfFilename is kotlin.reflect.KFunction<*>)
-        assert(service::convertToOrderPdfData is kotlin.reflect.KFunction<*>)
     }
 
     @Test

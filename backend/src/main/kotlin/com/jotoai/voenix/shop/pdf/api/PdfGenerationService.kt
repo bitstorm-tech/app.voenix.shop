@@ -3,21 +3,18 @@ package com.jotoai.voenix.shop.pdf.api
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
 
 /**
- * Consolidated interface for all PDF generation operations.
- * This interface combines functionality from PdfFacade, PdfQueryService, OrderPdfService, and PublicPdfService
- * into a single, cohesive service contract.
+ * PDF generation service interface.
+ * This service handles low-level PDF creation operations and is used by other modules
+ * as an infrastructure service.
  *
- * This consolidation enables:
- * - Better code reuse through shared utility methods
- * - Simplified dependency injection
- * - Consistent error handling across all PDF operations
- * - Easier testing and maintenance
+ * The service is designed to be module-agnostic, accepting only its own DTOs
+ * to maintain proper module boundaries in the Spring Modulith architecture.
  */
 interface PdfGenerationService {
     /**
-     * Generates a PDF for the given order.
+     * Generates a PDF for the given order data.
      * Creates one page per item quantity with product image, header, and QR code.
-     * @param orderData The order data
+     * @param orderData The order data (already converted to PDF DTOs)
      * @return The generated PDF as byte array
      */
     fun generateOrderPdf(orderData: OrderPdfData): ByteArray
@@ -28,13 +25,4 @@ interface PdfGenerationService {
      * @return The generated filename
      */
     fun getOrderPdfFilename(orderNumber: String): String
-
-    /**
-     * Converts OrderForPdfDto to OrderPdfData.
-     * This method encapsulates the conversion logic and maintains module boundaries
-     * by keeping the internal OrderDataConverter within the PDF module.
-     * @param orderForPdf The order data for PDF generation
-     * @return The converted OrderPdfData
-     */
-    fun convertToOrderPdfData(orderForPdf: com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto): OrderPdfData
 }
