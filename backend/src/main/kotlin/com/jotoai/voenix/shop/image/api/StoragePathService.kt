@@ -75,14 +75,6 @@ interface StoragePathService {
     fun findImageTypeByFilename(filename: String): ImageType?
 
     /**
-     * Gets the relative path from storage root for the given image type.
-     *
-     * @param imageType The type of image
-     * @return The relative path from storage root
-     */
-    fun getRelativePath(imageType: ImageType): String
-
-    /**
      * Gets the storage root path.
      *
      * @return The absolute Path to the storage root directory

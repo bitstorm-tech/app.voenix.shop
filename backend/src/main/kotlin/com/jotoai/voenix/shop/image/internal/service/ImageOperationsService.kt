@@ -5,7 +5,6 @@ import com.jotoai.voenix.shop.image.api.ImageOperations
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
@@ -100,10 +99,6 @@ class ImageOperationsService(
         return uploadedImage.toDto()
     }
 
-    @Transactional(readOnly = true)
-    override fun getUserUploadedImages(userId: Long): List<UploadedImageDto> =
-        uploadedImageRepository.findAllByUserIdWithGeneratedImages(userId).map { it.toDto() }
-
     override fun storeGeneratedImage(
         imageBytes: ByteArray,
         uploadedImageId: Long,
@@ -159,76 +154,6 @@ class ImageOperationsService(
 
             savedImage.toDto()
         }
-
-    @Transactional(readOnly = true)
-    override fun getGeneratedImageByUuid(
-        uuid: UUID,
-        userId: Long?,
-    ): GeneratedImageDto {
-        val generatedImage =
-            if (userId != null) {
-                generatedImageRepository.findByUuidAndUserId(uuid, userId)
-                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found for user $userId")
-            } else {
-                generatedImageRepository.findByUuid(uuid)
-                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found")
-            }
-
-        return generatedImage.toDto()
-    }
-
-    override fun updateGeneratedImage(
-        uuid: UUID,
-        updateRequest: UpdateGeneratedImageRequest,
-        userId: Long?,
-    ): GeneratedImageDto {
-        val generatedImage =
-            if (userId != null) {
-                generatedImageRepository.findByUuidAndUserId(uuid, userId)
-                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found for user $userId")
-            } else {
-                generatedImageRepository.findByUuid(uuid)
-                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found")
-            }
-
-        updateRequest.promptId?.let { generatedImage.promptId = it }
-        updateRequest.userId?.let { generatedImage.userId = it }
-        updateRequest.ipAddress?.let { generatedImage.ipAddress = it }
-
-        return wrapStorageException("Update generated image") {
-            val saved = generatedImageRepository.save(generatedImage)
-            saved.toDto()
-        }
-    }
-
-    override fun deleteGeneratedImage(
-        uuid: UUID,
-        userId: Long?,
-    ) {
-        val generatedImage =
-            if (userId != null) {
-                generatedImageRepository.findByUuidAndUserId(uuid, userId)
-                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found for user $userId")
-            } else {
-                generatedImageRepository.findByUuid(uuid)
-                    ?: throw ImageNotFoundException("Generated image with UUID $uuid not found")
-            }
-
-        wrapStorageException("Delete generated image") {
-            if (generatedImage.userId != null) {
-                fileStorageService.deleteUserImage(generatedImage.filename, generatedImage.userId!!)
-            } else {
-                fileStorageService.deleteFile(generatedImage.filename, ImageType.PUBLIC)
-            }
-
-            generatedImageRepository.delete(generatedImage)
-            logger.debug { "Deleted generated image $uuid${userId?.let { " for user $it" } ?: ""}" }
-        }
-    }
-
-    @Transactional(readOnly = true)
-    override fun getUserGeneratedImages(userId: Long): List<GeneratedImageDto> =
-        generatedImageRepository.findAllByUserIdWithUploadedImage(userId).map { it.toDto() }
 
     @Transactional(readOnly = true)
     override fun countGeneratedImagesForIpAfter(

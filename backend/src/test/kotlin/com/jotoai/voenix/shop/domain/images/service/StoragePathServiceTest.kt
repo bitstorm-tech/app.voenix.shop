@@ -143,12 +143,6 @@ class StoragePathServiceTest {
     }
 
     @Test
-    fun `should return correct relative path`() {
-        val relativePath = storagePathService.getRelativePath(ImageType.PROMPT_EXAMPLE)
-        assertEquals("public/images/prompt-example-images", relativePath)
-    }
-
-    @Test
     fun `should return storage root`() {
         val storageRoot = storagePathService.getStorageRoot()
         assertEquals(tempDir, storageRoot)

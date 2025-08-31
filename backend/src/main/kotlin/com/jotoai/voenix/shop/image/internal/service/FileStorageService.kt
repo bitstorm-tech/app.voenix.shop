@@ -12,7 +12,6 @@ import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.io.ByteArrayResource
-import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -105,19 +104,6 @@ class FileStorageService(
         return storedFilename
     }
 
-    override fun loadFileAsResource(
-        filename: String,
-        imageType: ImageType,
-    ): Resource {
-        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
-
-        if (!Files.exists(filePath)) {
-            throw ResourceNotFoundException("Image with filename $filename not found")
-        }
-
-        return FileSystemResource(filePath)
-    }
-
     override fun loadFileAsBytes(
         filename: String,
         imageType: ImageType,
@@ -137,14 +123,6 @@ class FileStorageService(
     ): Boolean {
         val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
         return deleteFile(filePath)
-    }
-
-    override fun fileExists(
-        filename: String,
-        imageType: ImageType,
-    ): Boolean {
-        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
-        return Files.exists(filePath)
     }
 
     override fun getImageData(
@@ -175,18 +153,6 @@ class FileStorageService(
             .contentType(MediaType.parseMediaType(contentType))
             .body(ByteArrayResource(imageData))
     }
-
-    override fun getImageUrl(
-        imageType: ImageType,
-        filename: String,
-    ): String = storagePathService.getImageUrl(imageType, filename)
-
-    override fun getPhysicalPath(imageType: ImageType): Path = storagePathService.getPhysicalPath(imageType)
-
-    override fun getPhysicalFilePath(
-        imageType: ImageType,
-        filename: String,
-    ): Path = storagePathService.getPhysicalFilePath(imageType, filename)
 
     /**
      * Stores an uploaded image file using the user-specific storage pattern.

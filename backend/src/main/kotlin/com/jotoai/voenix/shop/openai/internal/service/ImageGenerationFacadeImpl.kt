@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.application.api.exception.BadRequestException
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.ImageOperations
 import com.jotoai.voenix.shop.image.api.ImageStorage
+import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.exceptions.ImageProcessingException
@@ -29,6 +30,7 @@ import java.util.UUID
 class ImageGenerationFacadeImpl(
     private val imageOperations: ImageOperations,
     private val imageStorage: ImageStorage,
+    private val storagePathService: StoragePathService,
     private val openAIImageGenerationService: OpenAIImageGenerationService,
     private val userService: UserService,
 ) : ImageGenerationService {
@@ -185,7 +187,7 @@ class ImageGenerationFacadeImpl(
 
         val imageUrls =
             generatedImages.map { dto ->
-                imageStorage.getImageUrl(ImageType.PRIVATE, dto.filename)
+                storagePathService.getImageUrl(ImageType.PRIVATE, dto.filename)
             }
 
         val imageIds = generatedImages.mapNotNull { it.id }
@@ -221,7 +223,7 @@ class ImageGenerationFacadeImpl(
 
         val imageUrls =
             generatedImages.map { generatedImageDto ->
-                imageStorage.getImageUrl(ImageType.PUBLIC, generatedImageDto.filename)
+                storagePathService.getImageUrl(ImageType.PUBLIC, generatedImageDto.filename)
             }
 
         val imageIds = generatedImages.mapNotNull { it.id }
