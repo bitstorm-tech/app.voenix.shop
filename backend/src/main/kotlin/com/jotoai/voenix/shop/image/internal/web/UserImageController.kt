@@ -1,8 +1,7 @@
-package com.jotoai.voenix.shop.image.web
+package com.jotoai.voenix.shop.image.internal.web
 
-import com.jotoai.voenix.shop.image.api.ImageService
+import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.user.api.UserService
-import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.io.Resource
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -20,19 +19,12 @@ class UserImageController(
     private val imageService: ImageService,
     private val userService: UserService,
 ) {
-    companion object {
-        private val logger = KotlinLogging.logger {}
-    }
-
     @GetMapping("/{filename}")
     fun getImage(
         @PathVariable filename: String,
         @AuthenticationPrincipal userDetails: UserDetails,
     ): ResponseEntity<Resource> {
         val user = userService.getUserByEmail(userDetails.username)
-        logger.info { "User ${user.id} retrieving image: $filename" }
-
-        // Delegate to image service which validates access and streams the resource
         return imageService.serveUserImage(filename, user.id)
     }
 }

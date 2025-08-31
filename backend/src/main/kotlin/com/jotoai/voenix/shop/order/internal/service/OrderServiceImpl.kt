@@ -8,8 +8,8 @@ import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.CartQueryService
 import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
-import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
+import com.jotoai.voenix.shop.image.ImageService
+import com.jotoai.voenix.shop.image.GeneratedImageDto
 import com.jotoai.voenix.shop.order.api.OrderService
 import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.order.api.dto.OrderDto

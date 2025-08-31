@@ -1,16 +1,16 @@
 package com.jotoai.voenix.shop.image.internal.service
 
-import com.jotoai.voenix.shop.image.api.CountFilter
-import com.jotoai.voenix.shop.image.api.ImageContent
-import com.jotoai.voenix.shop.image.api.ImageData
-import com.jotoai.voenix.shop.image.api.ImageMetadata
-import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.ValidationRequest
-import com.jotoai.voenix.shop.image.api.ValidationResult
-import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
-import com.jotoai.voenix.shop.image.api.dto.ImageInfo
-import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
+import com.jotoai.voenix.shop.image.CountFilter
+import com.jotoai.voenix.shop.image.ImageContent
+import com.jotoai.voenix.shop.image.ImageData
+import com.jotoai.voenix.shop.image.ImageMetadata
+import com.jotoai.voenix.shop.image.ImageService
+import com.jotoai.voenix.shop.image.ValidationRequest
+import com.jotoai.voenix.shop.image.ValidationResult
+import com.jotoai.voenix.shop.image.GeneratedImageDto
+import com.jotoai.voenix.shop.image.ImageInfo
+import com.jotoai.voenix.shop.image.ImageType
+import com.jotoai.voenix.shop.image.UploadedImageDto
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging

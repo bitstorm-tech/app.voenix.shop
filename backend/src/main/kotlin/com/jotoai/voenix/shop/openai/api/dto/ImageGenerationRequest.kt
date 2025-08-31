@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.openai.api.dto
 
-import com.jotoai.voenix.shop.image.api.dto.CropArea
+import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.openai.api.enums.ImageBackground
 import com.jotoai.voenix.shop.openai.api.enums.ImageQuality
 import com.jotoai.voenix.shop.openai.api.enums.ImageSize

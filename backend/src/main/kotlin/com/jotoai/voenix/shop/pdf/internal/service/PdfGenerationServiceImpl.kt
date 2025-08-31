@@ -4,7 +4,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
-import com.jotoai.voenix.shop.image.api.ImageService
+import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData

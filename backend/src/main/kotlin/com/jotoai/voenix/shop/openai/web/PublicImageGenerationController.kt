@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.openai.web
 
 import com.jotoai.voenix.shop.application.internal.service.ClientIpResolver
-import com.jotoai.voenix.shop.image.api.dto.CropArea
+import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
 import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
 import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationResponse

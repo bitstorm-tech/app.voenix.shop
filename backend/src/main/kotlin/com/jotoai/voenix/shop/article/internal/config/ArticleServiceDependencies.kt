@@ -11,7 +11,7 @@ import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepos
 import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRepository
 import com.jotoai.voenix.shop.article.internal.service.MugDetailsService
 import com.jotoai.voenix.shop.article.internal.service.ShirtDetailsService
-import com.jotoai.voenix.shop.image.api.ImageService
+import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.vat.api.VatService
 import org.springframework.stereotype.Component

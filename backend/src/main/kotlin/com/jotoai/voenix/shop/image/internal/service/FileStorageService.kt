@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.image.api.dto.CropArea
-import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.exceptions.ImageException
+import com.jotoai.voenix.shop.image.CropArea
+import com.jotoai.voenix.shop.image.ImageType
+import com.jotoai.voenix.shop.image.ImageException
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage

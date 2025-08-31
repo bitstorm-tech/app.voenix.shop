@@ -1,11 +1,11 @@
 package com.jotoai.voenix.shop.openai.web
 
-import com.jotoai.voenix.shop.image.api.ImageData
-import com.jotoai.voenix.shop.image.api.ImageMetadata
-import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.dto.CropArea
-import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
+import com.jotoai.voenix.shop.image.ImageData
+import com.jotoai.voenix.shop.image.ImageMetadata
+import com.jotoai.voenix.shop.image.ImageService
+import com.jotoai.voenix.shop.image.CropArea
+import com.jotoai.voenix.shop.image.ImageType
+import com.jotoai.voenix.shop.image.UploadedImageDto
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
 import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationResponse
 import com.jotoai.voenix.shop.openai.web.dto.ImageGenerationForm

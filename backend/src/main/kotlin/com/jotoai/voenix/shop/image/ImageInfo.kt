@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.image.api.dto
+package com.jotoai.voenix.shop.image
 
 import java.time.LocalDateTime
 import java.util.UUID

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.image.api.exceptions
+package com.jotoai.voenix.shop.image
 
 /**
  * Sealed class hierarchy for all image-related exceptions.

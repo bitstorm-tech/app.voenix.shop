@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.service
 
-import com.jotoai.voenix.shop.image.api.dto.CropArea
+import com.jotoai.voenix.shop.image.CropArea
 import com.sksamuel.scrimage.ImmutableImage
 import com.sksamuel.scrimage.nio.ImageWriter
 import com.sksamuel.scrimage.nio.PngWriter

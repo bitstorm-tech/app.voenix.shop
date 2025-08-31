@@ -1,8 +1,4 @@
-package com.jotoai.voenix.shop.image.api
-
-import com.jotoai.voenix.shop.image.api.dto.CropArea
-import com.jotoai.voenix.shop.image.api.dto.ImageInfo
-import com.jotoai.voenix.shop.image.api.dto.ImageType
+package com.jotoai.voenix.shop.image
 import org.springframework.core.io.Resource
 import org.springframework.http.ResponseEntity
 import org.springframework.web.multipart.MultipartFile

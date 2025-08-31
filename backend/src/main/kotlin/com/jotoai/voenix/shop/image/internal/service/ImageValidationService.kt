@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.service
 
-import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.ImageType
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 

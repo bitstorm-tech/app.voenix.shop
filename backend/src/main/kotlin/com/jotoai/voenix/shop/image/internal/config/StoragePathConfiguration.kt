@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.config
 
-import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.ImageType
 import java.nio.file.Path
 
 /**

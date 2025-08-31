@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.image.api.dto
+package com.jotoai.voenix.shop.image
 
 /**
  * Enum defining different image types with their specific configuration properties.

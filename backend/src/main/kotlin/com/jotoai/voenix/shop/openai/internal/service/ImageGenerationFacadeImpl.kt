@@ -2,16 +2,16 @@ package com.jotoai.voenix.shop.openai.internal.service
 
 import com.jotoai.voenix.shop.application.api.exception.BadRequestException
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.image.api.CountFilter
-import com.jotoai.voenix.shop.image.api.ImageData
-import com.jotoai.voenix.shop.image.api.ImageMetadata
-import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.ValidationRequest
-import com.jotoai.voenix.shop.image.api.dto.CropArea
-import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
-import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
-import com.jotoai.voenix.shop.image.api.exceptions.ImageException
+import com.jotoai.voenix.shop.image.CountFilter
+import com.jotoai.voenix.shop.image.ImageData
+import com.jotoai.voenix.shop.image.ImageMetadata
+import com.jotoai.voenix.shop.image.ImageService
+import com.jotoai.voenix.shop.image.ValidationRequest
+import com.jotoai.voenix.shop.image.CropArea
+import com.jotoai.voenix.shop.image.GeneratedImageDto
+import com.jotoai.voenix.shop.image.ImageType
+import com.jotoai.voenix.shop.image.UploadedImageDto
+import com.jotoai.voenix.shop.image.ImageException
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
 import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
 import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
