@@ -1,11 +1,11 @@
 package com.jotoai.voenix.shop.auth.internal.web
 
 import com.jotoai.voenix.shop.auth.internal.service.AuthService
-import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
-import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
-import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
-import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
-import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
+import com.jotoai.voenix.shop.auth.internal.dto.LoginRequest
+import com.jotoai.voenix.shop.auth.internal.dto.LoginResponse
+import com.jotoai.voenix.shop.auth.internal.dto.RegisterGuestRequest
+import com.jotoai.voenix.shop.auth.internal.dto.RegisterRequest
+import com.jotoai.voenix.shop.auth.internal.dto.SessionInfo
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid

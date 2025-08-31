@@ -2,11 +2,11 @@ package com.jotoai.voenix.shop.auth.internal.service
 
 import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
-import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
-import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
-import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
-import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
-import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
+import com.jotoai.voenix.shop.auth.internal.dto.LoginRequest
+import com.jotoai.voenix.shop.auth.internal.dto.LoginResponse
+import com.jotoai.voenix.shop.auth.internal.dto.RegisterGuestRequest
+import com.jotoai.voenix.shop.auth.internal.dto.RegisterRequest
+import com.jotoai.voenix.shop.auth.internal.dto.SessionInfo
 import com.jotoai.voenix.shop.auth.internal.dto.UserCreationRequest
 import com.jotoai.voenix.shop.auth.internal.exception.InvalidCredentialsException
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails

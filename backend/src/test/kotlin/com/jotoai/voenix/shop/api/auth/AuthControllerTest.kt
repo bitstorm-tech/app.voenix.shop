@@ -3,8 +3,8 @@ package com.jotoai.voenix.shop.api.auth
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.auth.internal.service.AuthService
-import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
-import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
+import com.jotoai.voenix.shop.auth.internal.dto.LoginResponse
+import com.jotoai.voenix.shop.auth.internal.dto.RegisterRequest
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every

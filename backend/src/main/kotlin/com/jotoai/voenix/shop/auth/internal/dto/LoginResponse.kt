@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.auth.api.dto
+package com.jotoai.voenix.shop.auth.internal.dto
 
 import com.jotoai.voenix.shop.user.api.dto.UserDto
 
