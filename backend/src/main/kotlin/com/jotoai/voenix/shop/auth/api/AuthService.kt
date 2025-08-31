@@ -5,8 +5,6 @@ import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
-import com.jotoai.voenix.shop.auth.api.dto.UserCreationRequest
-import com.jotoai.voenix.shop.user.api.dto.UserDto
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 
@@ -47,18 +45,4 @@ interface AuthService {
         response: HttpServletResponse,
     ): LoginResponse
 
-    /**
-     * Creates a new user with the specified details and roles.
-     */
-    fun createUser(request: UserCreationRequest): UserDto
-
-    /**
-     * Updates an existing user's details.
-     */
-    fun updateUser(
-        userId: Long,
-        firstName: String? = null,
-        lastName: String? = null,
-        phoneNumber: String? = null,
-    ): UserDto
 }

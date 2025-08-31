@@ -8,8 +8,8 @@ import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
-import com.jotoai.voenix.shop.auth.api.dto.UserCreationRequest
-import com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException
+import com.jotoai.voenix.shop.auth.internal.dto.UserCreationRequest
+import com.jotoai.voenix.shop.auth.internal.exceptions.InvalidCredentialsException
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.user.api.UserService
 import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
@@ -48,10 +48,12 @@ class AuthServiceImpl(
                 request = request,
                 response = response,
             )
-        } catch (_: BadCredentialsException) {
-            throw InvalidCredentialsException()
-        } catch (_: UsernameNotFoundException) {
-            throw InvalidCredentialsException()
+        } catch (e: Exception) {
+            when (e) {
+                is BadCredentialsException, is UsernameNotFoundException ->
+                    throw InvalidCredentialsException()
+                else -> throw e
+            }
         }
     }
 
@@ -111,7 +113,7 @@ class AuthServiceImpl(
 
         // Create authentication directly using the newly created user data
         // to avoid database lookup issues with transaction boundaries
-        return authenticateRegisteredUser(
+        return authenticateUserById(
             userId = userDto.id,
             request = request,
             response = response,
@@ -136,7 +138,7 @@ class AuthServiceImpl(
                     lastName = registerGuestRequest.lastName,
                     phoneNumber = registerGuestRequest.phoneNumber,
                 )
-                return authenticateGuestUser(
+                return authenticateUserById(
                     userId = authInfo.id,
                     request = request,
                     response = response,
@@ -157,7 +159,7 @@ class AuthServiceImpl(
                 ),
             )
 
-        return authenticateGuestUser(
+        return authenticateUserById(
             userId = savedUser.id,
             request = request,
             response = response,
@@ -165,7 +167,7 @@ class AuthServiceImpl(
     }
 
     @Transactional
-    override fun createUser(request: UserCreationRequest): UserDto {
+    fun createUser(request: UserCreationRequest): UserDto {
         // Create user via unified service
         val userDto =
             userService.createUser(
@@ -187,7 +189,7 @@ class AuthServiceImpl(
     }
 
     @Transactional
-    override fun updateUser(
+    fun updateUser(
         userId: Long,
         firstName: String?,
         lastName: String?,
@@ -220,9 +222,9 @@ class AuthServiceImpl(
     }
 
     /**
-     * Creates an authenticated session for a guest user (without password authentication)
+     * Creates an authenticated session for a user by ID (for guest/registered users)
      */
-    private fun authenticateGuestUser(
+    private fun authenticateUserById(
         userId: Long,
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -234,35 +236,6 @@ class AuthServiceImpl(
                 id = userDto.id,
                 email = userDto.email,
                 passwordHash = null,
-                userRoles = userRoles,
-            )
-
-        val authentication =
-            UsernamePasswordAuthenticationToken(
-                userDetails,
-                null,
-                userDetails.authorities,
-            )
-
-        return createAuthenticatedSession(authentication, request, response)
-    }
-
-    /**
-     * Creates an authenticated session for a newly registered user (without password authentication)
-     * This avoids database lookup issues when authenticating immediately after user creation
-     */
-    private fun authenticateRegisteredUser(
-        userId: Long,
-        request: HttpServletRequest,
-        response: HttpServletResponse,
-    ): LoginResponse {
-        val (userDto, userRoles) = fetchUserWithRoles(userId)
-
-        val userDetails =
-            CustomUserDetails(
-                id = userDto.id,
-                email = userDto.email,
-                passwordHash = "registered", // Not used for authentication token, just a marker
                 userRoles = userRoles,
             )
 

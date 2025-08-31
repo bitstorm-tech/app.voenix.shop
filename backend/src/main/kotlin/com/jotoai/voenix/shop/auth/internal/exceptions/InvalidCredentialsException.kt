@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.auth.api.exceptions
+package com.jotoai.voenix.shop.auth.internal.exceptions
 
 /**
  * Exception thrown when login credentials are invalid.
@@ -6,4 +6,4 @@ package com.jotoai.voenix.shop.auth.api.exceptions
 class InvalidCredentialsException(
     message: String = "Invalid email or password",
     cause: Throwable? = null,
-) : AuthenticationException(message, cause)
+) : RuntimeException(message, cause)

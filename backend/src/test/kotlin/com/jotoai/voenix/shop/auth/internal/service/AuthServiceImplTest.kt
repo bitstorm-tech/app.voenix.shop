@@ -6,7 +6,7 @@ import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
 import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
-import com.jotoai.voenix.shop.auth.api.dto.UserCreationRequest
+import com.jotoai.voenix.shop.auth.internal.exceptions.InvalidCredentialsException
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.user.api.UserService
 import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
@@ -113,7 +113,7 @@ class AuthServiceImplTest {
 
         every { authenticationManager.authenticate(any()) } throws BadCredentialsException("Invalid credentials")
 
-        assertThrows<com.jotoai.voenix.shop.auth.api.exceptions.InvalidCredentialsException> {
+        assertThrows<InvalidCredentialsException> {
             authService.login(loginRequest, httpRequest, httpResponse)
         }
     }
@@ -356,96 +356,6 @@ class AuthServiceImplTest {
         assertThrows<ResourceAlreadyExistsException> {
             authService.registerGuest(registerRequest, httpRequest, httpResponse)
         }
-    }
-
-    @Test
-    fun `createUser should create user with all fields`() {
-        val userDto = createTestUser()
-
-        every { userService.createUser(any()) } returns userDto
-        every { userService.setUserRoles(1L, setOf("USER", "ADMIN")) } just runs
-        every { passwordEncoder.encode("password123") } returns "encoded-password"
-
-        val result =
-            authService.createUser(
-                UserCreationRequest(
-                    email = "test@example.com",
-                    password = "password123",
-                    firstName = "John",
-                    lastName = "Doe",
-                    phoneNumber = "+1234567890",
-                    roleNames = setOf("USER", "ADMIN"),
-                ),
-            )
-
-        assertEquals(userDto, result)
-
-        val captor = slot<CreateUserRequest>()
-        verify { userService.createUser(capture(captor)) }
-        val request = captor.captured
-        assertEquals("test@example.com", request.email)
-        assertEquals("encoded-password", request.password)
-        assertEquals("John", request.firstName)
-        assertEquals("Doe", request.lastName)
-        assertEquals("+1234567890", request.phoneNumber)
-        verify { userService.setUserRoles(1L, setOf("USER", "ADMIN")) }
-    }
-
-    @Test
-    fun `createUser should create user without password for guest`() {
-        val userDto = createTestUser()
-
-        every { userService.createUser(any()) } returns userDto
-        every { userService.setUserRoles(1L, setOf("USER")) } just runs
-
-        val result =
-            authService.createUser(
-                UserCreationRequest(
-                    email = "guest@example.com",
-                    password = null,
-                    firstName = "Guest",
-                    lastName = null,
-                    phoneNumber = null,
-                    roleNames = setOf("USER"),
-                ),
-            )
-
-        assertEquals(userDto, result)
-
-        val captor = slot<CreateUserRequest>()
-        verify { userService.createUser(capture(captor)) }
-        val request = captor.captured
-        assertEquals("guest@example.com", request.email)
-        assertEquals(null, request.password)
-        assertEquals("Guest", request.firstName)
-        assertEquals(null, request.lastName)
-        assertEquals(null, request.phoneNumber)
-    }
-
-    @Test
-    fun `updateUser should update user fields`() {
-        val userDto = createTestUser()
-
-        every { userService.updateUser(any(), any()) } returns userDto
-
-        val result =
-            authService.updateUser(
-                userId = 1L,
-                firstName = "UpdatedJohn",
-                lastName = "UpdatedDoe",
-                phoneNumber = "+9876543210",
-            )
-
-        assertEquals(userDto, result)
-
-        val idCaptor = slot<Long>()
-        val requestCaptor = slot<UpdateUserRequest>()
-        verify { userService.updateUser(capture(idCaptor), capture(requestCaptor)) }
-        assertEquals(1L, idCaptor.captured)
-        val request = requestCaptor.captured
-        assertEquals("UpdatedJohn", request.firstName)
-        assertEquals("UpdatedDoe", request.lastName)
-        assertEquals("+9876543210", request.phoneNumber)
     }
 
     private fun createTestUser(
