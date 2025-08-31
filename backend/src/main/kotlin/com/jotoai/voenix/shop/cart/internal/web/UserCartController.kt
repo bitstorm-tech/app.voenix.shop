@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.cart.web
+package com.jotoai.voenix.shop.cart.internal.web
 
 import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.CartQueryService
