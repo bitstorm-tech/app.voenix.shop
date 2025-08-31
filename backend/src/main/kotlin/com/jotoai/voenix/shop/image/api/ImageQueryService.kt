@@ -5,7 +5,15 @@ import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 /**
  * Query service for Image module read operations.
  * This interface defines read-only operations for generated image data used by other modules.
+ *
+ * @deprecated Use ImageService instead. This interface will be removed in a future version.
+ * @see ImageService
  */
+@Deprecated(
+    message = "Use ImageService instead for a unified API",
+    replaceWith = ReplaceWith("ImageService", "com.jotoai.voenix.shop.image.api.ImageService"),
+    level = DeprecationLevel.WARNING,
+)
 interface ImageQueryService {
     /**
      * Checks if a generated image exists by its Long ID.

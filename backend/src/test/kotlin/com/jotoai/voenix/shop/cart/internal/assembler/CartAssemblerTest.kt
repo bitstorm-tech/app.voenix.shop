@@ -9,7 +9,7 @@ import com.jotoai.voenix.shop.cart.api.dto.CartItemDto
 import com.jotoai.voenix.shop.cart.api.enums.CartStatus
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.entity.CartItem
-import com.jotoai.voenix.shop.image.api.ImageQueryService
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import io.mockk.every
@@ -27,14 +27,14 @@ import java.time.OffsetDateTime
 
 class CartAssemblerTest {
     private lateinit var articleQueryService: ArticleQueryService
-    private lateinit var imageQueryService: ImageQueryService
+    private lateinit var imageService: ImageService
     private lateinit var cartAssembler: CartAssembler
 
     @BeforeEach
     fun setUp() {
         articleQueryService = mockk()
-        imageQueryService = mockk()
-        cartAssembler = CartAssembler(articleQueryService, imageQueryService)
+        imageService = mockk()
+        cartAssembler = CartAssembler(articleQueryService, imageService)
     }
 
     @Test
@@ -110,7 +110,7 @@ class CartAssemblerTest {
                 2001L to variant1,
                 2002L to variant2,
             )
-        every { imageQueryService.findGeneratedImagesByIds(listOf(3001L, 3002L)) } returns
+        every { imageService.find(listOf(3001L, 3002L)) } returns
             mapOf(
                 3001L to image1,
                 3002L to image2,
@@ -173,7 +173,7 @@ class CartAssemblerTest {
             mapOf(
                 2001L to variant,
             )
-        every { imageQueryService.findGeneratedImagesByIds(emptyList()) } returns emptyMap()
+        every { imageService.find(emptyList()) } returns emptyMap()
 
         // When
         val result = cartAssembler.toDto(cart)
@@ -241,7 +241,7 @@ class CartAssemblerTest {
                 2001L to variant1,
                 2002L to variant2,
             )
-        every { imageQueryService.findGeneratedImagesByIds(listOf(3001L)) } returns mapOf(3001L to image)
+        every { imageService.find(listOf(3001L)) } returns mapOf(3001L to image)
 
         // When
         val result = cartAssembler.toDto(cart)
@@ -293,7 +293,7 @@ class CartAssemblerTest {
             mapOf(
                 2001L to variant,
             )
-        every { imageQueryService.findGeneratedImagesByIds(listOf(3001L)) } returns emptyMap() // Image not found
+        every { imageService.find(listOf(3001L)) } returns emptyMap() // Image not found
 
         // When
         val result = cartAssembler.toDto(cart)
@@ -386,7 +386,7 @@ class CartAssemblerTest {
 
         every { articleQueryService.getArticlesByIds(listOf(1001L, 1002L, 1003L)) } returns articles
         every { articleQueryService.getMugVariantsByIds(listOf(2001L, 2002L, 2003L)) } returns variants
-        every { imageQueryService.findGeneratedImagesByIds(listOf(3001L, 3002L)) } returns images
+        every { imageService.find(listOf(3001L, 3002L)) } returns images
     }
 
     private fun verifyBatchLoadResults(result: CartDto) {
@@ -428,7 +428,7 @@ class CartAssemblerTest {
             mapOf(
                 2001L to createMugVariantDto(id = 2001L, articleId = 1001L),
             )
-        every { imageQueryService.findGeneratedImagesByIds(emptyList()) } returns emptyMap()
+        every { imageService.find(emptyList()) } returns emptyMap()
 
         // When & Then
         val exception =
@@ -458,7 +458,7 @@ class CartAssemblerTest {
                 1001L to createArticleDto(id = 1001L, name = "Mug"),
             )
         every { articleQueryService.getMugVariantsByIds(listOf(2001L)) } returns emptyMap()
-        every { imageQueryService.findGeneratedImagesByIds(emptyList()) } returns emptyMap()
+        every { imageService.find(emptyList()) } returns emptyMap()
 
         // When & Then
         val exception =

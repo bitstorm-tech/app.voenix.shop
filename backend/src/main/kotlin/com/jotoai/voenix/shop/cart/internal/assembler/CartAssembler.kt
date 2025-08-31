@@ -8,14 +8,14 @@ import com.jotoai.voenix.shop.cart.api.dto.CartItemDto
 import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.entity.CartItem
-import com.jotoai.voenix.shop.image.api.ImageQueryService
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import org.springframework.stereotype.Component
 
 @Component
 class CartAssembler(
     private val articleQueryService: ArticleQueryService,
-    private val imageQueryService: ImageQueryService,
+    private val imageService: ImageService,
 ) {
     fun toDto(entity: Cart): CartDto =
         CartDto(
@@ -32,7 +32,7 @@ class CartAssembler(
 
                     val articlesById = articleQueryService.getArticlesByIds(articleIds)
                     val variantsById = articleQueryService.getMugVariantsByIds(variantIds)
-                    val imagesById = imageQueryService.findGeneratedImagesByIds(generatedImageIds)
+                    val imagesById = imageService.find(generatedImageIds).mapValues { it.value as GeneratedImageDto }
 
                     entity.items.map { toItemDto(it, articlesById, variantsById, imagesById) }
                 },

@@ -6,7 +6,15 @@ import java.nio.file.Path
 /**
  * Public API for storage path management in the image module.
  * Provides centralized storage path functionality for other modules.
+ *
+ * @deprecated Use ImageService instead. This interface will be removed in a future version.
+ * @see ImageService
  */
+@Deprecated(
+    message = "Use ImageService instead for a unified API - only getImageUrl is exposed as getUrl()",
+    replaceWith = ReplaceWith("ImageService", "com.jotoai.voenix.shop.image.api.ImageService"),
+    level = DeprecationLevel.WARNING,
+)
 interface StoragePathService {
     /**
      * Gets the complete URL for a specific image file.

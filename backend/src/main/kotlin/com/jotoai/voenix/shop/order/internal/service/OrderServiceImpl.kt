@@ -8,7 +8,7 @@ import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.CartQueryService
 import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
-import com.jotoai.voenix.shop.image.api.ImageQueryService
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.order.api.OrderService
 import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
@@ -40,7 +40,7 @@ class OrderServiceImpl(
     private val cartFacade: CartFacade,
     private val userService: UserService,
     private val articleQueryService: ArticleQueryService,
-    private val imageQueryService: ImageQueryService,
+    private val imageService: ImageService,
     private val entityManager: EntityManager,
     private val addressAssembler: AddressAssembler,
     @param:Value("\${app.base-url:http://localhost:8080}") private val appBaseUrl: String,
@@ -200,7 +200,7 @@ class OrderServiceImpl(
 
         // Fetch image filenames for all items with generated images
         val generatedImageIds = order.items.mapNotNull { it.generatedImageId }.distinct()
-        val imagesById = imageQueryService.findGeneratedImagesByIds(generatedImageIds)
+        val imagesById = imageService.find(generatedImageIds).mapValues { it.value as GeneratedImageDto }
 
         return OrderForPdfDto(
             id = order.id!!,
@@ -275,7 +275,7 @@ class OrderServiceImpl(
 
                     val articlesById = articleQueryService.getArticlesByIds(articleIds)
                     val variantsById = articleQueryService.getMugVariantsByIds(variantIds)
-                    val imagesById = imageQueryService.findGeneratedImagesByIds(generatedImageIds)
+                    val imagesById = imageService.find(generatedImageIds).mapValues { it.value as GeneratedImageDto }
 
                     entity.items.map { toItemDto(it, articlesById, variantsById, imagesById) }
                 },

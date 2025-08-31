@@ -1,6 +1,8 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageStorage
+import com.jotoai.voenix.shop.image.api.ImageService
+import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.image.api.enums.ImageBackground
 import com.jotoai.voenix.shop.image.api.enums.ImageQuality
 import com.jotoai.voenix.shop.image.api.enums.ImageSize
@@ -17,9 +19,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
+import java.time.LocalDateTime
+import java.util.UUID
 
 class OpenAIImageFacadeImplTest {
-    private lateinit var imageStorageService: ImageStorage
+    private lateinit var imageService: ImageService
     private lateinit var imageGenerationStrategy: ImageGenerationStrategy
     private lateinit var openAIImageFacade: OpenAIImageFacadeImpl
     private lateinit var openAIImageQueryService: OpenAIImageQueryServiceImpl
@@ -27,9 +31,9 @@ class OpenAIImageFacadeImplTest {
 
     @BeforeEach
     fun setUp() {
-        imageStorageService = mockk()
+        imageService = mockk()
         imageGenerationStrategy = mockk()
-        openAIImageFacade = OpenAIImageFacadeImpl(imageStorageService, imageGenerationStrategy)
+        openAIImageFacade = OpenAIImageFacadeImpl(imageService, imageGenerationStrategy)
         openAIImageQueryService = OpenAIImageQueryServiceImpl()
 
         mockImageFile =
@@ -99,8 +103,29 @@ class OpenAIImageFacadeImplTest {
         val savedFilename1 = "saved-image-1.png"
         val savedFilename2 = "saved-image-2.png"
 
+        val mockDto1 =
+            UploadedImageDto(
+                filename = savedFilename1,
+                imageType = ImageType.PRIVATE,
+                uuid = UUID.randomUUID(),
+                originalFilename = "image1.png",
+                contentType = "image/png",
+                fileSize = 1024L,
+                uploadedAt = LocalDateTime.now(),
+            )
+        val mockDto2 =
+            UploadedImageDto(
+                filename = savedFilename2,
+                imageType = ImageType.PRIVATE,
+                uuid = UUID.randomUUID(),
+                originalFilename = "image2.png",
+                contentType = "image/png",
+                fileSize = 1024L,
+                uploadedAt = LocalDateTime.now(),
+            )
+
         // Use doReturn to avoid issues with consecutive calls
-        every { imageStorageService.storeFile(any(), any()) } returnsMany listOf(savedFilename1, savedFilename2)
+        every { imageService.store(any(), any()) } returnsMany listOf(mockDto1, mockDto2)
 
         // When
         val result = openAIImageFacade.editImage(mockImageFile, request)
@@ -112,7 +137,7 @@ class OpenAIImageFacadeImplTest {
 
         // Verify strategy was called
         verify { imageGenerationStrategy.generateImages(mockImageFile, request) }
-        verify(exactly = 2) { imageStorageService.storeFile(any(), any()) }
+        verify(exactly = 2) { imageService.store(any(), any()) }
     }
 
     @Test
@@ -132,8 +157,18 @@ class OpenAIImageFacadeImplTest {
         every { imageGenerationStrategy.generateImages(mockImageFile, request) } returns strategResponse
 
         val savedFilename = "single-saved-image.png"
+        val mockDto =
+            UploadedImageDto(
+                filename = savedFilename,
+                imageType = ImageType.PRIVATE,
+                uuid = UUID.randomUUID(),
+                originalFilename = "single.png",
+                contentType = "image/png",
+                fileSize = 1024L,
+                uploadedAt = LocalDateTime.now(),
+            )
 
-        every { imageStorageService.storeFile(any(), any()) } returns savedFilename
+        every { imageService.store(any(), any()) } returns mockDto
 
         // When
         val result = openAIImageFacade.editImage(mockImageFile, request)
@@ -143,7 +178,7 @@ class OpenAIImageFacadeImplTest {
         assertEquals("single-saved-image.png", result.imageFilenames[0])
 
         verify { imageGenerationStrategy.generateImages(mockImageFile, request) }
-        verify { imageStorageService.storeFile(any(), any()) }
+        verify { imageService.store(any(), any()) }
     }
 
     @Test
@@ -187,7 +222,7 @@ class OpenAIImageFacadeImplTest {
         val strategResponse = ImageEditBytesResponse(imageBytes = generatedImageBytes)
         every { imageGenerationStrategy.generateImages(mockImageFile, request) } returns strategResponse
 
-        every { imageStorageService.storeFile(any(), any()) } throws RuntimeException("Storage failed")
+        every { imageService.store(any(), any()) } throws RuntimeException("Storage failed")
 
         // When/Then
         assertThrows<RuntimeException> {
@@ -196,6 +231,6 @@ class OpenAIImageFacadeImplTest {
 
         // Exception is thrown as expected
         verify { imageGenerationStrategy.generateImages(mockImageFile, request) }
-        verify { imageStorageService.storeFile(any(), any()) }
+        verify { imageService.store(any(), any()) }
     }
 }

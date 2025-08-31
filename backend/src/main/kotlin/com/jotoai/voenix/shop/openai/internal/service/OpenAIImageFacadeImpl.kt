@@ -1,6 +1,8 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageStorage
+import com.jotoai.voenix.shop.image.api.ImageData
+import com.jotoai.voenix.shop.image.api.ImageMetadata
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.openai.api.ImageGenerationStrategy
 import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
@@ -24,7 +26,7 @@ import java.io.InputStream
  */
 @Service
 class OpenAIImageFacadeImpl(
-    private val imageStorage: ImageStorage,
+    private val imageService: ImageService,
     private val imageGenerationStrategy: ImageGenerationStrategy,
 ) : OpenAIImageFacade {
     companion object {
@@ -76,14 +78,10 @@ class OpenAIImageFacadeImpl(
             // Store images and return URLs
             val savedImageFilenames =
                 bytesResponse.imageBytes.map { imageBytes ->
-                    // ImageService will handle UUID generation
-                    val multipartFile =
-                        SimpleMultipartFile(
-                            "generated-image.png",
-                            "image/png",
-                            imageBytes,
-                        )
-                    imageStorage.storeFile(multipartFile, ImageType.PRIVATE)
+                    val imageData = ImageData.Bytes(imageBytes, "generated-image.png")
+                    val metadata = ImageMetadata(type = ImageType.PRIVATE)
+                    val storedImage = imageService.store(imageData, metadata)
+                    storedImage.filename
                 }
 
             return ImageEditResponse(imageFilenames = savedImageFilenames)

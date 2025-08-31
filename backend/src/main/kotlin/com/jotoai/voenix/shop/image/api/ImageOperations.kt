@@ -11,7 +11,15 @@ import java.util.UUID
 /**
  * Core image operations interface.
  * Handles CRUD operations for both uploaded and generated images.
+ *
+ * @deprecated Use ImageService instead. This interface will be removed in a future version.
+ * @see ImageService
  */
+@Deprecated(
+    message = "Use ImageService instead for a unified API",
+    replaceWith = ReplaceWith("ImageService", "com.jotoai.voenix.shop.image.api.ImageService"),
+    level = DeprecationLevel.WARNING,
+)
 interface ImageOperations {
     fun createUploadedImage(
         file: MultipartFile,

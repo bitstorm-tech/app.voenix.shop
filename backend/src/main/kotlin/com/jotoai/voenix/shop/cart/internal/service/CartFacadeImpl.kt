@@ -13,7 +13,8 @@ import com.jotoai.voenix.shop.cart.internal.assembler.OrderInfoAssembler
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.entity.CartItem
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
-import com.jotoai.voenix.shop.image.api.ImageQueryService
+import com.jotoai.voenix.shop.image.api.ImageService
+import com.jotoai.voenix.shop.image.api.ValidationRequest
 import com.jotoai.voenix.shop.image.api.exceptions.ImageAccessDeniedException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
@@ -28,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional
 class CartFacadeImpl(
     private val cartRepository: CartRepository,
     private val userService: UserService,
-    private val imageQueryService: ImageQueryService,
+    private val imageService: ImageService,
     private val promptQueryService: PromptQueryService,
     private val cartAssembler: CartAssembler,
     private val orderInfoAssembler: OrderInfoAssembler,
@@ -105,13 +106,16 @@ class CartFacadeImpl(
                     "articleId=${request.articleId}, variantId=${request.variantId}"
             }
 
-            if (!imageQueryService.validateGeneratedImageOwnership(imageId, userId)) {
+            val validation = imageService.validate(ValidationRequest.Ownership(imageId, userId))
+            if (!validation.valid) {
                 logger.warn {
                     "Generated image validation failed: userId=$userId, generatedImageId=$imageId, " +
                         "reason=ownership_check_failed"
                 }
 
-                if (!imageQueryService.existsGeneratedImageById(imageId)) {
+                // Check if image exists by trying to find it
+                val existingImages = imageService.find(listOf(imageId))
+                if (existingImages.isEmpty()) {
                     throw ImageNotFoundException("Generated image not found with id: $imageId")
                 } else {
                     throw ImageAccessDeniedException(
@@ -199,14 +203,16 @@ class CartFacadeImpl(
                 "Validating generated image for cart update: userId=$userId, itemId=$itemId, generatedImageId=$imageId"
             }
 
-            if (!imageQueryService.validateGeneratedImageOwnership(imageId, userId)) {
+            val validation = imageService.validate(ValidationRequest.Ownership(imageId, userId))
+            if (!validation.valid) {
                 logger.warn {
                     "Generated image validation failed during cart update: userId=$userId, itemId=$itemId, " +
                         "generatedImageId=$imageId, reason=ownership_check_failed"
                 }
 
-                // First check if image exists at all
-                if (!imageQueryService.existsGeneratedImageById(imageId)) {
+                // Check if image exists by trying to find it
+                val existingImages = imageService.find(listOf(imageId))
+                if (existingImages.isEmpty()) {
                     throw ImageNotFoundException("Generated image not found with id: $imageId")
                 } else {
                     throw ImageAccessDeniedException(
