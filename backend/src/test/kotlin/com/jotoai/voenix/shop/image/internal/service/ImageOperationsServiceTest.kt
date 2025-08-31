@@ -19,15 +19,12 @@ class ImageOperationsServiceTest {
         val uploadedImageRepository: UploadedImageRepository = mockk()
         val generatedImageRepository: GeneratedImageRepository = mockk()
         val imageValidationService: ImageValidationService = mockk()
-        val userImageStorageService: UserImageStorageService = mockk()
-
         // When
         val service = ImageOperationsService(
             fileStorageService,
             uploadedImageRepository,
             generatedImageRepository,
             imageValidationService,
-            userImageStorageService,
         )
 
         // Then

@@ -23,7 +23,7 @@ import java.util.UUID
 
 /**
  * Consolidated implementation of ImageStorageService that handles all storage functionality.
- * This service combines the functionality of BaseStorageService, UserImageStorageService,
+ * This service combines the functionality of BaseStorageService with user-specific storage operations,
  * and StoragePathService logic into a single cohesive service.
  */
 @Service
@@ -34,7 +34,7 @@ class FileStorageService(
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
     private val imageValidationService: ImageValidationService,
-) : UserImageStorageService {
+) {
     private val logger = KotlinLogging.logger {}
 
     companion object {
@@ -145,39 +145,10 @@ class FileStorageService(
     }
 
     /**
-     * Retrieves image data from storage.
-     */
-    fun getImageData(
-        filename: String,
-        imageType: ImageType,
-    ): Pair<ByteArray, String> {
-        val resource = loadFileAsResource(filename, imageType)
-        val bytes = resource.inputStream.use { it.readAllBytes() }
-        val contentType =
-            probeContentType(
-                storagePathService.getPhysicalFilePath(imageType, filename),
-                "application/octet-stream",
-            )
-        return Pair(bytes, contentType)
-    }
-
-    /**
-     * Deletes an image from storage.
-     */
-    fun deleteImage(
-        filename: String,
-        imageType: ImageType,
-    ) {
-        if (!deleteFile(filename, imageType)) {
-            throw ResourceNotFoundException("Image with filename $filename not found")
-        }
-    }
-
-    /**
      * Stores an uploaded image file using the user-specific storage pattern.
      */
     @Transactional
-    override fun storeUploadedImage(
+    fun storeUploadedImage(
         imageFile: MultipartFile,
         userId: Long,
         cropArea: CropArea?,
@@ -237,7 +208,7 @@ class FileStorageService(
      * Stores a generated image using the user-specific storage pattern.
      */
     @Transactional
-    override fun storeGeneratedImage(
+    fun storeGeneratedImage(
         imageBytes: ByteArray,
         uploadedImage: UploadedImage,
         promptId: Long,
@@ -274,7 +245,7 @@ class FileStorageService(
     /**
      * Retrieves image data for a user's image file.
      */
-    override fun getUserImageData(
+    fun getUserImageData(
         filename: String,
         userId: Long,
     ): Pair<ByteArray, String> {
@@ -296,7 +267,7 @@ class FileStorageService(
         return Pair(bytes, contentType)
     }
 
-    override fun deleteUserImage(
+    fun deleteUserImage(
         filename: String,
         userId: Long,
     ): Boolean {

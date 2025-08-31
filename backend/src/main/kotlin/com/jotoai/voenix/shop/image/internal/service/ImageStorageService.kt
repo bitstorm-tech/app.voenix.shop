@@ -25,7 +25,6 @@ class ImageStorageService(
     private val storagePathServiceImpl: StoragePathServiceImpl,
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
-    private val userImageStorageService: UserImageStorageService,
 ) : ImageStorage {
     
     companion object {
@@ -95,7 +94,7 @@ class ImageStorageService(
     private fun validateAccessAndGetImageData(filename: String, userId: Long): Pair<ByteArray, String> {
         logger.debug { "Validating access to image $filename for user $userId" }
         validateImageAccess(filename, userId)
-        return userImageStorageService.getUserImageData(filename, userId)
+        return fileStorageService.getUserImageData(filename, userId)
     }
 
     private fun validateImageAccess(filename: String, userId: Long) {

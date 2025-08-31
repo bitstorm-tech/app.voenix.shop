@@ -27,7 +27,6 @@ class ImageOperationsService(
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
     private val imageValidationService: ImageValidationService,
-    private val userImageStorageService: UserImageStorageService,
 ) : ImageOperations {
     
     companion object {
@@ -53,7 +52,7 @@ class ImageOperationsService(
             val storedFilename = when (imageType) {
                 ImageType.PRIVATE -> {
                     // For private images, use the user-specific storage service
-                    val uploadedImage = userImageStorageService.storeUploadedImage(file, userId, cropArea)
+                    val uploadedImage = fileStorageService.storeUploadedImage(file, userId, cropArea)
                     // Return the DTO with the actual UUID from the saved entity
                     return UploadedImageDto(
                         filename = uploadedImage.storedFilename,
@@ -137,7 +136,7 @@ class ImageOperationsService(
                 ResourceNotFoundException("Uploaded image with ID $uploadedImageId not found")
             }
 
-            val generatedImage = userImageStorageService.storeGeneratedImage(
+            val generatedImage = fileStorageService.storeGeneratedImage(
                 imageBytes = imageBytes,
                 uploadedImage = uploadedImage,
                 promptId = promptId,
@@ -286,7 +285,7 @@ class ImageOperationsService(
 
         try {
             if (generatedImage.userId != null) {
-                userImageStorageService.deleteUserImage(generatedImage.filename, generatedImage.userId!!)
+                fileStorageService.deleteUserImage(generatedImage.filename, generatedImage.userId!!)
             } else {
                 fileStorageService.deleteFile(generatedImage.filename, ImageType.PUBLIC)
             }
