@@ -15,7 +15,7 @@ import com.jotoai.voenix.shop.cart.internal.entity.CartItem
 import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.ValidationRequest
-import com.jotoai.voenix.shop.image.api.exceptions.ImageAccessDeniedException
+import com.jotoai.voenix.shop.image.api.exceptions.ImageException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserService
@@ -118,11 +118,7 @@ class CartFacadeImpl(
                 if (existingImages.isEmpty()) {
                     throw ImageNotFoundException("Generated image not found with id: $imageId")
                 } else {
-                    throw ImageAccessDeniedException(
-                        "You don't have permission to use this image",
-                        userId,
-                        imageId.toString(),
-                    )
+                    throw ImageException.AccessDenied(userId, imageId.toString())
                 }
             }
 
@@ -215,11 +211,7 @@ class CartFacadeImpl(
                 if (existingImages.isEmpty()) {
                     throw ImageNotFoundException("Generated image not found with id: $imageId")
                 } else {
-                    throw ImageAccessDeniedException(
-                        "You don't have permission to use this image",
-                        userId,
-                        imageId.toString(),
-                    )
+                    throw ImageException.AccessDenied(userId, imageId.toString())
                 }
             }
 

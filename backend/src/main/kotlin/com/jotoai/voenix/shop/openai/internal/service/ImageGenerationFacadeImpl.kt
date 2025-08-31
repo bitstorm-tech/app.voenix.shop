@@ -11,8 +11,7 @@ import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
-import com.jotoai.voenix.shop.image.api.exceptions.ImageProcessingException
-import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
+import com.jotoai.voenix.shop.image.api.exceptions.ImageException
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
 import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
 import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
@@ -54,7 +53,7 @@ class ImageGenerationFacadeImpl(
 
         val validation = imageService.validate(ValidationRequest.FileUpload(imageFile))
         if (!validation.valid) {
-            throw ImageProcessingException(validation.message ?: "Image validation failed")
+            throw ImageException.Processing(validation.message ?: "Image validation failed")
         }
 
         val hourAgo = LocalDateTime.now().minusHours(PUBLIC_RATE_LIMIT_HOURS.toLong())
@@ -72,7 +71,7 @@ class ImageGenerationFacadeImpl(
                 ipAddress,
                 request.cropArea,
             )
-        } catch (e: ImageStorageException) {
+        } catch (e: ImageException.Storage) {
             handleSystemError(e, "public image generation")
         }
     }
@@ -117,7 +116,7 @@ class ImageGenerationFacadeImpl(
                 null,
                 cropArea,
             )
-        } catch (e: ImageStorageException) {
+        } catch (e: ImageException.Storage) {
             handleSystemError(e, "user image generation")
         }
     }
@@ -252,6 +251,6 @@ class ImageGenerationFacadeImpl(
         operation: String,
     ): Nothing {
         logger.error(e) { "Error during $operation" }
-        throw ImageProcessingException("Failed to generate image. Please try again later.", e)
+        throw ImageException.Processing("Failed to generate image. Please try again later.", e)
     }
 }

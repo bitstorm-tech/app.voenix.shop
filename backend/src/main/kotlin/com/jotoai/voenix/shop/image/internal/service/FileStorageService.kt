@@ -3,7 +3,8 @@ package com.jotoai.voenix.shop.image.internal.service
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
+import com.jotoai.voenix.shop.image.api.exceptions.ImageException
+import com.jotoai.voenix.shop.image.internal.exceptions.InternalImageException
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
@@ -64,7 +65,9 @@ class FileStorageService(
 
     private fun getPathConfig(imageType: ImageType) =
         storagePathConfiguration.pathMappings[imageType]
-            ?: throw IllegalArgumentException("No path configuration found for ImageType: $imageType")
+            ?: throw InternalImageException.StorageConfiguration(
+                "No path configuration found for ImageType: $imageType"
+            )
 
     fun storeFile(
         file: MultipartFile,
@@ -315,7 +318,7 @@ class FileStorageService(
             }
         } catch (e: IOException) {
             logger.error(e) { "Failed to create directory ${directoryPath.toAbsolutePath()}: ${e.message}" }
-            throw ImageStorageException("Failed to create directory: ${e.message}", e)
+            throw ImageException.Storage("Failed to create directory: ${e.message}", e)
         }
     }
 
@@ -328,7 +331,7 @@ class FileStorageService(
             logger.debug { "Successfully wrote file: ${filePath.toAbsolutePath()}" }
         } catch (e: IOException) {
             logger.error(e) { "Failed to write file at ${filePath.toAbsolutePath()}: ${e.message}" }
-            throw ImageStorageException("Failed to write file: ${e.message}", e)
+            throw ImageException.Storage("Failed to write file: ${e.message}", e)
         }
     }
 
@@ -337,7 +340,7 @@ class FileStorageService(
             return Files.readAllBytes(filePath)
         } catch (e: IOException) {
             logger.error(e) { "Failed to read file ${filePath.toAbsolutePath()}: ${e.message}" }
-            throw ImageStorageException("Failed to read file: ${e.message}", e)
+            throw ImageException.Storage("Failed to read file: ${e.message}", e)
         }
     }
 
@@ -346,7 +349,7 @@ class FileStorageService(
             return Files.deleteIfExists(filePath)
         } catch (e: IOException) {
             logger.error(e) { "Failed to delete file ${filePath.toAbsolutePath()}: ${e.message}" }
-            throw ImageStorageException("Failed to delete file: ${e.message}", e)
+            throw ImageException.Storage("Failed to delete file: ${e.message}", e)
         }
     }
 

@@ -6,7 +6,7 @@ import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
-import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
+import com.jotoai.voenix.shop.image.api.exceptions.ImageException
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
@@ -61,10 +61,10 @@ class ImageOperationsService(
             block()
         } catch (e: Exception) {
             when (e) {
-                is ImageStorageException, is ImageNotFoundException, is ResourceNotFoundException -> throw e
+                is ImageException, is ImageNotFoundException, is ResourceNotFoundException -> throw e
                 else -> {
                     logger.error(e) { "$operation failed" }
-                    throw ImageStorageException("$operation: ${e.message}", e)
+                    throw ImageException.Storage("$operation: ${e.message}", e)
                 }
             }
         }
