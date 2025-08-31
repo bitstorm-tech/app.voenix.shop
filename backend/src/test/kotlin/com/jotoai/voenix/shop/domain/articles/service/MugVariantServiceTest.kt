@@ -11,7 +11,7 @@ import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
-import com.jotoai.voenix.shop.image.api.ImageStorage
+import com.jotoai.voenix.shop.image.api.ImageService
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -28,7 +28,7 @@ import java.util.Optional
 class MugVariantServiceTest {
     private lateinit var articleRepository: ArticleRepository
     private lateinit var mugVariantRepository: MugArticleVariantRepository
-    private lateinit var imageStorageService: ImageStorage
+    private lateinit var imageService: ImageService
     private lateinit var mugArticleVariantAssembler: MugArticleVariantAssembler
     private lateinit var mugWithVariantsSummaryAssembler: MugWithVariantsSummaryAssembler
     private lateinit var mugVariantService: com.jotoai.voenix.shop.article.internal.service.MugVariantServiceImpl
@@ -40,14 +40,14 @@ class MugVariantServiceTest {
     fun setUp() {
         articleRepository = mockk()
         mugVariantRepository = mockk()
-        imageStorageService = mockk()
+        imageService = mockk()
         mugArticleVariantAssembler = mockk()
         mugWithVariantsSummaryAssembler = mockk()
         mugVariantService =
             com.jotoai.voenix.shop.article.internal.service.MugVariantServiceImpl(
                 articleRepository,
                 mugVariantRepository,
-                imageStorageService,
+                imageService,
                 mugArticleVariantAssembler,
                 mugWithVariantsSummaryAssembler,
             )

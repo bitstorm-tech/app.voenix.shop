@@ -8,7 +8,7 @@ import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAsse
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRepository
-import com.jotoai.voenix.shop.image.api.ImageStorage
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -19,7 +19,7 @@ import java.io.IOException
 class ShirtVariantServiceImpl(
     private val articleRepository: ArticleRepository,
     private val shirtVariantRepository: ShirtArticleVariantRepository,
-    private val imageStorage: ImageStorage,
+    private val imageService: ImageService,
     private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
 ) : ShirtVariantFacade {
     companion object {
@@ -76,7 +76,7 @@ class ShirtVariantServiceImpl(
         // Delete associated image if exists
         variant.exampleImageFilename?.let { filename ->
             try {
-                imageStorage.deleteFile(filename, ImageType.SHIRT_VARIANT_EXAMPLE)
+                imageService.delete(filename, ImageType.SHIRT_VARIANT_EXAMPLE)
             } catch (e: IOException) {
                 logger.warn(e) { "Failed to delete shirt variant example image during variant deletion: $filename" }
             }

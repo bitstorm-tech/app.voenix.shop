@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageStorage
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.prompt.api.PromptFacade
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
@@ -22,7 +22,7 @@ import java.io.IOException
 class PromptServiceImpl(
     private val promptRepository: PromptRepository,
     private val promptSlotVariantRepository: PromptSlotVariantRepository,
-    private val imageStorage: ImageStorage,
+    private val imageService: ImageService,
     private val promptAssembler: PromptAssembler,
     private val promptValidator: PromptValidator,
 ) : PromptFacade,
@@ -109,7 +109,7 @@ class PromptServiceImpl(
             if (oldFilename != null && oldFilename != newFilename) {
                 // Delete old image if filename changed
                 try {
-                    imageStorage.deleteFile(oldFilename, ImageType.PROMPT_EXAMPLE)
+                    imageService.delete(oldFilename, ImageType.PROMPT_EXAMPLE)
                 } catch (e: IOException) {
                     logger.warn(e) { "Failed to delete old prompt example image: $oldFilename" }
                 }
@@ -148,7 +148,7 @@ class PromptServiceImpl(
         // Delete associated image if exists
         prompt.exampleImageFilename?.let { filename ->
             try {
-                imageStorage.deleteFile(filename, ImageType.PROMPT_EXAMPLE)
+                imageService.delete(filename, ImageType.PROMPT_EXAMPLE)
             } catch (e: IOException) {
                 logger.warn(e) { "Failed to delete prompt example image during prompt deletion: $filename" }
             }

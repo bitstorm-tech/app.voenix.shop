@@ -7,7 +7,9 @@ import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
 import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
 import com.jotoai.voenix.shop.article.web.dto.MugVariantImageUploadRequest
-import com.jotoai.voenix.shop.image.api.ImageStorage
+import com.jotoai.voenix.shop.image.api.ImageData
+import com.jotoai.voenix.shop.image.api.ImageMetadata
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -33,7 +35,7 @@ import org.springframework.web.bind.annotation.RestController
 class AdminMugVariantController(
     private val mugVariantQueryService: MugVariantQueryService,
     private val mugVariantFacade: MugVariantFacade,
-    private val imageStorage: ImageStorage,
+    private val imageService: ImageService,
 ) {
     companion object {
         private val logger = KotlinLogging.logger {}
@@ -90,7 +92,12 @@ class AdminMugVariantController(
             )
 
         // Store the image directly in the mug variant images directory
-        val storedFilename = imageStorage.storeFile(request.image, ImageType.MUG_VARIANT_EXAMPLE, cropArea)
+        val imageDto =
+            imageService.store(
+                data = ImageData.File(request.image, cropArea),
+                metadata = ImageMetadata(type = ImageType.MUG_VARIANT_EXAMPLE),
+            )
+        val storedFilename = imageDto.filename
 
         // Update the variant with the new image filename
         val updatedVariant = mugVariantFacade.updateExampleImage(variantId, storedFilename)

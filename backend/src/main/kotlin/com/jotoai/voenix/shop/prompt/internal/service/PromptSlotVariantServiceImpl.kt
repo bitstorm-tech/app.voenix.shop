@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageStorage
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.prompt.api.PromptSlotVariantFacade
 import com.jotoai.voenix.shop.prompt.api.PromptSlotVariantQueryService
@@ -22,7 +22,7 @@ class PromptSlotVariantServiceImpl(
     private val promptSlotVariantRepository: PromptSlotVariantRepository,
     private val promptSlotTypeRepository: PromptSlotTypeRepository,
     private val promptSlotVariantAssembler: PromptSlotVariantAssembler,
-    private val imageStorage: ImageStorage,
+    private val imageService: ImageService,
 ) : PromptSlotVariantFacade,
     PromptSlotVariantQueryService {
     private val logger = KotlinLogging.logger {}
@@ -112,7 +112,7 @@ class PromptSlotVariantServiceImpl(
             // 2. We're changing to a different filename
             if (oldImageFilename != null && oldImageFilename != newImageFilename) {
                 try {
-                    imageStorage.deleteFile(oldImageFilename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+                    imageService.delete(oldImageFilename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
                 } catch (e: IOException) {
                     logger.warn(e) {
                         "Failed to delete old example image file '$oldImageFilename' during slot variant update. " +
@@ -144,7 +144,7 @@ class PromptSlotVariantServiceImpl(
         // Delete the associated image file if it exists
         promptSlotVariant.exampleImageFilename?.let { filename ->
             try {
-                imageStorage.deleteFile(filename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
+                imageService.delete(filename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
             } catch (e: IOException) {
                 logger.warn(e) {
                     "Failed to delete example image file '$filename' during slot variant deletion. " +

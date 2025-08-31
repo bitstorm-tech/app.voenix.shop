@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageStorage
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantRequest
@@ -32,7 +32,7 @@ class PromptSlotVariantServiceImplTest {
     private lateinit var promptSlotVariantRepository: PromptSlotVariantRepository
     private lateinit var promptSlotTypeRepository: PromptSlotTypeRepository
     private lateinit var promptSlotVariantAssembler: PromptSlotVariantAssembler
-    private lateinit var imageStorageService: ImageStorage
+    private lateinit var imageService: ImageService
     private lateinit var service: PromptSlotVariantServiceImpl
 
     private val testPromptSlotType =
@@ -60,14 +60,14 @@ class PromptSlotVariantServiceImplTest {
         promptSlotVariantRepository = mockk()
         promptSlotTypeRepository = mockk()
         promptSlotVariantAssembler = mockk()
-        imageStorageService = mockk()
+        imageService = mockk()
 
         service =
             PromptSlotVariantServiceImpl(
                 promptSlotVariantRepository = promptSlotVariantRepository,
                 promptSlotTypeRepository = promptSlotTypeRepository,
                 promptSlotVariantAssembler = promptSlotVariantAssembler,
-                imageStorage = imageStorageService,
+                imageService = imageService,
             )
     }
 
@@ -255,7 +255,7 @@ class PromptSlotVariantServiceImplTest {
             every { promptSlotVariantRepository.existsByNameAndIdNot("New Name", 1L) } returns false
             every { promptSlotVariantRepository.save(any()) } returns existingEntity
             every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
-            every { imageStorageService.deleteFile("old.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) } returns true
+            every { imageService.delete("old.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) } returns true
 
             // When
             val result = service.updateSlotVariant(1L, request)
@@ -402,7 +402,7 @@ class PromptSlotVariantServiceImplTest {
             every { promptSlotVariantRepository.save(any()) } returns existingEntity
             every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
             every {
-                imageStorageService.deleteFile(
+                imageService.delete(
                     "old-image.jpg",
                     ImageType.PROMPT_SLOT_VARIANT_EXAMPLE,
                 )
@@ -419,7 +419,7 @@ class PromptSlotVariantServiceImplTest {
             assertEquals(null, existingEntity.exampleImageFilename) // Should be cleared
 
             // Verify the old image was deleted
-            verify { imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) }
+            verify { imageService.delete("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) }
         }
 
         @Test
@@ -473,7 +473,7 @@ class PromptSlotVariantServiceImplTest {
             every { promptSlotVariantRepository.save(any()) } returns existingEntity
             every { promptSlotVariantAssembler.toDto(any()) } returns mockk()
             every {
-                imageStorageService.deleteFile(
+                imageService.delete(
                     "old-image.jpg",
                     ImageType.PROMPT_SLOT_VARIANT_EXAMPLE,
                 )
@@ -487,7 +487,7 @@ class PromptSlotVariantServiceImplTest {
             assertEquals("new-image.jpg", existingEntity.exampleImageFilename)
 
             // Verify the old image was deleted
-            verify { imageStorageService.deleteFile("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) }
+            verify { imageService.delete("old-image.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) }
         }
 
         @Test
@@ -521,7 +521,7 @@ class PromptSlotVariantServiceImplTest {
             assertEquals("same-image.jpg", existingEntity.exampleImageFilename)
 
             // Verify the image was NOT deleted since it's the same
-            verify(exactly = 0) { imageStorageService.deleteFile(any(), any()) }
+            verify(exactly = 0) { imageService.delete(any(), any()) }
         }
     }
 
@@ -542,7 +542,7 @@ class PromptSlotVariantServiceImplTest {
 
             every { promptSlotVariantRepository.findById(1L) } returns Optional.of(existingEntity)
             every {
-                imageStorageService.deleteFile(
+                imageService.delete(
                     "image-to-delete.jpg",
                     ImageType.PROMPT_SLOT_VARIANT_EXAMPLE,
                 )
@@ -554,7 +554,7 @@ class PromptSlotVariantServiceImplTest {
 
             // Then
             verify { promptSlotVariantRepository.findById(1L) }
-            verify { imageStorageService.deleteFile("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) }
+            verify { imageService.delete("image-to-delete.jpg", ImageType.PROMPT_SLOT_VARIANT_EXAMPLE) }
             verify { promptSlotVariantRepository.deleteById(1L) }
         }
 
@@ -578,7 +578,7 @@ class PromptSlotVariantServiceImplTest {
 
             // Then
             verify { promptSlotVariantRepository.findById(1L) }
-            verify(exactly = 0) { imageStorageService.deleteFile(any(), any()) }
+            verify(exactly = 0) { imageService.delete(any(), any()) }
             verify { promptSlotVariantRepository.deleteById(1L) }
         }
 
@@ -595,7 +595,7 @@ class PromptSlotVariantServiceImplTest {
 
             verify { promptSlotVariantRepository.findById(999L) }
             verify(exactly = 0) { promptSlotVariantRepository.deleteById(any()) }
-            verify(exactly = 0) { imageStorageService.deleteFile(any(), any()) }
+            verify(exactly = 0) { imageService.delete(any(), any()) }
         }
 
         @Test

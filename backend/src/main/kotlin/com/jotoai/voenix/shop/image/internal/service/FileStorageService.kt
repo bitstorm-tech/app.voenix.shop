@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.image.api.ImageStorage
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
@@ -38,7 +37,7 @@ class FileStorageService(
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
     private val imageValidationService: ImageValidationService,
-) : ImageStorage {
+) {
     private val logger = KotlinLogging.logger {}
 
     companion object {
@@ -46,7 +45,7 @@ class FileStorageService(
         private const val GENERATED_PREFIX = "_generated_"
     }
 
-    override fun storeFile(
+    fun storeFile(
         file: MultipartFile,
         imageType: ImageType,
         cropArea: CropArea?,
@@ -85,7 +84,7 @@ class FileStorageService(
         return storedFilename
     }
 
-    override fun storeFile(
+    fun storeFile(
         bytes: ByteArray,
         originalFilename: String,
         imageType: ImageType,
@@ -104,7 +103,7 @@ class FileStorageService(
         return storedFilename
     }
 
-    override fun loadFileAsBytes(
+    fun loadFileAsBytes(
         filename: String,
         imageType: ImageType,
     ): ByteArray {
@@ -117,7 +116,7 @@ class FileStorageService(
         return Files.readAllBytes(filePath)
     }
 
-    override fun deleteFile(
+    fun deleteFile(
         filename: String,
         imageType: ImageType,
     ): Boolean {
@@ -125,7 +124,7 @@ class FileStorageService(
         return deleteFile(filePath)
     }
 
-    override fun getImageData(
+    fun getImageData(
         filename: String,
         userId: Long?,
     ): Pair<ByteArray, String> =
@@ -142,7 +141,7 @@ class FileStorageService(
             }
         }
 
-    override fun serveUserImage(
+    fun serveUserImage(
         filename: String,
         userId: Long,
     ): ResponseEntity<Resource> {
