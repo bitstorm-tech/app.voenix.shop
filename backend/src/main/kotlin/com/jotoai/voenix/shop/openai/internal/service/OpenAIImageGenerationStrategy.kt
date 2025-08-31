@@ -274,8 +274,8 @@ class OpenAIImageGenerationStrategy(
                             masterPrompt = request.masterPrompt,
                             specificPrompt = request.specificPrompt,
                             combinedPrompt = combinedPrompt,
-                            quality = request.getQuality().name.lowercase(),
-                            background = request.getBackground().name.lowercase(),
+                            quality = request.getQuality().apiValue,
+                            background = request.getBackground().apiValue,
                         ),
                 )
             } catch (e: CancellationException) {

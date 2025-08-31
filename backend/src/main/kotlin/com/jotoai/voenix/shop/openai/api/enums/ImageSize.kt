@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.image.api.enums
+package com.jotoai.voenix.shop.openai.api.enums
 
 enum class ImageSize(
     val apiValue: String,

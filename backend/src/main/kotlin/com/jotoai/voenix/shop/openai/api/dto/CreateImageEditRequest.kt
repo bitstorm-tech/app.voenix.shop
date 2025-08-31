@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.openai.api.dto
 
-import com.jotoai.voenix.shop.image.api.enums.ImageBackground
-import com.jotoai.voenix.shop.image.api.enums.ImageQuality
-import com.jotoai.voenix.shop.image.api.enums.ImageSize
+import com.jotoai.voenix.shop.openai.api.enums.ImageBackground
+import com.jotoai.voenix.shop.openai.api.enums.ImageQuality
+import com.jotoai.voenix.shop.openai.api.enums.ImageSize
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotNull
