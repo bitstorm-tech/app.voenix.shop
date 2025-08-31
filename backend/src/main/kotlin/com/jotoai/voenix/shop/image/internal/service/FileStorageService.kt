@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.image.api.ImageStorage
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
@@ -10,8 +11,12 @@ import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.core.io.ByteArrayResource
 import org.springframework.core.io.FileSystemResource
 import org.springframework.core.io.Resource
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
@@ -34,7 +39,7 @@ class FileStorageService(
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
     private val imageValidationService: ImageValidationService,
-) {
+) : ImageStorage {
     private val logger = KotlinLogging.logger {}
 
     companion object {
@@ -42,9 +47,7 @@ class FileStorageService(
         private const val GENERATED_PREFIX = "_generated_"
     }
 
-    // Public API Interface Methods
-
-    fun storeFile(
+    override fun storeFile(
         file: MultipartFile,
         imageType: ImageType,
         cropArea: CropArea?,
@@ -83,7 +86,7 @@ class FileStorageService(
         return storedFilename
     }
 
-    fun storeFile(
+    override fun storeFile(
         bytes: ByteArray,
         originalFilename: String,
         imageType: ImageType,
@@ -102,7 +105,7 @@ class FileStorageService(
         return storedFilename
     }
 
-    fun loadFileAsResource(
+    override fun loadFileAsResource(
         filename: String,
         imageType: ImageType,
     ): Resource {
@@ -115,7 +118,7 @@ class FileStorageService(
         return FileSystemResource(filePath)
     }
 
-    fun loadFileAsBytes(
+    override fun loadFileAsBytes(
         filename: String,
         imageType: ImageType,
     ): ByteArray {
@@ -128,7 +131,7 @@ class FileStorageService(
         return Files.readAllBytes(filePath)
     }
 
-    fun deleteFile(
+    override fun deleteFile(
         filename: String,
         imageType: ImageType,
     ): Boolean {
@@ -136,13 +139,54 @@ class FileStorageService(
         return deleteFile(filePath)
     }
 
-    fun fileExists(
+    override fun fileExists(
         filename: String,
         imageType: ImageType,
     ): Boolean {
         val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
         return Files.exists(filePath)
     }
+
+    override fun getImageData(
+        filename: String,
+        userId: Long?,
+    ): Pair<ByteArray, String> =
+        when {
+            userId != null -> validateAccessAndGetImageData(filename, userId)
+            else -> {
+                val imageType =
+                    storagePathService.findImageTypeByFilename(filename)
+                        ?: throw ResourceNotFoundException("Image with filename $filename not found")
+                val bytes = loadFileAsBytes(filename, imageType)
+                val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+                val contentType = probeContentType(filePath)
+                Pair(bytes, contentType)
+            }
+        }
+
+    override fun serveUserImage(
+        filename: String,
+        userId: Long,
+    ): ResponseEntity<Resource> {
+        val (imageData, contentType) = validateAccessAndGetImageData(filename, userId)
+        return ResponseEntity
+            .ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"$filename\"")
+            .contentType(MediaType.parseMediaType(contentType))
+            .body(ByteArrayResource(imageData))
+    }
+
+    override fun getImageUrl(
+        imageType: ImageType,
+        filename: String,
+    ): String = storagePathService.getImageUrl(imageType, filename)
+
+    override fun getPhysicalPath(imageType: ImageType): Path = storagePathService.getPhysicalPath(imageType)
+
+    override fun getPhysicalFilePath(
+        imageType: ImageType,
+        filename: String,
+    ): Path = storagePathService.getPhysicalFilePath(imageType, filename)
 
     /**
      * Stores an uploaded image file using the user-specific storage pattern.
@@ -341,5 +385,70 @@ class FileStorageService(
     private fun getUserStorageDirectory(userId: Long): Path {
         val storageRoot = storagePathService.getStorageRoot()
         return storageRoot.resolve("private").resolve("images").resolve(userId.toString())
+    }
+
+    private fun validateAccessAndGetImageData(
+        filename: String,
+        userId: Long,
+    ): Pair<ByteArray, String> {
+        logger.debug { "Validating access to image $filename for user $userId" }
+        validateImageAccess(filename, userId)
+        return getUserImageData(filename, userId)
+    }
+
+    private fun validateImageAccess(
+        filename: String,
+        userId: Long,
+    ) {
+        val imageInfo =
+            parseImageFilename(filename)
+                ?: throw ResourceNotFoundException("Invalid image filename format")
+
+        when (imageInfo.type) {
+            ImageFileType.ORIGINAL -> {
+                uploadedImageRepository.findByUserIdAndUuid(userId, imageInfo.uuid)
+                    ?: throw ResourceNotFoundException("Uploaded image not found or access denied")
+                logger.debug { "Access granted to original image $filename for user $userId" }
+            }
+            ImageFileType.GENERATED -> {
+                val generatedImage =
+                    generatedImageRepository.findByFilename(filename)
+                        ?: throw ResourceNotFoundException("Generated image not found")
+                require(generatedImage.userId == userId) {
+                    throw ResourceNotFoundException("Generated image not found or access denied")
+                }
+                logger.debug { "Access granted to generated image $filename for user $userId" }
+            }
+        }
+    }
+
+    private fun parseImageFilename(filename: String): ImageInfo? =
+        when {
+            filename.contains(ORIGINAL_SUFFIX) -> {
+                val uuidString = filename.substringBefore(ORIGINAL_SUFFIX)
+                try {
+                    val uuid = UUID.fromString(uuidString)
+                    ImageInfo(uuid, ImageFileType.ORIGINAL)
+                } catch (e: IllegalArgumentException) {
+                    logger.error(e) { "Invalid UUID format in filename: $filename" }
+                    null
+                }
+            }
+            filename.contains(GENERATED_PREFIX) -> {
+                // For generated images, we don't extract UUID from filename
+                // We use the filename directly for lookup
+                ImageInfo(UUID.randomUUID(), ImageFileType.GENERATED) // UUID not used for generated
+            }
+            else -> null
+        }
+
+    private data class ImageInfo(
+        val uuid: UUID,
+        val type: ImageFileType,
+    )
+
+    private enum class ImageFileType {
+        ORIGINAL,
+        GENERATED,
     }
 }

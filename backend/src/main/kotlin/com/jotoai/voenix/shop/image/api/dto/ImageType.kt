@@ -5,46 +5,28 @@ package com.jotoai.voenix.shop.image.api.dto
  * Each image type has its own validation rules and processing requirements.
  */
 enum class ImageType(
-    val requiresWebPConversion: Boolean,
-    val maxFileSize: Long,
-    val allowedContentTypes: List<String>,
+    val requiresWebPConversion: Boolean = false,
 ) {
-    PUBLIC(
-        requiresWebPConversion = false,
-        maxFileSize = 10 * 1024 * 1024L, // 10MB
-        allowedContentTypes = listOf("image/jpeg", "image/jpg", "image/png", "image/webp"),
-    ),
-    PRIVATE(
-        requiresWebPConversion = false,
-        maxFileSize = 10 * 1024 * 1024L, // 10MB
-        allowedContentTypes = listOf("image/jpeg", "image/jpg", "image/png", "image/webp"),
-    ),
-    PROMPT_EXAMPLE(
-        requiresWebPConversion = true,
-        maxFileSize = 10 * 1024 * 1024L, // 10MB
-        allowedContentTypes = listOf("image/jpeg", "image/jpg", "image/png", "image/webp"),
-    ),
-    PROMPT_SLOT_VARIANT_EXAMPLE(
-        requiresWebPConversion = true,
-        maxFileSize = 10 * 1024 * 1024L, // 10MB
-        allowedContentTypes = listOf("image/jpeg", "image/jpg", "image/png", "image/webp"),
-    ),
-    MUG_VARIANT_EXAMPLE(
-        requiresWebPConversion = true,
-        maxFileSize = 10 * 1024 * 1024L, // 10MB
-        allowedContentTypes = listOf("image/jpeg", "image/jpg", "image/png", "image/webp"),
-    ),
-    SHIRT_VARIANT_EXAMPLE(
-        requiresWebPConversion = true,
-        maxFileSize = 10 * 1024 * 1024L, // 10MB
-        allowedContentTypes = listOf("image/jpeg", "image/jpg", "image/png", "image/webp"),
-    ),
-    GENERATED(
-        requiresWebPConversion = false,
-        maxFileSize = 10 * 1024 * 1024L, // 10MB
-        allowedContentTypes = listOf("image/png"), // Generated images are typically PNG
-    ),
+    PUBLIC,
+    PRIVATE,
+    PROMPT_EXAMPLE(requiresWebPConversion = true),
+    PROMPT_SLOT_VARIANT_EXAMPLE(requiresWebPConversion = true),
+    MUG_VARIANT_EXAMPLE(requiresWebPConversion = true),
+    SHIRT_VARIANT_EXAMPLE(requiresWebPConversion = true),
+    GENERATED,
     ;
+
+    companion object {
+        const val DEFAULT_MAX_SIZE = 10 * 1024 * 1024L // 10MB
+        val DEFAULT_CONTENT_TYPES = listOf("image/jpeg", "image/jpg", "image/png", "image/webp")
+        val PNG_ONLY = listOf("image/png")
+    }
+
+    val maxFileSize: Long
+        get() = DEFAULT_MAX_SIZE
+
+    val allowedContentTypes: List<String>
+        get() = if (this == GENERATED) PNG_ONLY else DEFAULT_CONTENT_TYPES
 
     /**
      * Returns the appropriate file extension for this image type.

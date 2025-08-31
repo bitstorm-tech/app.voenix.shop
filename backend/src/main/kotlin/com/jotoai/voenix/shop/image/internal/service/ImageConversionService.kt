@@ -35,67 +35,64 @@ class ImageConversionService {
         cropArea: CropArea,
     ): ByteArray {
         val image = ImmutableImage.loader().fromBytes(imageBytes)
+        val cropRect = cropArea.toRectangle()
 
-        val cropX = cropArea.x.toInt()
-        val cropY = cropArea.y.toInt()
-        val cropWidth = cropArea.width.toInt()
-        val cropHeight = cropArea.height.toInt()
+        return if (image.contains(cropRect)) {
+            // Simple case: crop area is within bounds
+            image.subimage(cropRect).toPngBytes()
+        } else {
+            // Complex case: create canvas and overlay visible portion
+            createCanvasWithVisiblePortion(image, cropArea).toPngBytes()
+        }
+    }
 
-        // Calculate the intersection between crop area and image bounds
-        val sourceX = maxOf(0, cropX)
-        val sourceY = maxOf(0, cropY)
-        val sourceWidth = minOf(image.width - sourceX, cropWidth - (sourceX - cropX))
-        val sourceHeight = minOf(image.height - sourceY, cropHeight - (sourceY - cropY))
+    private fun CropArea.toRectangle() = Rectangle(x.toInt(), y.toInt(), width.toInt(), height.toInt())
 
-        // If there's no intersection, return a transparent image
-        if (sourceWidth <= 0 || sourceHeight <= 0) {
-            val transparentImage = ImmutableImage.create(cropWidth, cropHeight)
-            val writer: ImageWriter = PngWriter.MaxCompression
-            return transparentImage.bytes(writer)
+    private fun ImmutableImage.contains(rect: Rectangle): Boolean =
+        rect.x >= 0 &&
+            rect.y >= 0 &&
+            rect.x + rect.width <= width &&
+            rect.y + rect.height <= height
+
+    private fun ImmutableImage.toPngBytes(): ByteArray {
+        val writer: ImageWriter = PngWriter.MaxCompression
+        return bytes(writer)
+    }
+
+    private fun createCanvasWithVisiblePortion(
+        image: ImmutableImage,
+        cropArea: CropArea,
+    ): ImmutableImage {
+        val cropRect = cropArea.toRectangle()
+
+        // Calculate intersection between crop area and image bounds
+        val visibleRect = calculateVisibleRectangle(image, cropRect)
+
+        // If no intersection, return transparent canvas
+        if (visibleRect.width <= 0 || visibleRect.height <= 0) {
+            return ImmutableImage.create(cropRect.width, cropRect.height)
         }
 
-        // Calculate where to place the cropped portion on the result canvas
-        val destX = sourceX - cropX
-        val destY = sourceY - cropY
+        // Create canvas and overlay visible portion
+        val canvas = ImmutableImage.create(cropRect.width, cropRect.height)
+        val visiblePortion = image.subimage(visibleRect)
+        val overlayX = visibleRect.x - cropRect.x
+        val overlayY = visibleRect.y - cropRect.y
 
-        // Determine the result image based on crop area bounds
-        val resultImage =
-            if (isCropAreaWithinBounds(cropX, cropY, cropWidth, cropHeight, image)) {
-                // If the crop area is entirely within the image bounds, use simple cropping
-                val rectangle = Rectangle(cropX, cropY, cropWidth, cropHeight)
-                image.subimage(rectangle)
-            } else {
-                // Create a transparent canvas for the final result and overlay the source portion
-                val transparentCanvas = ImmutableImage.create(cropWidth, cropHeight)
-                val sourceRectangle = Rectangle(sourceX, sourceY, sourceWidth, sourceHeight)
-                val sourcePortion = image.subimage(sourceRectangle)
-                transparentCanvas.overlay(sourcePortion, destX, destY)
-            }
-
-        // Use PNG writer to maintain transparency
-        val writer: ImageWriter = PngWriter.MaxCompression
-        return resultImage.bytes(writer)
+        return canvas.overlay(visiblePortion, overlayX, overlayY)
     }
 
-    fun getImageDimensions(imageBytes: ByteArray): ImageDimensions {
-        val image = ImmutableImage.loader().fromBytes(imageBytes)
-        return ImageDimensions(width = image.width, height = image.height)
-    }
-
-    data class ImageDimensions(
-        val width: Int,
-        val height: Int,
-    )
-
-    private fun isCropAreaWithinBounds(
-        cropX: Int,
-        cropY: Int,
-        cropWidth: Int,
-        cropHeight: Int,
+    private fun calculateVisibleRectangle(
         image: ImmutableImage,
-    ): Boolean =
-        cropX >= 0 &&
-            cropY >= 0 &&
-            cropX + cropWidth <= image.width &&
-            cropY + cropHeight <= image.height
+        cropRect: Rectangle,
+    ): Rectangle {
+        val x = maxOf(0, cropRect.x)
+        val y = maxOf(0, cropRect.y)
+        val maxX = minOf(image.width, cropRect.x + cropRect.width)
+        val maxY = minOf(image.height, cropRect.y + cropRect.height)
+        val width = maxX - x
+        val height = maxY - y
+
+        return Rectangle(x, y, maxOf(0, width), maxOf(0, height))
+    }
 }

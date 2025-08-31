@@ -6,5 +6,5 @@ import org.springframework.context.annotation.Configuration
 @Configuration
 @ConfigurationProperties(prefix = "app")
 data class ApplicationProperties(
-    var testMode: Boolean = false
+    var testMode: Boolean = false,
 )

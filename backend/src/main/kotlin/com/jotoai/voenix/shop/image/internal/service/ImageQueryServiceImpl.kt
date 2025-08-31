@@ -12,11 +12,12 @@ import org.springframework.transaction.annotation.Transactional
 class ImageQueryServiceImpl(
     private val generatedImageRepository: GeneratedImageRepository,
 ) : ImageQueryService {
+    override fun existsGeneratedImageById(id: Long): Boolean = generatedImageRepository.existsById(id)
 
-    override fun existsGeneratedImageById(id: Long): Boolean = 
-        generatedImageRepository.existsById(id)
-
-    override fun validateGeneratedImageOwnership(imageId: Long, userId: Long?): Boolean =
+    override fun validateGeneratedImageOwnership(
+        imageId: Long,
+        userId: Long?,
+    ): Boolean =
         if (userId != null) {
             generatedImageRepository.existsByIdAndUserId(imageId, userId)
         } else {
