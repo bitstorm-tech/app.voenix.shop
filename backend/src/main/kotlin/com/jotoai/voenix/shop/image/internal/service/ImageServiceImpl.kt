@@ -9,7 +9,7 @@ import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.api.ValidationRequest
 import com.jotoai.voenix.shop.image.api.ValidationResult
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
-import com.jotoai.voenix.shop.image.api.dto.ImageDto
+import com.jotoai.voenix.shop.image.api.dto.ImageInfo
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
@@ -37,7 +37,7 @@ class ImageServiceImpl(
     override fun store(
         data: ImageData,
         metadata: ImageMetadata,
-    ): ImageDto {
+    ): ImageInfo {
         logger.debug { "Storing image with type: ${metadata.type}" }
 
         return when (data) {
@@ -46,7 +46,7 @@ class ImageServiceImpl(
         }
     }
 
-    override fun find(ids: List<Long>): Map<Long, ImageDto> {
+    override fun find(ids: List<Long>): Map<Long, ImageInfo> {
         logger.debug { "Finding images by IDs: $ids" }
 
         if (ids.isEmpty()) return emptyMap()
@@ -62,7 +62,7 @@ class ImageServiceImpl(
                     userId = generatedImage.userId,
                     generatedAt = generatedImage.generatedAt,
                     ipAddress = generatedImage.ipAddress,
-                ) as ImageDto
+                )
             },
         )
     }
@@ -144,7 +144,7 @@ class ImageServiceImpl(
     override fun getUploadedImageByUuid(
         uuid: UUID,
         userId: Long,
-    ): ImageDto {
+    ): ImageInfo {
         logger.debug { "Getting uploaded image by UUID: $uuid, userId: $userId" }
 
         return imageOperationsService.getUploadedImageByUuid(uuid, userId)
@@ -162,7 +162,7 @@ class ImageServiceImpl(
     private fun storeFromFile(
         data: ImageData.File,
         metadata: ImageMetadata,
-    ): ImageDto =
+    ): ImageInfo =
         when {
             // Handle generation use cases (OpenAI module)
             metadata.promptId != null && metadata.uploadedImageId != null -> {
@@ -212,7 +212,7 @@ class ImageServiceImpl(
     private fun storeFromBytes(
         data: ImageData.Bytes,
         metadata: ImageMetadata,
-    ): ImageDto =
+    ): ImageInfo =
         when {
             // Handle generation use cases (OpenAI module)
             metadata.promptId != null && metadata.uploadedImageId != null -> {
@@ -249,7 +249,7 @@ class ImageServiceImpl(
     private fun createSimpleImageDto(
         filename: String,
         imageType: ImageType,
-    ): ImageDto {
+    ): ImageInfo {
         // Return UploadedImageDto as it extends ImageDto and provides the required interface
         return UploadedImageDto(
             filename = filename,

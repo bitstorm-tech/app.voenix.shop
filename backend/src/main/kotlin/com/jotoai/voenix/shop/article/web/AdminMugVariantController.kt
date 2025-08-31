@@ -10,7 +10,7 @@ import com.jotoai.voenix.shop.article.web.dto.MugVariantImageUploadRequest
 import com.jotoai.voenix.shop.image.api.ImageData
 import com.jotoai.voenix.shop.image.api.ImageMetadata
 import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
+import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid
@@ -84,7 +84,7 @@ class AdminMugVariantController(
 
         // Create crop area if crop parameters are provided
         val cropArea =
-            CropAreaUtils.createIfPresent(
+            CropArea.fromNullable(
                 request.cropX,
                 request.cropY,
                 request.cropWidth,

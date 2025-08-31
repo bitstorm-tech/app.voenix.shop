@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.image.api
 
 import com.jotoai.voenix.shop.image.api.dto.CropArea
-import com.jotoai.voenix.shop.image.api.dto.ImageDto
+import com.jotoai.voenix.shop.image.api.dto.ImageInfo
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.springframework.core.io.Resource
 import org.springframework.http.ResponseEntity
@@ -33,16 +33,16 @@ interface ImageService {
     fun store(
         data: ImageData,
         metadata: ImageMetadata,
-    ): ImageDto
+    ): ImageInfo
 
     /**
      * Retrieves multiple images by their IDs.
      * Performs batch loading to avoid N+1 query problems.
      *
      * @param ids List of image IDs to retrieve
-     * @return Map of ID to ImageDto for found images
+     * @return Map of ID to ImageInfo for found images
      */
-    fun find(ids: List<Long>): Map<Long, ImageDto>
+    fun find(ids: List<Long>): Map<Long, ImageInfo>
 
     /**
      * Counts generated images based on filter criteria.
@@ -109,7 +109,7 @@ interface ImageService {
     fun getUploadedImageByUuid(
         uuid: UUID,
         userId: Long,
-    ): ImageDto
+    ): ImageInfo
 
     /**
      * Serves a user's image as an HTTP response.

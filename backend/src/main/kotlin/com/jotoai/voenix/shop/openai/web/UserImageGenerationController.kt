@@ -3,7 +3,7 @@ package com.jotoai.voenix.shop.openai.web
 import com.jotoai.voenix.shop.image.api.ImageData
 import com.jotoai.voenix.shop.image.api.ImageMetadata
 import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
+import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
@@ -41,7 +41,7 @@ class UserImageGenerationController(
         logger.info { "Image generation request: user=${user.id}, promptId=${form.promptId}" }
 
         // Create crop area if all crop parameters are provided
-        val cropArea = CropAreaUtils.createIfPresent(form.cropX, form.cropY, form.cropWidth, form.cropHeight)
+        val cropArea = CropArea.fromNullable(form.cropX, form.cropY, form.cropWidth, form.cropHeight)
 
         // First upload the image to get UUID, applying crop if provided
         val imageData = ImageData.File(form.image, cropArea)
@@ -51,7 +51,9 @@ class UserImageGenerationController(
         logger.info { "Uploaded image for user ${user.id} with UUID: ${uploadedImageDto.uuid}" }
 
         // Generate all 4 images; crop already applied at upload time, so avoid double-cropping here
-        val response = imageGenerationService.generateUserImageWithIds(form.promptId, uploadedImageDto.uuid, user.id, null)
+        val response = imageGenerationService.generateUserImageWithIds(
+            form.promptId, uploadedImageDto.uuid, user.id, null
+        )
 
         logger.info { "Generated ${response.generatedImageIds.size} images for user ${user.id}" }
 

@@ -4,12 +4,12 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 /**
- * Base class for image DTOs
+ * Common interface for image information
  */
-sealed class ImageDto(
-    open val filename: String,
-    open val imageType: ImageType,
-)
+interface ImageInfo {
+    val filename: String
+    val imageType: ImageType
+}
 
 /**
  * DTO for uploaded images with complete metadata
@@ -23,7 +23,7 @@ data class UploadedImageDto(
     val contentType: String,
     val fileSize: Long,
     val uploadedAt: LocalDateTime,
-) : ImageDto(filename, imageType)
+) : ImageInfo
 
 /**
  * DTO for generated images
@@ -36,12 +36,4 @@ data class GeneratedImageDto(
     val userId: Long? = null,
     val generatedAt: LocalDateTime,
     val ipAddress: String? = null,
-) : ImageDto(filename, imageType)
-
-/**
- * Simple ImageDto for backward compatibility
- */
-data class SimpleImageDto(
-    override val filename: String,
-    override val imageType: ImageType,
-) : ImageDto(filename, imageType)
+) : ImageInfo

@@ -4,9 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.jotoai.voenix.shop.image.api.ImageData
 import com.jotoai.voenix.shop.image.api.ImageMetadata
 import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
-import com.jotoai.voenix.shop.image.api.dto.ImageDto
-import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
+import com.jotoai.voenix.shop.image.api.dto.ImageInfo
+import com.jotoai.voenix.shop.image.internal.web.dto.CreateImageRequest
 import com.jotoai.voenix.shop.user.api.UserService
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
@@ -31,7 +30,7 @@ class AdminImageController(
         @RequestPart("file") file: MultipartFile,
         @RequestPart("request") requestPart: String,
         @AuthenticationPrincipal userDetails: UserDetails,
-    ): ImageDto {
+    ): ImageInfo {
         // Parse the request part from JSON
         val createImageRequest = objectMapper.readValue(requestPart, CreateImageRequest::class.java)
 
@@ -48,10 +47,7 @@ class AdminImageController(
                 ),
             )
 
-        // Convert to the expected return type
-        return SimpleImageDto(
-            filename = uploadedImage.filename,
-            imageType = uploadedImage.imageType,
-        )
+        // Return the uploaded image (already implements ImageInfo)
+        return uploadedImage
     }
 }

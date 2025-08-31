@@ -28,8 +28,8 @@ class ImageValidationService {
     ) {
         require(!file.isEmpty) { "Image file is required" }
 
-        val maxSize = imageType?.maxFileSize ?: MAX_FILE_SIZE
-        val allowedTypes = imageType?.allowedContentTypes ?: ALLOWED_CONTENT_TYPES
+        val maxSize = imageType?.maxFileSize() ?: MAX_FILE_SIZE
+        val allowedTypes = imageType?.allowedContentTypes() ?: ALLOWED_CONTENT_TYPES
 
         require(file.size <= maxSize) {
             val maxSizeMB = bytesToMegabytes(maxSize)

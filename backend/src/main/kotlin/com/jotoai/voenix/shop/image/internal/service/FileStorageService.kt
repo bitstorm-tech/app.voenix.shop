@@ -76,7 +76,8 @@ class FileStorageService(
         imageValidationService.validateImageFile(file, imageType)
 
         val originalFilename = file.originalFilename ?: "unknown"
-        val fileExtension = imageType.getFileExtension(originalFilename)
+        val fileExtension = if (imageType.requiresWebPConversion()) ".webp" 
+            else originalFilename.substringAfterLast('.', "").let { if (it.isNotEmpty()) ".$it" else "" }
         // Do not mark cropped files as "original"; keep simple unique name
         val storedFilename = "${UUID.randomUUID()}$fileExtension"
 
@@ -94,7 +95,7 @@ class FileStorageService(
         }
 
         // Apply format conversion if needed
-        if (imageType.requiresWebPConversion) {
+        if (imageType.requiresWebPConversion()) {
             logger.debug { "Converting image to WebP format" }
             imageBytes = imageConversionService.convertToWebP(imageBytes)
         }

@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.openai.web
 
 import com.jotoai.voenix.shop.application.internal.service.ClientIpResolver
-import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
+import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
 import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
 import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationResponse
@@ -32,7 +32,7 @@ class PublicImageGenerationController(
         logger.info { "Public image generation request: promptId=${form.promptId}" }
 
         // Create crop area if all crop parameters are provided
-        val cropArea = CropAreaUtils.createIfPresent(form.cropX, form.cropY, form.cropWidth, form.cropHeight)
+        val cropArea = CropArea.fromNullable(form.cropX, form.cropY, form.cropWidth, form.cropHeight)
 
         val generationRequest =
             ImageGenerationRequest(

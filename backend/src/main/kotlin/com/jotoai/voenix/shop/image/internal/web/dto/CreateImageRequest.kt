@@ -1,5 +1,7 @@
-package com.jotoai.voenix.shop.image.api.dto
+package com.jotoai.voenix.shop.image.internal.web.dto
 
+import com.jotoai.voenix.shop.image.api.dto.CropArea
+import com.jotoai.voenix.shop.image.api.dto.ImageType
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotNull
 
