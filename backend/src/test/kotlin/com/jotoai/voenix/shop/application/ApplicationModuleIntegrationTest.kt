@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.application
 
-import com.jotoai.voenix.shop.application.api.dto.ErrorResponse
-import com.jotoai.voenix.shop.application.api.dto.PaginatedResponse
-import com.jotoai.voenix.shop.application.api.exception.BadRequestException
-import com.jotoai.voenix.shop.application.api.exception.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.application.ErrorResponse
+import com.jotoai.voenix.shop.application.PaginatedResponse
+import com.jotoai.voenix.shop.application.BadRequestException
+import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
 

@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.cart.internal.service
 
-import com.jotoai.voenix.shop.application.api.exception.BadRequestException
-import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.application.BadRequestException
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.dto.AddToCartRequest

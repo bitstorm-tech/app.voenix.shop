@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.prompt.api.exceptions
 
-import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 
 /**
  * Exception thrown when a prompt slot variant is not found.

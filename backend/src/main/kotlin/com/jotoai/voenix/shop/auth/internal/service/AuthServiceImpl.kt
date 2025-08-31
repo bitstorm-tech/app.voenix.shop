@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.auth.internal.service
 
-import com.jotoai.voenix.shop.application.api.exception.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
 import com.jotoai.voenix.shop.auth.api.dto.LoginResponse

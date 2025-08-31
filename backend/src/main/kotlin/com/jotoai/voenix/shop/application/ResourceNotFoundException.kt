@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.application.api.exception
+package com.jotoai.voenix.shop.application
 
 /**
  * Base exception for when a requested resource cannot be found.

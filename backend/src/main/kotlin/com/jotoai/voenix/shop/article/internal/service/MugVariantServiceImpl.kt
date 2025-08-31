@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.service
 
-import com.jotoai.voenix.shop.application.api.exception.BadRequestException
+import com.jotoai.voenix.shop.application.BadRequestException
 import com.jotoai.voenix.shop.article.api.dto.CopyVariantsRequest
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto

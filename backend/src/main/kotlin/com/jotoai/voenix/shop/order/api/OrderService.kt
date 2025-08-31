@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.order.api
 
-import com.jotoai.voenix.shop.application.api.dto.PaginatedResponse
+import com.jotoai.voenix.shop.application.PaginatedResponse
 import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
 import com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto

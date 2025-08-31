@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.api.auth
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.jotoai.voenix.shop.application.api.exception.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest

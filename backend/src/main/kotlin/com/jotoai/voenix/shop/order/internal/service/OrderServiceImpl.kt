@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.order.internal.service
 
-import com.jotoai.voenix.shop.application.api.dto.PaginatedResponse
-import com.jotoai.voenix.shop.application.api.exception.BadRequestException
+import com.jotoai.voenix.shop.application.PaginatedResponse
+import com.jotoai.voenix.shop.application.BadRequestException
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto

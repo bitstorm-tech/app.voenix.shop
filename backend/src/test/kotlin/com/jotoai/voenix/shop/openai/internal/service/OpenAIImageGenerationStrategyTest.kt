@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
-import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
 import com.jotoai.voenix.shop.openai.api.enums.ImageBackground

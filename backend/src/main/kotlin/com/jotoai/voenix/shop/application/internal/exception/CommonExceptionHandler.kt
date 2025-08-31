@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.application.internal.exception
 
-import com.jotoai.voenix.shop.application.api.dto.ErrorResponse
-import com.jotoai.voenix.shop.application.api.exception.BadRequestException
-import com.jotoai.voenix.shop.application.api.exception.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.application.ErrorResponse
+import com.jotoai.voenix.shop.application.BadRequestException
+import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus
