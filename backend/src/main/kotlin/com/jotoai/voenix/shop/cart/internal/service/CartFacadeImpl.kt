@@ -7,7 +7,9 @@ import com.jotoai.voenix.shop.cart.api.CartFacade
 import com.jotoai.voenix.shop.cart.api.dto.AddToCartRequest
 import com.jotoai.voenix.shop.cart.api.dto.CartDto
 import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
+import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
 import com.jotoai.voenix.shop.cart.api.dto.UpdateCartItemRequest
+import com.jotoai.voenix.shop.cart.api.enums.CartStatus
 import com.jotoai.voenix.shop.cart.internal.assembler.CartAssembler
 import com.jotoai.voenix.shop.cart.internal.assembler.OrderInfoAssembler
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
@@ -41,7 +43,7 @@ class CartFacadeImpl(
      * Adds an item to the cart
      */
     @Transactional
-    override fun addToCart(
+    fun addToCart(
         userId: Long,
         request: AddToCartRequest,
     ): CartDto {
@@ -170,7 +172,7 @@ class CartFacadeImpl(
      * Updates a cart item quantity or custom data
      */
     @Transactional
-    override fun updateCartItem(
+    fun updateCartItem(
         userId: Long,
         itemId: Long,
         request: UpdateCartItemRequest,
@@ -243,7 +245,7 @@ class CartFacadeImpl(
      * Removes an item from the cart
      */
     @Transactional
-    override fun removeFromCart(
+    fun removeFromCart(
         userId: Long,
         itemId: Long,
     ): CartDto {
@@ -280,7 +282,7 @@ class CartFacadeImpl(
      * Clears all items from the cart
      */
     @Transactional
-    override fun clearCart(userId: Long): CartDto {
+    fun clearCart(userId: Long): CartDto {
         val cart =
             cartRepository
                 .findActiveCartByUserId(userId)
@@ -311,7 +313,7 @@ class CartFacadeImpl(
      * Updates prices in active carts to current prices
      */
     @Transactional
-    override fun refreshCartPrices(userId: Long): CartDto {
+    fun refreshCartPrices(userId: Long): CartDto {
         val cart =
             cartRepository
                 .findActiveCartByUserId(userId)
@@ -376,6 +378,50 @@ class CartFacadeImpl(
 
         // Return cart order info
         return orderInfoAssembler.toOrderInfo(savedCart)
+    }
+
+    /**
+     * Marks a cart as converted after order creation.
+     */
+    @Transactional
+    override fun markCartAsConverted(cartId: Long) {
+        val cart = cartRepository
+            .findById(cartId)
+            .orElseThrow { ResourceNotFoundException("Cart not found with id: $cartId") }
+        
+        cart.status = CartStatus.CONVERTED
+        cartRepository.save(cart)
+        
+        logger.info { "Cart marked as converted: cartId=$cartId" }
+    }
+
+    /**
+     * Gets or creates an active cart for the user
+     */
+    @Transactional
+    fun getOrCreateActiveCart(userId: Long): CartDto {
+        // Validate user exists
+        userService.getUserById(userId)
+
+        val cart = cartInternalService.getOrCreateActiveCartEntity(userId)
+        return cartAssembler.toDto(cart)
+    }
+
+    /**
+     * Gets a cart summary (item count and total price)
+     */
+    @Transactional(readOnly = true)
+    fun getCartSummary(userId: Long): CartSummaryDto {
+        val cart =
+            cartRepository
+                .findActiveCartByUserId(userId)
+                .orElse(null)
+
+        return if (cart != null) {
+            cartAssembler.toSummaryDto(cart)
+        } else {
+            CartSummaryDto(itemCount = 0, totalPrice = 0L, hasItems = false)
+        }
     }
 
     private fun saveCartWithOptimisticLocking(cart: Cart): Cart =

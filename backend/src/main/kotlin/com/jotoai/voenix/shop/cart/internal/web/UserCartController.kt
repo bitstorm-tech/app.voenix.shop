@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.cart.internal.web
 
-import com.jotoai.voenix.shop.cart.api.CartFacade
-import com.jotoai.voenix.shop.cart.api.CartQueryService
+import com.jotoai.voenix.shop.cart.internal.service.CartFacadeImpl
 import com.jotoai.voenix.shop.cart.api.dto.AddToCartRequest
 import com.jotoai.voenix.shop.cart.api.dto.CartDto
 import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
@@ -26,8 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/user/cart")
 @PreAuthorize("hasRole('USER')")
 class UserCartController(
-    private val cartFacade: CartFacade,
-    private val cartQueryService: CartQueryService,
+    private val cartFacade: CartFacadeImpl,
     private val userService: UserService,
 ) {
     /**
@@ -38,7 +36,7 @@ class UserCartController(
         @AuthenticationPrincipal userDetails: UserDetails,
     ): CartDto {
         val userId = getCurrentUserId(userDetails)
-        return cartQueryService.getOrCreateActiveCart(userId)
+        return cartFacade.getOrCreateActiveCart(userId)
     }
 
     /**
@@ -49,7 +47,7 @@ class UserCartController(
         @AuthenticationPrincipal userDetails: UserDetails,
     ): CartSummaryDto {
         val userId = getCurrentUserId(userDetails)
-        return cartQueryService.getCartSummary(userId)
+        return cartFacade.getCartSummary(userId)
     }
 
     /**

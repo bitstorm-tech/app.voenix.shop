@@ -63,7 +63,7 @@ class OrderServiceImpl(
         createOrderItems(refreshedCart, order)
 
         val savedOrder = saveAndRefreshOrder(order)
-        cartQueryService.markCartAsConverted(refreshedCart.id)
+        cartFacade.markCartAsConverted(refreshedCart.id)
 
         logOrderCreation(userId, refreshedCart, savedOrder, orderTotals.totalAmount)
 
