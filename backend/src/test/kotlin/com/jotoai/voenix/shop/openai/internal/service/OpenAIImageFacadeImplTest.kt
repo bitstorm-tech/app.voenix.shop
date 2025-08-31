@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageStorageService
+import com.jotoai.voenix.shop.image.api.ImageStorage
 import com.jotoai.voenix.shop.image.api.enums.ImageBackground
 import com.jotoai.voenix.shop.image.api.enums.ImageQuality
 import com.jotoai.voenix.shop.image.api.enums.ImageSize
@@ -19,7 +19,7 @@ import org.springframework.mock.web.MockMultipartFile
 import org.springframework.web.multipart.MultipartFile
 
 class OpenAIImageFacadeImplTest {
-    private lateinit var imageStorageService: ImageStorageService
+    private lateinit var imageStorageService: ImageStorage
     private lateinit var imageGenerationStrategy: ImageGenerationStrategy
     private lateinit var openAIImageFacade: OpenAIImageFacadeImpl
     private lateinit var openAIImageQueryService: OpenAIImageQueryServiceImpl

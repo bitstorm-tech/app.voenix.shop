@@ -1,7 +1,5 @@
 package com.jotoai.voenix.shop.image.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageStorageService
-import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
@@ -25,7 +23,7 @@ import java.util.UUID
 class ImageQueryServiceImplTest {
     private lateinit var generatedImageRepository: GeneratedImageRepository
     private lateinit var uploadedImageRepository: UploadedImageRepository
-    private lateinit var imageQueryService: ImageManagementService
+    private lateinit var imageQueryService: ImageQueryServiceImpl
 
     @BeforeEach
     fun setUp() {
@@ -33,13 +31,9 @@ class ImageQueryServiceImplTest {
         uploadedImageRepository = mockk()
 
         imageQueryService =
-            ImageManagementService(
-                imageStorageService = mockk<ImageStorageService>(),
+            ImageQueryServiceImpl(
                 uploadedImageRepository = uploadedImageRepository,
                 generatedImageRepository = generatedImageRepository,
-                imageValidationService = mockk<ImageValidationService>(),
-                storagePathService = mockk<StoragePathService>(),
-                userImageStorageService = mockk<UserImageStorageService>(),
             )
     }
 

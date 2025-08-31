@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageStorageService
+import com.jotoai.voenix.shop.image.api.ImageStorage
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantRequest
@@ -32,7 +32,7 @@ class PromptSlotVariantServiceImplTest {
     private lateinit var promptSlotVariantRepository: PromptSlotVariantRepository
     private lateinit var promptSlotTypeRepository: PromptSlotTypeRepository
     private lateinit var promptSlotVariantAssembler: PromptSlotVariantAssembler
-    private lateinit var imageStorageService: ImageStorageService
+    private lateinit var imageStorageService: ImageStorage
     private lateinit var service: PromptSlotVariantServiceImpl
 
     private val testPromptSlotType =
@@ -67,7 +67,7 @@ class PromptSlotVariantServiceImplTest {
                 promptSlotVariantRepository = promptSlotVariantRepository,
                 promptSlotTypeRepository = promptSlotTypeRepository,
                 promptSlotVariantAssembler = promptSlotVariantAssembler,
-                imageStorageService = imageStorageService,
+                imageStorage = imageStorageService,
             )
     }
 

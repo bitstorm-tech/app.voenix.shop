@@ -11,7 +11,7 @@ import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
-import com.jotoai.voenix.shop.image.internal.service.ImageStorageServiceImpl
+import com.jotoai.voenix.shop.image.api.ImageStorage
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -28,7 +28,7 @@ import java.util.Optional
 class MugVariantServiceTest {
     private lateinit var articleRepository: ArticleRepository
     private lateinit var mugVariantRepository: MugArticleVariantRepository
-    private lateinit var imageStorageService: ImageStorageServiceImpl
+    private lateinit var imageStorageService: ImageStorage
     private lateinit var mugArticleVariantAssembler: MugArticleVariantAssembler
     private lateinit var mugWithVariantsSummaryAssembler: MugWithVariantsSummaryAssembler
     private lateinit var mugVariantService: com.jotoai.voenix.shop.article.internal.service.MugVariantServiceImpl
