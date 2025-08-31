@@ -5,7 +5,7 @@ import com.jotoai.voenix.shop.image.api.ImageContent
 import com.jotoai.voenix.shop.image.api.ImageData
 import com.jotoai.voenix.shop.image.api.ImageMetadata
 import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.api.ValidationRequest
 import com.jotoai.voenix.shop.image.api.ValidationResult
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
@@ -32,7 +32,7 @@ class ImageServiceImpl(
     private val imageOperationsService: ImageOperationsService,
     private val generatedImageRepository: GeneratedImageRepository,
     private val fileStorageService: FileStorageService,
-    private val storagePathService: StoragePathService,
+    private val storagePathConfiguration: StoragePathConfiguration,
 ) : ImageService {
     override fun store(
         data: ImageData,
@@ -100,7 +100,7 @@ class ImageServiceImpl(
     ): String {
         logger.debug { "Getting URL for filename: $filename, type: $type" }
 
-        return storagePathService.getImageUrl(type, filename)
+        return getImageUrl(type, filename)
     }
 
     override fun delete(
@@ -262,4 +262,21 @@ class ImageServiceImpl(
             uploadedAt = java.time.LocalDateTime.now(),
         )
     }
+
+    // Private method to get image URL (replaced StoragePathService dependency)
+    private fun getImageUrl(imageType: ImageType, filename: String): String {
+        val urlPath = getUrlPath(imageType)
+        return if (urlPath.endsWith("/")) {
+            "$urlPath$filename"
+        } else {
+            "$urlPath/$filename"
+        }
+    }
+
+    private fun getUrlPath(imageType: ImageType): String = 
+        getPathConfig(imageType).urlPath
+
+    private fun getPathConfig(imageType: ImageType) =
+        storagePathConfiguration.pathMappings[imageType]
+            ?: throw IllegalArgumentException("No path configuration found for ImageType: $imageType")
 }

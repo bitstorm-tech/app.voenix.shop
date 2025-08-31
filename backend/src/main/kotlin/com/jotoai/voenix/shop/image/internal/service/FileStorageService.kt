@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
+import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
@@ -25,14 +25,14 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 /**
- * Consolidated implementation of ImageStorageService that handles all storage functionality.
- * This service combines the functionality of BaseStorageService with user-specific storage operations,
- * and StoragePathService logic into a single cohesive service.
+ * Consolidated implementation of FileStorageService that handles all storage functionality.
+ * This service contains all the storage path logic internally and no longer depends on
+ * the deprecated StoragePathService.
  */
 @Service
 @Suppress("TooManyFunctions")
 class FileStorageService(
-    private val storagePathService: StoragePathService,
+    private val storagePathConfiguration: StoragePathConfiguration,
     private val imageConversionService: ImageConversionService,
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
@@ -44,6 +44,27 @@ class FileStorageService(
         private const val ORIGINAL_SUFFIX = "_original"
         private const val GENERATED_PREFIX = "_generated_"
     }
+
+    // Private storage path methods (replaced StoragePathService dependency)
+    private fun getPhysicalPath(imageType: ImageType): Path {
+        val pathConfig = getPathConfig(imageType)
+        return storagePathConfiguration.storageRoot.resolve(pathConfig.relativePath)
+    }
+
+    private fun getPhysicalFilePath(imageType: ImageType, filename: String): Path =
+        getPhysicalPath(imageType).resolve(filename)
+
+    private fun getStorageRoot(): Path = storagePathConfiguration.storageRoot
+
+    private fun findImageTypeByFilename(filename: String): ImageType? =
+        storagePathConfiguration.pathMappings.keys.find { imageType ->
+            val filePath = getPhysicalFilePath(imageType, filename)
+            Files.exists(filePath)
+        }
+
+    private fun getPathConfig(imageType: ImageType) =
+        storagePathConfiguration.pathMappings[imageType]
+            ?: throw IllegalArgumentException("No path configuration found for ImageType: $imageType")
 
     fun storeFile(
         file: MultipartFile,
@@ -59,7 +80,7 @@ class FileStorageService(
         // Do not mark cropped files as "original"; keep simple unique name
         val storedFilename = "${UUID.randomUUID()}$fileExtension"
 
-        val targetPath = storagePathService.getPhysicalPath(imageType)
+        val targetPath = getPhysicalPath(imageType)
         val filePath = targetPath.resolve(storedFilename)
 
         logger.info { "Storing file - Target path: ${filePath.toAbsolutePath()}" }
@@ -92,7 +113,7 @@ class FileStorageService(
         val fileExtension = getFileExtension(originalFilename)
         val storedFilename = "${UUID.randomUUID()}$fileExtension"
 
-        val targetPath = storagePathService.getPhysicalPath(imageType)
+        val targetPath = getPhysicalPath(imageType)
         val filePath = targetPath.resolve(storedFilename)
 
         logger.info { "Storing image bytes - Target path: ${filePath.toAbsolutePath()}" }
@@ -107,7 +128,7 @@ class FileStorageService(
         filename: String,
         imageType: ImageType,
     ): ByteArray {
-        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+        val filePath = getPhysicalFilePath(imageType, filename)
 
         if (!Files.exists(filePath)) {
             throw ResourceNotFoundException("Image with filename $filename not found")
@@ -120,7 +141,7 @@ class FileStorageService(
         filename: String,
         imageType: ImageType,
     ): Boolean {
-        val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+        val filePath = getPhysicalFilePath(imageType, filename)
         return deleteFile(filePath)
     }
 
@@ -132,10 +153,10 @@ class FileStorageService(
             userId != null -> validateAccessAndGetImageData(filename, userId)
             else -> {
                 val imageType =
-                    storagePathService.findImageTypeByFilename(filename)
+                    findImageTypeByFilename(filename)
                         ?: throw ResourceNotFoundException("Image with filename $filename not found")
                 val bytes = loadFileAsBytes(filename, imageType)
-                val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
+                val filePath = getPhysicalFilePath(imageType, filename)
                 val contentType = probeContentType(filePath)
                 Pair(bytes, contentType)
             }
@@ -348,7 +369,7 @@ class FileStorageService(
     }
 
     private fun getUserStorageDirectory(userId: Long): Path {
-        val storageRoot = storagePathService.getStorageRoot()
+        val storageRoot = getStorageRoot()
         return storageRoot.resolve("private").resolve("images").resolve(userId.toString())
     }
 

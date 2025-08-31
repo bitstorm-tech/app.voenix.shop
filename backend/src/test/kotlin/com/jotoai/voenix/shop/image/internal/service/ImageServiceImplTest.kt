@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -18,7 +18,7 @@ class ImageServiceImplTest {
         val imageOperationsService: ImageOperationsService = mockk()
         val generatedImageRepository: GeneratedImageRepository = mockk()
         val fileStorageService: FileStorageService = mockk()
-        val storagePathService: StoragePathService = mockk()
+        val storagePathConfiguration: StoragePathConfiguration = mockk()
 
         // When
         val service =
@@ -26,7 +26,7 @@ class ImageServiceImplTest {
                 imageOperationsService,
                 generatedImageRepository,
                 fileStorageService,
-                storagePathService,
+                storagePathConfiguration,
             )
 
         // Then

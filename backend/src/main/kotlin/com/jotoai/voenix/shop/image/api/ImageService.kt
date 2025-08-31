@@ -19,7 +19,7 @@ import java.util.UUID
  * - ImageOperations (removed)
  * - ImageQueryService
  * - ImageStorage
- * - StoragePathService (partially)
+ * - StoragePathService (fully replaced)
  */
 interface ImageService {
     /**
