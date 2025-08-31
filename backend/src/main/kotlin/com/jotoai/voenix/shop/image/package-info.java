@@ -1,16 +1,17 @@
 /**
  * Image module for managing image operations including storage, generation and conversion.
  * <p>
- * This module provides:
+ * This module provides a unified API through:
  * <ul>
- *   <li>Core image operations through {@link com.jotoai.voenix.shop.image.api.ImageOperations}</li>
- *   <li>Image storage and access through {@link com.jotoai.voenix.shop.image.api.ImageStorage}</li>
- *   <li>Image query operations and data access through {@link com.jotoai.voenix.shop.image.api.ImageQueryService}</li>
+ *   <li>Unified image operations through {@link com.jotoai.voenix.shop.image.api.ImageService}</li>
  * </ul>
+ * <p>
+ * The ImageService consolidates all image-related operations that were previously
+ * scattered across multiple interfaces (ImageOperations, ImageStorage, ImageQueryService).
  * <p>
  * Named interfaces:
  * <ul>
- *   <li>{@code api} - Public API for image operations and queries</li>
+ *   <li>{@code api} - Public API for unified image operations</li>
  * </ul>
  * <p>
  * Other modules should explicitly depend on {@code image::api} to access image functionality.

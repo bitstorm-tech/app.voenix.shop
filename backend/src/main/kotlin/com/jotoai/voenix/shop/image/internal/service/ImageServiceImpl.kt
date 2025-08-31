@@ -31,7 +31,6 @@ class ImageServiceImpl(
     private val imageQueryServiceImpl: ImageQueryServiceImpl,
     private val fileStorageService: FileStorageService,
     private val storagePathService: StoragePathService,
-    private val imageValidationService: ImageValidationService,
 ) : ImageService {
     override fun store(
         data: ImageData,

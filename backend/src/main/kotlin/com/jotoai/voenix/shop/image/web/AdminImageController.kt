@@ -1,7 +1,9 @@
 package com.jotoai.voenix.shop.image.web
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.jotoai.voenix.shop.image.api.ImageOperations
+import com.jotoai.voenix.shop.image.api.ImageData
+import com.jotoai.voenix.shop.image.api.ImageMetadata
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
@@ -20,7 +22,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/admin/images")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminImageController(
-    private val imageOperations: ImageOperations,
+    private val imageService: ImageService,
     private val objectMapper: ObjectMapper,
     private val userService: UserService,
 ) {
@@ -36,13 +38,14 @@ class AdminImageController(
         // Get the actual admin user ID from security context
         val adminUser = userService.getUserByEmail(userDetails.username)
 
-        // Upload the image using the operations service with the specified imageType
+        // Upload the image using the image service with the specified imageType
         val uploadedImage =
-            imageOperations.createUploadedImage(
-                file,
-                adminUser.id,
-                createImageRequest.imageType,
-                createImageRequest.cropArea,
+            imageService.store(
+                ImageData.File(file, createImageRequest.cropArea),
+                ImageMetadata(
+                    type = createImageRequest.imageType,
+                    userId = adminUser.id,
+                ),
             )
 
         // Convert to the expected return type
