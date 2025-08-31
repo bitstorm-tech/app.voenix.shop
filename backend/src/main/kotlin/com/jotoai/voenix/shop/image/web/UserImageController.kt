@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.image.web
 
-import com.jotoai.voenix.shop.image.api.ImageAccessService
+import com.jotoai.voenix.shop.image.api.ImageStorage
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.io.Resource
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/user/images")
 @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
 class UserImageController(
-    private val imageAccessService: ImageAccessService,
+    private val imageStorage: ImageStorage,
     private val userService: UserService,
 ) {
     companion object {
@@ -32,7 +32,7 @@ class UserImageController(
         val user = userService.getUserByEmail(userDetails.username)
         logger.info { "User ${user.id} retrieving image: $filename" }
 
-        // Delegate to access service which validates access and streams the resource
-        return imageAccessService.serveUserImage(filename, user.id)
+        // Delegate to storage service which validates access and streams the resource
+        return imageStorage.serveUserImage(filename, user.id)
     }
 }

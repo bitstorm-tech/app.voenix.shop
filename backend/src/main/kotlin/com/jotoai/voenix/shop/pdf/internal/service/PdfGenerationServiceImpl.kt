@@ -4,7 +4,7 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.WriterException
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
-import com.jotoai.voenix.shop.image.api.ImageAccessService
+import com.jotoai.voenix.shop.image.api.ImageStorage
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
@@ -36,7 +36,7 @@ import javax.imageio.ImageIO
 @Transactional(readOnly = true)
 class PdfGenerationServiceImpl(
     private val pdfConfig: PdfConfig,
-    private val imageAccessService: ImageAccessService,
+    private val imageStorage: ImageStorage,
 ) : PdfGenerationService {
     companion object {
         private val logger = KotlinLogging.logger {}
@@ -293,7 +293,7 @@ class PdfGenerationServiceImpl(
     ): ByteArray =
         orderItem.generatedImageFilename
             ?.let { filename ->
-                runCatching { imageAccessService.getImageData(filename, orderData.userId).first }
+                runCatching { imageStorage.getImageData(filename, orderData.userId).first }
                     .onFailure { e ->
                         logger.warn(e) {
                             "Could not load image $filename for order ${orderData.orderNumber}, using placeholder"

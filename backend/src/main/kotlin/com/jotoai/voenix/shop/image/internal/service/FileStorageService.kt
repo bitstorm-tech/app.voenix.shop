@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
@@ -29,14 +28,13 @@ import java.util.UUID
  */
 @Service
 @Suppress("TooManyFunctions")
-class ImageStorageServiceImpl(
+class FileStorageService(
     private val storagePathService: StoragePathService,
     private val imageConversionService: ImageConversionService,
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
     private val imageValidationService: ImageValidationService,
-) : ImageStorageService,
-    UserImageStorageService {
+) : UserImageStorageService {
     private val logger = KotlinLogging.logger {}
 
     companion object {
@@ -46,7 +44,7 @@ class ImageStorageServiceImpl(
 
     // Public API Interface Methods
 
-    override fun storeFile(
+    fun storeFile(
         file: MultipartFile,
         imageType: ImageType,
         cropArea: CropArea?,
@@ -85,7 +83,7 @@ class ImageStorageServiceImpl(
         return storedFilename
     }
 
-    override fun storeFile(
+    fun storeFile(
         bytes: ByteArray,
         originalFilename: String,
         imageType: ImageType,
@@ -104,7 +102,7 @@ class ImageStorageServiceImpl(
         return storedFilename
     }
 
-    override fun loadFileAsResource(
+    fun loadFileAsResource(
         filename: String,
         imageType: ImageType,
     ): Resource {
@@ -117,7 +115,7 @@ class ImageStorageServiceImpl(
         return FileSystemResource(filePath)
     }
 
-    override fun loadFileAsBytes(
+    fun loadFileAsBytes(
         filename: String,
         imageType: ImageType,
     ): ByteArray {
@@ -130,9 +128,7 @@ class ImageStorageServiceImpl(
         return Files.readAllBytes(filePath)
     }
 
-    // URL generation is handled by StoragePathService directly
-
-    override fun deleteFile(
+    fun deleteFile(
         filename: String,
         imageType: ImageType,
     ): Boolean {
@@ -140,15 +136,13 @@ class ImageStorageServiceImpl(
         return deleteFile(filePath)
     }
 
-    override fun fileExists(
+    fun fileExists(
         filename: String,
         imageType: ImageType,
     ): Boolean {
         val filePath = storagePathService.getPhysicalFilePath(imageType, filename)
         return Files.exists(filePath)
     }
-
-    // Internal helper methods for ImageManagementService
 
     /**
      * Retrieves image data from storage.
@@ -168,16 +162,6 @@ class ImageStorageServiceImpl(
     }
 
     /**
-     * Retrieves image data by filename only (searches across image types).
-     */
-    fun getImageData(filename: String): Pair<ByteArray, String> {
-        val imageType =
-            storagePathService.findImageTypeByFilename(filename)
-                ?: throw ResourceNotFoundException("Image with filename $filename not found")
-        return getImageData(filename, imageType)
-    }
-
-    /**
      * Deletes an image from storage.
      */
     fun deleteImage(
@@ -188,18 +172,6 @@ class ImageStorageServiceImpl(
             throw ResourceNotFoundException("Image with filename $filename not found")
         }
     }
-
-    /**
-     * Deletes an image by filename only (searches across image types).
-     */
-    fun deleteImage(filename: String) {
-        val imageType =
-            storagePathService.findImageTypeByFilename(filename)
-                ?: throw ResourceNotFoundException("Image with filename $filename not found")
-        deleteImage(filename, imageType)
-    }
-
-    // User-specific Storage Operations (formerly in UserImageStorageService)
 
     /**
      * Stores an uploaded image file using the user-specific storage pattern.
@@ -332,8 +304,6 @@ class ImageStorageServiceImpl(
         val filePath = userStorageDir.resolve(filename)
         return deleteFile(filePath)
     }
-
-    // Validation logic centralized in ImageValidationService
 
     private fun ensureDirectoryExists(directoryPath: Path) {
         try {

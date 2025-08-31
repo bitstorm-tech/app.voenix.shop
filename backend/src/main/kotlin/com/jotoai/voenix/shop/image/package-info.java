@@ -3,9 +3,9 @@
  * <p>
  * This module provides:
  * <ul>
- *   <li>Image CRUD operations through {@link com.jotoai.voenix.shop.image.api.ImageFacade}</li>
+ *   <li>Core image operations through {@link com.jotoai.voenix.shop.image.api.ImageOperations}</li>
+ *   <li>Image storage and access through {@link com.jotoai.voenix.shop.image.api.ImageStorage}</li>
  *   <li>Image query operations and data access through {@link com.jotoai.voenix.shop.image.api.ImageQueryService}</li>
- *   <li>Image storage operations through {@link com.jotoai.voenix.shop.image.api.ImageStorageService}</li>
  * </ul>
  * <p>
  * Named interfaces:

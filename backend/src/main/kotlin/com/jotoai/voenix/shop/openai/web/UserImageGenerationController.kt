@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.openai.web
 
-import com.jotoai.voenix.shop.image.api.ImageFacade
+import com.jotoai.voenix.shop.image.api.ImageOperations
 import com.jotoai.voenix.shop.image.api.dto.CropAreaUtils
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
 import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationResponse
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/user/openai/images")
 @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
 class UserImageGenerationController(
-    private val imageFacade: ImageFacade,
+    private val imageOperations: ImageOperations,
     private val imageGenerationService: ImageGenerationService,
     private val userService: UserService,
 ) {
@@ -40,7 +40,7 @@ class UserImageGenerationController(
         val cropArea = CropAreaUtils.createIfPresent(form.cropX, form.cropY, form.cropWidth, form.cropHeight)
 
         // First upload the image to get UUID, applying crop if provided
-        val uploadedImage = imageFacade.createUploadedImage(form.image, user.id, cropArea)
+        val uploadedImage = imageOperations.createUploadedImage(form.image, user.id, cropArea = cropArea)
         logger.info { "Uploaded image for user ${user.id} with UUID: ${uploadedImage.uuid}" }
 
         // Generate all 4 images; crop already applied at upload time, so avoid double-cropping here

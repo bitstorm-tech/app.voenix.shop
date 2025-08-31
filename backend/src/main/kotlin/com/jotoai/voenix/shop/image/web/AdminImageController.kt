@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.image.web
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import com.jotoai.voenix.shop.image.api.ImageFacade
+import com.jotoai.voenix.shop.image.api.ImageOperations
 import com.jotoai.voenix.shop.image.api.dto.CreateImageRequest
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/admin/images")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminImageController(
-    private val imageFacade: ImageFacade,
+    private val imageOperations: ImageOperations,
     private val objectMapper: ObjectMapper,
     private val userService: UserService,
 ) {
@@ -36,9 +36,9 @@ class AdminImageController(
         // Get the actual admin user ID from security context
         val adminUser = userService.getUserByEmail(userDetails.username)
 
-        // Upload the image using the facade's multipart method with the specified imageType
+        // Upload the image using the operations service with the specified imageType
         val uploadedImage =
-            imageFacade.createUploadedImage(
+            imageOperations.createUploadedImage(
                 file,
                 adminUser.id,
                 createImageRequest.imageType,

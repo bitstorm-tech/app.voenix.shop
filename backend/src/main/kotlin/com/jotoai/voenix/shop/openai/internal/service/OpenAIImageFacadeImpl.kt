@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageStorageService
+import com.jotoai.voenix.shop.image.api.ImageStorage
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.openai.api.ImageGenerationStrategy
 import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
@@ -24,7 +24,7 @@ import java.io.InputStream
  */
 @Service
 class OpenAIImageFacadeImpl(
-    private val imageStorageService: ImageStorageService,
+    private val imageStorage: ImageStorage,
     private val imageGenerationStrategy: ImageGenerationStrategy,
 ) : OpenAIImageFacade {
     companion object {
@@ -83,7 +83,7 @@ class OpenAIImageFacadeImpl(
                             "image/png",
                             imageBytes,
                         )
-                    imageStorageService.storeFile(multipartFile, ImageType.PRIVATE)
+                    imageStorage.storeFile(multipartFile, ImageType.PRIVATE)
                 }
 
             return ImageEditResponse(imageFilenames = savedImageFilenames)

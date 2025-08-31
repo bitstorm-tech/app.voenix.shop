@@ -2,9 +2,8 @@ package com.jotoai.voenix.shop.openai.internal.service
 
 import com.jotoai.voenix.shop.application.api.exception.BadRequestException
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.image.api.ImageFacade
-import com.jotoai.voenix.shop.image.api.ImageStorageService
-import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.api.ImageOperations
+import com.jotoai.voenix.shop.image.api.ImageStorage
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.exceptions.ImageProcessingException
@@ -28,9 +27,8 @@ import java.util.UUID
  */
 @Service
 class ImageGenerationFacadeImpl(
-    private val imageFacade: ImageFacade,
-    private val imageStorageService: ImageStorageService,
-    private val storagePathService: StoragePathService,
+    private val imageOperations: ImageOperations,
+    private val imageStorage: ImageStorage,
     private val openAIImageGenerationService: OpenAIImageGenerationService,
     private val userService: UserService,
 ) : ImageGenerationService {
@@ -50,10 +48,10 @@ class ImageGenerationFacadeImpl(
     ): ImageGenerationResponse {
         logger.info { "Generating image: public, prompt=${request.promptId}" }
 
-        imageFacade.validateImageFile(imageFile)
+        imageOperations.validateImageFile(imageFile)
 
         val hourAgo = LocalDateTime.now().minusHours(PUBLIC_RATE_LIMIT_HOURS.toLong())
-        val count = imageFacade.countGeneratedImagesForIpAfter(ipAddress, hourAgo)
+        val count = imageOperations.countGeneratedImagesForIpAfter(ipAddress, hourAgo)
         checkRateLimit(
             count,
             PUBLIC_MAX_GENERATIONS_PER_HOUR,
@@ -97,7 +95,7 @@ class ImageGenerationFacadeImpl(
         userService.getUserById(userId)
 
         val dayAgo = LocalDateTime.now().minusHours(USER_RATE_LIMIT_HOURS.toLong())
-        val count = imageFacade.countGeneratedImagesForUserAfter(userId, dayAgo)
+        val count = imageOperations.countGeneratedImagesForUserAfter(userId, dayAgo)
         checkRateLimit(
             count,
             USER_MAX_GENERATIONS_PER_DAY,
@@ -126,11 +124,11 @@ class ImageGenerationFacadeImpl(
         return try {
             if (userId != null) {
                 val dayAgo = LocalDateTime.now().minusHours(USER_RATE_LIMIT_HOURS.toLong())
-                val count = imageFacade.countGeneratedImagesForUserAfter(userId, dayAgo)
+                val count = imageOperations.countGeneratedImagesForUserAfter(userId, dayAgo)
                 count >= USER_MAX_GENERATIONS_PER_DAY
             } else if (ipAddress != null) {
                 val hourAgo = LocalDateTime.now().minusHours(PUBLIC_RATE_LIMIT_HOURS.toLong())
-                val count = imageFacade.countGeneratedImagesForIpAfter(ipAddress, hourAgo)
+                val count = imageOperations.countGeneratedImagesForIpAfter(ipAddress, hourAgo)
                 count >= PUBLIC_MAX_GENERATIONS_PER_HOUR
             } else {
                 false
@@ -162,9 +160,9 @@ class ImageGenerationFacadeImpl(
         ipAddress: String?,
         cropArea: CropArea?,
     ): ImageGenerationResponse {
-        val uploadedImage = imageFacade.getUploadedImageByUuid(uploadedImageUuid, userId)
+        val uploadedImage = imageOperations.getUploadedImageByUuid(uploadedImageUuid, userId)
 
-        val originalBytes = imageStorageService.loadFileAsBytes(uploadedImage.filename, ImageType.PRIVATE)
+        val originalBytes = imageStorage.loadFileAsBytes(uploadedImage.filename, ImageType.PRIVATE)
         val imageBytes = originalBytes
 
         val generatedBytes = openAIImageGenerationService.generateImages(imageBytes, promptId)
@@ -176,7 +174,7 @@ class ImageGenerationFacadeImpl(
 
         val generatedImages =
             generatedBytes.mapIndexed { index, bytes ->
-                imageFacade.storeGeneratedImage(
+                imageOperations.storeGeneratedImage(
                     imageBytes = bytes,
                     uploadedImageId = uploadedImageId,
                     promptId = promptId,
@@ -187,7 +185,7 @@ class ImageGenerationFacadeImpl(
 
         val imageUrls =
             generatedImages.map { dto ->
-                storagePathService.getImageUrl(ImageType.PRIVATE, dto.filename)
+                imageStorage.getImageUrl(ImageType.PRIVATE, dto.filename)
             }
 
         val imageIds = generatedImages.mapNotNull { it.id }
@@ -213,7 +211,7 @@ class ImageGenerationFacadeImpl(
 
         val generatedImages =
             generatedBytes.mapIndexed { index, bytes ->
-                imageFacade.storePublicGeneratedImage(
+                imageOperations.storePublicGeneratedImage(
                     imageBytes = bytes,
                     promptId = promptId,
                     ipAddress = ipAddress,
@@ -223,7 +221,7 @@ class ImageGenerationFacadeImpl(
 
         val imageUrls =
             generatedImages.map { generatedImageDto ->
-                storagePathService.getImageUrl(ImageType.PUBLIC, generatedImageDto.filename)
+                imageStorage.getImageUrl(ImageType.PUBLIC, generatedImageDto.filename)
             }
 
         val imageIds = generatedImages.mapNotNull { it.id }
