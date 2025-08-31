@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
-import com.jotoai.voenix.shop.image.api.ImageOperations
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
@@ -49,7 +48,7 @@ class ImageOperationsService(
     private val uploadedImageRepository: UploadedImageRepository,
     private val generatedImageRepository: GeneratedImageRepository,
     private val imageValidationService: ImageValidationService,
-) : ImageOperations {
+) {
     companion object {
         private val logger = KotlinLogging.logger {}
     }
@@ -70,7 +69,7 @@ class ImageOperationsService(
             }
         }
 
-    override fun createUploadedImage(
+    fun createUploadedImage(
         file: MultipartFile,
         userId: Long,
         imageType: ImageType,
@@ -88,7 +87,7 @@ class ImageOperationsService(
         }
 
     @Transactional(readOnly = true)
-    override fun getUploadedImageByUuid(
+    fun getUploadedImageByUuid(
         uuid: UUID,
         userId: Long,
     ): UploadedImageDto {
@@ -99,7 +98,7 @@ class ImageOperationsService(
         return uploadedImage.toDto()
     }
 
-    override fun storeGeneratedImage(
+    fun storeGeneratedImage(
         imageBytes: ByteArray,
         uploadedImageId: Long,
         promptId: Long,
@@ -128,7 +127,7 @@ class ImageOperationsService(
             generatedImage.toDto()
         }
 
-    override fun storePublicGeneratedImage(
+    fun storePublicGeneratedImage(
         imageBytes: ByteArray,
         promptId: Long,
         ipAddress: String,
@@ -156,19 +155,19 @@ class ImageOperationsService(
         }
 
     @Transactional(readOnly = true)
-    override fun countGeneratedImagesForIpAfter(
+    fun countGeneratedImagesForIpAfter(
         ipAddress: String,
         after: LocalDateTime,
     ): Long = generatedImageRepository.countByIpAddressAndGeneratedAtAfter(ipAddress, after)
 
     @Transactional(readOnly = true)
-    override fun countGeneratedImagesForUserAfter(
+    fun countGeneratedImagesForUserAfter(
         userId: Long,
         after: LocalDateTime,
     ): Long = generatedImageRepository.countByUserIdAndGeneratedAtAfter(userId, after)
 
     @Transactional(readOnly = true)
-    override fun validateImageFile(file: MultipartFile) {
+    fun validateImageFile(file: MultipartFile) {
         imageValidationService.validateImageFile(file)
     }
 

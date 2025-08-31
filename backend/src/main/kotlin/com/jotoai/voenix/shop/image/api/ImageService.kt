@@ -15,8 +15,8 @@ import java.util.UUID
  * This interface consolidates all image-related operations used by other modules,
  * providing a simplified and consistent API for image operations.
  *
- * Replaces the previous four interfaces:
- * - ImageOperations
+ * Replaces the previous interfaces:
+ * - ImageOperations (removed)
  * - ImageQueryService
  * - ImageStorage
  * - StoragePathService (partially)
