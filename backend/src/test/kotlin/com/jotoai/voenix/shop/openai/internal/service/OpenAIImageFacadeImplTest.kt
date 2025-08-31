@@ -3,12 +3,12 @@ package com.jotoai.voenix.shop.openai.internal.service
 import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
-import com.jotoai.voenix.shop.openai.api.enums.ImageBackground
-import com.jotoai.voenix.shop.openai.api.enums.ImageQuality
-import com.jotoai.voenix.shop.openai.api.enums.ImageSize
 import com.jotoai.voenix.shop.openai.api.ImageGenerationStrategy
 import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.openai.api.dto.ImageEditBytesResponse
+import com.jotoai.voenix.shop.openai.api.enums.ImageBackground
+import com.jotoai.voenix.shop.openai.api.enums.ImageQuality
+import com.jotoai.voenix.shop.openai.api.enums.ImageSize
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

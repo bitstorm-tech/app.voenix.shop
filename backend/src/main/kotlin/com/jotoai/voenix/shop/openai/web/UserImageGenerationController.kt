@@ -51,9 +51,13 @@ class UserImageGenerationController(
         logger.info { "Uploaded image for user ${user.id} with UUID: ${uploadedImageDto.uuid}" }
 
         // Generate all 4 images; crop already applied at upload time, so avoid double-cropping here
-        val response = imageGenerationService.generateUserImageWithIds(
-            form.promptId, uploadedImageDto.uuid, user.id, null
-        )
+        val response =
+            imageGenerationService.generateUserImageWithIds(
+                form.promptId,
+                uploadedImageDto.uuid,
+                user.id,
+                null,
+            )
 
         logger.info { "Generated ${response.generatedImageIds.size} images for user ${user.id}" }
 

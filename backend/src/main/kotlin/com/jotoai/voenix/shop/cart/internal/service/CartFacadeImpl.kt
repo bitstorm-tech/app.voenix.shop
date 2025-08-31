@@ -16,7 +16,6 @@ import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.ValidationRequest
 import com.jotoai.voenix.shop.image.api.exceptions.ImageException
-import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -116,7 +115,7 @@ class CartFacadeImpl(
                 // Check if image exists by trying to find it
                 val existingImages = imageService.find(listOf(imageId))
                 if (existingImages.isEmpty()) {
-                    throw ImageNotFoundException("Generated image not found with id: $imageId")
+                    throw ImageException.NotFound(imageId.toString())
                 } else {
                     throw ImageException.AccessDenied(userId, imageId.toString())
                 }
@@ -209,7 +208,7 @@ class CartFacadeImpl(
                 // Check if image exists by trying to find it
                 val existingImages = imageService.find(listOf(imageId))
                 if (existingImages.isEmpty()) {
-                    throw ImageNotFoundException("Generated image not found with id: $imageId")
+                    throw ImageException.NotFound(imageId.toString())
                 } else {
                     throw ImageException.AccessDenied(userId, imageId.toString())
                 }

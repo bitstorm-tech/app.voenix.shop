@@ -4,10 +4,10 @@ import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundExceptio
 import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.exceptions.ImageException
-import com.jotoai.voenix.shop.image.internal.exceptions.InternalImageException
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
+import com.jotoai.voenix.shop.image.internal.exceptions.InternalImageException
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -52,8 +52,10 @@ class FileStorageService(
         return storagePathConfiguration.storageRoot.resolve(pathConfig.relativePath)
     }
 
-    private fun getPhysicalFilePath(imageType: ImageType, filename: String): Path =
-        getPhysicalPath(imageType).resolve(filename)
+    private fun getPhysicalFilePath(
+        imageType: ImageType,
+        filename: String,
+    ): Path = getPhysicalPath(imageType).resolve(filename)
 
     private fun getStorageRoot(): Path = storagePathConfiguration.storageRoot
 
@@ -66,7 +68,7 @@ class FileStorageService(
     private fun getPathConfig(imageType: ImageType) =
         storagePathConfiguration.pathMappings[imageType]
             ?: throw InternalImageException.StorageConfiguration(
-                "No path configuration found for ImageType: $imageType"
+                "No path configuration found for ImageType: $imageType",
             )
 
     fun storeFile(
@@ -79,8 +81,12 @@ class FileStorageService(
         imageValidationService.validateImageFile(file, imageType)
 
         val originalFilename = file.originalFilename ?: "unknown"
-        val fileExtension = if (imageType.requiresWebPConversion()) ".webp" 
-            else originalFilename.substringAfterLast('.', "").let { if (it.isNotEmpty()) ".$it" else "" }
+        val fileExtension =
+            if (imageType.requiresWebPConversion()) {
+                ".webp"
+            } else {
+                originalFilename.substringAfterLast('.', "").let { if (it.isNotEmpty()) ".$it" else "" }
+            }
         // Do not mark cropped files as "original"; keep simple unique name
         val storedFilename = "${UUID.randomUUID()}$fileExtension"
 

@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.image.internal.exception
 
 import com.jotoai.voenix.shop.application.api.dto.ErrorResponse
 import com.jotoai.voenix.shop.image.api.exceptions.ImageException
-import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.internal.exceptions.InternalImageException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.annotation.Order
@@ -17,37 +16,27 @@ import java.time.LocalDateTime
 class ImageExceptionHandler {
     private val log = KotlinLogging.logger {}
 
-    @ExceptionHandler(ImageNotFoundException::class)
-    fun handleImageNotFoundException(ex: ImageNotFoundException): ResponseEntity<ErrorResponse> {
-        log.warn { "Image not found: ${ex.message}" }
-
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
-            ErrorResponse(
-                timestamp = LocalDateTime.now(),
-                status = HttpStatus.NOT_FOUND.value(),
-                error = "Not Found",
-                message = ex.message ?: "Generated image not found",
-                path = ""
-            )
-        )
-    }
-
     @ExceptionHandler(ImageException::class)
     fun handleImageException(ex: ImageException): ResponseEntity<ErrorResponse> {
-        val (status, errorType) = when (ex) {
-            is ImageException.AccessDenied -> {
-                log.warn { "Access denied to image: ${ex.message}" }
-                HttpStatus.FORBIDDEN to "Forbidden"
+        val (status, errorType) =
+            when (ex) {
+                is ImageException.NotFound -> {
+                    log.warn { "Image not found: ${ex.message}" }
+                    HttpStatus.NOT_FOUND to "Not Found"
+                }
+                is ImageException.AccessDenied -> {
+                    log.warn { "Access denied to image: ${ex.message}" }
+                    HttpStatus.FORBIDDEN to "Forbidden"
+                }
+                is ImageException.Processing -> {
+                    log.error(ex) { "Image processing error: ${ex.message}" }
+                    HttpStatus.INTERNAL_SERVER_ERROR to "Processing Error"
+                }
+                is ImageException.Storage -> {
+                    log.error(ex) { "Image storage error: ${ex.message}" }
+                    HttpStatus.INTERNAL_SERVER_ERROR to "Storage Error"
+                }
             }
-            is ImageException.Processing -> {
-                log.error(ex) { "Image processing error: ${ex.message}" }
-                HttpStatus.INTERNAL_SERVER_ERROR to "Processing Error"
-            }
-            is ImageException.Storage -> {
-                log.error(ex) { "Image storage error: ${ex.message}" }
-                HttpStatus.INTERNAL_SERVER_ERROR to "Storage Error"
-            }
-        }
 
         return ResponseEntity.status(status).body(
             ErrorResponse(
@@ -55,23 +44,24 @@ class ImageExceptionHandler {
                 status = status.value(),
                 error = errorType,
                 message = ex.message ?: "Image operation failed",
-                path = ""
-            )
+                path = "",
+            ),
         )
     }
 
     @ExceptionHandler(InternalImageException::class)
     fun handleInternalImageException(ex: InternalImageException): ResponseEntity<ErrorResponse> {
-        val (status, errorType) = when (ex) {
-            is InternalImageException.QuotaExceeded -> {
-                log.warn { "Image quota exceeded: ${ex.message}" }
-                HttpStatus.TOO_MANY_REQUESTS to "Quota Exceeded"
+        val (status, errorType) =
+            when (ex) {
+                is InternalImageException.QuotaExceeded -> {
+                    log.warn { "Image quota exceeded: ${ex.message}" }
+                    HttpStatus.TOO_MANY_REQUESTS to "Quota Exceeded"
+                }
+                is InternalImageException.StorageConfiguration -> {
+                    log.error(ex) { "Storage configuration error: ${ex.message}" }
+                    HttpStatus.SERVICE_UNAVAILABLE to "Configuration Error"
+                }
             }
-            is InternalImageException.StorageConfiguration -> {
-                log.error(ex) { "Storage configuration error: ${ex.message}" }
-                HttpStatus.SERVICE_UNAVAILABLE to "Configuration Error"
-            }
-        }
 
         return ResponseEntity.status(status).body(
             ErrorResponse(
@@ -79,8 +69,8 @@ class ImageExceptionHandler {
                 status = status.value(),
                 error = errorType,
                 message = ex.message ?: "Image service error",
-                path = ""
-            )
+                path = "",
+            ),
         )
     }
 }

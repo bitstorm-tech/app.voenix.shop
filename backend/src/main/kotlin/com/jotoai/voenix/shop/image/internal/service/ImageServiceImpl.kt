@@ -5,13 +5,13 @@ import com.jotoai.voenix.shop.image.api.ImageContent
 import com.jotoai.voenix.shop.image.api.ImageData
 import com.jotoai.voenix.shop.image.api.ImageMetadata
 import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.api.ValidationRequest
 import com.jotoai.voenix.shop.image.api.ValidationResult
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageInfo
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
+import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.io.Resource
@@ -264,7 +264,10 @@ class ImageServiceImpl(
     }
 
     // Private method to get image URL (replaced StoragePathService dependency)
-    private fun getImageUrl(imageType: ImageType, filename: String): String {
+    private fun getImageUrl(
+        imageType: ImageType,
+        filename: String,
+    ): String {
         val urlPath = getUrlPath(imageType)
         return if (urlPath.endsWith("/")) {
             "$urlPath$filename"
@@ -273,8 +276,7 @@ class ImageServiceImpl(
         }
     }
 
-    private fun getUrlPath(imageType: ImageType): String = 
-        getPathConfig(imageType).urlPath
+    private fun getUrlPath(imageType: ImageType): String = getPathConfig(imageType).urlPath
 
     private fun getPathConfig(imageType: ImageType) =
         storagePathConfiguration.pathMappings[imageType]

@@ -5,7 +5,6 @@ import com.jotoai.voenix.shop.image.api.dto.CropArea
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
-import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageException
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
@@ -61,7 +60,7 @@ class ImageOperationsService(
             block()
         } catch (e: Exception) {
             when (e) {
-                is ImageException, is ImageNotFoundException, is ResourceNotFoundException -> throw e
+                is ImageException, is ResourceNotFoundException -> throw e
                 else -> {
                     logger.error(e) { "$operation failed" }
                     throw ImageException.Storage("$operation: ${e.message}", e)
@@ -93,7 +92,7 @@ class ImageOperationsService(
     ): UploadedImageDto {
         val uploadedImage =
             uploadedImageRepository.findByUserIdAndUuid(userId, uuid)
-                ?: throw ImageNotFoundException("Uploaded image with UUID $uuid not found for user $userId")
+                ?: throw ImageException.NotFound("Uploaded image with UUID $uuid not found for user $userId")
 
         return uploadedImage.toDto()
     }

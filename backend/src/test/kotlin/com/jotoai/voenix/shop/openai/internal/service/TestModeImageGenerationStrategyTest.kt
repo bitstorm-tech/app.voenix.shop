@@ -1,11 +1,11 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
+import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
+import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
 import com.jotoai.voenix.shop.openai.api.enums.ImageBackground
 import com.jotoai.voenix.shop.openai.api.enums.ImageQuality
 import com.jotoai.voenix.shop.openai.api.enums.ImageSize
-import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
-import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import io.mockk.every

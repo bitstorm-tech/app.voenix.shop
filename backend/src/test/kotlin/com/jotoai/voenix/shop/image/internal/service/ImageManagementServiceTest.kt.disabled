@@ -3,7 +3,7 @@ package com.jotoai.voenix.shop.image.internal.service
 import com.jotoai.voenix.shop.image.api.ImageStorageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.UpdateGeneratedImageRequest
-import com.jotoai.voenix.shop.image.api.exceptions.ImageNotFoundException
+import com.jotoai.voenix.shop.image.api.exceptions.ImageException
 import com.jotoai.voenix.shop.image.api.exceptions.ImageStorageException
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
@@ -167,10 +167,10 @@ class ImageManagementServiceTest {
         val userId = 1L
         val uuid = UUID.randomUUID()
 
-        whenever(imageService.getUploadedImageByUuid(uuid, userId)).thenThrow(ImageNotFoundException("Image not found"))
+        whenever(imageService.getUploadedImageByUuid(uuid, userId)).thenThrow(ImageException.NotFound("Image not found"))
 
         // When & Then
-        assertThrows<ImageNotFoundException> {
+        assertThrows<ImageException.NotFound> {
             imageFacade.getUploadedImageByUuid(uuid, userId)
         }
     }
@@ -195,10 +195,10 @@ class ImageManagementServiceTest {
         val userId = 1L
         val uuid = UUID.randomUUID()
 
-        whenever(imageService.deleteUploadedImage(uuid, userId)).thenThrow(ImageNotFoundException("Image not found"))
+        whenever(imageService.deleteUploadedImage(uuid, userId)).thenThrow(ImageException.NotFound("Image not found"))
 
         // When & Then
-        assertThrows<ImageNotFoundException> {
+        assertThrows<ImageException.NotFound> {
             imageFacade.deleteUploadedImage(uuid, userId)
         }
     }
@@ -334,10 +334,10 @@ class ImageManagementServiceTest {
         val uuid = UUID.randomUUID()
 
         whenever(imageService.getGeneratedImageByUuid(uuid, userId))
-            .thenThrow(ImageNotFoundException("Image not found"))
+            .thenThrow(ImageException.NotFound("Image not found"))
 
         // When & Then
-        assertThrows<ImageNotFoundException> {
+        assertThrows<ImageException.NotFound> {
             imageFacade.getGeneratedImageByUuid(uuid, userId)
         }
     }
