@@ -8,9 +8,11 @@ import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.api.ValidationRequest
 import com.jotoai.voenix.shop.image.api.ValidationResult
+import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
+import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.io.Resource
 import org.springframework.http.ResponseEntity
@@ -28,7 +30,7 @@ private val logger = KotlinLogging.logger {}
 @Transactional
 class ImageServiceImpl(
     private val imageOperationsService: ImageOperationsService,
-    private val imageQueryServiceImpl: ImageQueryServiceImpl,
+    private val generatedImageRepository: GeneratedImageRepository,
     private val fileStorageService: FileStorageService,
     private val storagePathService: StoragePathService,
 ) : ImageService {
@@ -47,10 +49,22 @@ class ImageServiceImpl(
     override fun find(ids: List<Long>): Map<Long, ImageDto> {
         logger.debug { "Finding images by IDs: $ids" }
 
-        // Cast the GeneratedImageDto to ImageDto since GeneratedImageDto extends ImageDto
-        return imageQueryServiceImpl
-            .findGeneratedImagesByIds(ids)
-            .mapValues { it.value as ImageDto }
+        if (ids.isEmpty()) return emptyMap()
+
+        return generatedImageRepository.findAllById(ids).associateBy(
+            { requireNotNull(it.id) { "GeneratedImage ID cannot be null" } },
+            { generatedImage ->
+                GeneratedImageDto(
+                    filename = generatedImage.filename,
+                    imageType = ImageType.GENERATED,
+                    id = generatedImage.id,
+                    promptId = generatedImage.promptId,
+                    userId = generatedImage.userId,
+                    generatedAt = generatedImage.generatedAt,
+                    ipAddress = generatedImage.ipAddress,
+                ) as ImageDto
+            },
+        )
     }
 
     override fun count(filter: CountFilter): Long {
@@ -109,10 +123,11 @@ class ImageServiceImpl(
                 }
                 is ValidationRequest.Ownership -> {
                     val isValid =
-                        imageQueryServiceImpl.validateGeneratedImageOwnership(
-                            validation.imageId,
-                            validation.userId,
-                        )
+                        if (validation.userId != null) {
+                            generatedImageRepository.existsByIdAndUserId(validation.imageId, validation.userId)
+                        } else {
+                            generatedImageRepository.existsById(validation.imageId)
+                        }
                     ValidationResult(
                         valid = isValid,
                         message = if (!isValid) "Image ownership validation failed" else null,

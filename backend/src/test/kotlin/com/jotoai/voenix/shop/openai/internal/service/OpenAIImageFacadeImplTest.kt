@@ -26,7 +26,6 @@ class OpenAIImageFacadeImplTest {
     private lateinit var imageService: ImageService
     private lateinit var imageGenerationStrategy: ImageGenerationStrategy
     private lateinit var openAIImageFacade: OpenAIImageFacadeImpl
-    private lateinit var openAIImageQueryService: OpenAIImageQueryServiceImpl
     private lateinit var mockImageFile: MultipartFile
 
     @BeforeEach
@@ -34,7 +33,6 @@ class OpenAIImageFacadeImplTest {
         imageService = mockk()
         imageGenerationStrategy = mockk()
         openAIImageFacade = OpenAIImageFacadeImpl(imageService, imageGenerationStrategy)
-        openAIImageQueryService = OpenAIImageQueryServiceImpl()
 
         mockImageFile =
             MockMultipartFile(

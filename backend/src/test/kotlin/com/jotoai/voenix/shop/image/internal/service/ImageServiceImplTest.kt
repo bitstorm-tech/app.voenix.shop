@@ -3,7 +3,6 @@ package com.jotoai.voenix.shop.image.internal.service
 import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.StoragePathService
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
-import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -17,17 +16,18 @@ class ImageServiceImplTest {
     fun `ImageServiceImpl should implement ImageService`() {
         // Given
         val imageOperationsService: ImageOperationsService = mockk()
-        val imageQueryService: ImageQueryServiceImpl = mockk()
+        val generatedImageRepository: GeneratedImageRepository = mockk()
         val fileStorageService: FileStorageService = mockk()
         val storagePathService: StoragePathService = mockk()
-        
+
         // When
-        val service = ImageServiceImpl(
-            imageOperationsService,
-            imageQueryService,
-            fileStorageService,
-            storagePathService,
-        )
+        val service =
+            ImageServiceImpl(
+                imageOperationsService,
+                generatedImageRepository,
+                fileStorageService,
+                storagePathService,
+            )
 
         // Then
         assertNotNull(service)
