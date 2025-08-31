@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.auth.internal.web
 
-import com.jotoai.voenix.shop.auth.api.AuthService
+import com.jotoai.voenix.shop.auth.internal.service.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
 import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest

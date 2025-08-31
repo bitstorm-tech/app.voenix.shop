@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.auth.internal.service
 
 import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
-import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
 import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
@@ -38,7 +37,7 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.context.SecurityContextRepository
 import java.time.OffsetDateTime
 
-class AuthServiceImplTest {
+class AuthServiceTest {
     private lateinit var authService: AuthService
     private lateinit var authenticationManager: AuthenticationManager
     private lateinit var userService: UserService
@@ -63,7 +62,7 @@ class AuthServiceImplTest {
         authentication = mockk()
 
         authService =
-            AuthServiceImpl(
+            AuthService(
                 authenticationManager = authenticationManager,
                 userService = userService,
                 securityContextRepository = securityContextRepository,

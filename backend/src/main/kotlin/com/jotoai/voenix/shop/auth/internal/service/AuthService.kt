@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.auth.internal.service
 
 import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
-import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.LoginRequest
 import com.jotoai.voenix.shop.auth.api.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
@@ -29,14 +28,14 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
 @Service
-class AuthServiceImpl(
+class AuthService(
     private val authenticationManager: AuthenticationManager,
     private val userService: UserService,
     private val securityContextRepository: SecurityContextRepository,
     private val passwordEncoder: PasswordEncoder,
-) : AuthService {
+) {
     @Transactional
-    override fun login(
+    fun login(
         loginRequest: LoginRequest,
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -69,7 +68,7 @@ class AuthServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getCurrentSession(): SessionInfo {
+    fun getCurrentSession(): SessionInfo {
         val authentication = SecurityContextHolder.getContext().authentication
         if (authentication == null || !authentication.isAuthenticated || authentication.principal is String) {
             return SessionInfo(authenticated = false)
@@ -95,7 +94,7 @@ class AuthServiceImpl(
     }
 
     @Transactional
-    override fun register(
+    fun register(
         registerRequest: RegisterRequest,
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -121,7 +120,7 @@ class AuthServiceImpl(
     }
 
     @Transactional
-    override fun registerGuest(
+    fun registerGuest(
         registerGuestRequest: RegisterGuestRequest,
         request: HttpServletRequest,
         response: HttpServletResponse,
