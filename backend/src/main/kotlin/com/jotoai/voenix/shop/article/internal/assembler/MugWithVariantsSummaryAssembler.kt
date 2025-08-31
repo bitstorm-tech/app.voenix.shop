@@ -4,7 +4,7 @@ import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantSummaryDto
 import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
-import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.springframework.stereotype.Component
 
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
  */
 @Component
 class MugWithVariantsSummaryAssembler(
-    private val storagePathService: StoragePathService,
+    private val imageService: ImageService,
 ) {
     /**
      * Converts an Article entity with mug variants to its summary DTO representation.
@@ -39,7 +39,7 @@ class MugWithVariantsSummaryAssembler(
             articleVariantNumber = entity.articleVariantNumber,
             exampleImageUrl =
                 entity.exampleImageFilename?.let { filename ->
-                    storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
+                    imageService.getUrl(filename, ImageType.MUG_VARIANT_EXAMPLE)
                 },
             active = entity.active,
         )

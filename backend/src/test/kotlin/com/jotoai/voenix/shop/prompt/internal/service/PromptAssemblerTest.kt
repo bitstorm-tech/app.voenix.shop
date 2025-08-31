@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
-import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptSlotDto
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.PromptSlotVariantDto
@@ -24,7 +24,7 @@ import java.time.OffsetDateTime
 
 class PromptAssemblerTest {
     private lateinit var promptSlotVariantAssembler: PromptSlotVariantAssembler
-    private lateinit var storagePathService: StoragePathService
+    private lateinit var imageService: ImageService
     private lateinit var assembler: PromptAssembler
 
     private lateinit var testCategory: PromptCategory
@@ -35,8 +35,8 @@ class PromptAssemblerTest {
     @BeforeEach
     fun setUp() {
         promptSlotVariantAssembler = mockk()
-        storagePathService = mockk()
-        assembler = PromptAssembler(promptSlotVariantAssembler, storagePathService)
+        imageService = mockk()
+        assembler = PromptAssembler(promptSlotVariantAssembler, imageService)
 
         // Setup test data
         testCategory =
@@ -168,7 +168,7 @@ class PromptAssemblerTest {
         assertEquals(false, result.active)
         assertNull(result.exampleImageUrl)
 
-        verify(exactly = 0) { storagePathService.getImageUrl(any(), any()) }
+        verify(exactly = 0) { imageService.getUrl(any(), any()) }
     }
 
     @Test
@@ -271,9 +271,9 @@ class PromptAssemblerTest {
             )
 
         every {
-            storagePathService.getImageUrl(
-                ImageType.PROMPT_EXAMPLE,
+            imageService.getUrl(
                 exampleImageFilename,
+                ImageType.PROMPT_EXAMPLE,
             )
         } returns expectedImageUrl
         every { promptSlotVariantAssembler.toPublicDto(testSlotVariant) } returns expectedPublicSlotDto
@@ -294,7 +294,7 @@ class PromptAssemblerTest {
         assertEquals(1, result.slots.size)
         assertEquals(expectedPublicSlotDto, result.slots[0])
 
-        verify { storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename) }
+        verify { imageService.getUrl(exampleImageFilename, ImageType.PROMPT_EXAMPLE) }
         verify { promptSlotVariantAssembler.toPublicDto(testSlotVariant) }
     }
 
@@ -342,7 +342,7 @@ class PromptAssemblerTest {
         assertNull(result.exampleImageUrl)
         assertNotNull(result.category)
 
-        verify(exactly = 0) { storagePathService.getImageUrl(any(), any()) }
+        verify(exactly = 0) { imageService.getUrl(any(), any()) }
     }
 
     @Test
@@ -401,7 +401,7 @@ class PromptAssemblerTest {
                 exampleImageFilename = filename,
             )
 
-        every { storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, filename) } returns expectedUrl
+        every { imageService.getUrl(filename, ImageType.PROMPT_EXAMPLE) } returns expectedUrl
 
         // When
         val dtoResult = assembler.toDto(entity)
@@ -410,7 +410,7 @@ class PromptAssemblerTest {
         // Then
         assertEquals(expectedUrl, dtoResult.exampleImageUrl)
         assertEquals(expectedUrl, publicDtoResult.exampleImageUrl)
-        verify(exactly = 2) { storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, filename) }
+        verify(exactly = 2) { imageService.getUrl(filename, ImageType.PROMPT_EXAMPLE) }
     }
 
     @Test
@@ -467,7 +467,7 @@ class PromptAssemblerTest {
             )
 
         val expectedUrl = "https://example.com/complex.webp"
-        every { storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, "complex.webp") } returns expectedUrl
+        every { imageService.getUrl("complex.webp", ImageType.PROMPT_EXAMPLE) } returns expectedUrl
 
         // When
         val dtoResult = assembler.toDto(entity)
@@ -530,9 +530,9 @@ class PromptAssemblerTest {
         expectedSlotDto: PromptSlotVariantDto,
     ) {
         every {
-            storagePathService.getImageUrl(
-                ImageType.PROMPT_EXAMPLE,
+            imageService.getUrl(
                 exampleImageFilename,
+                ImageType.PROMPT_EXAMPLE,
             )
         } returns expectedImageUrl
         every { promptSlotVariantAssembler.toDto(testSlotVariant) } returns expectedSlotDto
@@ -565,7 +565,7 @@ class PromptAssemblerTest {
     }
 
     private fun verifyPromptTestInteractions(exampleImageFilename: String) {
-        verify { storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, exampleImageFilename) }
+        verify { imageService.getUrl(exampleImageFilename, ImageType.PROMPT_EXAMPLE) }
         verify { promptSlotVariantAssembler.toDto(testSlotVariant) }
     }
 

@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.article.internal.assembler
 
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
-import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.springframework.stereotype.Component
 
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
  */
 @Component
 class MugArticleVariantAssembler(
-    private val storagePathService: StoragePathService,
+    private val imageService: ImageService,
 ) {
     /**
      * Converts a MugArticleVariant entity to its DTO representation.
@@ -30,7 +30,7 @@ class MugArticleVariantAssembler(
             name = entity.name,
             exampleImageUrl =
                 entity.exampleImageFilename?.let { filename ->
-                    storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
+                    imageService.getUrl(filename, ImageType.MUG_VARIANT_EXAMPLE)
                 },
             articleVariantNumber = entity.articleVariantNumber,
             isDefault = entity.isDefault,

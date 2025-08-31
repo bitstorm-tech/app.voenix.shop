@@ -5,7 +5,7 @@ import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssemb
 import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
-import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import io.mockk.every
 import io.mockk.mockk
@@ -18,7 +18,7 @@ import org.junit.jupiter.api.assertThrows
 import java.time.OffsetDateTime
 
 class MugArticleVariantAssemblerTest {
-    private lateinit var storagePathService: StoragePathService
+    private lateinit var imageService: ImageService
     private lateinit var assembler: MugArticleVariantAssembler
 
     private lateinit var testArticle: Article
@@ -26,8 +26,8 @@ class MugArticleVariantAssemblerTest {
 
     @BeforeEach
     fun setUp() {
-        storagePathService = mockk()
-        assembler = MugArticleVariantAssembler(storagePathService)
+        imageService = mockk()
+        assembler = MugArticleVariantAssembler(imageService)
 
         // Setup test data
         testCategory =
@@ -74,9 +74,9 @@ class MugArticleVariantAssemblerTest {
             )
 
         every {
-            storagePathService.getImageUrl(
-                ImageType.MUG_VARIANT_EXAMPLE,
+            imageService.getUrl(
                 exampleImageFilename,
+                ImageType.MUG_VARIANT_EXAMPLE,
             )
         } returns expectedImageUrl
 
@@ -95,7 +95,7 @@ class MugArticleVariantAssemblerTest {
         assertEquals(createdAt, result.createdAt)
         assertEquals(updatedAt, result.updatedAt)
 
-        verify { storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, exampleImageFilename) }
+        verify { imageService.getUrl(exampleImageFilename, ImageType.MUG_VARIANT_EXAMPLE) }
     }
 
     @Test
@@ -126,8 +126,8 @@ class MugArticleVariantAssemblerTest {
         assertEquals("RWM-002", result.articleVariantNumber)
         assertEquals(false, result.isDefault)
 
-        // Verify StoragePathService has no interactions when filename is null
-        verify(exactly = 0) { storagePathService.getImageUrl(any(), any()) }
+        // Verify ImageService has no interactions when filename is null
+        verify(exactly = 0) { imageService.getUrl(any(), any()) }
     }
 
     @Test
@@ -147,9 +147,9 @@ class MugArticleVariantAssemblerTest {
 
         val expectedImageUrl = "https://example.com/images/mug-variants/green-mug.jpg"
         every {
-            storagePathService.getImageUrl(
-                ImageType.MUG_VARIANT_EXAMPLE,
+            imageService.getUrl(
                 "green-mug.jpg",
+                ImageType.MUG_VARIANT_EXAMPLE,
             )
         } returns expectedImageUrl
 
@@ -229,9 +229,9 @@ class MugArticleVariantAssemblerTest {
 
         val expectedUrl = "https://storage.example.com/mug-variants/custom-mug-variant.png"
         every {
-            storagePathService.getImageUrl(
-                ImageType.MUG_VARIANT_EXAMPLE,
+            imageService.getUrl(
                 filename,
+                ImageType.MUG_VARIANT_EXAMPLE,
             )
         } returns expectedUrl
 
@@ -240,7 +240,7 @@ class MugArticleVariantAssemblerTest {
 
         // Then
         assertEquals(expectedUrl, result.exampleImageUrl)
-        verify { storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename) }
+        verify { imageService.getUrl(filename, ImageType.MUG_VARIANT_EXAMPLE) }
     }
 
     @Test

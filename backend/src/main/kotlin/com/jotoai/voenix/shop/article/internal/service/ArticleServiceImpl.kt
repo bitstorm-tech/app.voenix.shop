@@ -516,7 +516,7 @@ class ArticleServiceImpl(
                         name = variant.name,
                         exampleImageUrl =
                             variant.exampleImageFilename?.let { filename ->
-                                dependencies.storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
+                                dependencies.imageService.getUrl(filename, ImageType.MUG_VARIANT_EXAMPLE)
                             },
                         articleVariantNumber = variant.articleVariantNumber,
                         isDefault = variant.isDefault,
@@ -535,7 +535,7 @@ class ArticleServiceImpl(
                     price = price,
                     image =
                         defaultVariant?.exampleImageFilename?.let { filename ->
-                            dependencies.storagePathService.getImageUrl(ImageType.MUG_VARIANT_EXAMPLE, filename)
+                            dependencies.imageService.getUrl(filename, ImageType.MUG_VARIANT_EXAMPLE)
                         },
                     fillingQuantity = it.fillingQuantity,
                     descriptionShort = article.descriptionShort,

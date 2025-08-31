@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.article.internal.assembler
 
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
-import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import org.springframework.stereotype.Component
 
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
  */
 @Component
 class ShirtArticleVariantAssembler(
-    private val storagePathService: StoragePathService,
+    private val imageService: ImageService,
 ) {
     /**
      * Converts a ShirtArticleVariant entity to its DTO representation.
@@ -29,7 +29,7 @@ class ShirtArticleVariantAssembler(
             size = entity.size,
             exampleImageUrl =
                 entity.exampleImageFilename?.let { filename ->
-                    storagePathService.getImageUrl(ImageType.SHIRT_VARIANT_EXAMPLE, filename)
+                    imageService.getUrl(filename, ImageType.SHIRT_VARIANT_EXAMPLE)
                 },
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,

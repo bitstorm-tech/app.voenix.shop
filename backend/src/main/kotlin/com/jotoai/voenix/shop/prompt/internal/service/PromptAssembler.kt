@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
-import com.jotoai.voenix.shop.image.api.StoragePathService
+import com.jotoai.voenix.shop.image.api.ImageService
 import com.jotoai.voenix.shop.image.api.dto.ImageType
 import com.jotoai.voenix.shop.prompt.api.dto.categories.PromptCategoryDto
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component
 @Component
 class PromptAssembler(
     private val promptSlotVariantAssembler: PromptSlotVariantAssembler,
-    private val storagePathService: StoragePathService,
+    private val imageService: ImageService,
 ) {
     /**
      * Converts a Prompt entity to its DTO representation.
@@ -67,7 +67,7 @@ class PromptAssembler(
                 },
             exampleImageUrl =
                 entity.exampleImageFilename?.let { filename ->
-                    storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, filename)
+                    imageService.getUrl(filename, ImageType.PROMPT_EXAMPLE)
                 },
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,
@@ -86,7 +86,7 @@ class PromptAssembler(
             title = entity.title,
             exampleImageUrl =
                 entity.exampleImageFilename?.let { filename ->
-                    storagePathService.getImageUrl(ImageType.PROMPT_EXAMPLE, filename)
+                    imageService.getUrl(filename, ImageType.PROMPT_EXAMPLE)
                 },
             category =
                 entity.category?.let {

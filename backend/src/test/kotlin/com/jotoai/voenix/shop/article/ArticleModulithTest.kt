@@ -40,7 +40,7 @@ class ArticleModulithTest {
             val message = e.message ?: ""
             // Known issue: article -> image -> domain -> article cycle
             // This is caused by:
-            // 1. Article module needs StoragePathService from image module to generate image URLs
+            // 1. Article module needs ImageService from image module to generate image URLs
             // 2. Image module depends on OpenAI services in domain module
             // 3. Domain module (cart/order) depends on ArticleQueryService
             // Follow-up: Move OpenAI services to image module or create a separate openai module
