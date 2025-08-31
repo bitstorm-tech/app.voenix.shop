@@ -24,7 +24,6 @@
  * - user::api: User context for admin operations
  */
 @org.springframework.modulith.ApplicationModule(
-    displayName = "Article Management",
-    allowedDependencies = {"application", "vat::api", "supplier::api", "user::api"}
+    displayName = "Article Management"
 )
 package com.jotoai.voenix.shop.article;

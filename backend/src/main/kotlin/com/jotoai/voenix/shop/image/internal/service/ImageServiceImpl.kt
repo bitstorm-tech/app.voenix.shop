@@ -1,16 +1,16 @@
 package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.image.CountFilter
+import com.jotoai.voenix.shop.image.GeneratedImageDto
 import com.jotoai.voenix.shop.image.ImageContent
 import com.jotoai.voenix.shop.image.ImageData
+import com.jotoai.voenix.shop.image.ImageInfo
 import com.jotoai.voenix.shop.image.ImageMetadata
 import com.jotoai.voenix.shop.image.ImageService
-import com.jotoai.voenix.shop.image.ValidationRequest
-import com.jotoai.voenix.shop.image.ValidationResult
-import com.jotoai.voenix.shop.image.GeneratedImageDto
-import com.jotoai.voenix.shop.image.ImageInfo
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.UploadedImageDto
+import com.jotoai.voenix.shop.image.ValidationRequest
+import com.jotoai.voenix.shop.image.ValidationResult
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging

@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.application
 
+import com.jotoai.voenix.shop.application.BadRequestException
 import com.jotoai.voenix.shop.application.ErrorResponse
 import com.jotoai.voenix.shop.application.PaginatedResponse
-import com.jotoai.voenix.shop.application.BadRequestException
 import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import org.junit.jupiter.api.Test

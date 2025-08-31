@@ -1,15 +1,14 @@
 package com.jotoai.voenix.shop.order.internal.service
 
-import com.jotoai.voenix.shop.application.PaginatedResponse
 import com.jotoai.voenix.shop.application.BadRequestException
+import com.jotoai.voenix.shop.application.PaginatedResponse
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
-import com.jotoai.voenix.shop.cart.api.CartFacade
-import com.jotoai.voenix.shop.cart.api.CartQueryService
+import com.jotoai.voenix.shop.cart.api.CartService
 import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
-import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.GeneratedImageDto
+import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.order.api.OrderService
 import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
@@ -36,8 +35,7 @@ import java.util.UUID
 @Suppress("LongParameterList", "TooManyFunctions")
 class OrderServiceImpl(
     private val orderRepository: OrderRepository,
-    private val cartQueryService: CartQueryService,
-    private val cartFacade: CartFacade,
+    private val cartService: CartService,
     private val userService: UserService,
     private val articleQueryService: ArticleQueryService,
     private val imageService: ImageService,
@@ -63,7 +61,7 @@ class OrderServiceImpl(
         createOrderItems(refreshedCart, order)
 
         val savedOrder = saveAndRefreshOrder(order)
-        cartFacade.markCartAsConverted(refreshedCart.id)
+        cartService.markCartAsConverted(refreshedCart.id)
 
         logOrderCreation(userId, refreshedCart, savedOrder, orderTotals.totalAmount)
 
@@ -72,12 +70,12 @@ class OrderServiceImpl(
 
     private fun validateAndRefreshCart(userId: Long): CartOrderInfo {
         val cartInfo =
-            cartQueryService.getActiveCartForOrder(userId)
+            cartService.getActiveCartForOrder(userId)
                 ?: throw BadRequestException("No active cart found for user: $userId")
 
         validateCartForOrder(cartInfo)
 
-        return cartFacade.refreshCartPricesForOrder(cartInfo.id)
+        return cartService.refreshCartPricesForOrder(cartInfo.id)
     }
 
     private fun validateCartForOrder(cartInfo: CartOrderInfo) {

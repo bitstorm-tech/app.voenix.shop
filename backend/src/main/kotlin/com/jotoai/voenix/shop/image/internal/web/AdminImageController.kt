@@ -2,9 +2,9 @@ package com.jotoai.voenix.shop.image.internal.web
 
 import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.image.ImageData
+import com.jotoai.voenix.shop.image.ImageInfo
 import com.jotoai.voenix.shop.image.ImageMetadata
 import com.jotoai.voenix.shop.image.ImageService
-import com.jotoai.voenix.shop.image.ImageInfo
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.user.api.UserService
 import org.springframework.http.MediaType

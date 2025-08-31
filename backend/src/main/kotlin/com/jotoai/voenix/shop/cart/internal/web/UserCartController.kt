@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.cart.internal.web
 
-import com.jotoai.voenix.shop.cart.internal.service.CartFacadeImpl
+import com.jotoai.voenix.shop.cart.api.CartService
 import com.jotoai.voenix.shop.cart.api.dto.AddToCartRequest
 import com.jotoai.voenix.shop.cart.api.dto.CartDto
 import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/user/cart")
 @PreAuthorize("hasRole('USER')")
 class UserCartController(
-    private val cartFacade: CartFacadeImpl,
+    private val cartService: CartService,
     private val userService: UserService,
 ) {
     /**
@@ -36,7 +36,7 @@ class UserCartController(
         @AuthenticationPrincipal userDetails: UserDetails,
     ): CartDto {
         val userId = getCurrentUserId(userDetails)
-        return cartFacade.getOrCreateActiveCart(userId)
+        return cartService.getOrCreateActiveCart(userId)
     }
 
     /**
@@ -47,7 +47,7 @@ class UserCartController(
         @AuthenticationPrincipal userDetails: UserDetails,
     ): CartSummaryDto {
         val userId = getCurrentUserId(userDetails)
-        return cartFacade.getCartSummary(userId)
+        return cartService.getCartSummary(userId)
     }
 
     /**
@@ -60,7 +60,7 @@ class UserCartController(
         @Valid @RequestBody request: AddToCartRequest,
     ): CartDto {
         val userId = getCurrentUserId(userDetails)
-        return cartFacade.addToCart(userId, request)
+        return cartService.addToCart(userId, request)
     }
 
     /**
@@ -73,7 +73,7 @@ class UserCartController(
         @Valid @RequestBody request: UpdateCartItemRequest,
     ): CartDto {
         val userId = getCurrentUserId(userDetails)
-        return cartFacade.updateCartItem(userId, itemId, request)
+        return cartService.updateCartItem(userId, itemId, request)
     }
 
     /**
@@ -85,7 +85,7 @@ class UserCartController(
         @PathVariable itemId: Long,
     ): CartDto {
         val userId = getCurrentUserId(userDetails)
-        return cartFacade.removeFromCart(userId, itemId)
+        return cartService.removeFromCart(userId, itemId)
     }
 
     /**
@@ -96,7 +96,7 @@ class UserCartController(
         @AuthenticationPrincipal userDetails: UserDetails,
     ): CartDto {
         val userId = getCurrentUserId(userDetails)
-        return cartFacade.clearCart(userId)
+        return cartService.clearCart(userId)
     }
 
     /**
@@ -107,7 +107,7 @@ class UserCartController(
         @AuthenticationPrincipal userDetails: UserDetails,
     ): CartDto {
         val userId = getCurrentUserId(userDetails)
-        return cartFacade.refreshCartPrices(userId)
+        return cartService.refreshCartPrices(userId)
     }
 
     private fun getCurrentUserId(userDetails: UserDetails): Long {

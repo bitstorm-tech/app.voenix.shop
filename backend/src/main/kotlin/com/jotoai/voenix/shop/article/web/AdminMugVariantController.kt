@@ -7,10 +7,10 @@ import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
 import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
 import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
 import com.jotoai.voenix.shop.article.web.dto.MugVariantImageUploadRequest
+import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.image.ImageData
 import com.jotoai.voenix.shop.image.ImageMetadata
 import com.jotoai.voenix.shop.image.ImageService
-import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.image.ImageType
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.validation.Valid

@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.application.internal.exception
 
-import com.jotoai.voenix.shop.application.ErrorResponse
 import com.jotoai.voenix.shop.application.BadRequestException
+import com.jotoai.voenix.shop.application.ErrorResponse
 import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import io.github.oshai.kotlinlogging.KotlinLogging

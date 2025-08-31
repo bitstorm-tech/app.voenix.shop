@@ -3,9 +3,9 @@ package com.jotoai.voenix.shop.image.internal.service
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.image.GeneratedImageDto
+import com.jotoai.voenix.shop.image.ImageException
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.UploadedImageDto
-import com.jotoai.voenix.shop.image.ImageException
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository

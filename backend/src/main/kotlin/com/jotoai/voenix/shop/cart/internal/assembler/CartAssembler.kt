@@ -8,8 +8,8 @@ import com.jotoai.voenix.shop.cart.api.dto.CartItemDto
 import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.entity.CartItem
-import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.GeneratedImageDto
+import com.jotoai.voenix.shop.image.ImageService
 import org.springframework.stereotype.Component
 
 @Component
