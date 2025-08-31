@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.auth.internal.exceptions
+package com.jotoai.voenix.shop.auth.internal.exception
 
 /**
  * Exception thrown when login credentials are invalid.

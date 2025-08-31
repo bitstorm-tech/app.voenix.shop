@@ -9,7 +9,7 @@ import com.jotoai.voenix.shop.auth.api.dto.RegisterGuestRequest
 import com.jotoai.voenix.shop.auth.api.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.api.dto.SessionInfo
 import com.jotoai.voenix.shop.auth.internal.dto.UserCreationRequest
-import com.jotoai.voenix.shop.auth.internal.exceptions.InvalidCredentialsException
+import com.jotoai.voenix.shop.auth.internal.exception.InvalidCredentialsException
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.user.api.UserService
 import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
