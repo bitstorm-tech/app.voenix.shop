@@ -2,12 +2,12 @@ package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.CropArea
-import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.ImageException
+import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
 import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
-import com.jotoai.voenix.shop.image.internal.exceptions.InternalImageException
+import com.jotoai.voenix.shop.image.internal.exception.InternalImageException
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -305,15 +305,6 @@ class FileStorageService(
         val bytes = readFile(filePath)
         val contentType = probeContentType(filePath, "image/png")
         return Pair(bytes, contentType)
-    }
-
-    fun deleteUserImage(
-        filename: String,
-        userId: Long,
-    ): Boolean {
-        val userStorageDir = getUserStorageDirectory(userId)
-        val filePath = userStorageDir.resolve(filename)
-        return deleteFile(filePath)
     }
 
     private fun ensureDirectoryExists(directoryPath: Path) {

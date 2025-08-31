@@ -12,7 +12,7 @@ import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.article.internal.service.MugDetailsService
 import com.jotoai.voenix.shop.article.internal.service.MugVariantServiceImpl
-import com.jotoai.voenix.shop.image.api.ImageService
+import com.jotoai.voenix.shop.image.ImageService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot

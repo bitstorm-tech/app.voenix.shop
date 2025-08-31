@@ -11,7 +11,7 @@ import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
-import com.jotoai.voenix.shop.image.api.ImageService
+import com.jotoai.voenix.shop.image.ImageService
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just

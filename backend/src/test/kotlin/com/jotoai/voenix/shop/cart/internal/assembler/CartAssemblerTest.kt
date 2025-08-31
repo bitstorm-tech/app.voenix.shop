@@ -9,9 +9,9 @@ import com.jotoai.voenix.shop.cart.api.dto.CartItemDto
 import com.jotoai.voenix.shop.cart.api.enums.CartStatus
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.entity.CartItem
-import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
-import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.ImageService
+import com.jotoai.voenix.shop.image.GeneratedImageDto
+import com.jotoai.voenix.shop.image.ImageType
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals

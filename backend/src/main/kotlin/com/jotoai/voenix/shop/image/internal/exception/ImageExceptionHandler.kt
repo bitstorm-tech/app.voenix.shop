@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.image.internal.exception
 
 import com.jotoai.voenix.shop.application.api.dto.ErrorResponse
 import com.jotoai.voenix.shop.image.ImageException
-import com.jotoai.voenix.shop.image.internal.exceptions.InternalImageException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpStatus

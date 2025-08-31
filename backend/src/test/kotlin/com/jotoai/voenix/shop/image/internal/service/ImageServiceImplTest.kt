@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageService
+import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
 import io.mockk.mockk

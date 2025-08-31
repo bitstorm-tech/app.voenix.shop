@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.dto.UploadedImageDto
+import com.jotoai.voenix.shop.image.ImageService
+import com.jotoai.voenix.shop.image.ImageType
+import com.jotoai.voenix.shop.image.UploadedImageDto
 import com.jotoai.voenix.shop.openai.api.ImageGenerationStrategy
 import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
 import com.jotoai.voenix.shop.openai.api.dto.ImageEditBytesResponse

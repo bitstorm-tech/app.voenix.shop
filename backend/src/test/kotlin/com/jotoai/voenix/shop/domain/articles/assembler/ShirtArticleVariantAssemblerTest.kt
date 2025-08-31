@@ -5,8 +5,8 @@ import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAsse
 import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
-import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.ImageService
+import com.jotoai.voenix.shop.image.ImageType
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.image.internal.exceptions
+package com.jotoai.voenix.shop.image.internal.exception
 
 /**
  * Internal exceptions for the image module that are not part of the public API.

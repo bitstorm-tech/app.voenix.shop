@@ -3,15 +3,15 @@ package com.jotoai.voenix.shop.openai.internal.service
 import com.jotoai.voenix.shop.application.api.exception.BadRequestException
 import com.jotoai.voenix.shop.application.api.exception.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.CountFilter
-import com.jotoai.voenix.shop.image.ImageData
-import com.jotoai.voenix.shop.image.ImageMetadata
-import com.jotoai.voenix.shop.image.ImageService
-import com.jotoai.voenix.shop.image.ValidationRequest
 import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.image.GeneratedImageDto
+import com.jotoai.voenix.shop.image.ImageData
+import com.jotoai.voenix.shop.image.ImageException
+import com.jotoai.voenix.shop.image.ImageMetadata
+import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.UploadedImageDto
-import com.jotoai.voenix.shop.image.ImageException
+import com.jotoai.voenix.shop.image.ValidationRequest
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
 import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
 import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
@@ -51,6 +51,7 @@ class ImageGenerationFacadeImpl(
     ): ImageGenerationResponse {
         logger.info { "Generating image: public, prompt=${request.promptId}" }
 
+        // TODO: the Processing exception should thrown by the imageService
         val validation = imageService.validate(ValidationRequest.FileUpload(imageFile))
         if (!validation.valid) {
             throw ImageException.Processing(validation.message ?: "Image validation failed")
@@ -69,7 +70,6 @@ class ImageGenerationFacadeImpl(
                 imageFile,
                 request.promptId,
                 ipAddress,
-                request.cropArea,
             )
         } catch (e: ImageException.Storage) {
             handleSystemError(e, "public image generation")
@@ -114,7 +114,6 @@ class ImageGenerationFacadeImpl(
                 promptId,
                 userId,
                 null,
-                cropArea,
             )
         } catch (e: ImageException.Storage) {
             handleSystemError(e, "user image generation")
@@ -158,13 +157,11 @@ class ImageGenerationFacadeImpl(
         }
     }
 
-    @Suppress("UnusedParameter")
     private fun processImageGeneration(
         uploadedImageUuid: UUID,
         promptId: Long,
         userId: Long,
         ipAddress: String?,
-        cropArea: CropArea?,
     ): ImageGenerationResponse {
         val uploadedImage = imageService.getUploadedImageByUuid(uploadedImageUuid, userId) as UploadedImageDto
 
@@ -207,12 +204,10 @@ class ImageGenerationFacadeImpl(
         )
     }
 
-    @Suppress("UnusedParameter")
     private fun processPublicImageGeneration(
         imageFile: MultipartFile,
         promptId: Long,
         ipAddress: String,
-        cropArea: CropArea?,
     ): ImageGenerationResponse {
         val originalBytes = imageFile.bytes
         val imageBytes = originalBytes

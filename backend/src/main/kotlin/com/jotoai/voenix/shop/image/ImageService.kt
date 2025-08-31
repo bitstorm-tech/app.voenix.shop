@@ -88,6 +88,7 @@ interface ImageService {
 
     /**
      * Validates image data or operations.
+     * TODO: validation should not be done by other packages, this should be internal
      *
      * @param validation The validation request to perform
      * @return Validation result with success status and optional message

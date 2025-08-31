@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
-import com.jotoai.voenix.shop.image.api.ImageService
-import com.jotoai.voenix.shop.image.api.dto.ImageType
+import com.jotoai.voenix.shop.image.ImageService
+import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
 import io.mockk.every
