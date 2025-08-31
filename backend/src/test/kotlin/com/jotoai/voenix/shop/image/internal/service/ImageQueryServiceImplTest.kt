@@ -2,11 +2,8 @@ package com.jotoai.voenix.shop.image.internal.service
 
 import com.jotoai.voenix.shop.image.api.dto.GeneratedImageDto
 import com.jotoai.voenix.shop.image.api.dto.ImageType
-import com.jotoai.voenix.shop.image.api.dto.SimpleImageDto
 import com.jotoai.voenix.shop.image.internal.entity.GeneratedImage
-import com.jotoai.voenix.shop.image.internal.entity.UploadedImage
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
-import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import io.mockk.every
 import io.mockk.mockk
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -17,220 +14,20 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.LocalDateTime
-import java.util.Optional
 import java.util.UUID
 
 class ImageQueryServiceImplTest {
     private lateinit var generatedImageRepository: GeneratedImageRepository
-    private lateinit var uploadedImageRepository: UploadedImageRepository
     private lateinit var imageQueryService: ImageQueryServiceImpl
 
     @BeforeEach
     fun setUp() {
         generatedImageRepository = mockk()
-        uploadedImageRepository = mockk()
 
         imageQueryService =
             ImageQueryServiceImpl(
-                uploadedImageRepository = uploadedImageRepository,
                 generatedImageRepository = generatedImageRepository,
             )
-    }
-
-    // Note: findImageByFilename is no longer part of the ImageQueryService API; tests removed.
-
-    // FIND UPLOADED IMAGE BY UUID TESTS
-
-    @Test
-    fun `findUploadedImageByUuid should return SimpleImageDto when uploaded image found`() {
-        // Given
-        val uuid = UUID.randomUUID()
-        val storedFilename = "uploaded-image.jpg"
-        val uploadedImage = createUploadedImage(UploadedImageParams(uuid = uuid, storedFilename = storedFilename))
-
-        every { uploadedImageRepository.findByUuid(uuid) } returns uploadedImage
-
-        // When
-        val result = imageQueryService.findUploadedImageByUuid(uuid)
-
-        // Then
-        assertNotNull(result)
-        assertEquals(storedFilename, result!!.filename)
-        assertEquals(ImageType.PRIVATE, result.imageType)
-        assertTrue(result is SimpleImageDto)
-    }
-
-    @Test
-    fun `findUploadedImageByUuid should return null when uploaded image not found`() {
-        // Given
-        val uuid = UUID.randomUUID()
-
-        every { uploadedImageRepository.findByUuid(uuid) } returns null
-
-        // When
-        val result = imageQueryService.findUploadedImageByUuid(uuid)
-
-        // Then
-        assertNull(result)
-    }
-
-    // FIND UPLOADED IMAGES BY USER ID TESTS
-
-    @Test
-    fun `findUploadedImagesByUserId should return list of SimpleImageDto when images found`() {
-        // Given
-        val userId = 1L
-        val uploadedImages =
-            listOf(
-                createUploadedImage(UploadedImageParams(storedFilename = "image1.jpg", userId = userId)),
-                createUploadedImage(UploadedImageParams(storedFilename = "image2.jpg", userId = userId)),
-                createUploadedImage(UploadedImageParams(storedFilename = "image3.png", userId = userId)),
-            )
-
-        every { uploadedImageRepository.findAllByUserId(userId) } returns uploadedImages
-
-        // When
-        val result = imageQueryService.findUploadedImagesByUserId(userId)
-
-        // Then
-        assertEquals(3, result.size)
-        assertEquals("image1.jpg", result[0].filename)
-        assertEquals("image2.jpg", result[1].filename)
-        assertEquals("image3.png", result[2].filename)
-        result.forEach {
-            assertEquals(ImageType.PRIVATE, it.imageType)
-            assertTrue(it is SimpleImageDto)
-        }
-    }
-
-    @Test
-    fun `findUploadedImagesByUserId should return empty list when no images found`() {
-        // Given
-        val userId = 1L
-
-        every { uploadedImageRepository.findAllByUserId(userId) } returns emptyList()
-
-        // When
-        val result = imageQueryService.findUploadedImagesByUserId(userId)
-
-        // Then
-        assertEquals(0, result.size)
-    }
-
-    @Test
-    fun `findUploadedImagesByUserId should handle different users correctly`() {
-        // Given
-        val userId1 = 1L
-        val userId2 = 2L
-        val user1Images =
-            listOf(
-                createUploadedImage(
-                    UploadedImageParams(
-                        storedFilename = "user1-image.jpg",
-                        userId = userId1,
-                    ),
-                ),
-            )
-        val user2Images =
-            listOf(
-                createUploadedImage(UploadedImageParams(storedFilename = "user2-image1.jpg", userId = userId2)),
-                createUploadedImage(UploadedImageParams(storedFilename = "user2-image2.jpg", userId = userId2)),
-            )
-
-        every { uploadedImageRepository.findAllByUserId(userId1) } returns user1Images
-        every { uploadedImageRepository.findAllByUserId(userId2) } returns user2Images
-
-        // When
-        val result1 = imageQueryService.findUploadedImagesByUserId(userId1)
-        val result2 = imageQueryService.findUploadedImagesByUserId(userId2)
-
-        // Then
-        assertEquals(1, result1.size)
-        assertEquals("user1-image.jpg", result1[0].filename)
-
-        assertEquals(2, result2.size)
-        assertEquals("user2-image1.jpg", result2[0].filename)
-        assertEquals("user2-image2.jpg", result2[1].filename)
-    }
-
-    // EXISTS BY UUID TESTS
-
-    @Test
-    fun `existsByUuid should return true when uploaded image exists`() {
-        // Given
-        val uuid = UUID.randomUUID()
-        val uploadedImage = createUploadedImage(UploadedImageParams(uuid = uuid))
-
-        every { uploadedImageRepository.findByUuid(uuid) } returns uploadedImage
-
-        // When
-        val result = imageQueryService.existsByUuid(uuid)
-
-        // Then
-        assertTrue(result)
-    }
-
-    @Test
-    fun `existsByUuid should return false when uploaded image does not exist`() {
-        // Given
-        val uuid = UUID.randomUUID()
-
-        every { uploadedImageRepository.findByUuid(uuid) } returns null
-
-        // When
-        val result = imageQueryService.existsByUuid(uuid)
-
-        // Then
-        assertFalse(result)
-    }
-
-    // EXISTS BY UUID AND USER ID TESTS
-
-    @Test
-    fun `existsByUuidAndUserId should return true when uploaded image exists for user`() {
-        // Given
-        val uuid = UUID.randomUUID()
-        val userId = 1L
-        val uploadedImage = createUploadedImage(UploadedImageParams(uuid = uuid, userId = userId))
-
-        every { uploadedImageRepository.findByUserIdAndUuid(userId, uuid) } returns uploadedImage
-
-        // When
-        val result = imageQueryService.existsByUuidAndUserId(uuid, userId)
-
-        // Then
-        assertTrue(result)
-    }
-
-    @Test
-    fun `existsByUuidAndUserId should return false when uploaded image does not exist for user`() {
-        // Given
-        val uuid = UUID.randomUUID()
-        val userId = 1L
-
-        every { uploadedImageRepository.findByUserIdAndUuid(userId, uuid) } returns null
-
-        // When
-        val result = imageQueryService.existsByUuidAndUserId(uuid, userId)
-
-        // Then
-        assertFalse(result)
-    }
-
-    @Test
-    fun `existsByUuidAndUserId should return false when image exists for different user`() {
-        // Given
-        val uuid = UUID.randomUUID()
-        val ownerId = 1L
-        val requesterId = 2L
-
-        every { uploadedImageRepository.findByUserIdAndUuid(requesterId, uuid) } returns null
-
-        // When
-        val result = imageQueryService.existsByUuidAndUserId(uuid, requesterId)
-
-        // Then
-        assertFalse(result)
     }
 
     // EXISTS GENERATED IMAGE BY ID TESTS
@@ -261,57 +58,6 @@ class ImageQueryServiceImplTest {
 
         // Then
         assertFalse(result)
-    }
-
-    // EXISTS GENERATED IMAGE BY ID AND USER ID TESTS
-
-    @Test
-    fun `existsGeneratedImageByIdAndUserId should return true when generated image exists for user`() {
-        // Given
-        val imageId = 123L
-        val userId = 1L
-
-        every { generatedImageRepository.existsByIdAndUserId(imageId, userId) } returns true
-
-        // When
-        val result = imageQueryService.existsGeneratedImageByIdAndUserId(imageId, userId)
-
-        // Then
-        assertTrue(result)
-    }
-
-    @Test
-    fun `existsGeneratedImageByIdAndUserId should return false when generated image does not exist for user`() {
-        // Given
-        val imageId = 123L
-        val userId = 1L
-
-        every { generatedImageRepository.existsByIdAndUserId(imageId, userId) } returns false
-
-        // When
-        val result = imageQueryService.existsGeneratedImageByIdAndUserId(imageId, userId)
-
-        // Then
-        assertFalse(result)
-    }
-
-    @Test
-    fun `existsGeneratedImageByIdAndUserId should handle different users correctly`() {
-        // Given
-        val imageId = 123L
-        val ownerId = 1L
-        val requesterId = 2L
-
-        every { generatedImageRepository.existsByIdAndUserId(imageId, ownerId) } returns true
-        every { generatedImageRepository.existsByIdAndUserId(imageId, requesterId) } returns false
-
-        // When
-        val ownerResult = imageQueryService.existsGeneratedImageByIdAndUserId(imageId, ownerId)
-        val requesterResult = imageQueryService.existsGeneratedImageByIdAndUserId(imageId, requesterId)
-
-        // Then
-        assertTrue(ownerResult)
-        assertFalse(requesterResult)
     }
 
     // VALIDATE GENERATED IMAGE OWNERSHIP TESTS
@@ -374,81 +120,6 @@ class ImageQueryServiceImplTest {
 
         // Then
         assertFalse(result)
-    }
-
-    // FIND GENERATED IMAGE BY ID TESTS
-
-    @Test
-    fun `findGeneratedImageById should return GeneratedImageDto when image exists`() {
-        // Given
-        val imageId = 123L
-        val generatedImage =
-            createGeneratedImage(
-                GeneratedImageParams(
-                    id = imageId,
-                    filename = "test-image.jpg",
-                    promptId = 100L,
-                    userId = 1L,
-                    ipAddress = "192.168.1.1",
-                ),
-            )
-
-        every { generatedImageRepository.findById(imageId) } returns Optional.of(generatedImage)
-
-        // When
-        val result = imageQueryService.findGeneratedImageById(imageId)
-
-        // Then
-        assertNotNull(result)
-        assertEquals("test-image.jpg", result!!.filename)
-        assertEquals(ImageType.GENERATED, result.imageType)
-        assertEquals(100L, result.promptId)
-        assertEquals(1L, result.userId)
-        assertEquals("192.168.1.1", result.ipAddress)
-        assertTrue(result is GeneratedImageDto)
-    }
-
-    @Test
-    fun `findGeneratedImageById should return null when image does not exist`() {
-        // Given
-        val imageId = 123L
-
-        every { generatedImageRepository.findById(imageId) } returns Optional.empty()
-
-        // When
-        val result = imageQueryService.findGeneratedImageById(imageId)
-
-        // Then
-        assertNull(result)
-    }
-
-    @Test
-    fun `findGeneratedImageById should handle anonymous user images`() {
-        // Given
-        val imageId = 123L
-        val generatedImage =
-            createGeneratedImage(
-                GeneratedImageParams(
-                    id = imageId,
-                    filename = "anonymous-image.jpg",
-                    promptId = 100L,
-                    userId = null,
-                    ipAddress = "127.0.0.1",
-                ),
-            )
-
-        every { generatedImageRepository.findById(imageId) } returns Optional.of(generatedImage)
-
-        // When
-        val result = imageQueryService.findGeneratedImageById(imageId)
-
-        // Then
-        assertNotNull(result)
-        assertEquals("anonymous-image.jpg", result!!.filename)
-        assertEquals(ImageType.GENERATED, result.imageType)
-        assertEquals(100L, result.promptId)
-        assertNull(result.userId)
-        assertEquals("127.0.0.1", result.ipAddress)
     }
 
     // FIND GENERATED IMAGES BY IDS TESTS
@@ -625,47 +296,7 @@ class ImageQueryServiceImplTest {
         assertNull(result[anonymousImageId]!!.userId)
     }
 
-    // EDGE CASE TESTS
-
-    @Test
-    fun `methods should handle null values gracefully`() {
-        // Given - repositories return null for all queries
-        every { generatedImageRepository.findByFilename("") } returns null
-        every { uploadedImageRepository.findByUuid(any()) } returns null
-        every { uploadedImageRepository.findAllByUserId(0L) } returns emptyList()
-        every { uploadedImageRepository.findByUserIdAndUuid(any(), any()) } returns null
-
-        // When & Then - should not throw exceptions
-        assertNull(imageQueryService.findUploadedImageByUuid(UUID.randomUUID()))
-        assertEquals(0, imageQueryService.findUploadedImagesByUserId(0L).size)
-        assertFalse(imageQueryService.existsByUuid(UUID.randomUUID()))
-        assertFalse(imageQueryService.existsByUuidAndUserId(UUID.randomUUID(), 0L))
-    }
-
     // HELPER METHODS
-
-    private data class UploadedImageParams(
-        val id: Long = 1L,
-        val uuid: UUID = UUID.randomUUID(),
-        val originalFilename: String = "original-image.jpg",
-        val storedFilename: String = "stored-image.jpg",
-        val contentType: String = "image/jpeg",
-        val fileSize: Long = 1024L,
-        val userId: Long = 1L,
-        val uploadedAt: LocalDateTime = LocalDateTime.now(),
-    )
-
-    private fun createUploadedImage(params: UploadedImageParams = UploadedImageParams()): UploadedImage =
-        UploadedImage(
-            id = params.id,
-            uuid = params.uuid,
-            originalFilename = params.originalFilename,
-            storedFilename = params.storedFilename,
-            contentType = params.contentType,
-            fileSize = params.fileSize,
-            userId = params.userId,
-            uploadedAt = params.uploadedAt,
-        )
 
     private data class GeneratedImageParams(
         val id: Long = 1L,
