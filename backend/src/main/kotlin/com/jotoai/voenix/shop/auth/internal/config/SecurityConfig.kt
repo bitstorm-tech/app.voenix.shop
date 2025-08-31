@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.auth.config
+package com.jotoai.voenix.shop.auth.internal.config
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

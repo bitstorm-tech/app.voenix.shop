@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.auth.web
+package com.jotoai.voenix.shop.auth.internal.web
 
 import com.jotoai.voenix.shop.auth.api.AuthService
 import com.jotoai.voenix.shop.auth.api.dto.LoginRequest

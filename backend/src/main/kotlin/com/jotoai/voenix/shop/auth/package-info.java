@@ -9,9 +9,14 @@
  * <h2>Module Structure</h2>
  * <ul>
  *   <li><b>API:</b> {@code com.jotoai.voenix.shop.auth.api} - Public API for authentication operations and queries</li>
- *   <li><b>Web:</b> {@code com.jotoai.voenix.shop.auth.web} - REST controllers for authentication endpoints</li>
- *   <li><b>Internal:</b> Internal services and security implementations</li>
- *   <li><b>Config:</b> {@code com.jotoai.voenix.shop.auth.config} - Security configuration</li>
+ *   <li><b>Internal:</b> Internal services, security implementations, web controllers, and configuration</li>
+ *   <ul>
+ *     <li><b>Web:</b> {@code com.jotoai.voenix.shop.auth.internal.web} - REST controllers for authentication endpoints</li>
+ *     <li><b>Config:</b> {@code com.jotoai.voenix.shop.auth.internal.config} - Security configuration</li>
+ *     <li><b>Service:</b> {@code com.jotoai.voenix.shop.auth.internal.service} - Authentication service implementations</li>
+ *     <li><b>Security:</b> {@code com.jotoai.voenix.shop.auth.internal.security} - Security components</li>
+ *     <li><b>Exception:</b> {@code com.jotoai.voenix.shop.auth.internal.exception} - Exception handling</li>
+ *   </ul>
  * </ul>
  * 
  * <h2>Named Interfaces</h2>
