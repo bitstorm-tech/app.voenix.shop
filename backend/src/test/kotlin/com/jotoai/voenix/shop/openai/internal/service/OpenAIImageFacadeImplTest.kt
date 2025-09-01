@@ -3,7 +3,6 @@ package com.jotoai.voenix.shop.openai.internal.service
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.UploadedImageDto
-import com.jotoai.voenix.shop.openai.ImageGenerationStrategy
 import com.jotoai.voenix.shop.openai.CreateImageEditRequest
 import com.jotoai.voenix.shop.openai.ImageEditBytesResponse
 import com.jotoai.voenix.shop.openai.ImageBackground
@@ -24,15 +23,15 @@ import java.util.UUID
 
 class OpenAIImageFacadeImplTest {
     private lateinit var imageService: ImageService
-    private lateinit var imageGenerationStrategy: ImageGenerationStrategy
+    private lateinit var openAIImageService: OpenAIImageService
     private lateinit var openAIImageFacade: OpenAIImageFacadeImpl
     private lateinit var mockImageFile: MultipartFile
 
     @BeforeEach
     fun setUp() {
         imageService = mockk()
-        imageGenerationStrategy = mockk()
-        openAIImageFacade = OpenAIImageFacadeImpl(imageService, imageGenerationStrategy)
+        openAIImageService = mockk()
+        openAIImageFacade = OpenAIImageFacadeImpl(imageService, openAIImageService)
 
         mockImageFile =
             MockMultipartFile(
@@ -63,7 +62,7 @@ class OpenAIImageFacadeImplTest {
 
         val expectedResponse = ImageEditBytesResponse(imageBytes = expectedImageBytes)
 
-        every { imageGenerationStrategy.generateImages(mockImageFile, request) } returns expectedResponse
+        every { openAIImageService.generateImages(mockImageFile, request) } returns expectedResponse
 
         // When
         val result = openAIImageFacade.editImageBytes(mockImageFile, request)
@@ -73,7 +72,7 @@ class OpenAIImageFacadeImplTest {
         assertEquals(2, result.imageBytes.size)
         assertEquals(expectedImageBytes, result.imageBytes)
 
-        verify { imageGenerationStrategy.generateImages(mockImageFile, request) }
+        verify { openAIImageService.generateImages(mockImageFile, request) }
     }
 
     @Test
@@ -95,7 +94,7 @@ class OpenAIImageFacadeImplTest {
             )
 
         val strategResponse = ImageEditBytesResponse(imageBytes = generatedImageBytes)
-        every { imageGenerationStrategy.generateImages(mockImageFile, request) } returns strategResponse
+        every { openAIImageService.generateImages(mockImageFile, request) } returns strategResponse
 
         // Mock image service responses
         val savedFilename1 = "saved-image-1.png"
@@ -134,7 +133,7 @@ class OpenAIImageFacadeImplTest {
         assertEquals(listOf("saved-image-1.png", "saved-image-2.png"), result.imageFilenames)
 
         // Verify strategy was called
-        verify { imageGenerationStrategy.generateImages(mockImageFile, request) }
+        verify { openAIImageService.generateImages(mockImageFile, request) }
         verify(exactly = 2) { imageService.store(any(), any()) }
     }
 
@@ -152,7 +151,7 @@ class OpenAIImageFacadeImplTest {
 
         val generatedImageBytes = listOf("single-generated-image".toByteArray())
         val strategResponse = ImageEditBytesResponse(imageBytes = generatedImageBytes)
-        every { imageGenerationStrategy.generateImages(mockImageFile, request) } returns strategResponse
+        every { openAIImageService.generateImages(mockImageFile, request) } returns strategResponse
 
         val savedFilename = "single-saved-image.png"
         val mockDto =
@@ -175,7 +174,7 @@ class OpenAIImageFacadeImplTest {
         assertEquals(1, result.imageFilenames.size)
         assertEquals("single-saved-image.png", result.imageFilenames[0])
 
-        verify { imageGenerationStrategy.generateImages(mockImageFile, request) }
+        verify { openAIImageService.generateImages(mockImageFile, request) }
         verify { imageService.store(any(), any()) }
     }
 
@@ -192,7 +191,7 @@ class OpenAIImageFacadeImplTest {
             )
 
         every {
-            imageGenerationStrategy.generateImages(mockImageFile, request)
+            openAIImageService.generateImages(mockImageFile, request)
         } throws RuntimeException("Strategy failed")
 
         // When/Then
@@ -201,7 +200,7 @@ class OpenAIImageFacadeImplTest {
         }
 
         // Exception is thrown as expected
-        verify { imageGenerationStrategy.generateImages(mockImageFile, request) }
+        verify { openAIImageService.generateImages(mockImageFile, request) }
     }
 
     @Test
@@ -218,7 +217,7 @@ class OpenAIImageFacadeImplTest {
 
         val generatedImageBytes = listOf("generated-image".toByteArray())
         val strategResponse = ImageEditBytesResponse(imageBytes = generatedImageBytes)
-        every { imageGenerationStrategy.generateImages(mockImageFile, request) } returns strategResponse
+        every { openAIImageService.generateImages(mockImageFile, request) } returns strategResponse
 
         every { imageService.store(any(), any()) } throws RuntimeException("Storage failed")
 
@@ -228,7 +227,7 @@ class OpenAIImageFacadeImplTest {
         }
 
         // Exception is thrown as expected
-        verify { imageGenerationStrategy.generateImages(mockImageFile, request) }
+        verify { openAIImageService.generateImages(mockImageFile, request) }
         verify { imageService.store(any(), any()) }
     }
 }
