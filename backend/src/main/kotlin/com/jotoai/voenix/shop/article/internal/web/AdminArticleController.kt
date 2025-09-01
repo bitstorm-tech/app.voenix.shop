@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.article.web
+package com.jotoai.voenix.shop.article.internal.web
 
 import com.jotoai.voenix.shop.article.api.ArticleFacade
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
@@ -8,7 +8,7 @@ import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.article.api.dto.CreateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
-import com.jotoai.voenix.shop.article.web.dto.ArticleSearchCriteria
+import com.jotoai.voenix.shop.article.internal.web.dto.ArticleSearchCriteria
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity

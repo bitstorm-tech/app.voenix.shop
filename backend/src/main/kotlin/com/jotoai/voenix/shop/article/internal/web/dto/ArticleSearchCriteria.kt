@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.article.web.dto
+package com.jotoai.voenix.shop.article.internal.web.dto
 
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 
