@@ -10,10 +10,10 @@ import com.jotoai.voenix.shop.user.api.dto.UserDto
 /**
  * Public API for the User module.
  * This interface exposes only the functions used by other modules, maintaining clean module boundaries.
- * 
+ *
  * Functions used by other modules:
  * - loadUserByEmail: Used by auth module
- * - getUserById: Used by openai, cart, order, auth modules  
+ * - getUserById: Used by openai, cart, order, auth modules
  * - getUserByEmail: Used by openai, order, cart, image modules
  * - existsByEmail: Used by supplier, auth modules
  * - createUser: Used by auth module
@@ -77,7 +77,10 @@ interface UserService {
      * @throws ResourceNotFoundException if user doesn't exist
      * @throws ResourceAlreadyExistsException if email already exists
      */
-    fun updateUser(id: Long, request: UpdateUserRequest): UserDto
+    fun updateUser(
+        id: Long,
+        request: UpdateUserRequest,
+    ): UserDto
 
     /**
      * Retrieves all role names assigned to a user.
@@ -96,5 +99,8 @@ interface UserService {
      * @throws ResourceNotFoundException if user doesn't exist
      * @throws ResourceNotFoundException if any role doesn't exist
      */
-    fun setUserRoles(userId: Long, roleNames: Set<String>)
+    fun setUserRoles(
+        userId: Long,
+        roleNames: Set<String>,
+    )
 }

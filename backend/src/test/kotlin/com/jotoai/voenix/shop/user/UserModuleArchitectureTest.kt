@@ -34,15 +34,11 @@ class UserModuleArchitectureTest {
 
     @Test
     fun `verify user DTOs exist`() {
-        // Verify that the essential DTOs exist
+        // Verify that the essential public API DTOs exist
         assertClassExists("com.jotoai.voenix.shop.user.api.dto.UserDto")
         assertClassExists("com.jotoai.voenix.shop.user.api.dto.CreateUserRequest")
         assertClassExists("com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest")
         assertClassExists("com.jotoai.voenix.shop.user.api.dto.UserAuthenticationDto")
-        assertClassExists("com.jotoai.voenix.shop.user.api.dto.BulkCreateUsersRequest")
-        assertClassExists("com.jotoai.voenix.shop.user.api.dto.BulkOperationResult")
-        assertClassExists("com.jotoai.voenix.shop.user.api.dto.UserSearchCriteria")
-        assertClassExists("com.jotoai.voenix.shop.user.api.PasswordValidationResult")
 
         println("✓ User DTOs verified")
     }
@@ -54,7 +50,6 @@ class UserModuleArchitectureTest {
         assertClassExists("com.jotoai.voenix.shop.user.internal.entity.Role")
         assertClassExists("com.jotoai.voenix.shop.user.internal.repository.UserRepository")
         assertClassExists("com.jotoai.voenix.shop.user.internal.repository.RoleRepository")
-        assertClassExists("com.jotoai.voenix.shop.user.internal.repository.UserSpecifications")
 
         println("✓ User internal components verified")
     }

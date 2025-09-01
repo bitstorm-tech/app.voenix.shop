@@ -14,7 +14,6 @@ import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 
-
 /**
  * Implementation of UserService (public API).
  * This service exposes only the functions needed by other modules,
@@ -59,13 +58,14 @@ class UserServiceImpl(
             throw ResourceAlreadyExistsException("User", "email", request.email)
         }
 
-        val user = User(
-            email = request.email,
-            firstName = request.firstName,
-            lastName = request.lastName,
-            phoneNumber = request.phoneNumber,
-            password = request.password?.let { passwordEncoder.encode(it) },
-        )
+        val user =
+            User(
+                email = request.email,
+                firstName = request.firstName,
+                lastName = request.lastName,
+                phoneNumber = request.phoneNumber,
+                password = request.password?.let { passwordEncoder.encode(it) },
+            )
 
         val savedUser = userRepository.save(user)
         return savedUser.toDto()
@@ -76,9 +76,10 @@ class UserServiceImpl(
         id: Long,
         request: UpdateUserRequest,
     ): UserDto {
-        val user = userRepository
-            .findActiveById(id)
-            .orElseThrow { ResourceNotFoundException("User", "id", id) }
+        val user =
+            userRepository
+                .findActiveById(id)
+                .orElseThrow { ResourceNotFoundException("User", "id", id) }
 
         // Check email uniqueness if email is being updated
         request.email?.let { email ->
@@ -99,10 +100,11 @@ class UserServiceImpl(
     }
 
     override fun getUserRoles(userId: Long): Set<String> {
-        val user = userRepository
-            .findActiveById(userId)
-            .orElseThrow { ResourceNotFoundException("User", "id", userId) }
-        
+        val user =
+            userRepository
+                .findActiveById(userId)
+                .orElseThrow { ResourceNotFoundException("User", "id", userId) }
+
         return user.roles.map { it.name }.toSet()
     }
 
@@ -111,17 +113,18 @@ class UserServiceImpl(
         userId: Long,
         roleNames: Set<String>,
     ) {
-        val user = userRepository
-            .findActiveById(userId)
-            .orElseThrow { ResourceNotFoundException("User", "id", userId) }
-        
+        val user =
+            userRepository
+                .findActiveById(userId)
+                .orElseThrow { ResourceNotFoundException("User", "id", userId) }
+
         val roles = roleRepository.findByNameIn(roleNames)
         if (roles.size != roleNames.size) {
             val foundRoleNames = roles.map { it.name }.toSet()
             val missingRoles = roleNames - foundRoleNames
             throw ResourceNotFoundException("Role(s) not found: ${missingRoles.joinToString()}", "", "")
         }
-        
+
         user.roles.clear()
         user.roles.addAll(roles)
         userRepository.save(user)
