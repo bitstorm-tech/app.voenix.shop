@@ -1,6 +1,4 @@
-package com.jotoai.voenix.shop.cart.api.dto
-
-import com.jotoai.voenix.shop.cart.api.enums.CartStatus
+package com.jotoai.voenix.shop.cart
 
 /**
  * Cart information needed for order creation.

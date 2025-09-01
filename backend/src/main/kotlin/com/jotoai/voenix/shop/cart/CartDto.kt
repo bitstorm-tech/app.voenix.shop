@@ -1,6 +1,5 @@
-package com.jotoai.voenix.shop.cart.api.dto
+package com.jotoai.voenix.shop.cart
 
-import com.jotoai.voenix.shop.cart.api.enums.CartStatus
 import java.time.OffsetDateTime
 
 data class CartDto(

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.cart.api.enums
+package com.jotoai.voenix.shop.cart
 
 import com.fasterxml.jackson.annotation.JsonValue
 import jakarta.persistence.AttributeConverter

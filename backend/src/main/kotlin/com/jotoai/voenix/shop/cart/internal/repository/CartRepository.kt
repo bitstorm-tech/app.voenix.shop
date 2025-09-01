@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.cart.internal.repository
 
+import com.jotoai.voenix.shop.cart.CartStatus
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
-import com.jotoai.voenix.shop.cart.api.enums.CartStatus
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param

@@ -5,8 +5,8 @@ import com.jotoai.voenix.shop.application.PaginatedResponse
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
-import com.jotoai.voenix.shop.cart.api.CartService
-import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
+import com.jotoai.voenix.shop.cart.CartOrderInfo
+import com.jotoai.voenix.shop.cart.CartService
 import com.jotoai.voenix.shop.image.GeneratedImageDto
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.order.api.OrderService

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.cart.api.dto
+package com.jotoai.voenix.shop.cart
 
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto

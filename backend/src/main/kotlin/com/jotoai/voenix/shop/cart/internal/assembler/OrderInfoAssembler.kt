@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.cart.internal.assembler
 
-import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
-import com.jotoai.voenix.shop.cart.api.dto.CartOrderItemInfo
+import com.jotoai.voenix.shop.cart.CartOrderInfo
+import com.jotoai.voenix.shop.cart.CartOrderItemInfo
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptNotFoundException

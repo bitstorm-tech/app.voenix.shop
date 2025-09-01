@@ -3,9 +3,9 @@ package com.jotoai.voenix.shop.cart.internal.assembler
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
-import com.jotoai.voenix.shop.cart.api.dto.CartDto
-import com.jotoai.voenix.shop.cart.api.dto.CartItemDto
-import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
+import com.jotoai.voenix.shop.cart.CartDto
+import com.jotoai.voenix.shop.cart.CartItemDto
+import com.jotoai.voenix.shop.cart.CartSummaryDto
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.cart.internal.entity.CartItem
 import com.jotoai.voenix.shop.image.GeneratedImageDto

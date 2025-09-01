@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.cart.internal.web
 
-import com.jotoai.voenix.shop.cart.api.CartService
-import com.jotoai.voenix.shop.cart.api.dto.AddToCartRequest
-import com.jotoai.voenix.shop.cart.api.dto.CartDto
-import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
-import com.jotoai.voenix.shop.cart.api.dto.UpdateCartItemRequest
+import com.jotoai.voenix.shop.cart.AddToCartRequest
+import com.jotoai.voenix.shop.cart.CartDto
+import com.jotoai.voenix.shop.cart.CartService
+import com.jotoai.voenix.shop.cart.CartSummaryDto
+import com.jotoai.voenix.shop.cart.UpdateCartItemRequest
 import com.jotoai.voenix.shop.user.api.UserService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus

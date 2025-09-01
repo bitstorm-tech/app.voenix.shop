@@ -1,18 +1,10 @@
-package com.jotoai.voenix.shop.cart.api
-
-import com.jotoai.voenix.shop.cart.api.dto.AddToCartRequest
-import com.jotoai.voenix.shop.cart.api.dto.CartDto
-import com.jotoai.voenix.shop.cart.api.dto.CartOrderInfo
-import com.jotoai.voenix.shop.cart.api.dto.CartSummaryDto
-import com.jotoai.voenix.shop.cart.api.dto.UpdateCartItemRequest
+package com.jotoai.voenix.shop.cart
 
 /**
  * Unified service interface for all cart module operations.
  * This interface defines both user cart operations and inter-module operations.
  */
 interface CartService {
-    // Inter-module operations (used by order module)
-
     /**
      * Gets active cart information for order creation.
      * Returns minimal cart data needed by the order module.
@@ -30,8 +22,6 @@ interface CartService {
      * Used by order module integration.
      */
     fun markCartAsConverted(cartId: Long)
-
-    // User cart operations
 
     /**
      * Gets or creates an active cart for the user
