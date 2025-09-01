@@ -33,77 +33,20 @@ cd backend
 
 The backend follows Spring Modulith architecture with Domain-Driven Design principles, providing clear module boundaries and managed dependencies:
 
-### Spring Modulith Structure
-
-The application is organized into self-contained modules with explicit boundaries:
-
-```
-backend/src/main/kotlin/com/jotoai/voenix/shop/
-├── article/            # Article Module (in migration to Modulith)
-│   ├── api/            # Public interfaces and DTOs
-│   └── internal/       # Private implementation
-├── auth/               # Authentication Module (@ApplicationModule)
-│   ├── config/         # Security configuration
-│   ├── dto/            # Auth DTOs
-│   └── service/        # Auth services
-├── common/             # Common Utilities Module (@ApplicationModule, OPEN)
-│   ├── config/         # Shared configuration
-│   ├── dto/            # Common DTOs
-│   └── exception/      # Global exception handling
-├── country/            # Country Module (@ApplicationModule)
-│   ├── api/            # Public interfaces
-│   └── internal/       # Private implementation
-├── domain/             # Domain Module (@ApplicationModule, OPEN)
-│   ├── cart/           # Shopping cart logic
-│   ├── openai/         # OpenAI integration
-│   └── orders/         # Order management
-├── image/              # Image Module (@ApplicationModule)
-│   ├── api/            # Public interfaces
-│   └── internal/       # Private implementation
-├── pdf/                # PDF Module (@ApplicationModule)
-│   ├── api/            # Public interfaces
-│   └── internal/       # Private implementation
-├── prompt/             # Prompt Module (@ApplicationModule)
-│   ├── api/            # Public interfaces
-│   └── internal/       # Private implementation
-├── supplier/           # Supplier Module (@ApplicationModule)
-│   ├── api/            # Public interfaces
-│   └── internal/       # Private implementation
-├── user/               # User Module (@ApplicationModule)
-│   ├── api/            # Public interfaces
-│   └── internal/       # Private implementation
-└── vat/                # VAT Module (@ApplicationModule)
-    ├── api/            # Public interfaces
-    └── internal/       # Private implementation
-```
-
 ### Module Architecture Principles
 
 1. **Module Boundaries**:
-   - Each module is annotated with `@ApplicationModule` in its `package-info.java`
-   - Modules expose public APIs through the `api` package
+   - Modules expose public APIs through all classes in the root package
    - Internal implementation details are in the `internal` package
    - Cross-module communication only through public APIs
 
-2. **Module Types**:
-   - **Standard Modules**: Encapsulated with strict boundaries (e.g., user, vat, supplier)
-   - **Open Modules**: Can be accessed by all modules (common, domain)
-   - **API Module**: Special module containing REST controllers
-
-3. **Dependency Rules**:
-   - Modules declare allowed dependencies explicitly
-   - Only depend on other modules' `api` packages
-   - Common module has no dependencies
-   - Domain module can depend on other modules' APIs
-
-4. **Module Communication Patterns**:
-   - **Direct API calls**: Through Facade and QueryService interfaces
-   - **Shared DTOs**: Located in module's `api.dto` packages
+2. **Dependency Rules**:
+   - Only depend on classes in the modules' root packages
 
 ### Key Architectural Patterns
 
 - **Spring Modulith**: Modular monolith with module verification
-- **Hexagonal Architecture**: Within each module (api/internal separation)
+- **Hexagonal Architecture**: Within each module
 - **Repository Pattern**: Data access through Spring Data JPA
 - **DTO Pattern**: Separate DTOs for API contracts
 - **Service Layer Pattern**: Business logic in service implementations
