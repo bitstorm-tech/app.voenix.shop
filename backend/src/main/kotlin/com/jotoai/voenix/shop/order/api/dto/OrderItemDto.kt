@@ -13,7 +13,7 @@ data class OrderItemDto(
     val pricePerItem: Long, // In cents
     val totalPrice: Long, // In cents
     val generatedImageId: Long? = null,
-    val generatedImageFilename: String? = null, // Dynamically fetched from ImageQueryService
+    val generatedImageFilename: String? = null,
     val promptId: Long? = null,
     val customData: Map<String, Any> = emptyMap(),
     val createdAt: OffsetDateTime,

@@ -9,16 +9,14 @@ import java.util.UUID
  */
 data class OrderForPdfDto(
     val id: UUID,
-    val orderNumber: String?,
+    val orderNumber: String,
     val userId: Long,
-    val items: List<OrderItemForPdfDto>,
-)
-
-data class OrderItemForPdfDto(
-    val id: UUID,
-    val quantity: Int,
-    val generatedImageId: Long?,
-    val generatedImageFilename: String?, // Dynamically fetched from ImageQueryService
-    val articleId: Long,
-    val variantId: Long,
-)
+    val items: List<PdfItem>,
+) {
+    data class PdfItem(
+        val quantity: Int,
+        val imageFilename: String?,
+        val articleId: Long,
+        val variantId: Long,
+    )
+}

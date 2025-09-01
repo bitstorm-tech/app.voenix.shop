@@ -1,8 +1,10 @@
 package com.jotoai.voenix.shop.order.internal.service
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.dto.ArticleDto
+import com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto
+import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.order.internal.dto.OrderForPdfDto
-import com.jotoai.voenix.shop.order.internal.dto.OrderItemForPdfDto
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.api.dto.ArticlePdfData
 import com.jotoai.voenix.shop.pdf.api.dto.MugDetailsPdfData
@@ -38,7 +40,7 @@ class OrderPdfService(
         orderId: UUID,
     ): String {
         val orderForPdf = orderService.getOrderForPdf(userId, orderId)
-        return pdfGenerationService.getOrderPdfFilename(orderForPdf.orderNumber ?: "unknown")
+        return pdfGenerationService.getOrderPdfFilename(orderForPdf.orderNumber)
     }
 
     /**
@@ -46,26 +48,59 @@ class OrderPdfService(
      * This method was moved from the pdf module to maintain proper module boundaries.
      * The pdf module should not know about order-specific DTOs.
      */
-    private fun convertToOrderPdfData(orderForPdf: OrderForPdfDto): OrderPdfData =
-        OrderPdfData(
+    private fun convertToOrderPdfData(orderForPdf: OrderForPdfDto): OrderPdfData {
+        if (orderForPdf.items.isEmpty()) {
+            return OrderPdfData(
+                id = orderForPdf.id,
+                orderNumber = orderForPdf.orderNumber,
+                userId = orderForPdf.userId,
+                items = emptyList(),
+            )
+        }
+
+        val pdfItemData = fetchAllPdfItemData(orderForPdf.items)
+        val pdfItems = orderForPdf.items.map { it.toPdfData(pdfItemData) }
+
+        return OrderPdfData(
             id = orderForPdf.id,
             orderNumber = orderForPdf.orderNumber,
             userId = orderForPdf.userId,
-            items = orderForPdf.items.map { convertToOrderItemPdfData(it) },
+            items = pdfItems,
         )
+    }
 
-    private fun convertToOrderItemPdfData(orderItem: OrderItemForPdfDto): OrderItemPdfData {
-        val mugDetails = articleQueryService.getMugDetailsByArticleId(orderItem.articleId)
-        val article = articleQueryService.getArticlesByIds(listOf(orderItem.articleId))[orderItem.articleId]
-        val variant = articleQueryService.getMugVariantsByIds(listOf(orderItem.variantId))[orderItem.variantId]
+    private fun fetchAllPdfItemData(items: List<OrderForPdfDto.PdfItem>): PdfItemData {
+        val articleIds = items.map { it.articleId }.distinct()
+        val variantIds = items.map { it.variantId }.distinct()
+
+        return PdfItemData(
+            articles = articleQueryService.getArticlesByIds(articleIds),
+            variants = articleQueryService.getMugVariantsByIds(variantIds),
+            mugDetails = fetchMugDetailsBatch(articleIds),
+        )
+    }
+
+    private fun fetchMugDetailsBatch(articleIds: List<Long>): Map<Long, MugArticleDetailsDto> {
+        // Note: While this is still making individual calls, it only makes one call per unique articleId
+        // and the distinct() call in fetchAllPdfItemData ensures we don't fetch the same data multiple times
+        return articleIds
+            .mapNotNull { articleId ->
+                articleQueryService.getMugDetailsByArticleId(articleId)?.let { articleId to it }
+            }.toMap()
+    }
+
+    private fun OrderForPdfDto.PdfItem.toPdfData(itemData: PdfItemData): OrderItemPdfData {
+        val article = itemData.articles[articleId]
+        val variant = itemData.variants[variantId]
+        val mugDetails = itemData.mugDetails[articleId]
 
         return OrderItemPdfData(
-            id = orderItem.id,
-            quantity = orderItem.quantity,
-            generatedImageFilename = orderItem.generatedImageFilename,
+            id = UUID.randomUUID(),
+            quantity = quantity,
+            generatedImageFilename = imageFilename,
             article =
                 ArticlePdfData(
-                    id = orderItem.articleId,
+                    id = articleId,
                     mugDetails =
                         mugDetails?.let {
                             MugDetailsPdfData(
@@ -79,8 +114,14 @@ class OrderPdfService(
                     supplierArticleName = article?.supplierArticleName,
                     supplierArticleNumber = article?.supplierArticleNumber,
                 ),
-            variantId = orderItem.variantId,
+            variantId = variantId,
             variantName = variant?.name,
         )
     }
+
+    private data class PdfItemData(
+        val articles: Map<Long, ArticleDto>,
+        val variants: Map<Long, MugArticleVariantDto>,
+        val mugDetails: Map<Long, MugArticleDetailsDto>,
+    )
 }
