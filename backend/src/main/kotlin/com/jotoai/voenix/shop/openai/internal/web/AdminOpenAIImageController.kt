@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.openai.internal.web
 
-import com.jotoai.voenix.shop.openai.CreateImageEditRequest
-import com.jotoai.voenix.shop.openai.ImageEditResponse
-import com.jotoai.voenix.shop.openai.TestPromptRequest
-import com.jotoai.voenix.shop.openai.TestPromptResponse
+import com.jotoai.voenix.shop.openai.internal.dto.CreateImageEditRequest
+import com.jotoai.voenix.shop.openai.internal.dto.ImageEditResponse
+import com.jotoai.voenix.shop.openai.internal.dto.TestPromptRequest
+import com.jotoai.voenix.shop.openai.internal.dto.TestPromptResponse
 import com.jotoai.voenix.shop.openai.internal.service.OpenAIImageService
 import com.jotoai.voenix.shop.openai.internal.web.dto.TestPromptForm
 import jakarta.validation.Valid

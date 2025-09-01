@@ -1,6 +1,9 @@
-package com.jotoai.voenix.shop.openai
+package com.jotoai.voenix.shop.openai.internal.dto
 
 import com.jotoai.voenix.shop.image.CropArea
+import com.jotoai.voenix.shop.openai.internal.model.ImageBackground
+import com.jotoai.voenix.shop.openai.internal.model.ImageQuality
+import com.jotoai.voenix.shop.openai.internal.model.ImageSize
 import jakarta.validation.constraints.NotNull
 
 data class ImageGenerationRequest(

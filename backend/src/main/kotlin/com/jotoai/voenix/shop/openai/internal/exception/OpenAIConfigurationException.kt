@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.openai
+package com.jotoai.voenix.shop.openai.internal.exception
 
 /**
  * Exception thrown when OpenAI configuration is invalid or missing.

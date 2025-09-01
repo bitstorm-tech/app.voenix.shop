@@ -6,7 +6,7 @@ import com.jotoai.voenix.shop.image.ImageMetadata
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.UploadedImageDto
-import com.jotoai.voenix.shop.openai.ImageGenerationResponse
+import com.jotoai.voenix.shop.openai.internal.dto.ImageGenerationResponse
 import com.jotoai.voenix.shop.openai.internal.service.OpenAIImageService
 import com.jotoai.voenix.shop.openai.internal.web.dto.ImageGenerationForm
 import com.jotoai.voenix.shop.user.api.UserService

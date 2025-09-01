@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.openai
+package com.jotoai.voenix.shop.openai.internal.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 
