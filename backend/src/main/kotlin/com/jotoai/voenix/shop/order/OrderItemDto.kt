@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.order.api.dto
+package com.jotoai.voenix.shop.order
 
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto

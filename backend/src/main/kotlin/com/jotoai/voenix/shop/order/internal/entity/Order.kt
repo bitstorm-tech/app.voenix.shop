@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.order.internal.entity
 
-import com.jotoai.voenix.shop.order.api.enums.OrderStatus
+import com.jotoai.voenix.shop.order.OrderStatus
 import jakarta.persistence.AttributeOverride
 import jakarta.persistence.AttributeOverrides
 import jakarta.persistence.CascadeType

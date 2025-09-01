@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.order.internal.web
 
 import com.jotoai.voenix.shop.application.PaginatedResponse
-import com.jotoai.voenix.shop.order.api.OrderService
-import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
-import com.jotoai.voenix.shop.order.api.dto.OrderDto
+import com.jotoai.voenix.shop.order.CreateOrderRequest
+import com.jotoai.voenix.shop.order.OrderDto
+import com.jotoai.voenix.shop.order.OrderService
 import com.jotoai.voenix.shop.order.internal.service.OrderPdfService
 import com.jotoai.voenix.shop.user.api.UserService
 import jakarta.servlet.http.HttpServletResponse

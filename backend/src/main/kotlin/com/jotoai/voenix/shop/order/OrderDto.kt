@@ -1,6 +1,5 @@
-package com.jotoai.voenix.shop.order.api.dto
+package com.jotoai.voenix.shop.order
 
-import com.jotoai.voenix.shop.order.api.enums.OrderStatus
 import java.time.OffsetDateTime
 import java.util.UUID
 

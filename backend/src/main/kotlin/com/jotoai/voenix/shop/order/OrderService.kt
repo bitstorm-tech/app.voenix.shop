@@ -1,8 +1,6 @@
-package com.jotoai.voenix.shop.order.api
+package com.jotoai.voenix.shop.order
 
 import com.jotoai.voenix.shop.application.PaginatedResponse
-import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
-import com.jotoai.voenix.shop.order.api.dto.OrderDto
 import org.springframework.data.domain.Pageable
 import java.util.UUID
 

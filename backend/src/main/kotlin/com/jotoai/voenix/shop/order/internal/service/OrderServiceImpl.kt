@@ -9,14 +9,14 @@ import com.jotoai.voenix.shop.cart.CartOrderInfo
 import com.jotoai.voenix.shop.cart.CartService
 import com.jotoai.voenix.shop.image.GeneratedImageDto
 import com.jotoai.voenix.shop.image.ImageService
-import com.jotoai.voenix.shop.order.api.OrderService
-import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
-import com.jotoai.voenix.shop.order.api.dto.OrderDto
-import com.jotoai.voenix.shop.order.api.dto.OrderItemDto
-import com.jotoai.voenix.shop.order.api.dto.toDto
-import com.jotoai.voenix.shop.order.api.dto.toEntity
-import com.jotoai.voenix.shop.order.api.enums.OrderStatus
+import com.jotoai.voenix.shop.order.AddressDto
+import com.jotoai.voenix.shop.order.CreateOrderRequest
+import com.jotoai.voenix.shop.order.OrderDto
+import com.jotoai.voenix.shop.order.OrderItemDto
+import com.jotoai.voenix.shop.order.OrderService
+import com.jotoai.voenix.shop.order.OrderStatus
 import com.jotoai.voenix.shop.order.internal.dto.OrderForPdfDto
+import com.jotoai.voenix.shop.order.internal.entity.Address
 import com.jotoai.voenix.shop.order.internal.entity.Order
 import com.jotoai.voenix.shop.order.internal.entity.OrderItem
 import com.jotoai.voenix.shop.order.internal.repository.OrderRepository
@@ -322,6 +322,26 @@ class OrderServiceImpl(
      * Calculates shipping amount ($4.99 flat rate for now)
      */
     private fun calculateShipping(cart: CartOrderInfo): Long = if (cart.isEmpty) 0L else SHIPPING_RATE_CENTS
+
+    private fun AddressDto.toEntity(): Address =
+        Address(
+            streetAddress1 = streetAddress1,
+            streetAddress2 = streetAddress2,
+            city = city,
+            state = state,
+            postalCode = postalCode,
+            country = country,
+        )
+
+    private fun Address.toDto(): AddressDto =
+        AddressDto(
+            streetAddress1 = streetAddress1,
+            streetAddress2 = streetAddress2,
+            city = city,
+            state = state,
+            postalCode = postalCode,
+            country = country,
+        )
 
     companion object {
         private const val TAX_RATE = 0.08 // 8%
