@@ -28,7 +28,7 @@ import com.jotoai.voenix.shop.openai.internal.model.ImageQuality
 import com.jotoai.voenix.shop.openai.internal.model.ImageSize
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
-import com.jotoai.voenix.shop.user.api.UserService
+import com.jotoai.voenix.shop.user.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

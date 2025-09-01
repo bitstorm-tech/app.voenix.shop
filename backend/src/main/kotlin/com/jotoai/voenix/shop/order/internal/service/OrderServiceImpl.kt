@@ -20,7 +20,7 @@ import com.jotoai.voenix.shop.order.internal.entity.Address
 import com.jotoai.voenix.shop.order.internal.entity.Order
 import com.jotoai.voenix.shop.order.internal.entity.OrderItem
 import com.jotoai.voenix.shop.order.internal.repository.OrderRepository
-import com.jotoai.voenix.shop.user.api.UserService
+import com.jotoai.voenix.shop.user.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.persistence.EntityManager
 import org.springframework.beans.factory.annotation.Value

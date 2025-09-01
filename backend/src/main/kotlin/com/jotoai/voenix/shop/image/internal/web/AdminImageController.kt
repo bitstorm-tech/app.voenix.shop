@@ -6,7 +6,7 @@ import com.jotoai.voenix.shop.image.ImageInfo
 import com.jotoai.voenix.shop.image.ImageMetadata
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
-import com.jotoai.voenix.shop.user.api.UserService
+import com.jotoai.voenix.shop.user.UserService
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal

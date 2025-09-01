@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.user.internal.entity
 
-import com.jotoai.voenix.shop.user.api.dto.UserDto
+import com.jotoai.voenix.shop.user.UserDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
@@ -57,20 +57,6 @@ class User(
      * Checks if the user is active (not soft deleted).
      */
     fun isActive(): Boolean = deletedAt == null
-
-    /**
-     * Marks the user as deleted with the current timestamp.
-     */
-    fun markAsDeleted() {
-        deletedAt = OffsetDateTime.now()
-    }
-
-    /**
-     * Restores a soft-deleted user.
-     */
-    fun restore() {
-        deletedAt = null
-    }
 
     fun toDto() =
         UserDto(

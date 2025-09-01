@@ -9,7 +9,7 @@ import com.jotoai.voenix.shop.image.UploadedImageDto
 import com.jotoai.voenix.shop.openai.internal.dto.ImageGenerationResponse
 import com.jotoai.voenix.shop.openai.internal.service.OpenAIImageService
 import com.jotoai.voenix.shop.openai.internal.web.dto.ImageGenerationForm
-import com.jotoai.voenix.shop.user.api.UserService
+import com.jotoai.voenix.shop.user.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.MediaType
 import org.springframework.security.access.prepost.PreAuthorize

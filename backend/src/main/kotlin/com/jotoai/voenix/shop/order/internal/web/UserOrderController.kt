@@ -5,7 +5,7 @@ import com.jotoai.voenix.shop.order.CreateOrderRequest
 import com.jotoai.voenix.shop.order.OrderDto
 import com.jotoai.voenix.shop.order.OrderService
 import com.jotoai.voenix.shop.order.internal.service.OrderPdfService
-import com.jotoai.voenix.shop.user.api.UserService
+import com.jotoai.voenix.shop.user.UserService
 import jakarta.servlet.http.HttpServletResponse
 import jakarta.validation.Valid
 import org.springframework.data.domain.Pageable

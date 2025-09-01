@@ -19,7 +19,7 @@ import com.jotoai.voenix.shop.image.ImageException
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ValidationRequest
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
-import com.jotoai.voenix.shop.user.api.UserService
+import com.jotoai.voenix.shop.user.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.OptimisticLockingFailureException
 import org.springframework.stereotype.Service

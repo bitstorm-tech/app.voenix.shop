@@ -1,11 +1,7 @@
-package com.jotoai.voenix.shop.user.api
+package com.jotoai.voenix.shop.user
 
 import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
-import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
-import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
-import com.jotoai.voenix.shop.user.api.dto.UserAuthenticationDto
-import com.jotoai.voenix.shop.user.api.dto.UserDto
 
 /**
  * Public API for the User module.

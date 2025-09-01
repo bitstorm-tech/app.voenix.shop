@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.image.internal.web
 
 import com.jotoai.voenix.shop.image.ImageService
-import com.jotoai.voenix.shop.user.api.UserService
+import com.jotoai.voenix.shop.user.UserService
 import org.springframework.core.io.Resource
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize

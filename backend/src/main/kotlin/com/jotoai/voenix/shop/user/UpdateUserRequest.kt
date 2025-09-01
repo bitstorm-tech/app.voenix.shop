@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.user.api.dto
+package com.jotoai.voenix.shop.user
 
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Size

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.user.api.dto
+package com.jotoai.voenix.shop.user
 
 /**
  * DTO containing user authentication information.

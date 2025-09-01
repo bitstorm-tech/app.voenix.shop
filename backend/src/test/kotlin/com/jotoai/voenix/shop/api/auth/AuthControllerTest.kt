@@ -5,7 +5,7 @@ import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.auth.internal.dto.LoginResponse
 import com.jotoai.voenix.shop.auth.internal.dto.RegisterRequest
 import com.jotoai.voenix.shop.auth.internal.service.AuthService
-import com.jotoai.voenix.shop.user.api.dto.UserDto
+import com.jotoai.voenix.shop.user.UserDto
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import org.junit.jupiter.api.Test

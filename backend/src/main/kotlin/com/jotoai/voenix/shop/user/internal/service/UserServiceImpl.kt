@@ -2,11 +2,11 @@ package com.jotoai.voenix.shop.user.internal.service
 
 import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
-import com.jotoai.voenix.shop.user.api.UserService
-import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
-import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
-import com.jotoai.voenix.shop.user.api.dto.UserAuthenticationDto
-import com.jotoai.voenix.shop.user.api.dto.UserDto
+import com.jotoai.voenix.shop.user.CreateUserRequest
+import com.jotoai.voenix.shop.user.UpdateUserRequest
+import com.jotoai.voenix.shop.user.UserAuthenticationDto
+import com.jotoai.voenix.shop.user.UserDto
+import com.jotoai.voenix.shop.user.UserService
 import com.jotoai.voenix.shop.user.internal.entity.User
 import com.jotoai.voenix.shop.user.internal.repository.RoleRepository
 import com.jotoai.voenix.shop.user.internal.repository.UserRepository

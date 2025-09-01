@@ -10,10 +10,10 @@ import com.jotoai.voenix.shop.auth.internal.dto.SessionInfo
 import com.jotoai.voenix.shop.auth.internal.dto.UserCreationRequest
 import com.jotoai.voenix.shop.auth.internal.exception.InvalidCredentialsException
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
-import com.jotoai.voenix.shop.user.api.UserService
-import com.jotoai.voenix.shop.user.api.dto.CreateUserRequest
-import com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest
-import com.jotoai.voenix.shop.user.api.dto.UserDto
+import com.jotoai.voenix.shop.user.CreateUserRequest
+import com.jotoai.voenix.shop.user.UpdateUserRequest
+import com.jotoai.voenix.shop.user.UserDto
+import com.jotoai.voenix.shop.user.UserService
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.AuthenticationManager

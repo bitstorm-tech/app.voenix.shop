@@ -5,7 +5,7 @@ import com.jotoai.voenix.shop.cart.CartDto
 import com.jotoai.voenix.shop.cart.CartService
 import com.jotoai.voenix.shop.cart.CartSummaryDto
 import com.jotoai.voenix.shop.cart.UpdateCartItemRequest
-import com.jotoai.voenix.shop.user.api.UserService
+import com.jotoai.voenix.shop.user.UserService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
