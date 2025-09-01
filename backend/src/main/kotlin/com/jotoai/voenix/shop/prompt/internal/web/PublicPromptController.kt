@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.prompt.web
+package com.jotoai.voenix.shop.prompt.internal.web
 
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptDto
