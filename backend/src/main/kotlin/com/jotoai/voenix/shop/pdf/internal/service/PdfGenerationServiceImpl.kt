@@ -1,19 +1,16 @@
 package com.jotoai.voenix.shop.pdf.internal.service
 
 import com.google.zxing.BarcodeFormat
-import com.google.zxing.WriterException
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData
 import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
-import com.jotoai.voenix.shop.pdf.api.exceptions.PdfGenerationException
 import com.jotoai.voenix.shop.pdf.internal.config.PdfConfig
 import com.jotoai.voenix.shop.pdf.internal.util.PlaceholderImage
 import com.lowagie.text.BadElementException
 import com.lowagie.text.Document
-import com.lowagie.text.DocumentException
 import com.lowagie.text.Image
 import com.lowagie.text.Rectangle
 import com.lowagie.text.pdf.BaseFont
@@ -42,7 +39,6 @@ class PdfGenerationServiceImpl(
         private val logger = KotlinLogging.logger {}
         private const val IMAGE_FORMAT_PNG = "PNG"
         private const val DEFAULT_IMAGE_MARGIN_MM = 15f
-        private const val FALLBACK_TEXT_OFFSET = 10f
         private const val LEFT_HEADER_X_OFFSET = 15f
         private const val RIGHT_INFO_X_OFFSET = 5f
         private const val TEXT_ROTATION_VERTICAL = 90f
@@ -54,48 +50,37 @@ class PdfGenerationServiceImpl(
                 "${orderData.getTotalItemCount()} total items"
         }
 
-        try {
-            val outputStream = ByteArrayOutputStream()
+        val outputStream = ByteArrayOutputStream()
 
-            // Get dimensions from the first item to initialize document with correct size
-            val firstItem = orderData.items.first()
-            val firstPageWidth = getPageWidth(firstItem)
-            val firstPageHeight = getPageHeight(firstItem)
+        // Get dimensions from the first item to initialize document with correct size
+        val firstItem = orderData.items.first()
+        val firstPageWidth = getPageWidth(firstItem)
+        val firstPageHeight = getPageHeight(firstItem)
 
-            val document = Document(Rectangle(firstPageWidth, firstPageHeight))
-            val writer = PdfWriter.getInstance(document, outputStream)
-            document.open()
+        val document = Document(Rectangle(firstPageWidth, firstPageHeight))
+        val writer = PdfWriter.getInstance(document, outputStream)
+        document.open()
 
-            var pageNumber = 1
-            val totalPages = orderData.getTotalItemCount()
+        var pageNumber = 1
+        val totalPages = orderData.getTotalItemCount()
 
-            // Generate pages for each item quantity
-            orderData.items.forEach { orderItem ->
-                repeat(orderItem.quantity) {
-                    if (pageNumber > 1) {
-                        // Set page size BEFORE creating new page
-                        val itemPageWidth = getPageWidth(orderItem)
-                        val itemPageHeight = getPageHeight(orderItem)
-                        document.setPageSize(Rectangle(itemPageWidth, itemPageHeight))
-                        document.newPage()
-                    }
-                    createOrderPage(writer, orderData, orderItem, pageNumber, totalPages)
-                    pageNumber++
+        // Generate pages for each item quantity
+        orderData.items.forEach { orderItem ->
+            repeat(orderItem.quantity) {
+                if (pageNumber > 1) {
+                    // Set page size BEFORE creating new page
+                    val itemPageWidth = getPageWidth(orderItem)
+                    val itemPageHeight = getPageHeight(orderItem)
+                    document.setPageSize(Rectangle(itemPageWidth, itemPageHeight))
+                    document.newPage()
                 }
+                createOrderPage(writer, orderData, orderItem, pageNumber, totalPages)
+                pageNumber++
             }
-
-            document.close()
-            return outputStream.toByteArray()
-        } catch (e: IOException) {
-            logger.error(e) { "I/O error while generating PDF for order ${orderData.orderNumber}" }
-            throw PdfGenerationException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
-        } catch (e: WriterException) {
-            logger.error(e) { "QR code generation error while generating PDF for order ${orderData.orderNumber}" }
-            throw PdfGenerationException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
-        } catch (e: IllegalArgumentException) {
-            logger.error(e) { "Invalid argument while generating PDF for order ${orderData.orderNumber}" }
-            throw PdfGenerationException("Failed to generate PDF for order ${orderData.orderNumber}: ${e.message}", e)
         }
+
+        document.close()
+        return outputStream.toByteArray()
     }
 
     override fun getOrderPdfFilename(orderNumber: String): String {
@@ -103,7 +88,6 @@ class PdfGenerationServiceImpl(
         return "order_${orderNumber}_$timestamp.pdf"
     }
 
-    @Suppress("ThrowsCount")
     private fun createOrderPage(
         writer: PdfWriter,
         orderData: OrderPdfData,
@@ -116,61 +100,39 @@ class PdfGenerationServiceImpl(
         val itemPageHeight = getPageHeight(orderItem)
         val itemMargin = getMargin(orderItem)
 
-        try {
-            val contentByte = writer.directContent
+        val contentByte = writer.directContent
 
-            // Add header with order number and page info
-            addOrderHeader(
-                contentByte,
-                orderData.orderNumber ?: "UNKNOWN",
-                pageNumber,
-                totalPages,
-                itemPageHeight,
-            )
+        // Add header with order number and page info
+        addOrderHeader(
+            contentByte,
+            orderData.orderNumber ?: "UNKNOWN",
+            pageNumber,
+            totalPages,
+            itemPageHeight,
+        )
 
-            // Add product information on the right side
-            addProductInfo(
-                contentByte,
-                orderItem,
-                itemPageWidth,
-                itemPageHeight,
-            )
+        // Add product information on the right side
+        addProductInfo(
+            contentByte,
+            orderItem,
+            itemPageWidth,
+            itemPageHeight,
+        )
 
-            // Add product image (centered)
-            addProductImage(
-                contentByte,
-                orderData,
-                orderItem,
-                PageLayout(
-                    pageWidth = itemPageWidth,
-                    pageHeight = itemPageHeight,
-                    margin = itemMargin,
-                ),
-            )
+        // Add product image (centered)
+        addProductImage(
+            contentByte,
+            orderData,
+            orderItem,
+            PageLayout(
+                pageWidth = itemPageWidth,
+                pageHeight = itemPageHeight,
+                margin = itemMargin,
+            ),
+        )
 
-            // Add QR code in bottom left
-            addOrderQrCode(contentByte, orderData.id.toString(), itemMargin)
-        } catch (e: IOException) {
-            throw PdfGenerationException(
-                "I/O error creating page $pageNumber for order ${orderData.orderNumber}",
-                e,
-            )
-        } catch (e: WriterException) {
-            throw PdfGenerationException(
-                "QR code generation error creating page $pageNumber for order ${orderData.orderNumber}",
-                e,
-            )
-        } catch (e: BadElementException) {
-            throw PdfGenerationException(
-                "PDF element error creating page $pageNumber for order ${orderData.orderNumber}",
-                e,
-            )
-        } catch (e: DocumentException) {
-            throw PdfGenerationException(
-                "Document error creating page $pageNumber for order ${orderData.orderNumber}",
-                e,
-            )
-        }
+        // Add QR code in bottom left
+        addOrderQrCode(contentByte, orderData.id.toString())
 
         logger.debug { "Created page $pageNumber/$totalPages for order ${orderData.orderNumber}" }
     }
@@ -364,11 +326,11 @@ class PdfGenerationServiceImpl(
         when (e) {
             is IOException -> {
                 logger.error(e) { "I/O error adding product image for order item ${orderItem.id}" }
-                addPlaceholderTextSafely(contentByte, orderItem, pageWidth, pageHeight, e)
+                addPlaceholderTextSafely(contentByte, pageWidth, pageHeight)
             }
             is IllegalArgumentException -> {
                 logger.error(e) { "Invalid image data for order item ${orderItem.id}" }
-                addPlaceholderTextSafely(contentByte, orderItem, pageWidth, pageHeight, e)
+                addPlaceholderTextSafely(contentByte, pageWidth, pageHeight)
             }
             else -> throw e
         }
@@ -376,20 +338,10 @@ class PdfGenerationServiceImpl(
 
     private fun addPlaceholderTextSafely(
         contentByte: PdfContentByte,
-        orderItem: OrderItemPdfData,
         pageWidth: Float,
         pageHeight: Float,
-        originalException: Exception,
     ) {
-        try {
-            addPlaceholderText(contentByte, PlaceholderText("Image not available", pageWidth, pageHeight, 0f, 0f))
-        } catch (placeholderException: IOException) {
-            logger.error(placeholderException) { "Failed to add placeholder text for order item ${orderItem.id}" }
-            throw PdfGenerationException(
-                "Failed to add product image and placeholder for order item ${orderItem.id}",
-                originalException,
-            )
-        }
+        addPlaceholderText(contentByte, PlaceholderText("Image not available", pageWidth, pageHeight, 0f, 0f))
     }
 
     private data class ImageDimensions(
@@ -400,67 +352,30 @@ class PdfGenerationServiceImpl(
     private fun addOrderQrCode(
         contentByte: PdfContentByte,
         orderId: String,
-        margin: Float,
     ) {
-        try {
-            val qrCodeWriter = QRCodeWriter()
-            val bitMatrix =
-                qrCodeWriter.encode(
-                    orderId,
-                    BarcodeFormat.QR_CODE,
-                    pdfConfig.qrCode.sizePixels,
-                    pdfConfig.qrCode.sizePixels,
-                )
+        val qrCodeWriter = QRCodeWriter()
+        val bitMatrix =
+            qrCodeWriter.encode(
+                orderId,
+                BarcodeFormat.QR_CODE,
+                pdfConfig.qrCode.sizePixels,
+                pdfConfig.qrCode.sizePixels,
+            )
 
-            val bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix)
-            val qrByteArray = ByteArrayOutputStream()
-            ImageIO.write(bufferedImage, IMAGE_FORMAT_PNG, qrByteArray)
+        val bufferedImage = MatrixToImageWriter.toBufferedImage(bitMatrix)
+        val qrByteArray = ByteArrayOutputStream()
+        ImageIO.write(bufferedImage, IMAGE_FORMAT_PNG, qrByteArray)
 
-            val qrImage = Image.getInstance(qrByteArray.toByteArray())
-            qrImage.scaleAbsolute(pdfConfig.qrCode.sizePt, pdfConfig.qrCode.sizePt)
+        val qrImage = Image.getInstance(qrByteArray.toByteArray())
+        qrImage.scaleAbsolute(pdfConfig.qrCode.sizePt, pdfConfig.qrCode.sizePt)
 
-            val xPosition = 0f
-            val yPosition = 0f
+        val xPosition = 0f
+        val yPosition = 0f
 
-            qrImage.setAbsolutePosition(xPosition, yPosition)
-            contentByte.addImage(qrImage)
+        qrImage.setAbsolutePosition(xPosition, yPosition)
+        contentByte.addImage(qrImage)
 
-            logger.debug { "Added QR code for order ID $orderId at position ($xPosition, $yPosition)" }
-        } catch (e: WriterException) {
-            logger.error(e) { "QR code generation error for order ID $orderId" }
-            try {
-                addPlaceholderText(
-                    contentByte,
-                    PlaceholderText(
-                        text = "Order ID: $orderId",
-                        pageWidth = Float.MAX_VALUE,
-                        pageHeight = Float.MAX_VALUE,
-                        x = margin,
-                        y = margin + FALLBACK_TEXT_OFFSET,
-                    ),
-                )
-            } catch (placeholderException: IOException) {
-                logger.error(placeholderException) { "Failed to add QR code fallback text for order ID $orderId" }
-                throw PdfGenerationException("Failed to add QR code and fallback text for order ID $orderId", e)
-            }
-        } catch (e: IOException) {
-            logger.error(e) { "I/O error generating QR code for order ID $orderId" }
-            try {
-                addPlaceholderText(
-                    contentByte,
-                    PlaceholderText(
-                        text = "Order ID: $orderId",
-                        pageWidth = Float.MAX_VALUE,
-                        pageHeight = Float.MAX_VALUE,
-                        x = margin,
-                        y = margin + FALLBACK_TEXT_OFFSET,
-                    ),
-                )
-            } catch (placeholderException: IOException) {
-                logger.error(placeholderException) { "Failed to add QR code fallback text for order ID $orderId" }
-                throw PdfGenerationException("Failed to add QR code and fallback text for order ID $orderId", e)
-            }
-        }
+        logger.debug { "Added QR code for order ID $orderId at position ($xPosition, $yPosition)" }
     }
 
     private data class PlaceholderText(
