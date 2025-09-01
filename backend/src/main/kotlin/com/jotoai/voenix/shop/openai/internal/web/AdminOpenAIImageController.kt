@@ -2,9 +2,9 @@ package com.jotoai.voenix.shop.openai.internal.web
 
 import com.jotoai.voenix.shop.openai.CreateImageEditRequest
 import com.jotoai.voenix.shop.openai.ImageEditResponse
-import com.jotoai.voenix.shop.openai.internal.service.OpenAIImageFacadeImpl
 import com.jotoai.voenix.shop.openai.TestPromptRequest
 import com.jotoai.voenix.shop.openai.TestPromptResponse
+import com.jotoai.voenix.shop.openai.internal.service.OpenAIImageService
 import com.jotoai.voenix.shop.openai.internal.web.dto.TestPromptForm
 import jakarta.validation.Valid
 import org.springframework.http.MediaType
@@ -21,19 +21,19 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/admin/openai")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminOpenAIImageController(
-    private val openAIImageFacade: OpenAIImageFacadeImpl,
+    private val openAIImageService: OpenAIImageService,
 ) {
     @PostMapping("/image-edit", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createImageEdit(
         @RequestParam("image") imageFile: MultipartFile,
         @RequestPart("request") @Valid request: CreateImageEditRequest,
-    ): ImageEditResponse = openAIImageFacade.editImage(imageFile, request)
+    ): ImageEditResponse = openAIImageService.editImage(imageFile, request)
 
     @PostMapping("/test-prompt", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun testPrompt(
         @ModelAttribute form: TestPromptForm,
     ): TestPromptResponse =
-        openAIImageFacade.testPrompt(
+        openAIImageService.testPrompt(
             form.image,
             TestPromptRequest(
                 masterPrompt = form.masterPrompt,

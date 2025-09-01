@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
