@@ -3,7 +3,6 @@ package com.jotoai.voenix.shop.order.api
 import com.jotoai.voenix.shop.application.PaginatedResponse
 import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
-import com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto
 import org.springframework.data.domain.Pageable
 import java.util.UUID
 
@@ -45,21 +44,6 @@ interface OrderService {
         userId: Long,
         orderId: UUID,
     ): OrderDto
-
-    /**
-     * Gets order data for PDF generation, ensuring it belongs to the user.
-     * This method provides only the necessary data for external PDF processing
-     * without exposing internal entities or sensitive information.
-     *
-     * @param userId The ID of the user requesting the order data
-     * @param orderId The ID of the order to retrieve for PDF generation
-     * @return The order data suitable for PDF generation
-     * @throws OrderNotFoundException if order not found or doesn't belong to the user
-     */
-    fun getOrderForPdf(
-        userId: Long,
-        orderId: UUID,
-    ): OrderForPdfDto
 
     /**
      * Gets all orders for a user with pagination support.

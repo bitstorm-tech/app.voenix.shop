@@ -12,13 +12,13 @@ import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.order.api.OrderService
 import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
-import com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto
 import com.jotoai.voenix.shop.order.api.dto.OrderItemDto
-import com.jotoai.voenix.shop.order.api.dto.OrderItemForPdfDto
 import com.jotoai.voenix.shop.order.api.enums.OrderStatus
 import com.jotoai.voenix.shop.order.api.exception.OrderAlreadyExistsException
 import com.jotoai.voenix.shop.order.api.exception.OrderNotFoundException
 import com.jotoai.voenix.shop.order.internal.assembler.AddressAssembler
+import com.jotoai.voenix.shop.order.internal.dto.OrderForPdfDto
+import com.jotoai.voenix.shop.order.internal.dto.OrderItemForPdfDto
 import com.jotoai.voenix.shop.order.internal.entity.Order
 import com.jotoai.voenix.shop.order.internal.entity.OrderItem
 import com.jotoai.voenix.shop.order.internal.repository.OrderRepository
@@ -190,7 +190,7 @@ class OrderServiceImpl(
      * Gets order data for PDF generation, ensuring it belongs to the user
      */
     @Transactional(readOnly = true)
-    override fun getOrderForPdf(
+    internal fun getOrderForPdf(
         userId: Long,
         orderId: UUID,
     ): OrderForPdfDto {

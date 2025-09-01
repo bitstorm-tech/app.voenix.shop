@@ -1,10 +1,8 @@
 package com.jotoai.voenix.shop.order.internal.service
 
 import com.jotoai.voenix.shop.article.api.ArticleQueryService
-import com.jotoai.voenix.shop.order.api.OrderPdfService
-import com.jotoai.voenix.shop.order.api.OrderService
-import com.jotoai.voenix.shop.order.api.dto.OrderForPdfDto
-import com.jotoai.voenix.shop.order.api.dto.OrderItemForPdfDto
+import com.jotoai.voenix.shop.order.internal.dto.OrderForPdfDto
+import com.jotoai.voenix.shop.order.internal.dto.OrderItemForPdfDto
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.api.dto.ArticlePdfData
 import com.jotoai.voenix.shop.pdf.api.dto.MugDetailsPdfData
@@ -14,19 +12,19 @@ import org.springframework.stereotype.Service
 import java.util.UUID
 
 /**
- * Implementation of OrderPdfService that handles order-specific PDF generation.
+ * Service that handles order-specific PDF generation.
  * This service orchestrates PDF generation by:
  * 1. Retrieving order data for PDF
  * 2. Converting order DTOs to PDF DTOs (moved from pdf module)
  * 3. Delegating actual PDF generation to the pdf module
  */
 @Service
-class OrderPdfServiceImpl(
-    private val orderService: OrderService,
+class OrderPdfService(
+    private val orderService: OrderServiceImpl,
     private val pdfGenerationService: PdfGenerationService,
     private val articleQueryService: ArticleQueryService,
-) : OrderPdfService {
-    override fun generateOrderPdf(
+) {
+    fun generateOrderPdf(
         userId: Long,
         orderId: UUID,
     ): ByteArray {
@@ -35,7 +33,7 @@ class OrderPdfServiceImpl(
         return pdfGenerationService.generateOrderPdf(orderPdfData)
     }
 
-    override fun getOrderPdfFilename(
+    fun getOrderPdfFilename(
         userId: Long,
         orderId: UUID,
     ): String {

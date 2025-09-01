@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.order.api.dto
+package com.jotoai.voenix.shop.order.internal.dto
 
 import java.util.UUID
 
