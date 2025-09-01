@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
-import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
-import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
-import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
-import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
+import com.jotoai.voenix.shop.openai.CreateImageEditRequest
+import com.jotoai.voenix.shop.openai.ImageGenerationRequest
+import com.jotoai.voenix.shop.openai.OpenAIImageFacade
+import com.jotoai.voenix.shop.openai.OpenAIImageGenerationService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 

@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.openai.internal.web
 
 import com.jotoai.voenix.shop.application.internal.service.ClientIpResolver
+import com.jotoai.voenix.shop.openai.ImageGenerationService
+import com.jotoai.voenix.shop.openai.ImageGenerationRequest
+import com.jotoai.voenix.shop.openai.ImageGenerationResponse
 import com.jotoai.voenix.shop.image.CropArea
-import com.jotoai.voenix.shop.openai.api.ImageGenerationService
-import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
-import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationResponse
 import com.jotoai.voenix.shop.openai.internal.web.dto.ImageGenerationForm
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.servlet.http.HttpServletRequest

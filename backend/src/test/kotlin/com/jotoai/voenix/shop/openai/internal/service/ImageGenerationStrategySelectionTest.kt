@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
-import com.jotoai.voenix.shop.openai.api.ImageGenerationStrategy
+import com.jotoai.voenix.shop.openai.ImageGenerationStrategy
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

@@ -6,8 +6,8 @@ import com.jotoai.voenix.shop.image.ImageMetadata
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.UploadedImageDto
-import com.jotoai.voenix.shop.openai.api.ImageGenerationService
-import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationResponse
+import com.jotoai.voenix.shop.openai.ImageGenerationService
+import com.jotoai.voenix.shop.openai.ImageGenerationResponse
 import com.jotoai.voenix.shop.openai.internal.web.dto.ImageGenerationForm
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging

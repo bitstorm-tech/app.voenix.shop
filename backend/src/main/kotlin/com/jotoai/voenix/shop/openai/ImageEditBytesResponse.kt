@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.openai.api.dto
+package com.jotoai.voenix.shop.openai
 
 /**
  * Response containing raw image bytes from OpenAI API instead of stored filenames.

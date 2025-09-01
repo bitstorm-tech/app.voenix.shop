@@ -1,10 +1,5 @@
-package com.jotoai.voenix.shop.openai.api
+package com.jotoai.voenix.shop.openai
 
-import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
-import com.jotoai.voenix.shop.openai.api.dto.ImageEditBytesResponse
-import com.jotoai.voenix.shop.openai.api.dto.ImageEditResponse
-import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
-import com.jotoai.voenix.shop.openai.api.dto.TestPromptResponse
 import org.springframework.web.multipart.MultipartFile
 
 /**

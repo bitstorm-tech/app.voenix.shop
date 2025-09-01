@@ -1,6 +1,5 @@
-package com.jotoai.voenix.shop.openai.api
+package com.jotoai.voenix.shop.openai
 
-import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
 
 /**
  * Simplified service interface for AI image generation operations using OpenAI.

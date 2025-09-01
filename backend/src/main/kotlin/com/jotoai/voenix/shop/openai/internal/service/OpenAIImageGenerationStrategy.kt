@@ -1,14 +1,14 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.jotoai.voenix.shop.openai.ImageGenerationStrategy
+import com.jotoai.voenix.shop.openai.CreateImageEditRequest
+import com.jotoai.voenix.shop.openai.ImageEditBytesResponse
+import com.jotoai.voenix.shop.openai.TestPromptRequest
+import com.jotoai.voenix.shop.openai.TestPromptRequestParams
+import com.jotoai.voenix.shop.openai.TestPromptResponse
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.core.JsonProcessingException
-import com.jotoai.voenix.shop.openai.api.ImageGenerationStrategy
-import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
-import com.jotoai.voenix.shop.openai.api.dto.ImageEditBytesResponse
-import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
-import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequestParams
-import com.jotoai.voenix.shop.openai.api.dto.TestPromptResponse
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import io.github.oshai.kotlinlogging.KotlinLogging

@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.openai.api
+package com.jotoai.voenix.shop.openai
 
 /**
  * Query service interface for OpenAI image generation operations.

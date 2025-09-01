@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.openai.api.exception
+package com.jotoai.voenix.shop.openai
 
 /**
  * Base exception for all OpenAI module related errors.

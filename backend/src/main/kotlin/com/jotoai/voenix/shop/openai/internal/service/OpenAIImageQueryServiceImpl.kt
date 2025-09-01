@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
-import com.jotoai.voenix.shop.openai.api.OpenAIImageQueryService
+import com.jotoai.voenix.shop.openai.OpenAIImageQueryService
 import org.springframework.stereotype.Service
 
 /**

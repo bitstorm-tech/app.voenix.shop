@@ -1,8 +1,6 @@
-package com.jotoai.voenix.shop.openai.api
+package com.jotoai.voenix.shop.openai
 
 import com.jotoai.voenix.shop.image.CropArea
-import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
-import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationResponse
 import org.springframework.web.multipart.MultipartFile
 import java.util.UUID
 

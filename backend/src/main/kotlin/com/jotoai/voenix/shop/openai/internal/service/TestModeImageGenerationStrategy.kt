@@ -1,11 +1,11 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
-import com.jotoai.voenix.shop.openai.api.ImageGenerationStrategy
-import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
-import com.jotoai.voenix.shop.openai.api.dto.ImageEditBytesResponse
-import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
-import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequestParams
-import com.jotoai.voenix.shop.openai.api.dto.TestPromptResponse
+import com.jotoai.voenix.shop.openai.CreateImageEditRequest
+import com.jotoai.voenix.shop.openai.ImageEditBytesResponse
+import com.jotoai.voenix.shop.openai.ImageGenerationStrategy
+import com.jotoai.voenix.shop.openai.TestPromptRequest
+import com.jotoai.voenix.shop.openai.TestPromptRequestParams
+import com.jotoai.voenix.shop.openai.TestPromptResponse
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

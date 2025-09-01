@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.openai.internal.web
 
-import com.jotoai.voenix.shop.openai.api.OpenAIImageFacade
-import com.jotoai.voenix.shop.openai.api.dto.CreateImageEditRequest
-import com.jotoai.voenix.shop.openai.api.dto.ImageEditResponse
-import com.jotoai.voenix.shop.openai.api.dto.TestPromptRequest
-import com.jotoai.voenix.shop.openai.api.dto.TestPromptResponse
+import com.jotoai.voenix.shop.openai.CreateImageEditRequest
+import com.jotoai.voenix.shop.openai.ImageEditResponse
+import com.jotoai.voenix.shop.openai.OpenAIImageFacade
+import com.jotoai.voenix.shop.openai.TestPromptRequest
+import com.jotoai.voenix.shop.openai.TestPromptResponse
 import com.jotoai.voenix.shop.openai.internal.web.dto.TestPromptForm
 import jakarta.validation.Valid
 import org.springframework.http.MediaType

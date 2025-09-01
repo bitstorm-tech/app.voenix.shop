@@ -12,11 +12,11 @@ import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.UploadedImageDto
 import com.jotoai.voenix.shop.image.ValidationRequest
-import com.jotoai.voenix.shop.openai.api.ImageGenerationService
-import com.jotoai.voenix.shop.openai.api.OpenAIImageGenerationService
-import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationRequest
-import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationResponse
-import com.jotoai.voenix.shop.openai.api.exception.ImageGenerationException
+import com.jotoai.voenix.shop.openai.ImageGenerationService
+import com.jotoai.voenix.shop.openai.OpenAIImageGenerationService
+import com.jotoai.voenix.shop.openai.ImageGenerationRequest
+import com.jotoai.voenix.shop.openai.ImageGenerationResponse
+import com.jotoai.voenix.shop.openai.ImageGenerationException
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service

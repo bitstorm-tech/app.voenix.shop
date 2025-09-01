@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.openai.api.enums
+package com.jotoai.voenix.shop.openai
 
 enum class ImageQuality(
     val apiValue: String,

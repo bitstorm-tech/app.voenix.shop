@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.openai.api.dto
+package com.jotoai.voenix.shop.openai
 
 data class TestPromptResponse(
     val imageUrl: String,
