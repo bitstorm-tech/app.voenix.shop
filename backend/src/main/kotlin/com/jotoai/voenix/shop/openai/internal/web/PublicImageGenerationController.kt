@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/public/openai/images")
+@RequestMapping("/api/public/ai/images")
 class PublicImageGenerationController(
     private val openAIImageService: OpenAIImageService,
     private val clientIpResolver: ClientIpResolver,

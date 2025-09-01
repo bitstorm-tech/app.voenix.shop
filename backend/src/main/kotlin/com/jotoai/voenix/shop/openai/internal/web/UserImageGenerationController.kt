@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-@RequestMapping("/api/user/openai/images")
+@RequestMapping("/api/user/ai/images")
 @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
 class UserImageGenerationController(
     private val imageService: ImageService,

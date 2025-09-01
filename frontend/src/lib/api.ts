@@ -18,6 +18,7 @@ import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
 import type { PromptSlotType, PromptSlotVariant } from '@/types/promptSlotVariant';
 import type { CreateSupplierRequest, Supplier, UpdateSupplierRequest } from '@/types/supplier';
 import type { CreateValueAddedTaxRequest, UpdateValueAddedTaxRequest, ValueAddedTax } from '@/types/vat';
+
 export type { CreateValueAddedTaxRequest, UpdateValueAddedTaxRequest } from '@/types/vat';
 
 export class ApiError extends Error {
@@ -505,7 +506,7 @@ export const userApi = {
       formData.append('cropHeight', cropData.croppedAreaPixels.height.toString());
     }
 
-    const response = await fetch('/api/user/images/generate', {
+    const response = await fetch('/api/user/ai/images/generate', {
       method: 'POST',
       body: formData,
       credentials: 'include',

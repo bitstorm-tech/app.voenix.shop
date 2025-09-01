@@ -74,5 +74,11 @@ class SecurityConfig {
                     .logoutUrl("/api/auth/logout")
                     .invalidateHttpSession(true)
                     .clearAuthentication(true)
+                    .logoutSuccessHandler { _, response, _ ->
+                        response.status = HttpStatus.OK.value()
+                        response.contentType = "application/json"
+                        response.writer.write("{\"message\":\"Logged out successfully\"}")
+                        response.writer.flush()
+                    }
             }.build()
 }

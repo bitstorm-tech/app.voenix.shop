@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 
 @RestController
-@RequestMapping("/api/admin/openai")
+@RequestMapping("/api/admin/ai")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminOpenAIImageController(
     private val openAIImageService: OpenAIImageService,
