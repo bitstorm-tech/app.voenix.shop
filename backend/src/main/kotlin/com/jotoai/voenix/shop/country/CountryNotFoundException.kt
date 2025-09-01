@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.country.api.exceptions
+package com.jotoai.voenix.shop.country
 
 /**
  * Exception thrown when a country is not found.

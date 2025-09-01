@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.country.internal.entity
 
-import com.jotoai.voenix.shop.country.api.dto.CountryDto
+import com.jotoai.voenix.shop.country.CountryDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue

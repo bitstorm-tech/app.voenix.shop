@@ -1,7 +1,4 @@
-package com.jotoai.voenix.shop.country.api
-
-import com.jotoai.voenix.shop.country.api.dto.CountryDto
-import com.jotoai.voenix.shop.country.api.exceptions.CountryNotFoundException
+package com.jotoai.voenix.shop.country
 
 /**
  * Unified service interface for Country module operations.

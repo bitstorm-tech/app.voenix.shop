@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.supplier.internal.service
 
-import com.jotoai.voenix.shop.country.api.CountryService
-import com.jotoai.voenix.shop.country.api.dto.CountryDto
-import com.jotoai.voenix.shop.country.api.exceptions.CountryNotFoundException
+import com.jotoai.voenix.shop.country.CountryDto
+import com.jotoai.voenix.shop.country.CountryNotFoundException
+import com.jotoai.voenix.shop.country.CountryService
 import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
