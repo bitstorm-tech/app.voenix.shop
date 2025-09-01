@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.openai.web
+package com.jotoai.voenix.shop.openai.internal.web
 
 import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.image.ImageData
@@ -8,7 +8,7 @@ import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.UploadedImageDto
 import com.jotoai.voenix.shop.openai.api.ImageGenerationService
 import com.jotoai.voenix.shop.openai.api.dto.ImageGenerationResponse
-import com.jotoai.voenix.shop.openai.web.dto.ImageGenerationForm
+import com.jotoai.voenix.shop.openai.internal.web.dto.ImageGenerationForm
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.http.MediaType

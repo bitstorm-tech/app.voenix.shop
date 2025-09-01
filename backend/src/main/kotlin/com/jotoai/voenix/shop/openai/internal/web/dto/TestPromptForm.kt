@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.openai.web.dto
+package com.jotoai.voenix.shop.openai.internal.web.dto
 
 import org.springframework.web.multipart.MultipartFile
 
