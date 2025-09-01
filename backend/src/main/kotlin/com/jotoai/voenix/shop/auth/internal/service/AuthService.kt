@@ -47,12 +47,10 @@ class AuthService(
                 request = request,
                 response = response,
             )
-        } catch (e: Exception) {
-            when (e) {
-                is BadCredentialsException, is UsernameNotFoundException ->
-                    throw InvalidCredentialsException()
-                else -> throw e
-            }
+        } catch (e: BadCredentialsException) {
+            throw InvalidCredentialsException("Invalid credentials", e)
+        } catch (e: UsernameNotFoundException) {
+            throw InvalidCredentialsException("Invalid credentials", e)
         }
     }
 

@@ -58,14 +58,12 @@ class ImageOperationsService(
     ): T =
         try {
             block()
-        } catch (e: Exception) {
-            when (e) {
-                is ImageException, is ResourceNotFoundException -> throw e
-                else -> {
-                    logger.error(e) { "$operation failed" }
-                    throw ImageException.Storage("$operation: ${e.message}", e)
-                }
-            }
+        } catch (e: IllegalArgumentException) {
+            logger.error(e) { "$operation failed" }
+            throw ImageException.Storage("$operation: ${e.message}", e)
+        } catch (e: IllegalStateException) {
+            logger.error(e) { "$operation failed" }
+            throw ImageException.Storage("$operation: ${e.message}", e)
         }
 
     fun createUploadedImage(

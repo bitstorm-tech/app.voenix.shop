@@ -4,6 +4,7 @@ import com.jotoai.voenix.shop.image.CountFilter
 import com.jotoai.voenix.shop.image.GeneratedImageDto
 import com.jotoai.voenix.shop.image.ImageContent
 import com.jotoai.voenix.shop.image.ImageData
+import com.jotoai.voenix.shop.image.ImageException
 import com.jotoai.voenix.shop.image.ImageInfo
 import com.jotoai.voenix.shop.image.ImageMetadata
 import com.jotoai.voenix.shop.image.ImageService
@@ -134,7 +135,13 @@ class ImageServiceImpl(
                     )
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: ImageException) {
+            logger.warn(e) { "Validation failed: ${e.message}" }
+            ValidationResult(valid = false, message = e.message)
+        } catch (e: IllegalArgumentException) {
+            logger.warn(e) { "Validation failed: ${e.message}" }
+            ValidationResult(valid = false, message = e.message)
+        } catch (e: IllegalStateException) {
             logger.warn(e) { "Validation failed: ${e.message}" }
             ValidationResult(valid = false, message = e.message)
         }

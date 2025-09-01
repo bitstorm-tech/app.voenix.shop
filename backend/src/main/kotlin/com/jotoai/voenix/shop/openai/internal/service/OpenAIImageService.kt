@@ -290,7 +290,17 @@ class OpenAIImageService(
 
                 val imageBytesList = extractImageBytes(response.data!!)
                 ImageEditBytesResponse(imageBytes = imageBytesList)
-            } catch (e: Exception) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: HttpRequestTimeoutException) {
+                handleApiError(e, "Image generation")
+            } catch (e: SocketTimeoutException) {
+                handleApiError(e, "Image generation")
+            } catch (e: ResponseException) {
+                handleApiError(e, "Image generation")
+            } catch (e: JsonProcessingException) {
+                handleApiError(e, "Image generation")
+            } catch (e: IOException) {
                 handleApiError(e, "Image generation")
             }
         }
@@ -358,7 +368,17 @@ class OpenAIImageService(
                             background = request.getBackground().apiValue,
                         ),
                 )
-            } catch (e: Exception) {
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: HttpRequestTimeoutException) {
+                handleApiError(e, "Prompt testing")
+            } catch (e: SocketTimeoutException) {
+                handleApiError(e, "Prompt testing")
+            } catch (e: ResponseException) {
+                handleApiError(e, "Prompt testing")
+            } catch (e: JsonProcessingException) {
+                handleApiError(e, "Prompt testing")
+            } catch (e: IOException) {
                 handleApiError(e, "Prompt testing")
             }
         }
