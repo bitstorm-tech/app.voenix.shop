@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.openai.internal.web
 
 import com.jotoai.voenix.shop.openai.CreateImageEditRequest
 import com.jotoai.voenix.shop.openai.ImageEditResponse
-import com.jotoai.voenix.shop.openai.OpenAIImageFacade
+import com.jotoai.voenix.shop.openai.internal.service.OpenAIImageFacadeImpl
 import com.jotoai.voenix.shop.openai.TestPromptRequest
 import com.jotoai.voenix.shop.openai.TestPromptResponse
 import com.jotoai.voenix.shop.openai.internal.web.dto.TestPromptForm
@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile
 @RequestMapping("/api/admin/openai")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminOpenAIImageController(
-    private val openAIImageFacade: OpenAIImageFacade,
+    private val openAIImageFacade: OpenAIImageFacadeImpl,
 ) {
     @PostMapping("/image-edit", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun createImageEdit(

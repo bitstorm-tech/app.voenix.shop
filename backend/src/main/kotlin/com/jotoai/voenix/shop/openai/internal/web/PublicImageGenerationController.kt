@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.openai.internal.web
 
 import com.jotoai.voenix.shop.application.internal.service.ClientIpResolver
-import com.jotoai.voenix.shop.openai.ImageGenerationService
+import com.jotoai.voenix.shop.openai.internal.service.ImageGenerationFacadeImpl
 import com.jotoai.voenix.shop.openai.ImageGenerationRequest
 import com.jotoai.voenix.shop.openai.ImageGenerationResponse
 import com.jotoai.voenix.shop.image.CropArea
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/api/public/openai/images")
 class PublicImageGenerationController(
-    private val imageGenerationService: ImageGenerationService,
+    private val imageGenerationService: ImageGenerationFacadeImpl,
     private val clientIpResolver: ClientIpResolver,
 ) {
     companion object {

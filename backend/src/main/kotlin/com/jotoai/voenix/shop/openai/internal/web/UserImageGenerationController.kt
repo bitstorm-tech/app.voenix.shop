@@ -6,8 +6,8 @@ import com.jotoai.voenix.shop.image.ImageMetadata
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.UploadedImageDto
-import com.jotoai.voenix.shop.openai.ImageGenerationService
 import com.jotoai.voenix.shop.openai.ImageGenerationResponse
+import com.jotoai.voenix.shop.openai.internal.service.ImageGenerationFacadeImpl
 import com.jotoai.voenix.shop.openai.internal.web.dto.ImageGenerationForm
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController
 @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
 class UserImageGenerationController(
     private val imageService: ImageService,
-    private val imageGenerationService: ImageGenerationService,
+    private val imageGenerationService: ImageGenerationFacadeImpl,
     private val userService: UserService,
 ) {
     companion object {
@@ -56,7 +56,6 @@ class UserImageGenerationController(
                 form.promptId,
                 uploadedImageDto.uuid,
                 user.id,
-                null,
             )
 
         logger.info { "Generated ${response.generatedImageIds.size} images for user ${user.id}" }

@@ -4,7 +4,6 @@ import com.jotoai.voenix.shop.image.ImageData
 import com.jotoai.voenix.shop.image.ImageMetadata
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.openai.ImageGenerationStrategy
-import com.jotoai.voenix.shop.openai.OpenAIImageFacade
 import com.jotoai.voenix.shop.openai.CreateImageEditRequest
 import com.jotoai.voenix.shop.openai.ImageEditBytesResponse
 import com.jotoai.voenix.shop.openai.ImageEditResponse
@@ -28,7 +27,7 @@ import java.io.InputStream
 class OpenAIImageFacadeImpl(
     private val imageService: ImageService,
     private val imageGenerationStrategy: ImageGenerationStrategy,
-) : OpenAIImageFacade {
+) {
     companion object {
         private val logger = KotlinLogging.logger {}
     }
@@ -37,7 +36,7 @@ class OpenAIImageFacadeImpl(
      * Edits an image and returns raw image bytes without storing them.
      * Delegates to the configured ImageGenerationStrategy.
      */
-    override fun editImageBytes(
+    fun editImageBytes(
         imageFile: MultipartFile,
         request: CreateImageEditRequest,
     ): ImageEditBytesResponse {
@@ -53,7 +52,7 @@ class OpenAIImageFacadeImpl(
         }
     }
 
-    override fun editImageBytes(
+    fun editImageBytes(
         imageBytes: ByteArray,
         request: CreateImageEditRequest,
     ): ImageEditBytesResponse {
@@ -65,7 +64,7 @@ class OpenAIImageFacadeImpl(
      * Edits an image and stores the results, returning filenames.
      * Uses the strategy pattern for generation and then handles storage.
      */
-    override fun editImage(
+    fun editImage(
         imageFile: MultipartFile,
         request: CreateImageEditRequest,
     ): ImageEditResponse {
@@ -97,7 +96,7 @@ class OpenAIImageFacadeImpl(
     /**
      * Tests a prompt with the configured generation strategy.
      */
-    override fun testPrompt(
+    fun testPrompt(
         imageFile: MultipartFile,
         request: TestPromptRequest,
     ): TestPromptResponse {

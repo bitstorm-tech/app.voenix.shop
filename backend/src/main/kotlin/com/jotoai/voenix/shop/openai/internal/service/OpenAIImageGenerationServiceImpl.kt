@@ -2,8 +2,6 @@ package com.jotoai.voenix.shop.openai.internal.service
 
 import com.jotoai.voenix.shop.openai.CreateImageEditRequest
 import com.jotoai.voenix.shop.openai.ImageGenerationRequest
-import com.jotoai.voenix.shop.openai.OpenAIImageFacade
-import com.jotoai.voenix.shop.openai.OpenAIImageGenerationService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 
@@ -13,24 +11,13 @@ import org.springframework.stereotype.Service
  */
 @Service
 class OpenAIImageGenerationServiceImpl(
-    private val openAIImageFacade: OpenAIImageFacade,
-) : OpenAIImageGenerationService {
+    private val openAIImageFacade: OpenAIImageFacadeImpl,
+) {
     companion object {
         private val logger = KotlinLogging.logger {}
     }
 
-    override fun generateImages(
-        imageBytes: ByteArray,
-        request: ImageGenerationRequest,
-    ): List<ByteArray> {
-        logger.info { "Generating images with OpenAI for prompt ID: ${request.promptId}" }
-        val openAIRequest = createOpenAIRequest(request)
-        val imageEditResponse = openAIImageFacade.editImageBytes(imageBytes, openAIRequest)
-        logger.info { "Successfully generated ${imageEditResponse.imageBytes.size} images with OpenAI" }
-        return imageEditResponse.imageBytes
-    }
-
-    override fun generateImages(
+    fun generateImages(
         imageBytes: ByteArray,
         promptId: Long,
     ): List<ByteArray> {

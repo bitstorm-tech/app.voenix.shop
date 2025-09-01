@@ -3,7 +3,6 @@ package com.jotoai.voenix.shop.openai.internal.service
 import com.jotoai.voenix.shop.application.BadRequestException
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.CountFilter
-import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.image.GeneratedImageDto
 import com.jotoai.voenix.shop.image.ImageData
 import com.jotoai.voenix.shop.image.ImageException
@@ -12,11 +11,8 @@ import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.UploadedImageDto
 import com.jotoai.voenix.shop.image.ValidationRequest
-import com.jotoai.voenix.shop.openai.ImageGenerationService
-import com.jotoai.voenix.shop.openai.OpenAIImageGenerationService
 import com.jotoai.voenix.shop.openai.ImageGenerationRequest
 import com.jotoai.voenix.shop.openai.ImageGenerationResponse
-import com.jotoai.voenix.shop.openai.ImageGenerationException
 import com.jotoai.voenix.shop.user.api.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -32,9 +28,9 @@ import java.util.UUID
 @Service
 class ImageGenerationFacadeImpl(
     private val imageService: ImageService,
-    private val openAIImageGenerationService: OpenAIImageGenerationService,
+    private val openAIImageGenerationService: OpenAIImageGenerationServiceImpl,
     private val userService: UserService,
-) : ImageGenerationService {
+) {
     companion object {
         private val logger = KotlinLogging.logger {}
         private const val PUBLIC_RATE_LIMIT_HOURS = 1
@@ -44,7 +40,7 @@ class ImageGenerationFacadeImpl(
     }
 
     @Transactional
-    override fun generatePublicImage(
+    fun generatePublicImage(
         request: ImageGenerationRequest,
         ipAddress: String,
         imageFile: MultipartFile,
@@ -76,24 +72,11 @@ class ImageGenerationFacadeImpl(
         }
     }
 
-    override fun generateUserImage(
-        promptId: Long,
-        uploadedImageUuid: UUID?,
-        userId: Long,
-        cropArea: CropArea?,
-    ): String {
-        logger.info { "Generating user image: user=$userId, prompt=$promptId" }
-        requireNotNull(uploadedImageUuid) { "uploadedImageUuid is required for user image generation" }
-        val response = generateUserImageWithIds(promptId, uploadedImageUuid, userId, cropArea)
-        return response.imageUrls.firstOrNull() ?: throw ImageGenerationException("No images generated")
-    }
-
     @Transactional
-    override fun generateUserImageWithIds(
+    fun generateUserImageWithIds(
         promptId: Long,
         uploadedImageUuid: UUID?,
         userId: Long,
-        cropArea: CropArea?,
     ): ImageGenerationResponse {
         logger.info { "Generating image: user=$userId, prompt=$promptId" }
         requireNotNull(uploadedImageUuid) { "uploadedImageUuid is required for user image generation" }
@@ -117,33 +100,6 @@ class ImageGenerationFacadeImpl(
             )
         } catch (e: ImageException.Storage) {
             handleSystemError(e, "user image generation")
-        }
-    }
-
-    override fun isRateLimited(
-        userId: Long?,
-        ipAddress: String?,
-    ): Boolean {
-        logger.debug { "Rate limit check for userId=$userId, ipAddress=$ipAddress" }
-
-        return try {
-            if (userId != null) {
-                val dayAgo = LocalDateTime.now().minusHours(USER_RATE_LIMIT_HOURS.toLong())
-                val count = imageService.count(CountFilter(userId = userId, after = dayAgo))
-                count >= USER_MAX_GENERATIONS_PER_DAY
-            } else if (ipAddress != null) {
-                val hourAgo = LocalDateTime.now().minusHours(PUBLIC_RATE_LIMIT_HOURS.toLong())
-                val count = imageService.count(CountFilter(ipAddress = ipAddress, after = hourAgo))
-                count >= PUBLIC_MAX_GENERATIONS_PER_HOUR
-            } else {
-                false
-            }
-        } catch (e: IllegalArgumentException) {
-            logger.warn(e) { "Error checking rate limit" }
-            false // Default to allowing if we can't check
-        } catch (e: IllegalStateException) {
-            logger.warn(e) { "Error checking rate limit" }
-            false // Default to allowing if we can't check
         }
     }
 
