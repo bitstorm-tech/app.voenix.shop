@@ -23,8 +23,7 @@ interface OrderService {
      * @param userId The ID of the user creating the order
      * @param request The order creation request containing customer and address information
      * @return The created order DTO
-     * @throws BadRequestException if no active cart found or cart is empty
-     * @throws OrderAlreadyExistsException if an order already exists for the cart
+     * @throws BadRequestException if no active cart found or cart is empty or order already exists for the cart
      */
     fun createOrderFromCart(
         userId: Long,
@@ -38,7 +37,7 @@ interface OrderService {
      * @param userId The ID of the user requesting the order
      * @param orderId The ID of the order to retrieve
      * @return The order DTO
-     * @throws OrderNotFoundException if order not found or doesn't belong to the user
+     * @throws BadRequestException if order not found or doesn't belong to the user
      */
     fun getOrder(
         userId: Long,

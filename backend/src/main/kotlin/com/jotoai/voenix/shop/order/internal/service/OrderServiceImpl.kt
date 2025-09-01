@@ -14,8 +14,6 @@ import com.jotoai.voenix.shop.order.api.dto.CreateOrderRequest
 import com.jotoai.voenix.shop.order.api.dto.OrderDto
 import com.jotoai.voenix.shop.order.api.dto.OrderItemDto
 import com.jotoai.voenix.shop.order.api.enums.OrderStatus
-import com.jotoai.voenix.shop.order.api.exception.OrderAlreadyExistsException
-import com.jotoai.voenix.shop.order.api.exception.OrderNotFoundException
 import com.jotoai.voenix.shop.order.internal.assembler.AddressAssembler
 import com.jotoai.voenix.shop.order.internal.dto.OrderForPdfDto
 import com.jotoai.voenix.shop.order.internal.dto.OrderItemForPdfDto
@@ -84,7 +82,7 @@ class OrderServiceImpl(
         }
 
         if (orderRepository.existsByCartId(cartInfo.id)) {
-            throw OrderAlreadyExistsException(cartInfo.id)
+            throw BadRequestException("Order already exists for cart: ${cartInfo.id}")
         }
     }
 
@@ -246,7 +244,7 @@ class OrderServiceImpl(
     ): Order =
         orderRepository
             .findByIdAndUserId(orderId, userId)
-            .orElseThrow { OrderNotFoundException("Order", "id", orderId) }
+            .orElseThrow { BadRequestException("Order not found with id: $orderId") }
 
     private fun toDto(entity: Order): OrderDto =
         OrderDto(
