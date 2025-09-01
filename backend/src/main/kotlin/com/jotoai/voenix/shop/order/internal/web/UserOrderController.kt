@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.order.web
+package com.jotoai.voenix.shop.order.internal.web
 
 import com.jotoai.voenix.shop.application.PaginatedResponse
 import com.jotoai.voenix.shop.order.api.OrderPdfService

@@ -5,4 +5,4 @@
  * including administrative functions for managing order status and lifecycle.
  * <p>
  */
-package com.jotoai.voenix.shop.order.web;
+package com.jotoai.voenix.shop.order.internal.web;
