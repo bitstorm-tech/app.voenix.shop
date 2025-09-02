@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import { CartBadge } from '@/components/ui/CartBadge';
 import { useSession } from '@/hooks/queries/useAuth';
-import { Package, Palette } from 'lucide-react';
+import { Images, Package, Palette } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export function AppHeader() {
@@ -25,12 +25,20 @@ export function AppHeader() {
           {/* Right side - Orders and Cart */}
           <nav className="flex items-center gap-3">
             {isAuthenticated && (
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/orders">
-                  <Package className="h-4 w-4" />
-                  <span className="ml-2 hidden sm:inline">My Orders</span>
-                </Link>
-              </Button>
+              <>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/my-images">
+                    <Images className="h-4 w-4" />
+                    <span className="ml-2 hidden sm:inline">My Images</span>
+                  </Link>
+                </Button>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/orders">
+                    <Package className="h-4 w-4" />
+                    <span className="ml-2 hidden sm:inline">My Orders</span>
+                  </Link>
+                </Button>
+              </>
             )}
             <CartBadge />
           </nav>

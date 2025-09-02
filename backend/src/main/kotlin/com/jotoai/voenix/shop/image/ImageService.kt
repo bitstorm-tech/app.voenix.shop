@@ -1,4 +1,6 @@
 package com.jotoai.voenix.shop.image
+
+import com.jotoai.voenix.shop.application.PaginatedResponse
 import org.springframework.core.io.Resource
 import org.springframework.http.ResponseEntity
 import org.springframework.web.multipart.MultipartFile
@@ -120,6 +122,15 @@ interface ImageService {
         filename: String,
         userId: Long,
     ): ResponseEntity<Resource>
+
+    /**
+     * Retrieves paginated list of user's images with filtering and sorting.
+     * Combines both uploaded and generated images.
+     *
+     * @param filter Filter criteria including userId, pagination, type filter, and sorting
+     * @return Paginated response containing user's images
+     */
+    fun getUserImages(filter: UserImagesFilter): PaginatedResponse<UserImageDto>
 }
 
 /**

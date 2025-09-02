@@ -6,6 +6,7 @@ import com.jotoai.voenix.shop.prompt.api.PromptFacade
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.CreatePromptRequest
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
+import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptSummaryDto
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.UpdatePromptRequest
 import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptDto
 import com.jotoai.voenix.shop.prompt.api.exceptions.PromptNotFoundException
@@ -49,6 +50,18 @@ class PromptServiceImpl(
         promptRepository.findAllActiveWithRelations().map { prompt ->
             promptAssembler.toPublicDto(prompt)
         }
+
+    override fun getPromptSummariesByIds(ids: List<Long>): List<PromptSummaryDto> {
+        if (ids.isEmpty()) return emptyList()
+        
+        return promptRepository.findAllById(ids)
+            .map { prompt ->
+                PromptSummaryDto(
+                    id = requireNotNull(prompt.id) { "Prompt ID cannot be null" },
+                    title = prompt.title
+                )
+            }
+    }
 
     @Transactional
     override fun createPrompt(request: CreatePromptRequest): PromptDto {

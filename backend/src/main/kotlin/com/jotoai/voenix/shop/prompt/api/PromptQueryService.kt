@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.prompt.api
 
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
+import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptSummaryDto
 import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptDto
 
 /**
@@ -34,4 +35,11 @@ interface PromptQueryService {
      * @return List of public prompts suitable for public API consumption
      */
     fun getAllPublicPrompts(): List<PublicPromptDto>
+
+    /**
+     * Retrieves prompt summaries by their IDs.
+     * @param ids The list of prompt IDs to retrieve
+     * @return Map of prompt ID to prompt summary, only including found prompts
+     */
+    fun getPromptSummariesByIds(ids: List<Long>): List<PromptSummaryDto>
 }

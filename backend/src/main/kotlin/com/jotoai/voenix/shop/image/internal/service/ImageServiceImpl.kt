@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.service
 
+import com.jotoai.voenix.shop.application.PaginatedResponse
 import com.jotoai.voenix.shop.image.CountFilter
 import com.jotoai.voenix.shop.image.GeneratedImageDto
 import com.jotoai.voenix.shop.image.ImageContent
@@ -10,12 +11,17 @@ import com.jotoai.voenix.shop.image.ImageMetadata
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.image.UploadedImageDto
+import com.jotoai.voenix.shop.image.UserImageDto
+import com.jotoai.voenix.shop.image.UserImagesFilter
 import com.jotoai.voenix.shop.image.ValidationRequest
 import com.jotoai.voenix.shop.image.ValidationResult
 import com.jotoai.voenix.shop.image.internal.config.StoragePathConfiguration
 import com.jotoai.voenix.shop.image.internal.repository.GeneratedImageRepository
+import com.jotoai.voenix.shop.image.internal.repository.UploadedImageRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.core.io.Resource
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -29,9 +35,11 @@ private val logger = KotlinLogging.logger {}
  */
 @Service
 @Transactional
+@Suppress("TooManyFunctions")
 class ImageServiceImpl(
     private val imageOperationsService: ImageOperationsService,
     private val generatedImageRepository: GeneratedImageRepository,
+    private val uploadedImageRepository: UploadedImageRepository,
     private val fileStorageService: FileStorageService,
     private val storagePathConfiguration: StoragePathConfiguration,
 ) : ImageService {
@@ -165,6 +173,164 @@ class ImageServiceImpl(
 
         return fileStorageService.serveUserImage(filename, userId)
     }
+
+    @Suppress("ReturnCount")
+    override fun getUserImages(filter: UserImagesFilter): PaginatedResponse<UserImageDto> {
+        logger.debug { "Getting user images with filter: $filter" }
+
+        val pageable =
+            PageRequest.of(
+                filter.page,
+                filter.size,
+                Sort.by(
+                    Sort.Direction.fromString(filter.sortDirection),
+                    mapSortField(filter.sortBy, filter.type ?: "all"),
+                ),
+            )
+
+        val userImages = mutableListOf<UserImageDto>()
+
+        when (filter.type) {
+            "uploaded" -> {
+                val uploadedImages = uploadedImageRepository.findByUserId(filter.userId, pageable)
+                userImages.addAll(uploadedImages.content.map { mapUploadedImageToDto(it) })
+                return createPaginatedResponse(
+                    userImages,
+                    uploadedImages.totalElements,
+                    filter,
+                    uploadedImages.totalPages,
+                )
+            }
+            "generated" -> {
+                val generatedImages = generatedImageRepository.findByUserId(filter.userId, pageable)
+                userImages.addAll(generatedImages.content.map { mapGeneratedImageToDto(it, emptyMap()) })
+                return createPaginatedResponse(
+                    userImages,
+                    generatedImages.totalElements,
+                    filter,
+                    generatedImages.totalPages,
+                )
+            }
+            else -> {
+                // For "all" type, we need to combine both uploaded and generated images
+                // Since we can't easily paginate across two separate queries, we'll fetch both and combine
+                val allPageable = PageRequest.of(0, Int.MAX_VALUE, pageable.sort)
+
+                val uploadedImages = uploadedImageRepository.findByUserId(filter.userId, allPageable)
+                val generatedImages = generatedImageRepository.findByUserId(filter.userId, allPageable)
+
+                userImages.addAll(uploadedImages.content.map { mapUploadedImageToDto(it) })
+
+                userImages.addAll(generatedImages.content.map { mapGeneratedImageToDto(it, emptyMap()) })
+
+                // Sort the combined results
+                userImages.sortWith(createComparator(filter.sortBy, filter.sortDirection))
+
+                // Apply manual pagination
+                val totalElements = userImages.size.toLong()
+                val totalPages = ((totalElements + filter.size - 1) / filter.size).toInt()
+                val startIndex = filter.page * filter.size
+                val endIndex = minOf(startIndex + filter.size, userImages.size)
+
+                val pagedImages =
+                    if (startIndex < userImages.size) {
+                        userImages.subList(startIndex, endIndex)
+                    } else {
+                        emptyList()
+                    }
+
+                return createPaginatedResponse(pagedImages, totalElements, filter, totalPages)
+            }
+        }
+    }
+
+    private fun mapSortField(
+        sortBy: String,
+        type: String,
+    ): String =
+        when (sortBy) {
+            "createdAt" ->
+                when (type) {
+                    "uploaded" -> "uploadedAt"
+                    "generated" -> "generatedAt"
+                    else -> "uploadedAt" // Default for mixed queries
+                }
+            "type" -> "id" // Sort by ID as a proxy for type (uploaded vs generated)
+            else -> "uploadedAt"
+        }
+
+    private fun mapUploadedImageToDto(uploadedImage: com.jotoai.voenix.shop.image.internal.entity.UploadedImage): UserImageDto =
+        UserImageDto(
+            id = requireNotNull(uploadedImage.id) { "UploadedImage ID cannot be null" },
+            uuid = uploadedImage.uuid,
+            filename = uploadedImage.storedFilename,
+            originalFilename = uploadedImage.originalFilename,
+            type = "uploaded",
+            contentType = uploadedImage.contentType,
+            fileSize = uploadedImage.fileSize,
+            promptId = null,
+            promptTitle = null,
+            uploadedImageId = null,
+            userId = uploadedImage.userId,
+            createdAt = uploadedImage.uploadedAt,
+            imageUrl = "/api/user/images/${uploadedImage.storedFilename}",
+        )
+
+    private fun mapGeneratedImageToDto(
+        generatedImage: com.jotoai.voenix.shop.image.internal.entity.GeneratedImage,
+        promptTitles: Map<Long, String?>,
+    ): UserImageDto =
+        UserImageDto(
+            id = requireNotNull(generatedImage.id) { "GeneratedImage ID cannot be null" },
+            uuid = generatedImage.uuid,
+            filename = generatedImage.filename,
+            originalFilename = null,
+            type = "generated",
+            contentType = null,
+            fileSize = null,
+            promptId = generatedImage.promptId,
+            promptTitle = promptTitles[generatedImage.promptId],
+            uploadedImageId = generatedImage.uploadedImage?.id,
+            userId = generatedImage.userId ?: 0L,
+            createdAt = generatedImage.generatedAt,
+            imageUrl = "/api/user/images/${generatedImage.filename}",
+        )
+
+    private fun createComparator(
+        sortBy: String,
+        sortDirection: String,
+    ): Comparator<UserImageDto> {
+        val comparator =
+            when (sortBy) {
+                "createdAt" -> compareBy { it.createdAt }
+                "type" -> compareBy { it.type }
+                else -> compareBy<UserImageDto> { it.createdAt }
+            }
+
+        return if (sortDirection == "DESC") {
+            comparator.reversed()
+        } else {
+            comparator
+        }
+    }
+
+    private fun createPaginatedResponse(
+        content: List<UserImageDto>,
+        totalElements: Long,
+        filter: UserImagesFilter,
+        totalPages: Int,
+    ): PaginatedResponse<UserImageDto> =
+        PaginatedResponse(
+            content = content,
+            totalElements = totalElements,
+            totalPages = totalPages,
+            size = filter.size,
+            number = filter.page,
+            first = filter.page == 0,
+            last = filter.page >= totalPages - 1,
+            numberOfElements = content.size,
+            empty = content.isEmpty(),
+        )
 
     private fun storeFromFile(
         data: ImageData.File,

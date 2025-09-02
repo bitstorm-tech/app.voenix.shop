@@ -13,6 +13,7 @@ const CartPage = lazy(() => import('@/pages/Cart'));
 const CheckoutPage = lazy(() => import('@/pages/Checkout'));
 const OrderSuccessPage = lazy(() => import('@/pages/OrderSuccess'));
 const OrdersPage = lazy(() => import('@/pages/Orders'));
+const MyImagesPage = lazy(() => import('@/pages/MyImages'));
 const Login = lazy(() => import('@/pages/Login'));
 
 // Lazy load admin routes
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/order-success/:orderId" element={<OrderSuccessPage />} />
             <Route path="/orders" element={<OrdersPage />} />
+            <Route path="/my-images" element={<MyImagesPage />} />
             <Route path="/login" element={<Login />} />
 
             <Route element={<ProtectedRoute />}>
