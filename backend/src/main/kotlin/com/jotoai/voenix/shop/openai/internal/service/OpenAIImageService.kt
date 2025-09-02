@@ -97,6 +97,7 @@ class OpenAIImageService(
         private const val PUBLIC_MAX_GENERATIONS_PER_HOUR = 10
         private const val USER_RATE_LIMIT_HOURS = 24
         private const val USER_MAX_GENERATIONS_PER_DAY = 50
+        private const val DEBUG_TEXT_PREVIEW_LENGTH = 50
     }
 
     init {
@@ -156,22 +157,26 @@ class OpenAIImageService(
         val parts: List<GeminiPart>,
     )
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiPart(
         val text: String? = null,
-        @JsonProperty("inline_data") val inlineData: GeminiInlineData? = null,
+        val inlineData: GeminiInlineData? = null,
     )
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiInlineData(
-        @JsonProperty("mime_type") val mimeType: String,
+        val mimeType: String,
         val data: String, // base64 encoded
     )
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiGenerationConfig(
         val candidateCount: Int = 1,
         val maxOutputTokens: Int? = null,
         val temperature: Float? = null,
     )
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiSafetySetting(
         val category: String,
         val threshold: String,
@@ -787,20 +792,46 @@ class OpenAIImageService(
             }
         }
 
-    private suspend fun extractGeminiImageBytes(candidates: List<GeminiCandidate>): List<ByteArray> =
-        candidates
+    private suspend fun extractGeminiImageBytes(candidates: List<GeminiCandidate>): List<ByteArray> {
+        logger.debug { "Processing ${candidates.size} candidates for image data" }
+
+        candidates.forEachIndexed { index, candidate ->
+            logger.debug {
+                "Candidate $index: content=${candidate.content != null}, parts=${candidate.content?.parts?.size ?: 0}"
+            }
+            candidate.content?.parts?.forEachIndexed { partIndex, part ->
+                logger.debug {
+                    "  Part $partIndex: text='${part.text?.take(DEBUG_TEXT_PREVIEW_LENGTH)}...', " +
+                        "inlineData=${part.inlineData != null}"
+                }
+                if (part.inlineData != null) {
+                    logger.debug {
+                        "    InlineData mimeType: ${part.inlineData.mimeType}, " +
+                            "dataLength: ${part.inlineData.data.length}"
+                    }
+                }
+            }
+        }
+
+        return candidates
             .mapNotNull { candidate ->
                 candidate.content?.parts?.find { it.inlineData != null }?.let { part ->
                     part.inlineData?.let { inlineData ->
+                        logger.info {
+                            "Found image data with mimeType: ${inlineData.mimeType}, " +
+                                "dataLength: ${inlineData.data.length}"
+                        }
                         logger.debug { "Decoding base64 image from Gemini response" }
                         Base64.decode(inlineData.data)
                     }
                 }
             }.also { imageList ->
+                logger.debug { "Extracted ${imageList.size} images from Gemini response" }
                 if (imageList.isEmpty()) {
                     error("Google Gemini response contains no image data")
                 }
             }
+    }
 
     private fun handleApiError(
         e: Exception,

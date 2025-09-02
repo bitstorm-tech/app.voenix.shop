@@ -73,7 +73,9 @@
       "mcp__puppeteer__puppeteer_screenshot",
       "Bash(find:*)",
       "Bash(grep:*)",
-      "WebFetch(domain:ai.google.dev)"
+      "WebFetch(domain:ai.google.dev)",
+      "mcp__playwright__browser_fill_form",
+      "mcp__playwright__browser_select_option"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
