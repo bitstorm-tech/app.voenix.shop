@@ -90,6 +90,8 @@ class OpenAIImageService(
     companion object {
         private val logger = KotlinLogging.logger {}
         private const val OPENAI_API_URL = "https://api.openai.com/v1/images/edits"
+        private const val GEMINI_API_URL =
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent"
         private const val REQUEST_TIMEOUT_MS = 300000L // 5 minutes in milliseconds
         private const val PUBLIC_RATE_LIMIT_HOURS = 1
         private const val PUBLIC_MAX_GENERATIONS_PER_HOUR = 10
@@ -140,6 +142,60 @@ class OpenAIImageService(
         val url: String? = null,
         @JsonProperty("b64_json") val b64Json: String? = null,
         @JsonProperty("revised_prompt") val revisedPrompt: String? = null,
+    )
+
+    // Google Gemini API data classes
+    data class GeminiRequest(
+        val contents: List<GeminiContent>,
+        val generationConfig: GeminiGenerationConfig? = null,
+        val safetySettings: List<GeminiSafetySetting>? = null,
+    )
+
+    data class GeminiContent(
+        val parts: List<GeminiPart>,
+    )
+
+    data class GeminiPart(
+        val text: String? = null,
+        @JsonProperty("inline_data") val inlineData: GeminiInlineData? = null,
+    )
+
+    data class GeminiInlineData(
+        @JsonProperty("mime_type") val mimeType: String,
+        val data: String, // base64 encoded
+    )
+
+    data class GeminiGenerationConfig(
+        val candidateCount: Int = 1,
+        val maxOutputTokens: Int? = null,
+        val temperature: Float? = null,
+    )
+
+    data class GeminiSafetySetting(
+        val category: String,
+        val threshold: String,
+    )
+
+    data class GeminiResponse(
+        val candidates: List<GeminiCandidate>? = null,
+        val error: GeminiError? = null,
+    )
+
+    data class GeminiCandidate(
+        val content: GeminiContent? = null,
+        val finishReason: String? = null,
+        val safetyRatings: List<GeminiSafetyRating>? = null,
+    )
+
+    data class GeminiSafetyRating(
+        val category: String,
+        val probability: String,
+    )
+
+    data class GeminiError(
+        val code: Int,
+        val message: String,
+        val status: String? = null,
     )
 
     @Transactional
@@ -417,30 +473,34 @@ class OpenAIImageService(
         prompt: PromptDto,
     ): ImageEditBytesResponse =
         runBlocking {
-            logger.info { "Starting Google AI image generation with prompt ID: ${request.promptId}" }
+            logger.info { "Starting Google Gemini image generation with prompt ID: ${request.promptId}" }
 
             if (googleApiKey.isEmpty()) {
                 throw ImageGenerationException("Google API key not configured")
             }
 
             try {
-                // Google Imagen API implementation
-                // For now, we'll create a placeholder that mimics the response structure
-                // In production, this would call Google's Imagen API
                 val promptText = buildFinalPrompt(prompt)
+                val response =
+                    callGeminiAPI(
+                        imageFile = imageFile,
+                        promptText = promptText,
+                        n = request.n,
+                    )
 
-                // Placeholder for Google Imagen API implementation
-                // This will be implemented when Google API credentials are available
-                logger.warn { "Google provider implementation pending - using mock response" }
-
-                // Return mock data for now
-                val mockImageBytes = imageFile.bytes
-                val imageList = (1..request.n).map { mockImageBytes.copyOf() }
-
-                ImageEditBytesResponse(imageBytes = imageList)
+                val imageBytesList = extractGeminiImageBytes(response.candidates!!)
+                ImageEditBytesResponse(imageBytes = imageBytesList)
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (e: HttpRequestTimeoutException) {
+                handleApiError(e, "Google image generation")
+            } catch (e: SocketTimeoutException) {
+                handleApiError(e, "Google image generation")
+            } catch (e: ResponseException) {
+                handleApiError(e, "Google image generation")
+            } catch (e: JsonProcessingException) {
+                handleApiError(e, "Google image generation")
+            } catch (e: IOException) {
                 handleApiError(e, "Google image generation")
             }
         }
@@ -480,11 +540,11 @@ class OpenAIImageService(
         }
 
     private fun generateGooglePromptResponse(
-        @Suppress("UNUSED_PARAMETER") imageFile: MultipartFile,
+        imageFile: MultipartFile,
         request: TestPromptRequest,
     ): TestPromptResponse =
         runBlocking {
-            logger.info { "Starting Google AI prompt test with master prompt: ${request.masterPrompt}" }
+            logger.info { "Starting Google Gemini prompt test with master prompt: ${request.masterPrompt}" }
 
             if (googleApiKey.isEmpty()) {
                 throw ImageGenerationException("Google API key not configured")
@@ -493,19 +553,27 @@ class OpenAIImageService(
             try {
                 val combinedPrompt = "${request.masterPrompt} ${request.specificPrompt}".trim()
 
-                // Placeholder for Google Imagen API prompt testing
-                logger.warn { "Google provider prompt test implementation pending - using mock response" }
+                val response =
+                    callGeminiAPI(
+                        imageFile = imageFile,
+                        promptText = combinedPrompt,
+                        n = 1,
+                    )
 
-                val mockImageUrl = "https://test-mode.voenix.shop/images/google-mock-${UUID.randomUUID()}.png"
+                val imageBytes = extractGeminiImageBytes(response.candidates!!)
+                val imageData = ImageData.Bytes(imageBytes.first(), "gemini_test_${UUID.randomUUID()}.png")
+                val metadata = ImageMetadata(type = ImageType.PRIVATE)
+                val storedImage = imageService.store(imageData, metadata)
+                val imageUrl = imageService.getUrl(storedImage.filename, ImageType.PRIVATE)
 
                 TestPromptResponse(
-                    imageUrl = mockImageUrl,
+                    imageUrl = imageUrl,
                     requestParams =
                         TestPromptRequestParams(
-                            model = "imagen-2",
+                            model = "gemini-2.5-flash-image-preview",
                             size = request.getSize().apiValue,
                             n = 1,
-                            responseFormat = "url",
+                            responseFormat = "base64",
                             masterPrompt = request.masterPrompt,
                             specificPrompt = request.specificPrompt,
                             combinedPrompt = combinedPrompt,
@@ -515,7 +583,15 @@ class OpenAIImageService(
                 )
             } catch (e: CancellationException) {
                 throw e
-            } catch (e: Exception) {
+            } catch (e: HttpRequestTimeoutException) {
+                handleApiError(e, "Google prompt testing")
+            } catch (e: SocketTimeoutException) {
+                handleApiError(e, "Google prompt testing")
+            } catch (e: ResponseException) {
+                handleApiError(e, "Google prompt testing")
+            } catch (e: JsonProcessingException) {
+                handleApiError(e, "Google prompt testing")
+            } catch (e: IOException) {
                 handleApiError(e, "Google prompt testing")
             }
         }
@@ -611,6 +687,60 @@ class OpenAIImageService(
         return response
     }
 
+    private suspend fun callGeminiAPI(
+        imageFile: MultipartFile,
+        promptText: String,
+        n: Int = 1,
+    ): GeminiResponse {
+        val imageBytes = imageFile.bytes
+        val base64Image = Base64.encode(imageBytes)
+        val mimeType = getContentType(imageFile.originalFilename ?: "image.png")
+
+        val requestBody =
+            GeminiRequest(
+                contents =
+                    listOf(
+                        GeminiContent(
+                            parts =
+                                listOf(
+                                    GeminiPart(text = promptText),
+                                    GeminiPart(
+                                        inlineData =
+                                            GeminiInlineData(
+                                                mimeType = mimeType,
+                                                data = base64Image,
+                                            ),
+                                    ),
+                                ),
+                        ),
+                    ),
+                generationConfig =
+                    GeminiGenerationConfig(
+                        candidateCount = n,
+                        maxOutputTokens = 8192,
+                        temperature = 0.7f,
+                    ),
+            )
+
+        val httpResponse =
+            httpClient.post("$GEMINI_API_URL?key=$googleApiKey") {
+                header("Content-Type", "application/json")
+                setBody(requestBody)
+            }
+
+        if (!httpResponse.status.isSuccess()) {
+            val errorBody = httpResponse.bodyAsText()
+            logger.error { "Google Gemini API returned error status ${httpResponse.status}: $errorBody" }
+            error("Google Gemini API error: ${httpResponse.status} - $errorBody")
+        }
+
+        val response = httpResponse.body<GeminiResponse>()
+        logger.info { "Successfully received response from Google Gemini API" }
+
+        validateGeminiResponse(response)
+        return response
+    }
+
     private fun validateOpenAIResponse(response: OpenAIResponse) {
         if (response.error != null) {
             logger.error { "OpenAI API returned error: ${response.error.message}" }
@@ -620,6 +750,18 @@ class OpenAIImageService(
         if (response.data.isNullOrEmpty()) {
             logger.error { "OpenAI API returned empty or null data" }
             error("OpenAI API returned no images")
+        }
+    }
+
+    private fun validateGeminiResponse(response: GeminiResponse) {
+        if (response.error != null) {
+            logger.error { "Google Gemini API returned error: ${response.error.message}" }
+            error("Google Gemini API error: ${response.error.message}")
+        }
+
+        if (response.candidates.isNullOrEmpty()) {
+            logger.error { "Google Gemini API returned empty or null candidates" }
+            error("Google Gemini API returned no candidates")
         }
     }
 
@@ -639,6 +781,21 @@ class OpenAIImageService(
                 }
             }
         }
+
+    private suspend fun extractGeminiImageBytes(candidates: List<GeminiCandidate>): List<ByteArray> =
+        candidates
+            .mapNotNull { candidate ->
+                candidate.content?.parts?.find { it.inlineData != null }?.let { part ->
+                    part.inlineData?.let { inlineData ->
+                        logger.debug { "Decoding base64 image from Gemini response" }
+                        Base64.decode(inlineData.data)
+                    }
+                }
+            }.also { imageList ->
+                if (imageList.isEmpty()) {
+                    error("Google Gemini response contains no image data")
+                }
+            }
 
     private fun handleApiError(
         e: Exception,
