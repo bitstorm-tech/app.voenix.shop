@@ -93,62 +93,175 @@ The backend follows Spring Modulith architecture with Domain-Driven Design princ
 
 ## Spring Modulith Development Guidelines
 
-### Creating a New Module
+Spring Modulith provides a structured approach to building modular monoliths with clear boundaries and managed dependencies. The codebase follows a simplified module structure that keeps public APIs in the root package.
 
-1. **Create module package structure**:
-   ```
-   shop/newmodule/
-   ├── api/              # Public interfaces
-   │   ├── dto/          # Data transfer objects
-   │   └── exceptions/   # Module-specific exceptions
-   ├── internal/         # Private implementation
-   │   ├── entity/       # JPA entities
-   │   ├── repository/   # Spring Data repositories
-   │   └── service/      # Service implementations
-   └── package-info.java # Module definition with @ApplicationModule
-   ```
+### Module Structure
 
-2. **Define module boundaries** in `package-info.java`:
-   ```java
-   @org.springframework.modulith.ApplicationModule(
-       displayName = "Module Name",
-       allowedDependencies = {"common", "othermodule::api"}
-   )
-   package com.jotoai.voenix.shop.newmodule;
-   ```
+Each module follows this simplified structure:
 
-3. **Create public API interfaces**:
-   - `ModuleFacade` for write operations (commands)
-   - `ModuleQueryService` for read operations (queries)
-   - DTOs in `api.dto` package
-
-4. **Implement internal services** that implement the public interfaces
-
-### Module Testing
-
-Run module verification tests:
-```bash
-./gradlew test --tests "*ModulithTest"
+```
+shop/modulename/
+├── ModuleService.kt         # Public service interface
+├── ModuleDto.kt             # Public DTOs  
+├── ModuleRequest.kt         # Public Request DTOs
+└── internal/                # Private implementation
+    ├── entity/              # JPA entities
+    ├── repository/          # Spring Data repositories
+    ├── service/             # Service implementations
+    └── web/                 # REST controllers
 ```
 
-Module tests verify:
-- Module boundaries and dependencies
-- No cyclic dependencies
-- API exposure rules
-- Internal package protection
+### Creating a New Module
+
+1. **Create the module package** under `com.jotoai.voenix.shop.modulename`
+
+2. **Define the public service interface** in the root package:
+```kotlin
+// modulename/ModuleService.kt
+interface ModuleService {
+    // Query operations
+    fun getAllItems(): List<ModuleDto>
+    fun getItemById(id: Long): ModuleDto
+    
+    // Command operations  
+    fun createItem(request: CreateItemRequest): ModuleDto
+    fun updateItem(id: Long, request: UpdateItemRequest): ModuleDto
+    fun deleteItem(id: Long)
+}
+```
+
+3. **Create DTOs** in the root package for data transfer:
+```kotlin
+// modulename/ModuleDto.kt
+data class ModuleDto(
+    val id: Long,
+    val name: String,
+    // other fields
+)
+
+// modulename/ModuleRequest.kt
+data class CreateItemRequest(
+    val name: String,
+    // other fields
+)
+```
+
+4. **Implement the service** in the internal package:
+```kotlin
+// modulename/internal/service/ModuleServiceImpl.kt
+@Service
+internal class ModuleServiceImpl(
+    private val repository: ModuleRepository
+) : ModuleService {
+    // Implementation
+}
+```
+
+### Internal Package Organization
+
+The `internal` package contains all private implementation details:
+
+- **entity/**: JPA entities that are never exposed outside the module
+- **repository/**: Spring Data repositories for data access
+- **service/**: Service implementations of the public interfaces
+- **web/**: REST controllers that handle HTTP requests
+
+Important principles:
+- Keep entities in the internal package - never expose them
+- Use DTOs for all inter-module communication
+- Controllers should delegate all logic to services
+- Repositories should only be used by services within the module
 
 ### Module Communication
 
-1. **Direct API Calls**:
-   ```kotlin
-   @Service
-   class MyService(
-       private val userQueryService: UserQueryService  // Inject other module's API
-   )
-   ```
-2. **Shared Types**:
-   - Use common module for shared exceptions and utilities
-   - Module-specific DTOs in `api.dto` packages
+Modules communicate through their public service interfaces:
+
+```kotlin
+// In article module, using supplier and VAT services
+@Service
+internal class ArticleServiceImpl(
+    private val supplierService: SupplierService,  // From supplier module
+    private val vatService: VatService             // From VAT module
+) : ArticleService {
+    
+    fun calculatePrice(articleId: Long): BigDecimal {
+        val article = getArticle(articleId)
+        val supplier = supplierService.getSupplierById(article.supplierId)
+        val vat = vatService.getDefaultVat()
+        
+        // Business logic using data from other modules
+        return calculateFinalPrice(article, supplier, vat)
+    }
+}
+```
+
+### Real Examples from Codebase
+
+#### Supplier Module (Simplified Structure)
+```kotlin
+// supplier/SupplierService.kt - Unified service interface
+interface SupplierService {
+    fun getAllSuppliers(): List<SupplierDto>
+    fun getSupplierById(id: Long): SupplierDto
+    fun existsById(id: Long): Boolean
+    fun createSupplier(request: CreateSupplierRequest): SupplierDto
+    fun updateSupplier(id: Long, request: UpdateSupplierRequest): SupplierDto
+    fun deleteSupplier(id: Long)
+}
+
+// supplier/internal/service/SupplierServiceImpl.kt
+@Service
+internal class SupplierServiceImpl(
+    private val repository: SupplierRepository
+) : SupplierService {
+    // Implementation using repository
+}
+```
+
+#### VAT Module (Minimal API)
+```kotlin
+// vat/api/VatService.kt
+interface VatService {
+    fun getDefaultVat(): ValueAddedTaxDto?
+    fun getAllVats(): List<ValueAddedTaxDto>
+    fun createVat(request: CreateValueAddedTaxRequest): ValueAddedTaxDto
+}
+```
+
+### Testing Modules
+
+Run module verification tests to ensure boundaries are respected:
+
+```bash
+# Run all module tests
+./gradlew test --tests "*ModulithTest"
+
+# Verify specific module
+./gradlew test --tests "SupplierModulithTest"
+```
+
+Module tests automatically verify:
+- No cyclic dependencies between modules
+- Internal packages are not accessed from outside
+- Module boundaries are properly maintained
+
+### Common Pitfalls and Solutions
+
+#### Circular Dependencies
+**Problem**: Module A needs Module B, and Module B needs Module A
+**Solution**: Extract shared logic to a common module or reconsider module boundaries
+
+#### Exposing Internal Classes
+**Problem**: Entity or repository classes used in public APIs
+**Solution**: Always use DTOs in public interfaces, keep entities internal
+
+#### Cross-Module Database Access
+**Problem**: Multiple modules accessing the same database tables
+**Solution**: Each module should own its tables; use service APIs for data access
+
+#### Missing Internal Modifier
+**Problem**: Implementation classes accidentally public
+**Solution**: Mark all implementation classes as `internal` in Kotlin
 
 ## Development Notes
 
