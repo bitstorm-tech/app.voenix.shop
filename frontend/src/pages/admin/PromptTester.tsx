@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 type Background = 'auto' | 'transparent' | 'opaque';
 type Quality = 'low' | 'medium' | 'high';
+type Provider = 'OPENAI' | 'GOOGLE' | 'FLUX';
 
 interface OpenAiRequestParams {
   model: string;
@@ -45,6 +46,7 @@ export default function PromptTester() {
     background: 'auto' as Background,
     quality: 'low' as Quality,
     size: '1024x1024',
+    provider: 'OPENAI' as Provider,
   });
 
   const setData = useCallback(<K extends keyof typeof data>(key: K, value: (typeof data)[K]) => {
@@ -103,7 +105,10 @@ export default function PromptTester() {
     formData.append('size', data.size);
 
     try {
-      const response = await fetch('/api/admin/openai/test-prompt', {
+      const url = new URL('/api/admin/ai/test-prompt', window.location.origin);
+      url.searchParams.set('provider', data.provider);
+
+      const response = await fetch(url.toString(), {
         method: 'POST',
         credentials: 'include',
         body: formData,
@@ -148,6 +153,20 @@ export default function PromptTester() {
 
         <form onSubmit={handleSubmit} className="flex max-w-4xl flex-col gap-6">
           <div className="flex flex-wrap gap-8">
+            <div>
+              <Label htmlFor="provider">AI Provider</Label>
+              <Select value={data.provider} onValueChange={(value) => setData('provider', value as Provider)}>
+                <SelectTrigger id="provider" className="mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="OPENAI">OpenAI</SelectItem>
+                  <SelectItem value="GOOGLE">Google (Gemini)</SelectItem>
+                  <SelectItem value="FLUX">Flux</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div>
               <Label htmlFor="background">Background</Label>
               <Select value={data.background} onValueChange={(value) => setData('background', value as Background)}>
