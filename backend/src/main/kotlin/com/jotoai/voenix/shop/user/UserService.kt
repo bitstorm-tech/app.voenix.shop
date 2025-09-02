@@ -8,52 +8,38 @@ import com.jotoai.voenix.shop.application.ResourceNotFoundException
  * This interface exposes only the functions used by other modules, maintaining clean module boundaries.
  *
  * Functions used by other modules:
- * - loadUserByEmail: Used by auth module
  * - getUserById: Used by openai, cart, order, auth modules
- * - getUserByEmail: Used by openai, order, cart, image modules
- * - existsByEmail: Used by supplier, auth modules
+ * - getUserByEmail: Used by openai, order, cart, image, auth modules
  * - createUser: Used by auth module
  * - updateUser: Used by auth module
- * - getUserRoles: Used by auth module
- * - setUserRoles: Used by auth module
  *
  * @since 1.0
  */
 interface UserService {
     /**
-     * Loads user authentication details by email for authentication purposes.
-     * Returns UserAuthenticationDto to avoid circular dependencies with auth module.
-     *
-     * @param email The user's email address
-     * @return UserAuthenticationDto or null if user doesn't exist
-     */
-    fun loadUserByEmail(email: String): UserAuthenticationDto?
-
-    /**
-     * Retrieves a user by ID.
+     * Retrieves a user by ID with optional authentication data.
      *
      * @param id The user ID
+     * @param includeAuth Whether to include authentication data (passwordHash)
      * @return User DTO
      * @throws ResourceNotFoundException if user doesn't exist
      */
-    fun getUserById(id: Long): UserDto
+    fun getUserById(
+        id: Long,
+        includeAuth: Boolean = false,
+    ): UserDto
 
     /**
-     * Retrieves a user by email.
+     * Retrieves a user by email with optional authentication data.
      *
      * @param email The user email
-     * @return User DTO
-     * @throws ResourceNotFoundException if user doesn't exist
+     * @param includeAuth Whether to include authentication data (passwordHash)
+     * @return User DTO or null if user doesn't exist
      */
-    fun getUserByEmail(email: String): UserDto
-
-    /**
-     * Checks if a user exists by email.
-     *
-     * @param email The email to check
-     * @return true if a user with the email exists, false otherwise
-     */
-    fun existsByEmail(email: String): Boolean
+    fun getUserByEmail(
+        email: String,
+        includeAuth: Boolean = false,
+    ): UserDto?
 
     /**
      * Creates a new user.
@@ -65,10 +51,10 @@ interface UserService {
     fun createUser(request: CreateUserRequest): UserDto
 
     /**
-     * Updates an existing user.
+     * Updates an existing user, including roles if provided.
      *
      * @param id The user ID
-     * @param request User update request
+     * @param request User update request (includes roles)
      * @return Updated user DTO
      * @throws ResourceNotFoundException if user doesn't exist
      * @throws ResourceAlreadyExistsException if email already exists
@@ -77,26 +63,4 @@ interface UserService {
         id: Long,
         request: UpdateUserRequest,
     ): UserDto
-
-    /**
-     * Retrieves all role names assigned to a user.
-     *
-     * @param userId The ID of the user
-     * @return Set of role names assigned to the user
-     * @throws ResourceNotFoundException if user doesn't exist
-     */
-    fun getUserRoles(userId: Long): Set<String>
-
-    /**
-     * Replaces all roles for a user with the provided set of role names.
-     *
-     * @param userId The ID of the user
-     * @param roleNames Set of role names to set for the user
-     * @throws ResourceNotFoundException if user doesn't exist
-     * @throws ResourceNotFoundException if any role doesn't exist
-     */
-    fun setUserRoles(
-        userId: Long,
-        roleNames: Set<String>,
-    )
 }

@@ -58,7 +58,7 @@ class User(
      */
     fun isActive(): Boolean = deletedAt == null
 
-    fun toDto() =
+    fun toDto(includeAuth: Boolean = false) =
         UserDto(
             id = requireNotNull(this.id) { "User ID cannot be null when converting to DTO" },
             email = this.email,
@@ -67,6 +67,9 @@ class User(
             phoneNumber = this.phoneNumber,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
+            roles = this.roles.map { it.name }.toSet(),
+            isActive = this.isActive(),
+            passwordHash = if (includeAuth) this.password else null,
         )
 
     override fun equals(other: Any?): Boolean {

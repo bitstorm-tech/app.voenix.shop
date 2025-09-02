@@ -55,15 +55,9 @@ class AuthService(
     }
 
     /**
-     * Fetches user data and roles in a consolidated manner.
-     * Note: Consider optimizing to a single query once UserQueryService supports it.
+     * Fetches user data with roles in a single query.
      */
-    private fun fetchUserWithRoles(userId: Long): Pair<UserDto, Set<String>> {
-        // Currently makes 2 queries - should be optimized to 1 query with JOIN
-        val userDto = userService.getUserById(userId)
-        val userRoles = userService.getUserRoles(userId)
-        return Pair(userDto, userRoles)
-    }
+    private fun fetchUserWithRoles(userId: Long): UserDto = userService.getUserById(userId, includeAuth = false)
 
     @Transactional(readOnly = true)
     fun getCurrentSession(): SessionInfo {
@@ -75,13 +69,13 @@ class AuthService(
         return when (val principal = authentication.principal) {
             is CustomUserDetails -> {
                 try {
-                    // Optimized: Fetch user and roles together (still 2 queries but consolidated)
-                    val (userDto, userRoles) = fetchUserWithRoles(principal.id)
+                    // Optimized: Fetch user and roles together in single query
+                    val userDto = fetchUserWithRoles(principal.id)
 
                     SessionInfo(
                         authenticated = true,
                         user = userDto,
-                        roles = userRoles.toList(),
+                        roles = userDto.roles.toList(),
                     )
                 } catch (_: ResourceNotFoundException) {
                     SessionInfo(authenticated = false)
@@ -97,7 +91,7 @@ class AuthService(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ): LoginResponse {
-        if (userService.existsByEmail(registerRequest.email)) {
+        if (userService.getUserByEmail(registerRequest.email) != null) {
             throw ResourceAlreadyExistsException("User", "email", registerRequest.email)
         }
         val userDto =
@@ -124,19 +118,19 @@ class AuthService(
         response: HttpServletResponse,
     ): LoginResponse {
         val email = registerGuestRequest.email
-        val authInfo = userService.loadUserByEmail(email)
+        val existingUser = userService.getUserByEmail(email, includeAuth = true)
 
-        if (authInfo != null) {
-            if (authInfo.passwordHash == null) {
+        if (existingUser != null) {
+            if (existingUser.passwordHash == null) {
                 // Update profile fields for existing guest
                 updateUser(
-                    userId = authInfo.id,
+                    userId = existingUser.id,
                     firstName = registerGuestRequest.firstName,
                     lastName = registerGuestRequest.lastName,
                     phoneNumber = registerGuestRequest.phoneNumber,
                 )
                 return authenticateUserById(
-                    userId = authInfo.id,
+                    userId = existingUser.id,
                     request = request,
                     response = response,
                 )
@@ -177,9 +171,12 @@ class AuthService(
                 ),
             )
 
-        // Assign roles using the unified service
+        // Assign roles if provided
         if (request.roleNames.isNotEmpty()) {
-            userService.setUserRoles(userDto.id, request.roleNames)
+            return userService.updateUser(
+                userDto.id,
+                UpdateUserRequest(roles = request.roleNames),
+            )
         }
 
         return userDto
@@ -226,14 +223,14 @@ class AuthService(
         request: HttpServletRequest,
         response: HttpServletResponse,
     ): LoginResponse {
-        val (userDto, userRoles) = fetchUserWithRoles(userId)
+        val userDto = fetchUserWithRoles(userId)
 
         val userDetails =
             CustomUserDetails(
                 id = userDto.id,
                 email = userDto.email,
                 passwordHash = null,
-                userRoles = userRoles,
+                userRoles = userDto.roles,
             )
 
         val authentication =
@@ -262,8 +259,8 @@ class AuthService(
 
         // Get user details and create session
         val userDetails = authentication.principal as CustomUserDetails
-        // Optimized: Fetch user and roles together (still 2 queries but consolidated)
-        val (userDto, userRoles) = fetchUserWithRoles(userDetails.id)
+        // Optimized: Fetch user and roles together in single query
+        val userDto = fetchUserWithRoles(userDetails.id)
         val session = request.getSession(true)
         // Protect against session fixation by rotating the session ID
         request.changeSessionId()
@@ -272,7 +269,7 @@ class AuthService(
         return LoginResponse(
             user = userDto,
             sessionId = sessionId,
-            roles = userRoles.toList(),
+            roles = userDto.roles.toList(),
         )
     }
 }

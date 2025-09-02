@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.web
 
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.image.ImageData
 import com.jotoai.voenix.shop.image.ImageInfo
@@ -37,7 +38,9 @@ class AdminImageController(
         @AuthenticationPrincipal userDetails: UserDetails,
     ): ImageInfo {
         val cropArea = CropArea.fromNullable(cropX, cropY, cropWidth, cropHeight)
-        val adminUser = userService.getUserByEmail(userDetails.username)
+        val adminUser =
+            userService.getUserByEmail(userDetails.username)
+                ?: throw ResourceNotFoundException("User", "email", userDetails.username)
 
         return imageService.store(
             ImageData.File(file, cropArea),

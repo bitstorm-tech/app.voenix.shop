@@ -10,4 +10,7 @@ data class UserDto(
     val phoneNumber: String?,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,
+    val roles: Set<String> = emptySet(),
+    val isActive: Boolean = true,
+    val passwordHash: String? = null,
 )

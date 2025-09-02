@@ -9,7 +9,6 @@ import com.jotoai.voenix.shop.auth.internal.exception.InvalidCredentialsExceptio
 import com.jotoai.voenix.shop.auth.internal.security.CustomUserDetails
 import com.jotoai.voenix.shop.user.CreateUserRequest
 import com.jotoai.voenix.shop.user.UpdateUserRequest
-import com.jotoai.voenix.shop.user.UserAuthenticationDto
 import com.jotoai.voenix.shop.user.UserDto
 import com.jotoai.voenix.shop.user.UserService
 import io.mockk.every
@@ -75,8 +74,8 @@ class AuthServiceTest {
     @Test
     fun `login should authenticate user and return session info`() {
         val loginRequest = LoginRequest(email = "test@example.com", password = "password123")
-        val userDto = createTestUser()
         val userRoles = setOf("USER")
+        val userDto = createTestUser(roles = userRoles)
         val principal =
             CustomUserDetails(
                 id = 1L,
@@ -92,8 +91,7 @@ class AuthServiceTest {
         every { securityContextRepository.saveContext(any(), any(), any()) } just runs
         every { authenticationManager.authenticate(any()) } returns authentication
         every { authentication.principal } returns principal
-        every { userService.getUserById(1L) } returns userDto
-        every { userService.getUserRoles(1L) } returns userRoles
+        every { userService.getUserById(1L, includeAuth = false) } returns userDto
 
         val result = authService.login(loginRequest, httpRequest, httpResponse)
 
@@ -119,8 +117,8 @@ class AuthServiceTest {
 
     @Test
     fun `getCurrentSession should return authenticated session for valid principal`() {
-        val userDto = createTestUser()
         val userRoles = setOf("USER")
+        val userDto = createTestUser(roles = userRoles)
         val principal =
             CustomUserDetails(
                 id = 1L,
@@ -132,8 +130,7 @@ class AuthServiceTest {
         SecurityContextHolder.getContext().authentication = authentication
         every { authentication.isAuthenticated } returns true
         every { authentication.principal } returns principal
-        every { userService.getUserById(1L) } returns userDto
-        every { userService.getUserRoles(1L) } returns userRoles
+        every { userService.getUserById(1L, includeAuth = false) } returns userDto
 
         val result = authService.getCurrentSession()
 
@@ -167,7 +164,8 @@ class AuthServiceTest {
         SecurityContextHolder.getContext().authentication = authentication
         every { authentication.isAuthenticated } returns true
         every { authentication.principal } returns principal
-        every { userService.getUserById(999L) } throws ResourceNotFoundException("User", "id", "999")
+        every { userService.getUserById(999L, includeAuth = false) } throws
+            ResourceNotFoundException("User", "id", "999")
 
         val result = authService.getCurrentSession()
 
@@ -190,8 +188,8 @@ class AuthServiceTest {
                 email = "newuser@example.com",
                 password = "password123",
             )
-        val userDto = createTestUser(email = "newuser@example.com")
         val userRoles = setOf("USER")
+        val userDto = createTestUser(email = "newuser@example.com", roles = userRoles)
         val principal =
             CustomUserDetails(
                 id = 1L,
@@ -201,8 +199,7 @@ class AuthServiceTest {
             )
 
         every { passwordEncoder.encode("password123") } returns "encoded-password"
-        every { userService.existsByEmail("newuser@example.com") } returns false
-        every { userService.setUserRoles(1L, setOf("USER")) } just runs
+        every { userService.getUserByEmail("newuser@example.com") } returns null
         every { httpRequest.getSession(true) } returns httpSession
         every { httpRequest.getSession(false) } returns httpSession
         every { httpSession.id } returns "session-123"
@@ -211,8 +208,8 @@ class AuthServiceTest {
         every { authenticationManager.authenticate(any()) } returns authentication
         every { authentication.principal } returns principal
         every { userService.createUser(any()) } returns userDto
-        every { userService.getUserById(1L) } returns userDto
-        every { userService.getUserRoles(1L) } returns userRoles
+        every { userService.updateUser(1L, UpdateUserRequest(roles = setOf("USER"))) } returns userDto
+        every { userService.getUserById(1L, includeAuth = false) } returns userDto
 
         val result = authService.register(registerRequest, httpRequest, httpResponse)
 
@@ -237,8 +234,8 @@ class AuthServiceTest {
                 lastName = "User",
                 phoneNumber = "+1234567890",
             )
-        val userDto = createTestUser(email = "guest@example.com")
         val userRoles = setOf("USER")
+        val userDto = createTestUser(email = "guest@example.com", roles = userRoles)
         val principal =
             CustomUserDetails(
                 id = 1L,
@@ -247,9 +244,7 @@ class AuthServiceTest {
                 userRoles = userRoles,
             )
 
-        every { userService.existsByEmail("guest@example.com") } returns false
-        every { userService.loadUserByEmail("guest@example.com") } returns null
-        every { userService.setUserRoles(1L, setOf("USER")) } just runs
+        every { userService.getUserByEmail("guest@example.com", includeAuth = true) } returns null
         every { httpRequest.getSession(true) } returns httpSession
         every { httpRequest.getSession(false) } returns httpSession
         every { httpSession.id } returns "session-123"
@@ -258,8 +253,8 @@ class AuthServiceTest {
         every { authenticationManager.authenticate(any()) } returns authentication
         every { authentication.principal } returns principal
         every { userService.createUser(any()) } returns userDto
-        every { userService.getUserById(1L) } returns userDto
-        every { userService.getUserRoles(1L) } returns userRoles
+        every { userService.updateUser(1L, UpdateUserRequest(roles = setOf("USER"))) } returns userDto
+        every { userService.getUserById(1L, includeAuth = false) } returns userDto
 
         val result = authService.registerGuest(registerRequest, httpRequest, httpResponse)
 
@@ -285,9 +280,9 @@ class AuthServiceTest {
                 lastName = "UpdatedUser",
                 phoneNumber = "+9876543210",
             )
-        val existingUser = createTestUser(id = 5L, email = "guest@example.com")
-        val updatedUser = existingUser.copy(firstName = "UpdatedGuest", lastName = "UpdatedUser")
         val userRoles = setOf("USER")
+        val existingUser = createTestUser(id = 5L, email = "guest@example.com", roles = userRoles)
+        val updatedUser = existingUser.copy(firstName = "UpdatedGuest", lastName = "UpdatedUser")
         val principal =
             CustomUserDetails(
                 id = 5L,
@@ -296,11 +291,8 @@ class AuthServiceTest {
                 userRoles = userRoles,
             )
 
-        every { userService.existsByEmail("guest@example.com") } returns true
-        every { userService.loadUserByEmail("guest@example.com") } returns
-            UserAuthenticationDto(
-                id = existingUser.id,
-                email = existingUser.email,
+        every { userService.getUserByEmail("guest@example.com", includeAuth = true) } returns
+            existingUser.copy(
                 passwordHash = null,
                 roles = setOf("USER"),
                 isActive = true,
@@ -313,8 +305,7 @@ class AuthServiceTest {
         every { authenticationManager.authenticate(any()) } returns authentication
         every { authentication.principal } returns principal
         every { userService.updateUser(any(), any()) } returns updatedUser
-        every { userService.getUserById(5L) } returns updatedUser
-        every { userService.getUserRoles(5L) } returns userRoles
+        every { userService.getUserById(5L, includeAuth = false) } returns updatedUser
 
         val result = authService.registerGuest(registerRequest, httpRequest, httpResponse)
 
@@ -341,15 +332,13 @@ class AuthServiceTest {
                 lastName = "User",
             )
         // Simulate user that has a password (not a guest user)
-        val existingUser = createTestUser(email = "existing@example.com")
+        val existingUser = createTestUser(email = "existing@example.com", roles = setOf("USER"))
 
-        every { userService.existsByEmail("existing@example.com") } returns true
-        every { userService.loadUserByEmail("existing@example.com") } returns
-            UserAuthenticationDto(
-                id = existingUser.id,
-                email = existingUser.email,
+        every { userService.getUserByEmail("existing@example.com", includeAuth = true) } returns
+            existingUser.copy(
                 passwordHash = "hashedPassword",
                 roles = setOf("USER"),
+                isActive = true,
             )
 
         assertThrows<ResourceAlreadyExistsException> {
@@ -360,6 +349,7 @@ class AuthServiceTest {
     private fun createTestUser(
         id: Long = 1L,
         email: String = "test@example.com",
+        roles: Set<String> = emptySet(),
     ): UserDto =
         UserDto(
             id = id,
@@ -369,5 +359,8 @@ class AuthServiceTest {
             phoneNumber = "+1234567890",
             createdAt = OffsetDateTime.parse("2024-01-01T00:00:00Z"),
             updatedAt = OffsetDateTime.parse("2024-01-01T00:00:00Z"),
+            roles = roles,
+            isActive = true,
+            passwordHash = null,
         )
 }

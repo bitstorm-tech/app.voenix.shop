@@ -13,15 +13,15 @@ class CustomUserDetailsService(
 ) : UserDetailsService {
     @Transactional(readOnly = true)
     override fun loadUserByUsername(username: String): UserDetails {
-        val authDto =
-            userService.loadUserByEmail(username)
+        val userDto =
+            userService.getUserByEmail(username, includeAuth = true)
                 ?: throw UsernameNotFoundException("User not found with email: $username")
 
         return CustomUserDetails(
-            id = authDto.id,
-            email = authDto.email,
-            passwordHash = authDto.passwordHash,
-            userRoles = authDto.roles,
+            id = userDto.id,
+            email = userDto.email,
+            passwordHash = userDto.passwordHash,
+            userRoles = userDto.roles,
         )
     }
 }

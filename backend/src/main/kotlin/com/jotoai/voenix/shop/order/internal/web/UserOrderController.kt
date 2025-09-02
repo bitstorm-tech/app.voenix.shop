@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.order.internal.web
 
 import com.jotoai.voenix.shop.application.PaginatedResponse
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.order.CreateOrderRequest
 import com.jotoai.voenix.shop.order.OrderDto
 import com.jotoai.voenix.shop.order.OrderService
@@ -101,7 +102,9 @@ class UserOrderController(
     }
 
     private fun getCurrentUserId(userDetails: UserDetails): Long {
-        val user = userService.getUserByEmail(userDetails.username)
+        val user =
+            userService.getUserByEmail(userDetails.username)
+                ?: throw ResourceNotFoundException("User", "email", userDetails.username)
         return user.id
     }
 }

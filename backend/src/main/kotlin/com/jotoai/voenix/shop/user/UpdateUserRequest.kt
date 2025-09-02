@@ -20,6 +20,7 @@ data class UpdateUserRequest(
     val password: String? = null,
     @field:Size(max = 255, message = "One time password must not exceed 255 characters")
     val oneTimePassword: String? = null,
+    val roles: Set<String>? = null,
 ) {
     override fun toString(): String =
         "UpdateUserRequest(email=$email, firstName=$firstName, lastName=$lastName, " +

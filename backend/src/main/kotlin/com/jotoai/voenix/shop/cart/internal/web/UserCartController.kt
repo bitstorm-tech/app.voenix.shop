@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.cart.internal.web
 
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.cart.AddToCartRequest
 import com.jotoai.voenix.shop.cart.CartDto
 import com.jotoai.voenix.shop.cart.CartService
@@ -111,7 +112,9 @@ class UserCartController(
     }
 
     private fun getCurrentUserId(userDetails: UserDetails): Long {
-        val user = userService.getUserByEmail(userDetails.username)
+        val user =
+            userService.getUserByEmail(userDetails.username)
+                ?: throw ResourceNotFoundException("User", "email", userDetails.username)
         return user.id
     }
 }

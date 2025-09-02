@@ -4,7 +4,6 @@ import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.user.CreateUserRequest
 import com.jotoai.voenix.shop.user.UpdateUserRequest
-import com.jotoai.voenix.shop.user.UserAuthenticationDto
 import com.jotoai.voenix.shop.user.UserDto
 import com.jotoai.voenix.shop.user.UserService
 import com.jotoai.voenix.shop.user.internal.entity.User
@@ -26,31 +25,23 @@ class UserServiceImpl(
     private val roleRepository: RoleRepository,
     private val passwordEncoder: PasswordEncoder,
 ) : UserService {
-    override fun loadUserByEmail(email: String): UserAuthenticationDto? {
-        val user = userRepository.findActiveByEmail(email).orElse(null) ?: return null
-
-        return UserAuthenticationDto(
-            id = user.id!!,
-            email = user.email,
-            passwordHash = user.password,
-            roles = user.roles.map { it.name }.toSet(),
-            isActive = user.isActive(),
-        )
-    }
-
-    override fun getUserById(id: Long): UserDto =
+    override fun getUserById(
+        id: Long,
+        includeAuth: Boolean,
+    ): UserDto =
         userRepository
             .findActiveById(id)
-            .map { it.toDto() }
+            .map { it.toDto(includeAuth) }
             .orElseThrow { ResourceNotFoundException("User", "id", id) }
 
-    override fun getUserByEmail(email: String): UserDto =
+    override fun getUserByEmail(
+        email: String,
+        includeAuth: Boolean,
+    ): UserDto? =
         userRepository
             .findActiveByEmail(email)
-            .map { it.toDto() }
-            .orElseThrow { ResourceNotFoundException("User", "email", email) }
-
-    override fun existsByEmail(email: String): Boolean = userRepository.existsActiveByEmail(email)
+            .map { it.toDto(includeAuth) }
+            .orElse(null)
 
     @Transactional
     override fun createUser(request: CreateUserRequest): UserDto {
@@ -95,38 +86,19 @@ class UserServiceImpl(
         request.password?.let { user.password = passwordEncoder.encode(it) }
         request.oneTimePassword?.let { user.oneTimePassword = it }
 
-        val updatedUser = userRepository.save(user)
-        return updatedUser.toDto()
-    }
-
-    override fun getUserRoles(userId: Long): Set<String> {
-        val user =
-            userRepository
-                .findActiveById(userId)
-                .orElseThrow { ResourceNotFoundException("User", "id", userId) }
-
-        return user.roles.map { it.name }.toSet()
-    }
-
-    @Transactional
-    override fun setUserRoles(
-        userId: Long,
-        roleNames: Set<String>,
-    ) {
-        val user =
-            userRepository
-                .findActiveById(userId)
-                .orElseThrow { ResourceNotFoundException("User", "id", userId) }
-
-        val roles = roleRepository.findByNameIn(roleNames)
-        if (roles.size != roleNames.size) {
-            val foundRoleNames = roles.map { it.name }.toSet()
-            val missingRoles = roleNames - foundRoleNames
-            throw ResourceNotFoundException("Role(s) not found: ${missingRoles.joinToString()}", "", "")
+        // Handle roles if provided
+        request.roles?.let { roleNames ->
+            val roles = roleRepository.findByNameIn(roleNames)
+            if (roles.size != roleNames.size) {
+                val foundRoleNames = roles.map { it.name }.toSet()
+                val missingRoles = roleNames - foundRoleNames
+                throw ResourceNotFoundException("Role(s) not found: ${missingRoles.joinToString()}", "", "")
+            }
+            user.roles.clear()
+            user.roles.addAll(roles)
         }
 
-        user.roles.clear()
-        user.roles.addAll(roles)
-        userRepository.save(user)
+        val updatedUser = userRepository.save(user)
+        return updatedUser.toDto()
     }
 }

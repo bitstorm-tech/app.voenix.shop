@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.image.internal.web
 
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.UserImagesFilter
 import com.jotoai.voenix.shop.user.UserService
@@ -26,7 +27,9 @@ class UserImageController(
         @PathVariable filename: String,
         @AuthenticationPrincipal userDetails: UserDetails,
     ): ResponseEntity<Resource> {
-        val user = userService.getUserByEmail(userDetails.username)
+        val user =
+            userService.getUserByEmail(userDetails.username)
+                ?: throw ResourceNotFoundException("User", "email", userDetails.username)
         return imageService.serveUserImage(filename, user.id)
     }
 
@@ -40,7 +43,9 @@ class UserImageController(
         @RequestParam(defaultValue = "createdAt") sortBy: String,
         @RequestParam(defaultValue = "DESC") sortDirection: String,
     ): ResponseEntity<Map<String, Any>> {
-        val user = userService.getUserByEmail(userDetails.username)
+        val user =
+            userService.getUserByEmail(userDetails.username)
+                ?: throw ResourceNotFoundException("User", "email", userDetails.username)
 
         val filter =
             UserImagesFilter(

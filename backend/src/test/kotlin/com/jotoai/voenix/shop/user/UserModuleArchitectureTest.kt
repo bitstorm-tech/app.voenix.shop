@@ -11,13 +11,13 @@ class UserModuleArchitectureTest {
     @Test
     fun `verify user module structure exists`() {
         // Simple test to verify the user module structure is in place
-        val userApiPackage = "com.jotoai.voenix.shop.user.api"
+        val userRootPackage = "com.jotoai.voenix.shop.user"
         val userInternalPackage = "com.jotoai.voenix.shop.user.internal"
 
-        // The unified UserService interface should exist in the API package
-        assertClassExists("$userApiPackage.UserService")
+        // The UserService interface should exist in the root package
+        assertClassExists("$userRootPackage.UserService")
 
-        // The unified UserServiceImpl should exist in the internal package
+        // The UserServiceImpl should exist in the internal package
         assertClassExists("$userInternalPackage.service.UserServiceImpl")
 
         println("✓ User module structure verified")
@@ -26,7 +26,7 @@ class UserModuleArchitectureTest {
     @Test
     fun `verify user API classes are interfaces`() {
         // Verify that the API classes are properly designed as interfaces
-        val userService = Class.forName("com.jotoai.voenix.shop.user.api.UserService")
+        val userService = Class.forName("com.jotoai.voenix.shop.user.UserService")
         assertTrue(userService.isInterface, "UserService should be an interface")
 
         println("✓ User API interfaces verified")
@@ -35,10 +35,10 @@ class UserModuleArchitectureTest {
     @Test
     fun `verify user DTOs exist`() {
         // Verify that the essential public API DTOs exist
-        assertClassExists("com.jotoai.voenix.shop.user.api.dto.UserDto")
-        assertClassExists("com.jotoai.voenix.shop.user.api.dto.CreateUserRequest")
-        assertClassExists("com.jotoai.voenix.shop.user.api.dto.UpdateUserRequest")
-        assertClassExists("com.jotoai.voenix.shop.user.api.dto.UserAuthenticationDto")
+        assertClassExists("com.jotoai.voenix.shop.user.UserDto")
+        assertClassExists("com.jotoai.voenix.shop.user.CreateUserRequest")
+        assertClassExists("com.jotoai.voenix.shop.user.UpdateUserRequest")
+        // Note: UserAuthenticationDto was removed in favor of unified UserDto
 
         println("✓ User DTOs verified")
     }

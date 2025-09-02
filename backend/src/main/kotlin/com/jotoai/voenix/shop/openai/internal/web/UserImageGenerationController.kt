@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.openai.internal.web
 
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.image.ImageData
 import com.jotoai.voenix.shop.image.ImageMetadata
@@ -37,7 +38,9 @@ class UserImageGenerationController(
         @ModelAttribute form: ImageGenerationForm,
         @AuthenticationPrincipal userDetails: UserDetails,
     ): ImageGenerationResponse {
-        val user = userService.getUserByEmail(userDetails.username)
+        val user =
+            userService.getUserByEmail(userDetails.username)
+                ?: throw ResourceNotFoundException("User", "email", userDetails.username)
         logger.info { "Image generation request: user=${user.id}, promptId=${form.promptId}" }
 
         // Create crop area if all crop parameters are provided
