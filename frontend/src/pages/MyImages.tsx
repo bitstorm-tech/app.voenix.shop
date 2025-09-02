@@ -7,7 +7,7 @@ import { useSession } from '@/hooks/queries/useAuth';
 import { useUserImages } from '@/hooks/queries/useUserImages';
 import { useImageWithFallback } from '@/hooks/useImageWithFallback';
 import type { UserImage, UserImagesParams } from '@/types/userImage';
-import { AlertTriangle, ChevronLeft, ChevronRight, Download, ImageIcon, Upload } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight, Download, ImageIcon, Palette, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -18,6 +18,8 @@ const ImageCard = ({ image }: { image: UserImage }) => {
     preload: true,
   });
 
+  const navigate = useNavigate();
+
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = imageUrl;
@@ -25,6 +27,10 @@ const ImageCard = ({ image }: { image: UserImage }) => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleDesignMug = () => {
+    navigate(`/editor?imageId=${image.id}`);
   };
 
   const formatDate = (dateString: string) => {
@@ -95,6 +101,10 @@ const ImageCard = ({ image }: { image: UserImage }) => {
           <Button onClick={handleDownload} size="sm" variant="outline" className="flex-1">
             <Download className="mr-1 h-3 w-3" />
             Download
+          </Button>
+          <Button onClick={handleDesignMug} size="sm" variant="default" className="flex-1">
+            <Palette className="mr-1 h-3 w-3" />
+            Design Mug
           </Button>
         </div>
       </div>
