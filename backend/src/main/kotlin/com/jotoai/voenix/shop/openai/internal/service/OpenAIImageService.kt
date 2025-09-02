@@ -151,6 +151,7 @@ class OpenAIImageService(
         val safetySettings: List<GeminiSafetySetting>? = null,
     )
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiContent(
         val parts: List<GeminiPart>,
     )
@@ -176,22 +177,26 @@ class OpenAIImageService(
         val threshold: String,
     )
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiResponse(
         val candidates: List<GeminiCandidate>? = null,
         val error: GeminiError? = null,
     )
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiCandidate(
         val content: GeminiContent? = null,
         val finishReason: String? = null,
         val safetyRatings: List<GeminiSafetyRating>? = null,
     )
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiSafetyRating(
         val category: String,
         val probability: String,
     )
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiError(
         val code: Int,
         val message: String,
