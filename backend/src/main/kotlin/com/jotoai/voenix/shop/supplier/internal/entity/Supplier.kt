@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.supplier.internal.entity
 
-import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
+import com.jotoai.voenix.shop.supplier.SupplierDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue

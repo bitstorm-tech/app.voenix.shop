@@ -6,10 +6,10 @@ import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.country.CountryDto
 import com.jotoai.voenix.shop.country.CountryNotFoundException
 import com.jotoai.voenix.shop.country.CountryService
-import com.jotoai.voenix.shop.supplier.api.SupplierService
-import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
-import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
-import com.jotoai.voenix.shop.supplier.api.dto.UpdateSupplierRequest
+import com.jotoai.voenix.shop.supplier.CreateSupplierRequest
+import com.jotoai.voenix.shop.supplier.SupplierDto
+import com.jotoai.voenix.shop.supplier.SupplierService
+import com.jotoai.voenix.shop.supplier.UpdateSupplierRequest
 import com.jotoai.voenix.shop.supplier.internal.repository.SupplierRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -29,8 +29,6 @@ class SupplierServiceImpl(
     private val countryService: CountryService,
 ) : SupplierService {
     private val logger = KotlinLogging.logger {}
-
-    // Query operations
 
     override fun getAllSuppliers(): List<SupplierDto> {
         val suppliers = supplierRepository.findAll()
@@ -67,8 +65,6 @@ class SupplierServiceImpl(
     }
 
     override fun existsById(id: Long): Boolean = supplierRepository.existsById(id)
-
-    // Command operations
 
     @Transactional
     override fun createSupplier(request: CreateSupplierRequest): SupplierDto {
@@ -118,8 +114,6 @@ class SupplierServiceImpl(
         supplierRepository.deleteById(id)
     }
 
-    // Private helper methods (integrated validation logic)
-
     /**
      * Helper method to fetch country DTO, avoiding duplicate logic.
      * Safely handles CountryNotFoundException by returning null.
@@ -147,30 +141,18 @@ class SupplierServiceImpl(
         email: String?,
         excludeId: Long? = null,
     ) {
-        if (!name.isNullOrBlank()) {
-            val nameExists =
-                if (excludeId != null) {
-                    supplierRepository.existsByNameAndIdNot(name, excludeId)
-                } else {
-                    supplierRepository.existsByName(name)
-                }
-
-            if (nameExists) {
-                throw ResourceAlreadyExistsException("Supplier", "name", name)
-            }
+        name?.takeIf { it.isNotBlank() }?.let {
+            val exists =
+                excludeId?.let { id -> supplierRepository.existsByNameAndIdNot(it, id) }
+                    ?: supplierRepository.existsByName(it)
+            if (exists) throw ResourceAlreadyExistsException("Supplier", "name", it)
         }
 
-        if (!email.isNullOrBlank()) {
-            val emailExists =
-                if (excludeId != null) {
-                    supplierRepository.existsByEmailAndIdNot(email, excludeId)
-                } else {
-                    supplierRepository.existsByEmail(email)
-                }
-
-            if (emailExists) {
-                throw ResourceAlreadyExistsException("Supplier", "email", email)
-            }
+        email?.takeIf { it.isNotBlank() }?.let {
+            val exists =
+                excludeId?.let { id -> supplierRepository.existsByEmailAndIdNot(it, id) }
+                    ?: supplierRepository.existsByEmail(it)
+            if (exists) throw ResourceAlreadyExistsException("Supplier", "email", it)
         }
     }
 

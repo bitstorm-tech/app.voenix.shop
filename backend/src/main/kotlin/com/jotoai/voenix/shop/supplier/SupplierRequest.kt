@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.supplier.api.dto
+package com.jotoai.voenix.shop.supplier
 
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Min
@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 import org.hibernate.validator.constraints.URL
 
-data class UpdateSupplierRequest(
+data class SupplierRequest(
     @field:Size(max = 255, message = "Name must not exceed 255 characters")
     val name: String?,
     @field:Size(max = 100, message = "Title must not exceed 100 characters")
@@ -40,3 +40,7 @@ data class UpdateSupplierRequest(
     @field:URL(message = "Invalid website URL format")
     val website: String?,
 )
+
+// Type aliases for backward compatibility
+typealias CreateSupplierRequest = SupplierRequest
+typealias UpdateSupplierRequest = SupplierRequest

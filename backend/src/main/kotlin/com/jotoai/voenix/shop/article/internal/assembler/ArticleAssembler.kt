@@ -3,7 +3,7 @@ package com.jotoai.voenix.shop.article.internal.assembler
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.article.internal.entity.Article
-import com.jotoai.voenix.shop.supplier.api.SupplierService
+import com.jotoai.voenix.shop.supplier.SupplierService
 import org.springframework.stereotype.Component
 
 /**

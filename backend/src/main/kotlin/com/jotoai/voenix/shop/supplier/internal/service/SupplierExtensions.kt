@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.supplier.internal.service
 
 import com.jotoai.voenix.shop.country.CountryDto
-import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
-import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
-import com.jotoai.voenix.shop.supplier.api.dto.UpdateSupplierRequest
+import com.jotoai.voenix.shop.supplier.CreateSupplierRequest
+import com.jotoai.voenix.shop.supplier.SupplierDto
+import com.jotoai.voenix.shop.supplier.UpdateSupplierRequest
 import com.jotoai.voenix.shop.supplier.internal.entity.Supplier
 
 /**
@@ -30,41 +30,20 @@ fun CreateSupplierRequest.toEntity(): Supplier =
     )
 
 fun Supplier.updateFrom(request: UpdateSupplierRequest) {
-    updateBasicInfo(request)
-    updateAddressInfo(request)
-    updateContactInfo(request)
-    updateAdditionalInfo(request)
+    request.name?.let { name = it.trim() }
+    request.title?.let { title = it.trim() }
+    request.firstName?.let { firstName = it.trim() }
+    request.lastName?.let { lastName = it.trim() }
+    request.street?.let { street = it.trim() }
+    request.houseNumber?.let { houseNumber = it.trim() }
+    request.city?.let { city = it.trim() }
+    request.postalCode?.let { postalCode = it }
+    request.countryId?.let { countryId = it }
+    request.phoneNumber1?.let { phoneNumber1 = it.trim() }
+    request.phoneNumber2?.let { phoneNumber2 = it.trim() }
+    request.phoneNumber3?.let { phoneNumber3 = it.trim() }
+    request.email?.let { email = it.trim() }
+    request.website?.let { website = it.trim() }
 }
 
-private fun Supplier.updateBasicInfo(request: UpdateSupplierRequest) {
-    request.name?.let { this.name = it.trim() }
-    request.title?.let { this.title = it.trim() }
-    request.firstName?.let { this.firstName = it.trim() }
-    request.lastName?.let { this.lastName = it.trim() }
-}
-
-private fun Supplier.updateAddressInfo(request: UpdateSupplierRequest) {
-    request.street?.let { this.street = it.trim() }
-    request.houseNumber?.let { this.houseNumber = it.trim() }
-    request.city?.let { this.city = it.trim() }
-    request.postalCode?.let { this.postalCode = it }
-    request.countryId?.let { this.countryId = it }
-}
-
-private fun Supplier.updateContactInfo(request: UpdateSupplierRequest) {
-    request.phoneNumber1?.let { this.phoneNumber1 = it.trim() }
-    request.phoneNumber2?.let { this.phoneNumber2 = it.trim() }
-    request.phoneNumber3?.let { this.phoneNumber3 = it.trim() }
-    request.email?.let { this.email = it.trim() }
-}
-
-private fun Supplier.updateAdditionalInfo(request: UpdateSupplierRequest) {
-    request.website?.let { this.website = it.trim() }
-}
-
-fun Supplier.toDtoWithCountry(countryDto: CountryDto?): SupplierDto {
-    val baseDto = this.toDto()
-    return baseDto.copy(
-        countryName = countryDto?.name,
-    )
-}
+fun Supplier.toDtoWithCountry(countryDto: CountryDto?): SupplierDto = toDto().copy(countryName = countryDto?.name)

@@ -1,8 +1,5 @@
-package com.jotoai.voenix.shop.supplier.api
+package com.jotoai.voenix.shop.supplier
 
-import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
-import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
-import com.jotoai.voenix.shop.supplier.api.dto.UpdateSupplierRequest
 
 /**
  * Unified service interface for supplier module operations.
