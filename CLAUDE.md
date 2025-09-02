@@ -71,6 +71,26 @@ Task(description="Find all VAT usages", prompt="...", subagent_type="general-pur
 - **Avoid sequential work**: Don't switch between frontend/backend yourself
 - **Delegate searches**: Use agents for multi-file searches instead of multiple Grep calls
 
+### Code Search Guidelines
+
+**Use ast-grep for structural code searches:**
+- Finding specific function/method calls (e.g., `ast-grep -p 'useState($$$)'`)
+- Matching code patterns and structures (e.g., `ast-grep -p 'class $name extends $base'`)
+- Refactoring operations that need syntax awareness
+- Finding React hooks, Spring annotations, or other framework-specific patterns
+- Locating specific AST nodes like conditionals, loops, or declarations
+
+**Use grep for text searches:**
+- Searching in comments, strings, or documentation
+- Simple text patterns across all file types
+- Configuration files, markdown, or non-code files
+- Quick searches when structure doesn't matter
+
+**Use find for file operations:**
+- Locating files by name or extension
+- Directory structure exploration
+- File metadata searches
+
 ## Quality Assurance
 
 ### Common
@@ -82,6 +102,7 @@ Task(description="Find all VAT usages", prompt="...", subagent_type="general-pur
 - Use `git mv` to move files that are under version control
 - Don't write useless, unnecessary or redundant comments -> only use comments to describe complex logic
 - Document WHY decisions were made, not just WHAT the code does
+- Use ast-grep for structural code searches instead of grep when searching for code patterns
 
 ## Important Development Notes
 
