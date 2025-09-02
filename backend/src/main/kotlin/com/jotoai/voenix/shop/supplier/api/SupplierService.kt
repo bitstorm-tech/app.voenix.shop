@@ -10,8 +10,6 @@ import com.jotoai.voenix.shop.supplier.api.dto.UpdateSupplierRequest
  * replacing the previous CQRS pattern of separate facade and query service interfaces.
  */
 interface SupplierService {
-    // Query operations (from SupplierQueryService)
-
     /**
      * Retrieves all suppliers.
      */
@@ -31,8 +29,6 @@ interface SupplierService {
      * @return true if the supplier exists, false otherwise
      */
     fun existsById(id: Long): Boolean
-
-    // Command operations (from SupplierFacade)
 
     /**
      * Creates a new supplier.

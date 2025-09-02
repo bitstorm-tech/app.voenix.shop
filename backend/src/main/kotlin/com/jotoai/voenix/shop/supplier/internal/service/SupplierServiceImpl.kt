@@ -1,5 +1,8 @@
 package com.jotoai.voenix.shop.supplier.internal.service
 
+import com.jotoai.voenix.shop.application.BadRequestException
+import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.country.CountryDto
 import com.jotoai.voenix.shop.country.CountryNotFoundException
 import com.jotoai.voenix.shop.country.CountryService
@@ -7,9 +10,6 @@ import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
 import com.jotoai.voenix.shop.supplier.api.dto.SupplierDto
 import com.jotoai.voenix.shop.supplier.api.dto.UpdateSupplierRequest
-import com.jotoai.voenix.shop.supplier.api.exceptions.DuplicateSupplierException
-import com.jotoai.voenix.shop.supplier.api.exceptions.InvalidSupplierDataException
-import com.jotoai.voenix.shop.supplier.api.exceptions.SupplierNotFoundException
 import com.jotoai.voenix.shop.supplier.internal.repository.SupplierRepository
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
@@ -60,7 +60,7 @@ class SupplierServiceImpl(
         val supplier =
             supplierRepository
                 .findById(id)
-                .orElseThrow { SupplierNotFoundException("Supplier", "id", id) }
+                .orElseThrow { ResourceNotFoundException("Supplier", "id", id) }
 
         val countryDto = getCountryDto(supplier.countryId)
         return supplier.toDtoWithCountry(countryDto)
@@ -95,7 +95,7 @@ class SupplierServiceImpl(
         val supplier =
             supplierRepository
                 .findById(id)
-                .orElseThrow { SupplierNotFoundException("Supplier", "id", id) }
+                .orElseThrow { ResourceNotFoundException("Supplier", "id", id) }
 
         // Validate unique constraints
         validateUniqueField(request.name, request.email, id)
@@ -140,7 +140,7 @@ class SupplierServiceImpl(
      * @param name the supplier name to validate (can be null)
      * @param email the supplier email to validate (can be null)
      * @param excludeId optional ID to exclude from uniqueness check (for updates)
-     * @throws DuplicateSupplierException if validation fails
+     * @throws ResourceAlreadyExistsException if validation fails
      */
     private fun validateUniqueField(
         name: String?,
@@ -156,7 +156,7 @@ class SupplierServiceImpl(
                 }
 
             if (nameExists) {
-                throw DuplicateSupplierException("name", name)
+                throw ResourceAlreadyExistsException("Supplier", "name", name)
             }
         }
 
@@ -169,7 +169,7 @@ class SupplierServiceImpl(
                 }
 
             if (emailExists) {
-                throw DuplicateSupplierException("email", email)
+                throw ResourceAlreadyExistsException("Supplier", "email", email)
             }
         }
     }
@@ -178,11 +178,11 @@ class SupplierServiceImpl(
      * Validates that a country exists.
      *
      * @param countryId the country ID to validate (can be null)
-     * @throws InvalidSupplierDataException if country doesn't exist
+     * @throws BadRequestException if country doesn't exist
      */
     private fun validateCountryExists(countryId: Long?) {
         if (countryId != null && !countryService.existsById(countryId)) {
-            throw InvalidSupplierDataException("countryId", countryId, "does not exist")
+            throw BadRequestException("Country with ID $countryId does not exist")
         }
     }
 }

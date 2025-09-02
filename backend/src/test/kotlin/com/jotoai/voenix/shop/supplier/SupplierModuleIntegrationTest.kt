@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.supplier
 
+import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
 import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
-import com.jotoai.voenix.shop.supplier.api.exceptions.DuplicateSupplierException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -99,9 +99,9 @@ class SupplierModuleIntegrationTest {
         // Then - should throw exception
         try {
             supplierService.createSupplier(duplicateNameRequest)
-            throw AssertionError("Should have thrown DuplicateSupplierException for duplicate name")
-        } catch (e: DuplicateSupplierException) {
-            assertThat(e.message).contains("Supplier with name")
+            throw AssertionError("Should have thrown ResourceAlreadyExistsException for duplicate name")
+        } catch (e: ResourceAlreadyExistsException) {
+            assertThat(e.message).contains("Supplier already exists with name")
         }
 
         // When - trying to create another supplier with same email
@@ -110,9 +110,9 @@ class SupplierModuleIntegrationTest {
         // Then - should throw exception
         try {
             supplierService.createSupplier(duplicateEmailRequest)
-            throw AssertionError("Should have thrown DuplicateSupplierException for duplicate email")
-        } catch (e: DuplicateSupplierException) {
-            assertThat(e.message).contains("Supplier with email")
+            throw AssertionError("Should have thrown ResourceAlreadyExistsException for duplicate email")
+        } catch (e: ResourceAlreadyExistsException) {
+            assertThat(e.message).contains("Supplier already exists with email")
         }
 
         // Cleanup
