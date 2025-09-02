@@ -7,20 +7,20 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 @Repository
 interface GeneratedImageRepository : JpaRepository<GeneratedImage, Long> {
-    @Query("SELECT COUNT(g) FROM GeneratedImage g WHERE g.userId = :userId AND g.generatedAt > :startTime")
-    fun countByUserIdAndGeneratedAtAfter(
+    @Query("SELECT COUNT(g) FROM GeneratedImage g WHERE g.userId = :userId AND g.createdAt > :startTime")
+    fun countByUserIdAndCreatedAtAfter(
         @Param("userId") userId: Long,
-        @Param("startTime") startTime: LocalDateTime,
+        @Param("startTime") startTime: OffsetDateTime,
     ): Long
 
-    @Query("SELECT COUNT(g) FROM GeneratedImage g WHERE g.ipAddress = :ipAddress AND g.generatedAt > :startTime")
-    fun countByIpAddressAndGeneratedAtAfter(
+    @Query("SELECT COUNT(g) FROM GeneratedImage g WHERE g.ipAddress = :ipAddress AND g.createdAt > :startTime")
+    fun countByIpAddressAndCreatedAtAfter(
         @Param("ipAddress") ipAddress: String,
-        @Param("startTime") startTime: LocalDateTime,
+        @Param("startTime") startTime: OffsetDateTime,
     ): Long
 
     fun findByFilename(filename: String): GeneratedImage?

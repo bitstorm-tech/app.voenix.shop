@@ -8,7 +8,8 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.Table
-import java.time.LocalDateTime
+import org.hibernate.annotations.CreationTimestamp
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
@@ -30,8 +31,9 @@ class UploadedImage(
     var fileSize: Long,
     @Column(name = "user_id", nullable = false)
     var userId: Long,
-    @Column(name = "uploaded_at", nullable = false)
-    var uploadedAt: LocalDateTime = LocalDateTime.now(),
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    val createdAt: OffsetDateTime? = null,
     @OneToMany(mappedBy = "uploadedImage", fetch = FetchType.LAZY)
     var generatedImages: MutableList<GeneratedImage> = mutableListOf(),
 ) {

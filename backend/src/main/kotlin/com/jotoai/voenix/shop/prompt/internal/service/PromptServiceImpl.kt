@@ -53,12 +53,13 @@ class PromptServiceImpl(
 
     override fun getPromptSummariesByIds(ids: List<Long>): List<PromptSummaryDto> {
         if (ids.isEmpty()) return emptyList()
-        
-        return promptRepository.findAllById(ids)
+
+        return promptRepository
+            .findAllById(ids)
             .map { prompt ->
                 PromptSummaryDto(
                     id = requireNotNull(prompt.id) { "Prompt ID cannot be null" },
-                    title = prompt.title
+                    title = prompt.title,
                 )
             }
     }

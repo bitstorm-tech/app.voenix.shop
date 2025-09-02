@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.image
 
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 /**
@@ -19,6 +19,6 @@ data class UserImageDto(
     val promptTitle: String?, // Enriched from prompt module
     val uploadedImageId: Long?,
     val userId: Long,
-    val createdAt: LocalDateTime,
+    val createdAt: OffsetDateTime?,
     val imageUrl: String,
 )

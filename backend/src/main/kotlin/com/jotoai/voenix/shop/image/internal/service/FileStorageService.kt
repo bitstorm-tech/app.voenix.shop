@@ -22,7 +22,6 @@ import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.LocalDateTime
 import java.util.UUID
 
 /**
@@ -238,7 +237,6 @@ class FileStorageService(
                 contentType = "image/png", // Always PNG after conversion
                 fileSize = imageBytes.size.toLong(),
                 userId = userId,
-                uploadedAt = LocalDateTime.now(),
             )
 
         return uploadedImageRepository.save(uploadedImage)
@@ -271,7 +269,6 @@ class FileStorageService(
                 promptId = promptId,
                 userId = uploadedImage.userId,
                 uploadedImage = uploadedImage,
-                generatedAt = LocalDateTime.now(),
                 ipAddress = ipAddress,
             )
 

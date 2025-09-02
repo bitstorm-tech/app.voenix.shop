@@ -41,26 +41,29 @@ class UserImageController(
         @RequestParam(defaultValue = "DESC") sortDirection: String,
     ): ResponseEntity<Map<String, Any>> {
         val user = userService.getUserByEmail(userDetails.username)
-        
-        val filter = UserImagesFilter(
-            userId = user.id,
-            page = page,
-            size = size,
-            type = type,
-            sortBy = sortBy,
-            sortDirection = sortDirection
-        )
-        
+
+        val filter =
+            UserImagesFilter(
+                userId = user.id,
+                page = page,
+                size = size,
+                type = type,
+                sortBy = sortBy,
+                sortDirection = sortDirection,
+            )
+
         val response = imageService.getUserImages(filter)
-        
+
         // Transform PaginatedResponse to match frontend expectations
         // Map 'number' → 'currentPage' for frontend compatibility
-        return ResponseEntity.ok(mapOf(
-            "content" to response.content,
-            "currentPage" to response.number,
-            "totalPages" to response.totalPages,
-            "totalElements" to response.totalElements,
-            "size" to response.size
-        ))
+        return ResponseEntity.ok(
+            mapOf(
+                "content" to response.content,
+                "currentPage" to response.number,
+                "totalPages" to response.totalPages,
+                "totalElements" to response.totalElements,
+                "size" to response.size,
+            ),
+        )
     }
 }

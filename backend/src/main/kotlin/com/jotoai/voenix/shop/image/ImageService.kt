@@ -4,7 +4,7 @@ import com.jotoai.voenix.shop.application.PaginatedResponse
 import org.springframework.core.io.Resource
 import org.springframework.http.ResponseEntity
 import org.springframework.web.multipart.MultipartFile
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 /**
@@ -190,7 +190,7 @@ data class ImageMetadata(
 data class CountFilter(
     val userId: Long? = null,
     val ipAddress: String? = null,
-    val after: LocalDateTime,
+    val after: OffsetDateTime,
 )
 
 /**

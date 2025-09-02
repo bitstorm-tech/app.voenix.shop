@@ -20,6 +20,7 @@ class PublicPromptController(
 
     @GetMapping("/batch")
     @Transactional(readOnly = true)
-    fun getPromptSummariesByIds(@RequestParam ids: List<Long>): List<PromptSummaryDto> = 
-        promptQueryService.getPromptSummariesByIds(ids)
+    fun getPromptSummariesByIds(
+        @RequestParam ids: List<Long>,
+    ): List<PromptSummaryDto> = promptQueryService.getPromptSummariesByIds(ids)
 }

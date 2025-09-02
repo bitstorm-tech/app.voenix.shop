@@ -69,7 +69,7 @@ class ImageServiceImpl(
                     id = generatedImage.id,
                     promptId = generatedImage.promptId,
                     userId = generatedImage.userId,
-                    generatedAt = generatedImage.generatedAt,
+                    createdAt = generatedImage.createdAt,
                     ipAddress = generatedImage.ipAddress,
                 )
             },
@@ -184,7 +184,7 @@ class ImageServiceImpl(
                 filter.size,
                 Sort.by(
                     Sort.Direction.fromString(filter.sortDirection),
-                    mapSortField(filter.sortBy, filter.type ?: "all"),
+                    mapSortField(filter.sortBy),
                 ),
             )
 
@@ -244,19 +244,11 @@ class ImageServiceImpl(
         }
     }
 
-    private fun mapSortField(
-        sortBy: String,
-        type: String,
-    ): String =
+    private fun mapSortField(sortBy: String): String =
         when (sortBy) {
-            "createdAt" ->
-                when (type) {
-                    "uploaded" -> "uploadedAt"
-                    "generated" -> "generatedAt"
-                    else -> "uploadedAt" // Default for mixed queries
-                }
+            "createdAt" -> "createdAt" // Now unified for both types
             "type" -> "id" // Sort by ID as a proxy for type (uploaded vs generated)
-            else -> "uploadedAt"
+            else -> "createdAt" // Default to createdAt for all types
         }
 
     private fun mapUploadedImageToDto(uploadedImage: com.jotoai.voenix.shop.image.internal.entity.UploadedImage): UserImageDto =
@@ -272,7 +264,7 @@ class ImageServiceImpl(
             promptTitle = null,
             uploadedImageId = null,
             userId = uploadedImage.userId,
-            createdAt = uploadedImage.uploadedAt,
+            createdAt = uploadedImage.createdAt,
             imageUrl = "/api/user/images/${uploadedImage.storedFilename}",
         )
 
@@ -292,7 +284,7 @@ class ImageServiceImpl(
             promptTitle = promptTitles[generatedImage.promptId],
             uploadedImageId = generatedImage.uploadedImage?.id,
             userId = generatedImage.userId ?: 0L,
-            createdAt = generatedImage.generatedAt,
+            createdAt = generatedImage.createdAt,
             imageUrl = "/api/user/images/${generatedImage.filename}",
         )
 
@@ -432,7 +424,7 @@ class ImageServiceImpl(
             originalFilename = filename,
             contentType = "application/octet-stream",
             fileSize = 0L,
-            uploadedAt = java.time.LocalDateTime.now(),
+            createdAt = java.time.OffsetDateTime.now(),
         )
     }
 

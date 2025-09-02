@@ -22,7 +22,6 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 
 class CartAssemblerTest {
@@ -604,7 +603,7 @@ class CartAssemblerTest {
             imageType = ImageType.GENERATED,
             promptId = promptId,
             userId = userId,
-            generatedAt = LocalDateTime.now(),
+            createdAt = OffsetDateTime.now(),
             ipAddress = "127.0.0.1",
         )
 }

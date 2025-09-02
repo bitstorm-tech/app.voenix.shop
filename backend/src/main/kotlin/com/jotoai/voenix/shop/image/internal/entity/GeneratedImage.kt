@@ -9,7 +9,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
-import java.time.LocalDateTime
+import org.hibernate.annotations.CreationTimestamp
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Entity
@@ -30,8 +31,9 @@ class GeneratedImage(
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploaded_image_id", nullable = true)
     var uploadedImage: UploadedImage? = null,
-    @Column(name = "generated_at", nullable = false)
-    var generatedAt: LocalDateTime = LocalDateTime.now(),
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
+    val createdAt: OffsetDateTime? = null,
     @Column(name = "ip_address")
     var ipAddress: String? = null,
 ) {

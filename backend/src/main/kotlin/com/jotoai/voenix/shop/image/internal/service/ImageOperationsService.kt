@@ -14,7 +14,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 private fun UploadedImage.toDto() =
@@ -26,7 +26,7 @@ private fun UploadedImage.toDto() =
         originalFilename = originalFilename,
         contentType = contentType,
         fileSize = fileSize,
-        uploadedAt = uploadedAt,
+        createdAt = createdAt,
     )
 
 private fun GeneratedImage.toDto() =
@@ -36,7 +36,7 @@ private fun GeneratedImage.toDto() =
         id = id ?: 0L,
         promptId = promptId,
         userId = userId,
-        generatedAt = generatedAt,
+        createdAt = createdAt,
         ipAddress = ipAddress,
     )
 
@@ -142,7 +142,6 @@ class ImageOperationsService(
                     promptId = promptId,
                     userId = null,
                     ipAddress = ipAddress,
-                    generatedAt = LocalDateTime.now(),
                 )
             val savedImage = generatedImageRepository.save(generatedImage)
 
@@ -154,14 +153,14 @@ class ImageOperationsService(
     @Transactional(readOnly = true)
     fun countGeneratedImagesForIpAfter(
         ipAddress: String,
-        after: LocalDateTime,
-    ): Long = generatedImageRepository.countByIpAddressAndGeneratedAtAfter(ipAddress, after)
+        after: OffsetDateTime,
+    ): Long = generatedImageRepository.countByIpAddressAndCreatedAtAfter(ipAddress, after)
 
     @Transactional(readOnly = true)
     fun countGeneratedImagesForUserAfter(
         userId: Long,
-        after: LocalDateTime,
-    ): Long = generatedImageRepository.countByUserIdAndGeneratedAtAfter(userId, after)
+        after: OffsetDateTime,
+    ): Long = generatedImageRepository.countByUserIdAndCreatedAtAfter(userId, after)
 
     @Transactional(readOnly = true)
     fun validateImageFile(file: MultipartFile) {
@@ -180,6 +179,6 @@ class ImageOperationsService(
             originalFilename = file.originalFilename ?: "unknown",
             contentType = file.contentType ?: "application/octet-stream",
             fileSize = file.size,
-            uploadedAt = LocalDateTime.now(),
+            createdAt = null,
         )
 }

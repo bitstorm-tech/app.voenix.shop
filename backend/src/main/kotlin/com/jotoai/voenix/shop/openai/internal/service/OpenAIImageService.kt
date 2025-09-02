@@ -60,7 +60,7 @@ import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
 import java.io.IOException
 import java.net.SocketTimeoutException
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 import kotlin.io.encoding.Base64
 
@@ -147,7 +147,10 @@ class OpenAIImageService(
             throw ImageException.Processing(validation.message ?: "Image validation failed")
         }
 
-        val hourAgo = LocalDateTime.now().minusHours(PUBLIC_RATE_LIMIT_HOURS.toLong())
+        val hourAgo =
+            OffsetDateTime
+                .now()
+                .minusHours(PUBLIC_RATE_LIMIT_HOURS.toLong())
         val count = imageService.count(CountFilter(ipAddress = ipAddress, after = hourAgo))
         checkRateLimit(
             count,
@@ -173,7 +176,10 @@ class OpenAIImageService(
 
         userService.getUserById(userId)
 
-        val dayAgo = LocalDateTime.now().minusHours(USER_RATE_LIMIT_HOURS.toLong())
+        val dayAgo =
+            OffsetDateTime
+                .now()
+                .minusHours(USER_RATE_LIMIT_HOURS.toLong())
         val count = imageService.count(CountFilter(userId = userId, after = dayAgo))
         checkRateLimit(
             count,

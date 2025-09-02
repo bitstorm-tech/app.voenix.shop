@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.image
 
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.UUID
 
 /**
@@ -22,7 +22,7 @@ data class UploadedImageDto(
     val originalFilename: String,
     val contentType: String,
     val fileSize: Long,
-    val uploadedAt: LocalDateTime,
+    val createdAt: OffsetDateTime?,
 ) : ImageInfo
 
 /**
@@ -34,6 +34,6 @@ data class GeneratedImageDto(
     val id: Long? = null,
     val promptId: Long,
     val userId: Long? = null,
-    val generatedAt: LocalDateTime,
+    val createdAt: OffsetDateTime?,
     val ipAddress: String? = null,
 ) : ImageInfo
