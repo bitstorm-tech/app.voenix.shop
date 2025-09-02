@@ -11,8 +11,8 @@ import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleSubCateg
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
-import com.jotoai.voenix.shop.supplier.SupplierService
 import com.jotoai.voenix.shop.supplier.SupplierDto
+import com.jotoai.voenix.shop.supplier.SupplierService
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify

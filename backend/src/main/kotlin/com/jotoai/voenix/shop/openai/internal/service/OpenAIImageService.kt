@@ -75,10 +75,18 @@ import kotlin.io.encoding.Base64
 class OpenAIImageService(
     @Value("\${app.test-mode:false}") private val testMode: Boolean,
     @Value("\${OPENAI_API_KEY:}") private val apiKey: String,
+    @Value("\${GOOGLE_API_KEY:}") private val googleApiKey: String,
+    @Value("\${FLUX_API_KEY:}") private val fluxApiKey: String,
     private val promptQueryService: PromptQueryService,
     private val imageService: ImageService,
     private val userService: UserService,
 ) {
+    enum class AiProvider {
+        OPENAI,
+        GOOGLE,
+        FLUX,
+    }
+
     companion object {
         private val logger = KotlinLogging.logger {}
         private const val OPENAI_API_URL = "https://api.openai.com/v1/images/edits"
@@ -139,8 +147,9 @@ class OpenAIImageService(
         request: ImageGenerationRequest,
         ipAddress: String,
         imageFile: MultipartFile,
+        provider: AiProvider = AiProvider.OPENAI,
     ): ImageGenerationResponse {
-        logger.info { "Generating image: public, prompt=${request.promptId}" }
+        logger.info { "Generating image: public, prompt=${request.promptId}, provider=$provider" }
 
         val validation = imageService.validate(ValidationRequest.FileUpload(imageFile))
         if (!validation.valid) {
@@ -159,7 +168,7 @@ class OpenAIImageService(
         )
 
         try {
-            return processPublicImageGeneration(imageFile, request.promptId, ipAddress)
+            return processPublicImageGeneration(imageFile, request.promptId, ipAddress, provider)
         } catch (e: ImageException.Storage) {
             handleSystemError(e, "public image generation")
         }
@@ -170,8 +179,9 @@ class OpenAIImageService(
         promptId: Long,
         uploadedImageUuid: UUID?,
         userId: Long,
+        provider: AiProvider = AiProvider.OPENAI,
     ): ImageGenerationResponse {
-        logger.info { "Generating image: user=$userId, prompt=$promptId" }
+        logger.info { "Generating image: user=$userId, prompt=$promptId, provider=$provider" }
         requireNotNull(uploadedImageUuid) { "uploadedImageUuid is required for user image generation" }
 
         userService.getUserById(userId)
@@ -188,7 +198,7 @@ class OpenAIImageService(
         )
 
         try {
-            return processUserImageGeneration(uploadedImageUuid, promptId, userId)
+            return processUserImageGeneration(uploadedImageUuid, promptId, userId, provider)
         } catch (e: ImageException.Storage) {
             handleSystemError(e, "user image generation")
         }
@@ -197,8 +207,9 @@ class OpenAIImageService(
     fun generateImageBytes(
         imageBytes: ByteArray,
         promptId: Long,
+        provider: AiProvider = AiProvider.OPENAI,
     ): List<ByteArray> {
-        logger.info { "Generating images with OpenAI for prompt ID: $promptId" }
+        logger.info { "Generating images with $provider for prompt ID: $promptId" }
         val request =
             CreateImageEditRequest(
                 promptId = promptId,
@@ -209,18 +220,19 @@ class OpenAIImageService(
             )
 
         val multipartFile = ByteArrayMultipartFile(imageBytes, "image.png")
-        val response = generateImages(multipartFile, request)
-        logger.info { "Successfully generated ${response.imageBytes.size} images with OpenAI" }
+        val response = generateImages(multipartFile, request, provider)
+        logger.info { "Successfully generated ${response.imageBytes.size} images with $provider" }
         return response.imageBytes
     }
 
     fun editImage(
         imageFile: MultipartFile,
         request: CreateImageEditRequest,
+        provider: AiProvider = AiProvider.OPENAI,
     ): ImageEditResponse {
-        logger.info { "Starting image edit request with prompt ID: ${request.promptId}" }
+        logger.info { "Starting image edit request with $provider for prompt ID: ${request.promptId}" }
 
-        val bytesResponse = generateImages(imageFile, request)
+        val bytesResponse = generateImages(imageFile, request, provider)
 
         val savedImageFilenames =
             bytesResponse.imageBytes.map { imageBytes ->
@@ -236,24 +248,34 @@ class OpenAIImageService(
     fun generateImages(
         imageFile: MultipartFile,
         request: CreateImageEditRequest,
+        provider: AiProvider = AiProvider.OPENAI,
     ): ImageEditBytesResponse {
         val prompt = promptQueryService.getPromptById(request.promptId)
 
         return if (testMode) {
             generateTestModeImages(imageFile, request, prompt)
         } else {
-            generateRealImages(imageFile, request, prompt)
+            when (provider) {
+                AiProvider.OPENAI -> generateWithOpenAI(imageFile, request, prompt)
+                AiProvider.GOOGLE -> generateWithGoogle(imageFile, request, prompt)
+                AiProvider.FLUX -> generateWithFlux(imageFile, request, prompt)
+            }
         }
     }
 
     fun testPrompt(
         imageFile: MultipartFile,
         request: TestPromptRequest,
+        provider: AiProvider = AiProvider.OPENAI,
     ): TestPromptResponse =
         if (testMode) {
             generateTestPromptResponse(request)
         } else {
-            generateRealPromptResponse(imageFile, request)
+            when (provider) {
+                AiProvider.OPENAI -> generateRealPromptResponse(imageFile, request)
+                AiProvider.GOOGLE -> generateGooglePromptResponse(imageFile, request)
+                AiProvider.FLUX -> generateFluxPromptResponse(imageFile, request)
+            }
         }
 
     private fun generateTestModeImages(
@@ -276,7 +298,7 @@ class OpenAIImageService(
         return ImageEditBytesResponse(imageBytes = mockImageList)
     }
 
-    private fun generateRealImages(
+    private fun generateWithOpenAI(
         imageFile: MultipartFile,
         request: CreateImageEditRequest,
         prompt: PromptDto,
@@ -386,6 +408,156 @@ class OpenAIImageService(
                 handleApiError(e, "Prompt testing")
             } catch (e: IOException) {
                 handleApiError(e, "Prompt testing")
+            }
+        }
+
+    private fun generateWithGoogle(
+        imageFile: MultipartFile,
+        request: CreateImageEditRequest,
+        prompt: PromptDto,
+    ): ImageEditBytesResponse =
+        runBlocking {
+            logger.info { "Starting Google AI image generation with prompt ID: ${request.promptId}" }
+
+            if (googleApiKey.isEmpty()) {
+                throw ImageGenerationException("Google API key not configured")
+            }
+
+            try {
+                // Google Imagen API implementation
+                // For now, we'll create a placeholder that mimics the response structure
+                // In production, this would call Google's Imagen API
+                val promptText = buildFinalPrompt(prompt)
+
+                // Placeholder for Google Imagen API implementation
+                // This will be implemented when Google API credentials are available
+                logger.warn { "Google provider implementation pending - using mock response" }
+
+                // Return mock data for now
+                val mockImageBytes = imageFile.bytes
+                val imageList = (1..request.n).map { mockImageBytes.copyOf() }
+
+                ImageEditBytesResponse(imageBytes = imageList)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                handleApiError(e, "Google image generation")
+            }
+        }
+
+    private fun generateWithFlux(
+        imageFile: MultipartFile,
+        request: CreateImageEditRequest,
+        prompt: PromptDto,
+    ): ImageEditBytesResponse =
+        runBlocking {
+            logger.info { "Starting Flux AI image generation with prompt ID: ${request.promptId}" }
+
+            if (fluxApiKey.isEmpty()) {
+                throw ImageGenerationException("Flux API key not configured")
+            }
+
+            try {
+                // Flux API implementation
+                // For now, we'll create a placeholder that mimics the response structure
+                // In production, this would call Flux's API
+                val promptText = buildFinalPrompt(prompt)
+
+                // Placeholder for Flux API implementation
+                // This will be implemented when Flux API credentials are available
+                logger.warn { "Flux provider implementation pending - using mock response" }
+
+                // Return mock data for now
+                val mockImageBytes = imageFile.bytes
+                val imageList = (1..request.n).map { mockImageBytes.copyOf() }
+
+                ImageEditBytesResponse(imageBytes = imageList)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                handleApiError(e, "Flux image generation")
+            }
+        }
+
+    private fun generateGooglePromptResponse(
+        @Suppress("UNUSED_PARAMETER") imageFile: MultipartFile,
+        request: TestPromptRequest,
+    ): TestPromptResponse =
+        runBlocking {
+            logger.info { "Starting Google AI prompt test with master prompt: ${request.masterPrompt}" }
+
+            if (googleApiKey.isEmpty()) {
+                throw ImageGenerationException("Google API key not configured")
+            }
+
+            try {
+                val combinedPrompt = "${request.masterPrompt} ${request.specificPrompt}".trim()
+
+                // Placeholder for Google Imagen API prompt testing
+                logger.warn { "Google provider prompt test implementation pending - using mock response" }
+
+                val mockImageUrl = "https://test-mode.voenix.shop/images/google-mock-${UUID.randomUUID()}.png"
+
+                TestPromptResponse(
+                    imageUrl = mockImageUrl,
+                    requestParams =
+                        TestPromptRequestParams(
+                            model = "imagen-2",
+                            size = request.getSize().apiValue,
+                            n = 1,
+                            responseFormat = "url",
+                            masterPrompt = request.masterPrompt,
+                            specificPrompt = request.specificPrompt,
+                            combinedPrompt = combinedPrompt,
+                            quality = request.getQuality().apiValue,
+                            background = request.getBackground().apiValue,
+                        ),
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                handleApiError(e, "Google prompt testing")
+            }
+        }
+
+    private fun generateFluxPromptResponse(
+        @Suppress("UNUSED_PARAMETER") imageFile: MultipartFile,
+        request: TestPromptRequest,
+    ): TestPromptResponse =
+        runBlocking {
+            logger.info { "Starting Flux AI prompt test with master prompt: ${request.masterPrompt}" }
+
+            if (fluxApiKey.isEmpty()) {
+                throw ImageGenerationException("Flux API key not configured")
+            }
+
+            try {
+                val combinedPrompt = "${request.masterPrompt} ${request.specificPrompt}".trim()
+
+                // Placeholder for Flux API prompt testing
+                logger.warn { "Flux provider prompt test implementation pending - using mock response" }
+
+                val mockImageUrl = "https://test-mode.voenix.shop/images/flux-mock-${UUID.randomUUID()}.png"
+
+                TestPromptResponse(
+                    imageUrl = mockImageUrl,
+                    requestParams =
+                        TestPromptRequestParams(
+                            model = "flux-1",
+                            size = request.getSize().apiValue,
+                            n = 1,
+                            responseFormat = "url",
+                            masterPrompt = request.masterPrompt,
+                            specificPrompt = request.specificPrompt,
+                            combinedPrompt = combinedPrompt,
+                            quality = request.getQuality().apiValue,
+                            background = request.getBackground().apiValue,
+                        ),
+                )
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                handleApiError(e, "Flux prompt testing")
             }
         }
 
@@ -524,9 +696,10 @@ class OpenAIImageService(
         imageFile: MultipartFile,
         promptId: Long,
         ipAddress: String,
+        provider: AiProvider = AiProvider.OPENAI,
     ): ImageGenerationResponse {
         val imageBytes = imageFile.bytes
-        val generatedBytes = generateImageBytes(imageBytes, promptId)
+        val generatedBytes = generateImageBytes(imageBytes, promptId, provider)
 
         val generatedImages =
             generatedBytes.mapIndexed { index, bytes ->
@@ -559,12 +732,13 @@ class OpenAIImageService(
         uploadedImageUuid: UUID,
         promptId: Long,
         userId: Long,
+        provider: AiProvider = AiProvider.OPENAI,
     ): ImageGenerationResponse {
         val uploadedImage = imageService.getUploadedImageByUuid(uploadedImageUuid, userId) as UploadedImageDto
         val imageContent = imageService.get(uploadedImage.filename, userId)
         val imageBytes = imageContent.bytes
 
-        val generatedBytes = generateImageBytes(imageBytes, promptId)
+        val generatedBytes = generateImageBytes(imageBytes, promptId, provider)
 
         val uploadedImageId =
             uploadedImage.id

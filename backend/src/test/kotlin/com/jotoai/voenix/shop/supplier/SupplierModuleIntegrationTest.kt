@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.supplier
 
 import com.jotoai.voenix.shop.application.ResourceAlreadyExistsException
-import com.jotoai.voenix.shop.supplier.SupplierService
 import com.jotoai.voenix.shop.supplier.CreateSupplierRequest
+import com.jotoai.voenix.shop.supplier.SupplierService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

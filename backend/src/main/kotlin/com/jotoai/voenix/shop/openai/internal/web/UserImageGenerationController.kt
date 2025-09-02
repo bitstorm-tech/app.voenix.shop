@@ -19,6 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -36,12 +37,13 @@ class UserImageGenerationController(
     @PostMapping("/generate", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun generateImage(
         @ModelAttribute form: ImageGenerationForm,
+        @RequestParam("provider", required = false, defaultValue = "OPENAI") provider: String,
         @AuthenticationPrincipal userDetails: UserDetails,
     ): ImageGenerationResponse {
         val user =
             userService.getUserByEmail(userDetails.username)
                 ?: throw ResourceNotFoundException("User", "email", userDetails.username)
-        logger.info { "Image generation request: user=${user.id}, promptId=${form.promptId}" }
+        logger.info { "Image generation request: user=${user.id}, promptId=${form.promptId}, provider=$provider" }
 
         // Create crop area if all crop parameters are provided
         val cropArea = CropArea.fromNullable(form.cropX, form.cropY, form.cropWidth, form.cropHeight)
@@ -59,6 +61,7 @@ class UserImageGenerationController(
                 form.promptId,
                 uploadedImageDto.uuid,
                 user.id,
+                OpenAIImageService.AiProvider.valueOf(provider.uppercase()),
             )
 
         logger.info { "Generated ${response.generatedImageIds.size} images for user ${user.id}" }

@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.supplier
 
-
 /**
  * Unified service interface for supplier module operations.
  * This interface combines both read and write operations for managing suppliers,

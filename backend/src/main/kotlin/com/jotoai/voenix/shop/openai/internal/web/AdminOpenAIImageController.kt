@@ -27,11 +27,18 @@ class AdminOpenAIImageController(
     fun createImageEdit(
         @RequestParam("image") imageFile: MultipartFile,
         @RequestPart("request") @Valid request: CreateImageEditRequest,
-    ): ImageEditResponse = openAIImageService.editImage(imageFile, request)
+        @RequestParam("provider", required = false, defaultValue = "OPENAI") provider: String,
+    ): ImageEditResponse =
+        openAIImageService.editImage(
+            imageFile,
+            request,
+            OpenAIImageService.AiProvider.valueOf(provider.uppercase()),
+        )
 
     @PostMapping("/test-prompt", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun testPrompt(
         @ModelAttribute form: TestPromptForm,
+        @RequestParam("provider", required = false, defaultValue = "OPENAI") provider: String,
     ): TestPromptResponse =
         openAIImageService.testPrompt(
             form.image,
@@ -42,5 +49,6 @@ class AdminOpenAIImageController(
                 qualityString = form.quality,
                 sizeString = form.size,
             ),
+            OpenAIImageService.AiProvider.valueOf(provider.uppercase()),
         )
 }

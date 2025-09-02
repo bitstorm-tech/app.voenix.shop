@@ -12,6 +12,7 @@ import org.springframework.http.MediaType
 import org.springframework.web.bind.annotation.ModelAttribute
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -27,9 +28,10 @@ class PublicImageGenerationController(
     @PostMapping("/generate", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
     fun generateImage(
         @ModelAttribute form: ImageGenerationForm,
+        @RequestParam("provider", required = false, defaultValue = "OPENAI") provider: String,
         request: HttpServletRequest,
     ): ImageGenerationResponse {
-        logger.info { "Public image generation request: promptId=${form.promptId}" }
+        logger.info { "Public image generation request: promptId=${form.promptId}, provider=$provider" }
 
         // Create crop area if all crop parameters are provided
         val cropArea = CropArea.fromNullable(form.cropX, form.cropY, form.cropWidth, form.cropHeight)
@@ -42,6 +44,11 @@ class PublicImageGenerationController(
             )
 
         val clientIP = clientIpResolver.resolve(request)
-        return openAIImageService.generatePublicImage(generationRequest, clientIP, form.image)
+        return openAIImageService.generatePublicImage(
+            generationRequest,
+            clientIP,
+            form.image,
+            OpenAIImageService.AiProvider.valueOf(provider.uppercase()),
+        )
     }
 }
