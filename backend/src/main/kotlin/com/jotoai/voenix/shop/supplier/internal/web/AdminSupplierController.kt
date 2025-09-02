@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.supplier.web
+package com.jotoai.voenix.shop.supplier.internal.web
 
 import com.jotoai.voenix.shop.supplier.api.SupplierService
 import com.jotoai.voenix.shop.supplier.api.dto.CreateSupplierRequest
