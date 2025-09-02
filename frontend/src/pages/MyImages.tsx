@@ -30,7 +30,7 @@ const ImageCard = ({ image }: { image: UserImage }) => {
   };
 
   const handleDesignMug = () => {
-    navigate(`/editor?imageId=${image.id}`);
+    navigate(`/editor?image=${image.filename}`);
   };
 
   const formatDate = (dateString: string) => {

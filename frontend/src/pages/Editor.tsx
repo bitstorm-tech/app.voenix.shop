@@ -11,13 +11,18 @@ import { usePublicPrompts } from '@/hooks/queries/usePublicPrompts';
 import { useAuthWizardSync } from '@/hooks/useAuthWizardSync';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Editor() {
   const currentStep = useWizardStore((state) => state.currentStep);
   const { isLoading: promptsLoading, error: promptsError } = usePublicPrompts();
   const restoreState = useWizardStore((state) => state.restoreState);
   const hasPreservedState = useWizardStore((state) => state.hasPreservedState);
+  const setPreloadedImage = useWizardStore((state) => state.setPreloadedImage);
   const { isLoading: sessionLoading } = useAuthWizardSync();
+
+  const [searchParams] = useSearchParams();
+  const imageFilename = searchParams.get('image');
 
   useEffect(() => {
     document.title = 'Editor - Voenix Shop';
@@ -25,8 +30,15 @@ export default function Editor() {
     // Check for preserved state on mount
     if (hasPreservedState()) {
       restoreState();
+      return; // Don't preload image if we have preserved state
     }
-  }, [hasPreservedState, restoreState]);
+
+    // If we have image filename from query param, preload it
+    if (imageFilename && !hasPreservedState()) {
+      const imageUrl = `/api/user/images/${imageFilename}`;
+      setPreloadedImage(imageUrl, imageFilename);
+    }
+  }, [hasPreservedState, restoreState, imageFilename, setPreloadedImage]);
 
   if (promptsLoading || sessionLoading) {
     return (

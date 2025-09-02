@@ -45,6 +45,7 @@ interface WizardStore {
   uploadImage: (file: File, url: string) => void;
   cropImage: (cropData: CropData) => void;
   removeImage: () => void;
+  setPreloadedImage: (imageUrl: string, filename?: string) => Promise<void>;
 
   // ========== Selection Actions ==========
   selectPrompt: (prompt: Prompt) => void;
@@ -252,6 +253,35 @@ export const useWizardStore = create<WizardStore>()(
         state.cropData = null;
         state.canGoNext = false;
       });
+    },
+
+    setPreloadedImage: async (imageUrl: string, filename = 'preloaded-image.jpg') => {
+      try {
+        // Fetch the image from the URL
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+
+        // Create a File object from the blob
+        const file = new File([blob], filename, {
+          type: blob.type || 'image/jpeg',
+          lastModified: Date.now(),
+        });
+
+        // Create object URL for display
+        const objectUrl = URL.createObjectURL(file);
+
+        set((state) => {
+          state.uploadedImage = file;
+          state.uploadedImageUrl = objectUrl;
+          state.cropData = null; // Reset crop data for new image
+          state.canGoNext = true;
+        });
+      } catch (error) {
+        console.error('Failed to preload image:', error);
+        set((state) => {
+          state.error = 'Failed to load image';
+        });
+      }
     },
 
     // ========== Selection Actions ==========
