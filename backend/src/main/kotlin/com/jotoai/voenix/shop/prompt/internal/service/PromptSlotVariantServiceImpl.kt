@@ -4,7 +4,7 @@ import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.CreatePromptSlotVariantRequest
-import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.PromptSlotVariantDto
+import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.PromptSlotVariantDto
 import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.UpdatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository

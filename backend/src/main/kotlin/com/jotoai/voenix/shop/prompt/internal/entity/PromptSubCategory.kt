@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.entity
 
-import com.jotoai.voenix.shop.prompt.api.dto.subcategories.PromptSubCategoryDto
+import com.jotoai.voenix.shop.prompt.internal.dto.subcategories.PromptSubCategoryDto
 import com.jotoai.voenix.shop.prompt.internal.dto.subcategories.PublicPromptSubCategoryDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

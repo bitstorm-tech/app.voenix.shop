@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.prompt.internal.web
 
 import com.jotoai.voenix.shop.prompt.internal.service.PromptSlotVariantServiceImpl
 import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.CreatePromptSlotVariantRequest
-import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.PromptSlotVariantDto
+import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.PromptSlotVariantDto
 import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.UpdatePromptSlotVariantRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus

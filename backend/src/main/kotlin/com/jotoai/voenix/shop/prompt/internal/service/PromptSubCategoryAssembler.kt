@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
 import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptSubCategoryDto
-import com.jotoai.voenix.shop.prompt.api.dto.subcategories.PromptSubCategoryDto
+import com.jotoai.voenix.shop.prompt.internal.dto.subcategories.PromptSubCategoryDto
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSubCategory
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
 import org.springframework.stereotype.Component
