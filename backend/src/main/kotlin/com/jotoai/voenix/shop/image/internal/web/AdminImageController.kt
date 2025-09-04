@@ -8,12 +8,16 @@ import com.jotoai.voenix.shop.image.ImageMetadata
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.user.UserService
+import org.springframework.core.io.ByteArrayResource
+import org.springframework.core.io.Resource
+import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.DeleteMapping
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestMapping
@@ -70,6 +74,18 @@ class AdminImageController(
                 type = ImageType.PROMPT_TEST,
             ),
         )
+    }
+
+    @GetMapping("/prompt-test/{filename}")
+    fun getPromptTestImage(
+        @PathVariable filename: String,
+    ): ResponseEntity<Resource> {
+        val content = imageService.get(filename, null)
+        return ResponseEntity
+            .ok()
+            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"$filename\"")
+            .contentType(MediaType.parseMediaType(content.contentType))
+            .body(ByteArrayResource(content.bytes))
     }
 
     @DeleteMapping("/prompt-test/{filename}")

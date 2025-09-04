@@ -1,6 +1,10 @@
 package com.jotoai.voenix.shop.openai.internal.provider
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.jotoai.voenix.shop.image.ImageData
+import com.jotoai.voenix.shop.image.ImageMetadata
+import com.jotoai.voenix.shop.image.ImageService
+import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.openai.internal.dto.ImageEditBytesResponse
 import com.jotoai.voenix.shop.openai.internal.dto.TestPromptRequest
 import com.jotoai.voenix.shop.openai.internal.dto.TestPromptRequestParams
@@ -30,6 +34,7 @@ import kotlin.io.encoding.Base64
 internal class OpenAIImageProvider(
     @Value($$"${OPENAI_API_KEY:}") private val apiKey: String,
     private val httpClient: HttpClient,
+    private val imageService: ImageService,
 ) : ImageGenerationProvider {
     companion object {
         private val logger = KotlinLogging.logger {}
@@ -92,11 +97,23 @@ internal class OpenAIImageProvider(
                     size = request.getSize().apiValue,
                     background = null,
                     n = 1,
-                    responseFormat = "url",
                 )
 
             val openAIImage = response.data!!.first()
-            val imageUrl = openAIImage.url ?: error("No image URL returned")
+            val imageUrl =
+                when {
+                    openAIImage.url != null -> openAIImage.url
+                    openAIImage.b64Json != null -> {
+                        val bytes = Base64.decode(openAIImage.b64Json)
+                        val stored =
+                            imageService.store(
+                                ImageData.Bytes(bytes, "openai_test_${System.currentTimeMillis()}.png"),
+                                ImageMetadata(type = ImageType.PROMPT_TEST),
+                            )
+                        imageService.getUrl(stored.filename, ImageType.PROMPT_TEST)
+                    }
+                    else -> error("OpenAI response contains neither URL nor base64 data")
+                }
 
             TestPromptResponse(
                 imageUrl = imageUrl,
@@ -122,7 +139,6 @@ internal class OpenAIImageProvider(
         size: String,
         background: String? = null,
         n: Int = 1,
-        responseFormat: String? = null,
     ): OpenAIResponse {
         val formData =
             formData {
@@ -144,7 +160,6 @@ internal class OpenAIImageProvider(
                 append("n", n.toString())
                 append("size", size)
                 background?.let { append("background", it) }
-                responseFormat?.let { append("response_format", it) }
             }
 
         val httpResponse =

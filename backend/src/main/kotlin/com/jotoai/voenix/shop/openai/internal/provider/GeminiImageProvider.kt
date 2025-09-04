@@ -47,7 +47,8 @@ internal class GeminiImageProvider(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiContent(
-        val parts: List<GeminiPart>,
+        val role: String? = null,
+        val parts: List<GeminiPart> = emptyList(),
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -63,6 +64,25 @@ internal class GeminiImageProvider(
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
+    data class SafetyRating(
+        val category: String? = null,
+        val probability: String? = null,
+        val blocked: Boolean? = null,
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class PromptFeedback(
+        val safetyRatings: List<SafetyRating>? = null,
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    data class UsageMetadata(
+        val promptTokenCount: Int? = null,
+        val candidatesTokenCount: Int? = null,
+        val totalTokenCount: Int? = null,
+    )
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiGenerationConfig(
         val candidateCount: Int = 1,
         val maxOutputTokens: Int? = null,
@@ -72,12 +92,17 @@ internal class GeminiImageProvider(
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiResponse(
         val candidates: List<GeminiCandidate>? = null,
+        val promptFeedback: PromptFeedback? = null,
+        val usageMetadata: UsageMetadata? = null,
         val error: GeminiError? = null,
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiCandidate(
         val content: GeminiContent? = null,
+        val finishReason: String? = null,
+        val safetyRatings: List<SafetyRating>? = null,
+        val index: Int? = null,
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -132,6 +157,9 @@ internal class GeminiImageProvider(
                     n = 1,
                 )
 
+            // Log sanitized response (omit image base64 data)
+            logger.info { "Gemini testPrompt response (sanitized):\n${sanitizeGeminiResponse(response)}" }
+
             val imageBytes = extractGeminiImageBytes(response.candidates!!)
             val imageData = ImageData.Bytes(imageBytes.first(), "gemini_test_${UUID.randomUUID()}.png")
             val metadata = ImageMetadata(type = ImageType.PROMPT_TEST)
@@ -154,6 +182,60 @@ internal class GeminiImageProvider(
                     ),
             )
         }
+    }
+
+    private fun sanitizeGeminiResponse(response: GeminiResponse): String {
+        val sb = StringBuilder()
+        sb.append("candidates=").append(response.candidates?.size ?: 0)
+        response.candidates?.forEachIndexed { cIdx, candidate ->
+            val parts = candidate.content?.parts
+            sb
+                .append("\n- candidate ")
+                .append(cIdx)
+                .append(" parts=")
+                .append(parts?.size ?: 0)
+            parts?.forEachIndexed { pIdx, part ->
+                when {
+                    part.text != null -> {
+                        val text = part.text
+                        val preview = if (text.length > 200) text.substring(0, 200) + "…" else text
+                        sb
+                            .append("\n  part ")
+                            .append(pIdx)
+                            .append(" text len=")
+                            .append(text.length)
+                            .append(" preview=\"")
+                            .append(preview.replace("\n", " "))
+                            .append("\"")
+                    }
+                    part.inlineData != null -> {
+                        val mime = part.inlineData.mimeType
+                        val dataLen = part.inlineData.data.length
+                        sb
+                            .append("\n  part ")
+                            .append(pIdx)
+                            .append(" inlineData mime=")
+                            .append(mime)
+                            .append(" base64Length=")
+                            .append(dataLen)
+                            .append(" (omitted)")
+                    }
+                    else -> {
+                        sb.append("\n  part ").append(pIdx).append(" <unknown>")
+                    }
+                }
+            }
+        }
+        response.error?.let { err ->
+            sb
+                .append("\nerror code=")
+                .append(err.code)
+                .append(" status=")
+                .append(err.status)
+                .append(" message=")
+                .append(err.message)
+        }
+        return sb.toString()
     }
 
     private suspend fun callGeminiAPI(
@@ -196,6 +278,8 @@ internal class GeminiImageProvider(
                 header("Content-Type", "application/json")
                 setBody(requestBody)
             }
+
+        logger.info { "######################## $httpResponse" }
 
         if (!httpResponse.status.isSuccess()) {
             val errorBody = httpResponse.bodyAsText()
