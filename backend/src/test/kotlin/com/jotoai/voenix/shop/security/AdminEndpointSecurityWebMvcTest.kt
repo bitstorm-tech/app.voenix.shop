@@ -1,7 +1,8 @@
 package com.jotoai.voenix.shop.security
 
-import com.jotoai.voenix.shop.article.api.dto.FindArticlesQuery
+import com.jotoai.voenix.shop.article.internal.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.article.internal.service.ArticleServiceImpl
+import com.jotoai.voenix.shop.article.internal.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
@@ -61,7 +62,7 @@ class AdminEndpointSecurityWebMvcTest {
         // Mock service responses
         every { promptQueryService.getAllPrompts() } returns emptyList()
         every { articleService.findAll(FindArticlesQuery(page = 0, size = 20)) } returns
-            com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse(
+            ArticlePaginatedResponse(
                 content = emptyList(),
                 currentPage = 0,
                 totalPages = 0,

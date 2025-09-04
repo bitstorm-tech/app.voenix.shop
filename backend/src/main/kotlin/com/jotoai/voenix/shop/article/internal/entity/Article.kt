@@ -1,8 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.entity
 
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
-import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
-import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleSubCategory
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

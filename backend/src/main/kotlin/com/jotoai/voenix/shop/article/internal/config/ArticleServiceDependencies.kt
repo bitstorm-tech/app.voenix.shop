@@ -3,9 +3,9 @@ package com.jotoai.voenix.shop.article.internal.config
 import com.jotoai.voenix.shop.article.internal.assembler.ArticleAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
-import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleCategoryRepository
-import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleSubCategoryRepository
+import com.jotoai.voenix.shop.article.internal.repository.ArticleCategoryRepository
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
+import com.jotoai.voenix.shop.article.internal.repository.ArticleSubCategoryRepository
 import com.jotoai.voenix.shop.article.internal.repository.CostCalculationRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRepository

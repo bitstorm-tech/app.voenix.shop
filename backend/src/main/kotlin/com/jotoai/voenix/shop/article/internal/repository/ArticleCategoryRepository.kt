@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.article.internal.categories.repository
+package com.jotoai.voenix.shop.article.internal.repository
 
-import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
+import com.jotoai.voenix.shop.article.internal.entity.ArticleCategory
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 

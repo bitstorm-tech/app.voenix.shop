@@ -1,11 +1,11 @@
 package com.jotoai.voenix.shop.article.internal.service
-import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleSubCategory
-import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleCategoryRepository
-import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleSubCategoryRepository
 import com.jotoai.voenix.shop.article.internal.dto.ArticleSubCategoryDto
 import com.jotoai.voenix.shop.article.internal.dto.CreateArticleSubCategoryRequest
 import com.jotoai.voenix.shop.article.internal.dto.UpdateArticleSubCategoryRequest
+import com.jotoai.voenix.shop.article.internal.entity.ArticleSubCategory
 import com.jotoai.voenix.shop.article.internal.exception.ArticleNotFoundException
+import com.jotoai.voenix.shop.article.internal.repository.ArticleCategoryRepository
+import com.jotoai.voenix.shop.article.internal.repository.ArticleSubCategoryRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 

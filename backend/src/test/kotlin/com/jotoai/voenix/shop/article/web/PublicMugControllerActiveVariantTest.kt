@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.article.web
 
-import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
-import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
+import com.jotoai.voenix.shop.article.internal.dto.PublicMugDto
+import com.jotoai.voenix.shop.article.internal.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.article.internal.service.ArticleServiceImpl
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.confirmVerified
