@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.vat.internal.web
 
-import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest
-import com.jotoai.voenix.shop.vat.api.dto.UpdateValueAddedTaxRequest
-import com.jotoai.voenix.shop.vat.api.dto.ValueAddedTaxDto
+import com.jotoai.voenix.shop.vat.internal.dto.CreateValueAddedTaxRequest
+import com.jotoai.voenix.shop.vat.internal.dto.UpdateValueAddedTaxRequest
+import com.jotoai.voenix.shop.vat.internal.dto.ValueAddedTaxDto
 import com.jotoai.voenix.shop.vat.internal.service.VatServiceImpl
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus

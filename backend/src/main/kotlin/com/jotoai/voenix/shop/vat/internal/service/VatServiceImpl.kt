@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.vat.internal.service
 
 import com.jotoai.voenix.shop.vat.api.VatService
-import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest
-import com.jotoai.voenix.shop.vat.api.dto.UpdateValueAddedTaxRequest
-import com.jotoai.voenix.shop.vat.api.dto.ValueAddedTaxDto
 import com.jotoai.voenix.shop.vat.api.exception.VatNotFoundException
+import com.jotoai.voenix.shop.vat.internal.dto.CreateValueAddedTaxRequest
+import com.jotoai.voenix.shop.vat.internal.dto.UpdateValueAddedTaxRequest
+import com.jotoai.voenix.shop.vat.internal.dto.ValueAddedTaxDto
 import com.jotoai.voenix.shop.vat.internal.entity.ValueAddedTax
 import com.jotoai.voenix.shop.vat.internal.repository.ValueAddedTaxRepository
 import org.springframework.stereotype.Service
