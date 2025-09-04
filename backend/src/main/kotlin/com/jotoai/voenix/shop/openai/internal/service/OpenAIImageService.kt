@@ -1,11 +1,6 @@
 package com.jotoai.voenix.shop.openai.internal.service
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.jotoai.voenix.shop.application.BadRequestException
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
-import com.jotoai.voenix.shop.image.CountFilter
 import com.jotoai.voenix.shop.image.GeneratedImageDto
 import com.jotoai.voenix.shop.image.ImageData
 import com.jotoai.voenix.shop.image.ImageException
@@ -20,63 +15,33 @@ import com.jotoai.voenix.shop.openai.internal.dto.ImageEditResponse
 import com.jotoai.voenix.shop.openai.internal.dto.ImageGenerationRequest
 import com.jotoai.voenix.shop.openai.internal.dto.ImageGenerationResponse
 import com.jotoai.voenix.shop.openai.internal.dto.TestPromptRequest
-import com.jotoai.voenix.shop.openai.internal.dto.TestPromptRequestParams
 import com.jotoai.voenix.shop.openai.internal.dto.TestPromptResponse
-import com.jotoai.voenix.shop.openai.internal.exception.ImageGenerationException
 import com.jotoai.voenix.shop.openai.internal.model.ImageBackground
 import com.jotoai.voenix.shop.openai.internal.model.ImageQuality
 import com.jotoai.voenix.shop.openai.internal.model.ImageSize
+import com.jotoai.voenix.shop.openai.internal.provider.GenerationOptions
+import com.jotoai.voenix.shop.openai.internal.provider.ImageGenerationProvider
+import com.jotoai.voenix.shop.openai.internal.provider.MockImageProvider
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
-import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import com.jotoai.voenix.shop.user.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.plugins.HttpRequestTimeoutException
-import io.ktor.client.plugins.ResponseException
-import io.ktor.client.plugins.ServerResponseException
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.logging.LogLevel
-import io.ktor.client.plugins.logging.Logging
-import io.ktor.client.plugins.logging.SIMPLE
-import io.ktor.client.request.forms.MultiPartFormDataContent
-import io.ktor.client.request.forms.formData
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.Headers
-import io.ktor.http.HttpHeaders
-import io.ktor.http.isSuccess
-import io.ktor.serialization.jackson.jackson
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.io.IOException
-import java.net.SocketTimeoutException
-import java.time.OffsetDateTime
 import java.util.UUID
-import kotlin.io.encoding.Base64
 
 /**
- * Consolidated OpenAI image service that handles all image generation functionality including:
- * - OpenAI API communication (production and test modes)
- * - Rate limiting for public and user requests
- * - Image storage and URL generation
- * - Prompt testing and validation
+ * Orchestrator service that delegates image generation to appropriate providers.
+ * Handles business logic, rate limiting, and storage while delegating AI provider communication.
  */
 @Service
-class OpenAIImageService(
-    @Value("\${app.test-mode:false}") private val testMode: Boolean,
-    @Value("\${OPENAI_API_KEY:}") private val apiKey: String,
-    @Value("\${GOOGLE_API_KEY:}") private val googleApiKey: String,
-    @Value("\${FLUX_API_KEY:}") private val fluxApiKey: String,
+internal class OpenAIImageService(
+    @Value($$"${app.test-mode:false}") private val testMode: Boolean,
+    private val providers: Map<AiProvider, ImageGenerationProvider>,
+    private val mockImageProvider: MockImageProvider,
+    private val rateLimitService: RateLimitService,
     private val promptQueryService: PromptQueryService,
     private val imageService: ImageService,
     private val userService: UserService,
@@ -89,15 +54,6 @@ class OpenAIImageService(
 
     companion object {
         private val logger = KotlinLogging.logger {}
-        private const val OPENAI_API_URL = "https://api.openai.com/v1/images/edits"
-        private const val GEMINI_API_URL =
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent"
-        private const val REQUEST_TIMEOUT_MS = 300000L // 5 minutes in milliseconds
-        private const val PUBLIC_RATE_LIMIT_HOURS = 1
-        private const val PUBLIC_MAX_GENERATIONS_PER_HOUR = 10
-        private const val USER_RATE_LIMIT_HOURS = 24
-        private const val USER_MAX_GENERATIONS_PER_DAY = 50
-        private const val DEBUG_TEXT_PREVIEW_LENGTH = 50
     }
 
     init {
@@ -110,103 +66,6 @@ class OpenAIImageService(
             logger.info { "OpenAI Image Service initialized - Real AI generation active" }
         }
     }
-
-    private val httpClient by lazy {
-        HttpClient(CIO) {
-            install(ContentNegotiation) {
-                jackson()
-            }
-            install(Logging) {
-                logger = io.ktor.client.plugins.logging.Logger.SIMPLE
-                level = LogLevel.INFO
-            }
-            engine {
-                requestTimeout = REQUEST_TIMEOUT_MS
-            }
-        }
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class OpenAIResponse(
-        val data: List<OpenAIImage>? = null,
-        val error: OpenAIError? = null,
-    )
-
-    data class OpenAIError(
-        val message: String,
-        val type: String? = null,
-        val param: String? = null,
-        val code: String? = null,
-    )
-
-    data class OpenAIImage(
-        val url: String? = null,
-        @JsonProperty("b64_json") val b64Json: String? = null,
-        @JsonProperty("revised_prompt") val revisedPrompt: String? = null,
-    )
-
-    // Google Gemini API data classes
-    data class GeminiRequest(
-        val contents: List<GeminiContent>,
-        val generationConfig: GeminiGenerationConfig? = null,
-        val safetySettings: List<GeminiSafetySetting>? = null,
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class GeminiContent(
-        val parts: List<GeminiPart>,
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class GeminiPart(
-        val text: String? = null,
-        val inlineData: GeminiInlineData? = null,
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class GeminiInlineData(
-        val mimeType: String,
-        val data: String, // base64 encoded
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class GeminiGenerationConfig(
-        val candidateCount: Int = 1,
-        val maxOutputTokens: Int? = null,
-        val temperature: Float? = null,
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class GeminiSafetySetting(
-        val category: String,
-        val threshold: String,
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class GeminiResponse(
-        val candidates: List<GeminiCandidate>? = null,
-        val error: GeminiError? = null,
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class GeminiCandidate(
-        val content: GeminiContent? = null,
-        val finishReason: String? = null,
-        val safetyRatings: List<GeminiSafetyRating>? = null,
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class GeminiSafetyRating(
-        val category: String,
-        val probability: String,
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class GeminiError(
-        val code: Int,
-        val message: String,
-        val status: String? = null,
-    )
 
     @Transactional
     fun generatePublicImage(
@@ -222,19 +81,10 @@ class OpenAIImageService(
             throw ImageException.Processing(validation.message ?: "Image validation failed")
         }
 
-        val hourAgo =
-            OffsetDateTime
-                .now()
-                .minusHours(PUBLIC_RATE_LIMIT_HOURS.toLong())
-        val count = imageService.count(CountFilter(ipAddress = ipAddress, after = hourAgo))
-        checkRateLimit(
-            count,
-            PUBLIC_MAX_GENERATIONS_PER_HOUR,
-            "Rate limit exceeded. Max $PUBLIC_MAX_GENERATIONS_PER_HOUR images per hour.",
-        )
+        rateLimitService.checkPublicLimit(ipAddress)
 
-        try {
-            return processPublicImageGeneration(imageFile, request.promptId, ipAddress, provider)
+        return try {
+            processPublicImageGeneration(imageFile, request.promptId, ipAddress, provider)
         } catch (e: ImageException.Storage) {
             handleSystemError(e, "public image generation")
         }
@@ -251,20 +101,10 @@ class OpenAIImageService(
         requireNotNull(uploadedImageUuid) { "uploadedImageUuid is required for user image generation" }
 
         userService.getUserById(userId)
+        rateLimitService.checkUserLimit(userId)
 
-        val dayAgo =
-            OffsetDateTime
-                .now()
-                .minusHours(USER_RATE_LIMIT_HOURS.toLong())
-        val count = imageService.count(CountFilter(userId = userId, after = dayAgo))
-        checkRateLimit(
-            count,
-            USER_MAX_GENERATIONS_PER_DAY,
-            "Rate limit exceeded. Max $USER_MAX_GENERATIONS_PER_DAY images per day.",
-        )
-
-        try {
-            return processUserImageGeneration(uploadedImageUuid, promptId, userId, provider)
+        return try {
+            processUserImageGeneration(uploadedImageUuid, promptId, userId, provider)
         } catch (e: ImageException.Storage) {
             handleSystemError(e, "user image generation")
         }
@@ -317,15 +157,18 @@ class OpenAIImageService(
         provider: AiProvider = AiProvider.OPENAI,
     ): ImageEditBytesResponse {
         val prompt = promptQueryService.getPromptById(request.promptId)
+        val options =
+            GenerationOptions(
+                size = request.size.apiValue,
+                background = request.background.apiValue,
+                quality = request.quality.apiValue,
+                n = request.n,
+            )
 
-        return if (testMode) {
-            generateTestModeImages(imageFile, request, prompt)
-        } else {
-            when (provider) {
-                AiProvider.OPENAI -> generateWithOpenAI(imageFile, request, prompt)
-                AiProvider.GOOGLE -> generateWithGoogle(imageFile, request, prompt)
-                AiProvider.FLUX -> generateWithFlux(imageFile, request, prompt)
-            }
+        return runBlocking {
+            val selectedProvider = if (testMode) mockImageProvider else providers[provider]
+            selectedProvider?.generateImages(imageFile, prompt, options)
+                ?: error("Provider $provider not available")
         }
     }
 
@@ -334,556 +177,11 @@ class OpenAIImageService(
         request: TestPromptRequest,
         provider: AiProvider = AiProvider.OPENAI,
     ): TestPromptResponse =
-        if (testMode) {
-            generateTestPromptResponse(request)
-        } else {
-            when (provider) {
-                AiProvider.OPENAI -> generateRealPromptResponse(imageFile, request)
-                AiProvider.GOOGLE -> generateGooglePromptResponse(imageFile, request)
-                AiProvider.FLUX -> generateFluxPromptResponse(imageFile, request)
-            }
-        }
-
-    private fun generateTestModeImages(
-        imageFile: MultipartFile,
-        request: CreateImageEditRequest,
-        prompt: PromptDto,
-    ): ImageEditBytesResponse {
-        logger.info { "TEST MODE: Generating ${request.n} mock images for prompt ID: ${request.promptId}" }
-        logger.debug { "TEST MODE: Using prompt '${prompt.promptText}' for mock generation" }
-
-        // Return the original image N times
-        val originalImageBytes = imageFile.bytes
-        val mockImageList =
-            (1..request.n).map {
-                logger.debug { "TEST MODE: Creating mock image $it of ${request.n}" }
-                originalImageBytes.copyOf() // Create a copy to avoid reference issues
-            }
-
-        logger.info { "TEST MODE: Successfully generated ${mockImageList.size} mock images" }
-        return ImageEditBytesResponse(imageBytes = mockImageList)
-    }
-
-    private fun generateWithOpenAI(
-        imageFile: MultipartFile,
-        request: CreateImageEditRequest,
-        prompt: PromptDto,
-    ): ImageEditBytesResponse =
         runBlocking {
-            logger.info { "Starting OpenAI image generation with prompt ID: ${request.promptId}" }
-
-            try {
-                val response =
-                    callOpenAIEditAPI(
-                        imageFile = imageFile,
-                        promptText = buildFinalPrompt(prompt),
-                        size = request.size.apiValue,
-                        background = request.background.apiValue,
-                        n = request.n,
-                    )
-
-                val imageBytesList = extractImageBytes(response.data!!)
-                ImageEditBytesResponse(imageBytes = imageBytesList)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: HttpRequestTimeoutException) {
-                handleApiError(e, "Image generation")
-            } catch (e: SocketTimeoutException) {
-                handleApiError(e, "Image generation")
-            } catch (e: ResponseException) {
-                handleApiError(e, "Image generation")
-            } catch (e: JsonProcessingException) {
-                handleApiError(e, "Image generation")
-            } catch (e: IOException) {
-                handleApiError(e, "Image generation")
-            }
+            val selectedProvider = if (testMode) mockImageProvider else providers[provider]
+            selectedProvider?.testPrompt(imageFile, request)
+                ?: error("Provider $provider not available")
         }
-
-    private fun generateTestPromptResponse(request: TestPromptRequest): TestPromptResponse {
-        logger.info { "TEST MODE: Testing prompt with master prompt: ${request.masterPrompt}" }
-
-        val combinedPrompt = "${request.masterPrompt} ${request.specificPrompt}".trim()
-        val mockImageUrl = "https://test-mode.voenix.shop/images/mock-${UUID.randomUUID()}.png"
-
-        logger.info { "TEST MODE: Generated mock image URL: $mockImageUrl" }
-
-        return TestPromptResponse(
-            imageUrl = mockImageUrl,
-            requestParams =
-                TestPromptRequestParams(
-                    model = "test-mode-mock",
-                    size = request.getSize().apiValue,
-                    n = 1,
-                    responseFormat = "url",
-                    masterPrompt = request.masterPrompt,
-                    specificPrompt = request.specificPrompt,
-                    combinedPrompt = combinedPrompt,
-                    quality = request.getQuality().apiValue,
-                    background = request.getBackground().apiValue,
-                ),
-        )
-    }
-
-    private fun generateRealPromptResponse(
-        imageFile: MultipartFile,
-        request: TestPromptRequest,
-    ): TestPromptResponse =
-        runBlocking {
-            logger.info { "Starting OpenAI prompt test with master prompt: ${request.masterPrompt}" }
-
-            try {
-                val combinedPrompt = "${request.masterPrompt} ${request.specificPrompt}".trim()
-
-                val response =
-                    callOpenAIEditAPI(
-                        imageFile = imageFile,
-                        promptText = combinedPrompt,
-                        size = request.getSize().apiValue,
-                        background = null,
-                        n = 1,
-                        responseFormat = "url",
-                    )
-
-                val openAIImage = response.data!!.first()
-                val imageUrl = openAIImage.url ?: error("No image URL returned")
-
-                TestPromptResponse(
-                    imageUrl = imageUrl,
-                    requestParams =
-                        TestPromptRequestParams(
-                            model = "dall-e-2",
-                            size = request.getSize().apiValue,
-                            n = 1,
-                            responseFormat = "url",
-                            masterPrompt = request.masterPrompt,
-                            specificPrompt = request.specificPrompt,
-                            combinedPrompt = combinedPrompt,
-                            quality = request.getQuality().apiValue,
-                            background = request.getBackground().apiValue,
-                        ),
-                )
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: HttpRequestTimeoutException) {
-                handleApiError(e, "Prompt testing")
-            } catch (e: SocketTimeoutException) {
-                handleApiError(e, "Prompt testing")
-            } catch (e: ResponseException) {
-                handleApiError(e, "Prompt testing")
-            } catch (e: JsonProcessingException) {
-                handleApiError(e, "Prompt testing")
-            } catch (e: IOException) {
-                handleApiError(e, "Prompt testing")
-            }
-        }
-
-    private fun generateWithGoogle(
-        imageFile: MultipartFile,
-        request: CreateImageEditRequest,
-        prompt: PromptDto,
-    ): ImageEditBytesResponse =
-        runBlocking {
-            logger.info { "Starting Google Gemini image generation with prompt ID: ${request.promptId}" }
-
-            if (googleApiKey.isEmpty()) {
-                throw ImageGenerationException("Google API key not configured")
-            }
-
-            try {
-                val promptText = buildFinalPrompt(prompt)
-                val response =
-                    callGeminiAPI(
-                        imageFile = imageFile,
-                        promptText = promptText,
-                        n = request.n,
-                    )
-
-                val imageBytesList = extractGeminiImageBytes(response.candidates!!)
-                ImageEditBytesResponse(imageBytes = imageBytesList)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: HttpRequestTimeoutException) {
-                handleApiError(e, "Google image generation")
-            } catch (e: SocketTimeoutException) {
-                handleApiError(e, "Google image generation")
-            } catch (e: ResponseException) {
-                handleApiError(e, "Google image generation")
-            } catch (e: JsonProcessingException) {
-                handleApiError(e, "Google image generation")
-            } catch (e: IOException) {
-                handleApiError(e, "Google image generation")
-            }
-        }
-
-    private fun generateWithFlux(
-        imageFile: MultipartFile,
-        request: CreateImageEditRequest,
-        prompt: PromptDto,
-    ): ImageEditBytesResponse =
-        runBlocking {
-            logger.info { "Starting Flux AI image generation with prompt ID: ${request.promptId}" }
-
-            if (fluxApiKey.isEmpty()) {
-                throw ImageGenerationException("Flux API key not configured")
-            }
-
-            try {
-                // Flux API implementation
-                // For now, we'll create a placeholder that mimics the response structure
-                // In production, this would call Flux's API
-                val promptText = buildFinalPrompt(prompt)
-
-                // Placeholder for Flux API implementation
-                // This will be implemented when Flux API credentials are available
-                logger.warn { "Flux provider implementation pending - using mock response" }
-
-                // Return mock data for now
-                val mockImageBytes = imageFile.bytes
-                val imageList = (1..request.n).map { mockImageBytes.copyOf() }
-
-                ImageEditBytesResponse(imageBytes = imageList)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                handleApiError(e, "Flux image generation")
-            }
-        }
-
-    private fun generateGooglePromptResponse(
-        imageFile: MultipartFile,
-        request: TestPromptRequest,
-    ): TestPromptResponse =
-        runBlocking {
-            logger.info { "Starting Google Gemini prompt test with master prompt: ${request.masterPrompt}" }
-
-            if (googleApiKey.isEmpty()) {
-                throw ImageGenerationException("Google API key not configured")
-            }
-
-            try {
-                val combinedPrompt = "${request.masterPrompt} ${request.specificPrompt}".trim()
-
-                val response =
-                    callGeminiAPI(
-                        imageFile = imageFile,
-                        promptText = combinedPrompt,
-                        n = 1,
-                    )
-
-                val imageBytes = extractGeminiImageBytes(response.candidates!!)
-                val imageData = ImageData.Bytes(imageBytes.first(), "gemini_test_${UUID.randomUUID()}.png")
-                val metadata = ImageMetadata(type = ImageType.PRIVATE)
-                val storedImage = imageService.store(imageData, metadata)
-                val imageUrl = imageService.getUrl(storedImage.filename, ImageType.PRIVATE)
-
-                TestPromptResponse(
-                    imageUrl = imageUrl,
-                    requestParams =
-                        TestPromptRequestParams(
-                            model = "gemini-2.5-flash-image-preview",
-                            size = request.getSize().apiValue,
-                            n = 1,
-                            responseFormat = "base64",
-                            masterPrompt = request.masterPrompt,
-                            specificPrompt = request.specificPrompt,
-                            combinedPrompt = combinedPrompt,
-                            quality = request.getQuality().apiValue,
-                            background = request.getBackground().apiValue,
-                        ),
-                )
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: HttpRequestTimeoutException) {
-                handleApiError(e, "Google prompt testing")
-            } catch (e: SocketTimeoutException) {
-                handleApiError(e, "Google prompt testing")
-            } catch (e: ResponseException) {
-                handleApiError(e, "Google prompt testing")
-            } catch (e: JsonProcessingException) {
-                handleApiError(e, "Google prompt testing")
-            } catch (e: IOException) {
-                handleApiError(e, "Google prompt testing")
-            }
-        }
-
-    private fun generateFluxPromptResponse(
-        @Suppress("UNUSED_PARAMETER") imageFile: MultipartFile,
-        request: TestPromptRequest,
-    ): TestPromptResponse =
-        runBlocking {
-            logger.info { "Starting Flux AI prompt test with master prompt: ${request.masterPrompt}" }
-
-            if (fluxApiKey.isEmpty()) {
-                throw ImageGenerationException("Flux API key not configured")
-            }
-
-            try {
-                val combinedPrompt = "${request.masterPrompt} ${request.specificPrompt}".trim()
-
-                // Placeholder for Flux API prompt testing
-                logger.warn { "Flux provider prompt test implementation pending - using mock response" }
-
-                val mockImageUrl = "https://test-mode.voenix.shop/images/flux-mock-${UUID.randomUUID()}.png"
-
-                TestPromptResponse(
-                    imageUrl = mockImageUrl,
-                    requestParams =
-                        TestPromptRequestParams(
-                            model = "flux-1",
-                            size = request.getSize().apiValue,
-                            n = 1,
-                            responseFormat = "url",
-                            masterPrompt = request.masterPrompt,
-                            specificPrompt = request.specificPrompt,
-                            combinedPrompt = combinedPrompt,
-                            quality = request.getQuality().apiValue,
-                            background = request.getBackground().apiValue,
-                        ),
-                )
-            } catch (e: CancellationException) {
-                throw e
-            } catch (e: Exception) {
-                handleApiError(e, "Flux prompt testing")
-            }
-        }
-
-    private suspend fun callOpenAIEditAPI(
-        imageFile: MultipartFile,
-        promptText: String,
-        size: String,
-        background: String? = null,
-        n: Int = 1,
-        responseFormat: String? = null,
-    ): OpenAIResponse {
-        val formData =
-            formData {
-                append("model", "gpt-image-1")
-                append(
-                    "image",
-                    imageFile.bytes,
-                    Headers.build {
-                        val contentFilename = imageFile.originalFilename ?: "image.png"
-                        append(HttpHeaders.ContentType, getContentType(contentFilename))
-                        append(
-                            HttpHeaders.ContentDisposition,
-                            "filename=\"${imageFile.originalFilename ?: "image.png"}\"",
-                        )
-                    },
-                )
-
-                append("prompt", promptText)
-                append("n", n.toString())
-                append("size", size)
-                background?.let { append("background", it) }
-                responseFormat?.let { append("response_format", it) }
-            }
-
-        val httpResponse =
-            httpClient.post(OPENAI_API_URL) {
-                header(HttpHeaders.Authorization, "Bearer $apiKey")
-                setBody(MultiPartFormDataContent(formData))
-            }
-
-        if (!httpResponse.status.isSuccess()) {
-            val errorBody = httpResponse.bodyAsText()
-            logger.error { "OpenAI API returned error status ${httpResponse.status}: $errorBody" }
-            error("OpenAI API error: ${httpResponse.status} - $errorBody")
-        }
-
-        val response = httpResponse.body<OpenAIResponse>()
-        logger.info { "Successfully received response from OpenAI API" }
-
-        validateOpenAIResponse(response)
-        return response
-    }
-
-    private suspend fun callGeminiAPI(
-        imageFile: MultipartFile,
-        promptText: String,
-        n: Int = 1,
-    ): GeminiResponse {
-        val imageBytes = imageFile.bytes
-        val base64Image = Base64.encode(imageBytes)
-        val mimeType = getContentType(imageFile.originalFilename ?: "image.png")
-
-        val requestBody =
-            GeminiRequest(
-                contents =
-                    listOf(
-                        GeminiContent(
-                            parts =
-                                listOf(
-                                    GeminiPart(text = promptText),
-                                    GeminiPart(
-                                        inlineData =
-                                            GeminiInlineData(
-                                                mimeType = mimeType,
-                                                data = base64Image,
-                                            ),
-                                    ),
-                                ),
-                        ),
-                    ),
-                generationConfig =
-                    GeminiGenerationConfig(
-                        candidateCount = n,
-                        maxOutputTokens = 8192,
-                        temperature = 0.7f,
-                    ),
-            )
-
-        val httpResponse =
-            httpClient.post("$GEMINI_API_URL?key=$googleApiKey") {
-                header("Content-Type", "application/json")
-                setBody(requestBody)
-            }
-
-        if (!httpResponse.status.isSuccess()) {
-            val errorBody = httpResponse.bodyAsText()
-            logger.error { "Google Gemini API returned error status ${httpResponse.status}: $errorBody" }
-            error("Google Gemini API error: ${httpResponse.status} - $errorBody")
-        }
-
-        val response = httpResponse.body<GeminiResponse>()
-        logger.info { "Successfully received response from Google Gemini API" }
-
-        validateGeminiResponse(response)
-        return response
-    }
-
-    private fun validateOpenAIResponse(response: OpenAIResponse) {
-        if (response.error != null) {
-            logger.error { "OpenAI API returned error: ${response.error.message}" }
-            error("OpenAI API error: ${response.error.message}")
-        }
-
-        if (response.data.isNullOrEmpty()) {
-            logger.error { "OpenAI API returned empty or null data" }
-            error("OpenAI API returned no images")
-        }
-    }
-
-    private fun validateGeminiResponse(response: GeminiResponse) {
-        if (response.error != null) {
-            logger.error { "Google Gemini API returned error: ${response.error.message}" }
-            error("Google Gemini API error: ${response.error.message}")
-        }
-
-        if (response.candidates.isNullOrEmpty()) {
-            logger.error { "Google Gemini API returned empty or null candidates" }
-            error("Google Gemini API returned no candidates")
-        }
-    }
-
-    private suspend fun extractImageBytes(responseData: List<OpenAIImage>): List<ByteArray> =
-        responseData.map { openAIImage ->
-            when {
-                openAIImage.url != null -> {
-                    logger.debug { "Downloading image from URL: ${openAIImage.url}" }
-                    httpClient.get(openAIImage.url).body()
-                }
-                openAIImage.b64Json != null -> {
-                    logger.debug { "Decoding base64 image" }
-                    Base64.decode(openAIImage.b64Json)
-                }
-                else -> {
-                    error("OpenAI response contains neither URL nor base64 data")
-                }
-            }
-        }
-
-    private suspend fun extractGeminiImageBytes(candidates: List<GeminiCandidate>): List<ByteArray> {
-        logger.debug { "Processing ${candidates.size} candidates for image data" }
-
-        candidates.forEachIndexed { index, candidate ->
-            logger.debug {
-                "Candidate $index: content=${candidate.content != null}, parts=${candidate.content?.parts?.size ?: 0}"
-            }
-            candidate.content?.parts?.forEachIndexed { partIndex, part ->
-                logger.debug {
-                    "  Part $partIndex: text='${part.text?.take(DEBUG_TEXT_PREVIEW_LENGTH)}...', " +
-                        "inlineData=${part.inlineData != null}"
-                }
-                if (part.inlineData != null) {
-                    logger.debug {
-                        "    InlineData mimeType: ${part.inlineData.mimeType}, " +
-                            "dataLength: ${part.inlineData.data.length}"
-                    }
-                }
-            }
-        }
-
-        return candidates
-            .mapNotNull { candidate ->
-                candidate.content?.parts?.find { it.inlineData != null }?.let { part ->
-                    part.inlineData?.let { inlineData ->
-                        logger.info {
-                            "Found image data with mimeType: ${inlineData.mimeType}, " +
-                                "dataLength: ${inlineData.data.length}"
-                        }
-                        logger.debug { "Decoding base64 image from Gemini response" }
-                        Base64.decode(inlineData.data)
-                    }
-                }
-            }.also { imageList ->
-                logger.debug { "Extracted ${imageList.size} images from Gemini response" }
-                if (imageList.isEmpty()) {
-                    error("Google Gemini response contains no image data")
-                }
-            }
-    }
-
-    private fun handleApiError(
-        e: Exception,
-        operation: String,
-    ): Nothing {
-        logger.error(e) { "$operation failed" }
-        when (e) {
-            is CancellationException -> throw e
-            is HttpRequestTimeoutException, is SocketTimeoutException ->
-                throw ImageGenerationException("$operation timed out", e)
-            is ClientRequestException, is ServerResponseException, is ResponseException ->
-                throw ImageGenerationException("$operation failed: HTTP error", e)
-            is JsonProcessingException ->
-                throw ImageGenerationException("$operation failed: JSON processing error", e)
-            is IOException ->
-                throw ImageGenerationException("$operation failed: IO error", e)
-            else ->
-                throw ImageGenerationException("$operation failed: ${e.message}", e)
-        }
-    }
-
-    private fun getContentType(fileName: String): String =
-        when {
-            fileName.endsWith(".png", ignoreCase = true) -> "image/png"
-            fileName.endsWith(".jpg", ignoreCase = true) ||
-                fileName.endsWith(".jpeg", ignoreCase = true) -> "image/jpeg"
-            fileName.endsWith(".webp", ignoreCase = true) -> "image/webp"
-            else -> "application/octet-stream"
-        }
-
-    private fun buildFinalPrompt(prompt: PromptDto): String {
-        val parts = mutableListOf<String>()
-
-        prompt.promptText?.let { parts.add(it) }
-        prompt.slots
-            .sortedBy { it.promptSlotType?.position ?: 0 }
-            .forEach { slot ->
-                slot.prompt?.let { parts.add(it) }
-            }
-
-        return parts.joinToString(" ")
-    }
-
-    private fun checkRateLimit(
-        count: Long,
-        limit: Int,
-        errorMessage: String,
-    ) {
-        if (count >= limit) {
-            throw BadRequestException(errorMessage)
-        }
-    }
 
     private fun processPublicImageGeneration(
         imageFile: MultipartFile,
@@ -965,14 +263,6 @@ class OpenAIImageService(
         )
     }
 
-    private fun handleSystemError(
-        e: Exception,
-        operation: String,
-    ): Nothing {
-        logger.error(e) { "Error during $operation" }
-        throw ImageException.Processing("Failed to generate image. Please try again later.", e)
-    }
-
     private class ByteArrayMultipartFile(
         private val fileBytes: ByteArray,
         private val fileName: String,
@@ -995,5 +285,13 @@ class OpenAIImageService(
         override fun transferTo(dest: java.io.File) {
             dest.writeBytes(fileBytes)
         }
+    }
+
+    private fun handleSystemError(
+        e: Exception,
+        operation: String,
+    ): Nothing {
+        logger.error(e) { "Error during $operation" }
+        throw ImageException.Processing("Failed to generate image. Please try again later.", e)
     }
 }

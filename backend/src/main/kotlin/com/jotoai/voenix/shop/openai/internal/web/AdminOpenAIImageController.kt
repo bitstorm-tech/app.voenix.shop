@@ -20,7 +20,7 @@ import org.springframework.web.multipart.MultipartFile
 @RestController
 @RequestMapping("/api/admin/ai")
 @PreAuthorize("hasRole('ADMIN')")
-class AdminOpenAIImageController(
+internal class AdminOpenAIImageController(
     private val openAIImageService: OpenAIImageService,
 ) {
     @PostMapping("/image-edit", consumes = [MediaType.MULTIPART_FORM_DATA_VALUE])
