@@ -44,7 +44,7 @@ class PdfGenerationServiceConsolidationTest(
         val expectedBaseName = "PdfGenerationServiceImpl"
 
         // Class name should either be exact match or a Spring proxy
-        assert(className == expectedBaseName || className?.startsWith("${expectedBaseName}\$\$") == true) {
+        assert(className == expectedBaseName || className?.startsWith($$"$${expectedBaseName}$$") == true) {
             "Expected class name to be '$expectedBaseName' or a Spring proxy, but was '$className'"
         }
     }
