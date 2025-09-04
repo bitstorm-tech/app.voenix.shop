@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.prompt.internal.web
 
-import com.jotoai.voenix.shop.prompt.internal.service.PromptServiceImpl
+import com.jotoai.voenix.shop.prompt.PromptDto
 import com.jotoai.voenix.shop.prompt.internal.dto.prompts.CreatePromptRequest
-import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import com.jotoai.voenix.shop.prompt.internal.dto.prompts.UpdatePromptRequest
+import com.jotoai.voenix.shop.prompt.internal.service.PromptServiceImpl
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController
 class AdminPromptController(
     private val promptService: PromptServiceImpl,
 ) {
-
     @GetMapping
     fun getAllPrompts(): List<PromptDto> = promptService.getAllPrompts()
 

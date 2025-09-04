@@ -6,7 +6,7 @@ import com.jotoai.voenix.shop.openai.internal.dto.TestPromptRequest
 import com.jotoai.voenix.shop.openai.internal.dto.TestPromptRequestParams
 import com.jotoai.voenix.shop.openai.internal.dto.TestPromptResponse
 import com.jotoai.voenix.shop.openai.internal.exception.ImageGenerationException
-import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
+import com.jotoai.voenix.shop.prompt.PromptDto
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body

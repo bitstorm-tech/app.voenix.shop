@@ -18,7 +18,7 @@ import com.jotoai.voenix.shop.cart.internal.repository.CartRepository
 import com.jotoai.voenix.shop.image.ImageException
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ValidationRequest
-import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.prompt.PromptService
 import com.jotoai.voenix.shop.user.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.dao.OptimisticLockingFailureException
@@ -32,7 +32,7 @@ class CartServiceImpl(
     private val cartRepository: CartRepository,
     private val userService: UserService,
     private val imageService: ImageService,
-    private val promptQueryService: PromptQueryService,
+    private val promptService: PromptService,
     private val cartAssembler: CartAssembler,
     private val orderInfoAssembler: OrderInfoAssembler,
     private val articleService: ArticleService,
@@ -169,7 +169,7 @@ class CartServiceImpl(
         }
 
         request.promptId?.let { promptId ->
-            if (!promptQueryService.existsById(promptId)) {
+            if (!promptService.existsById(promptId)) {
                 throw ResourceNotFoundException("Prompt not found with id: $promptId")
             }
             cartItem.promptId = promptId
@@ -307,7 +307,7 @@ class CartServiceImpl(
     ) {
         validateAndGetImageId(request.generatedImageId, userId)
         request.promptId?.let {
-            if (!promptQueryService.existsById(it)) {
+            if (!promptService.existsById(it)) {
                 throw ResourceNotFoundException("Prompt not found with id: $it")
             }
         }

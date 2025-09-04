@@ -4,7 +4,7 @@ import com.jotoai.voenix.shop.openai.internal.dto.ImageEditBytesResponse
 import com.jotoai.voenix.shop.openai.internal.dto.TestPromptRequest
 import com.jotoai.voenix.shop.openai.internal.dto.TestPromptRequestParams
 import com.jotoai.voenix.shop.openai.internal.dto.TestPromptResponse
-import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
+import com.jotoai.voenix.shop.prompt.PromptDto
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile

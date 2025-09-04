@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.prompt.api.dto.prompts
+package com.jotoai.voenix.shop.prompt
 
 import com.jotoai.voenix.shop.prompt.internal.dto.categories.PromptCategoryDto
 import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.PromptSlotVariantDto

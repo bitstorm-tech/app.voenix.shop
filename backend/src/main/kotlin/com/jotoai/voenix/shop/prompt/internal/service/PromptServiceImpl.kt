@@ -1,11 +1,11 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
-import com.jotoai.voenix.shop.prompt.api.PromptQueryService
-import com.jotoai.voenix.shop.application.ResourceNotFoundException
+import com.jotoai.voenix.shop.prompt.PromptDto
+import com.jotoai.voenix.shop.prompt.PromptService
 import com.jotoai.voenix.shop.prompt.internal.dto.prompts.CreatePromptRequest
-import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import com.jotoai.voenix.shop.prompt.internal.dto.prompts.PromptSummaryDto
 import com.jotoai.voenix.shop.prompt.internal.dto.prompts.UpdatePromptRequest
 import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptDto
@@ -25,7 +25,7 @@ class PromptServiceImpl(
     private val imageService: ImageService,
     private val promptAssembler: PromptAssembler,
     private val promptValidator: PromptValidator,
-) : PromptQueryService {
+) : PromptService {
     companion object {
         private val logger = KotlinLogging.logger {}
     }

@@ -22,7 +22,7 @@ import com.jotoai.voenix.shop.openai.internal.model.ImageSize
 import com.jotoai.voenix.shop.openai.internal.provider.GenerationOptions
 import com.jotoai.voenix.shop.openai.internal.provider.ImageGenerationProvider
 import com.jotoai.voenix.shop.openai.internal.provider.MockImageProvider
-import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.prompt.PromptService
 import com.jotoai.voenix.shop.user.UserService
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.runBlocking
@@ -42,7 +42,7 @@ internal class OpenAIImageService(
     private val providers: Map<AiProvider, ImageGenerationProvider>,
     private val mockImageProvider: MockImageProvider,
     private val rateLimitService: RateLimitService,
-    private val promptQueryService: PromptQueryService,
+    private val promptService: PromptService,
     private val imageService: ImageService,
     private val userService: UserService,
 ) {
@@ -156,7 +156,7 @@ internal class OpenAIImageService(
         request: CreateImageEditRequest,
         provider: AiProvider = AiProvider.OPENAI,
     ): ImageEditBytesResponse {
-        val prompt = promptQueryService.getPromptById(request.promptId)
+        val prompt = promptService.getPromptById(request.promptId)
         val options =
             GenerationOptions(
                 size = request.size.apiValue,

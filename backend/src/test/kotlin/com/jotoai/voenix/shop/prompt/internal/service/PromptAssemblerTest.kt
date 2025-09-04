@@ -2,6 +2,7 @@ package com.jotoai.voenix.shop.prompt.internal.service
 
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
+import com.jotoai.voenix.shop.prompt.PromptDto
 import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptSlotDto
 import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.PromptSlotVariantDto
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
@@ -539,7 +540,7 @@ class PromptAssemblerTest {
     }
 
     private fun verifyPromptDtoFields(
-        result: com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto,
+        result: PromptDto,
         expectedSlotDto: PromptSlotVariantDto,
         expectedImageUrl: String,
         createdAt: OffsetDateTime,
@@ -649,7 +650,7 @@ class PromptAssemblerTest {
     }
 
     private fun verifyMultipleSlotVariantsFields(
-        result: com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto,
+        result: PromptDto,
         expectedDto1: PromptSlotVariantDto,
         expectedDto2: PromptSlotVariantDto,
     ) {

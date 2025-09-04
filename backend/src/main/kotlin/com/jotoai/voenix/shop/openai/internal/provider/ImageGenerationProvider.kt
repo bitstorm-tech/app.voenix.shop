@@ -3,7 +3,7 @@ package com.jotoai.voenix.shop.openai.internal.provider
 import com.jotoai.voenix.shop.openai.internal.dto.ImageEditBytesResponse
 import com.jotoai.voenix.shop.openai.internal.dto.TestPromptRequest
 import com.jotoai.voenix.shop.openai.internal.dto.TestPromptResponse
-import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
+import com.jotoai.voenix.shop.prompt.PromptDto
 import org.springframework.web.multipart.MultipartFile
 
 interface ImageGenerationProvider {
