@@ -13,7 +13,7 @@ import com.jotoai.voenix.shop.article.internal.service.MugDetailsService
 import com.jotoai.voenix.shop.article.internal.service.ShirtDetailsService
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.supplier.SupplierService
-import com.jotoai.voenix.shop.vat.api.VatService
+import com.jotoai.voenix.shop.vat.VatService
 import org.springframework.stereotype.Component
 
 @Component

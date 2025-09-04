@@ -1,13 +1,13 @@
-package com.jotoai.voenix.shop.vat.api.exception
+package com.jotoai.voenix.shop.vat.internal.exception
 
 /**
  * Exception thrown when a VAT entity cannot be found.
- * This exception is part of the public API for the VAT module.
+ * Scoped to the VAT module internals.
  */
 class VatNotFoundException(
-    val entityName: String,
-    val fieldName: String,
-    val fieldValue: Any?,
+    entityName: String,
+    fieldName: String,
+    fieldValue: Any?,
 ) : RuntimeException() {
     override val message: String =
         "Could not find $entityName with $fieldName = $fieldValue"

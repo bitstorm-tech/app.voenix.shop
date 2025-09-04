@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.vat.api
+package com.jotoai.voenix.shop.vat
 
 /**
  * Service interface for VAT module operations.

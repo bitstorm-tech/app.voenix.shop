@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.vat
 
-import com.jotoai.voenix.shop.vat.api.VatService
 import com.jotoai.voenix.shop.vat.internal.dto.CreateValueAddedTaxRequest
 import com.jotoai.voenix.shop.vat.internal.service.VatServiceImpl
 import org.assertj.core.api.Assertions.assertThat
