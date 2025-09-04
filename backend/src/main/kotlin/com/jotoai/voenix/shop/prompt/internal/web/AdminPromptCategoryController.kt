@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.prompt.internal.web
 
-import com.jotoai.voenix.shop.prompt.internal.service.PromptCategoryServiceImpl
 import com.jotoai.voenix.shop.prompt.internal.dto.categories.CreatePromptCategoryRequest
 import com.jotoai.voenix.shop.prompt.internal.dto.categories.PromptCategoryDto
 import com.jotoai.voenix.shop.prompt.internal.dto.categories.UpdatePromptCategoryRequest
+import com.jotoai.voenix.shop.prompt.internal.service.PromptCategoryServiceImpl
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize

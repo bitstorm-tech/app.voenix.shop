@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.prompt.internal.web
 
-import com.jotoai.voenix.shop.prompt.internal.service.PromptServiceImpl
 import com.jotoai.voenix.shop.prompt.internal.dto.prompts.PromptSummaryDto
 import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptDto
+import com.jotoai.voenix.shop.prompt.internal.service.PromptServiceImpl
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestMapping

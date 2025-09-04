@@ -1,6 +1,4 @@
 package com.jotoai.voenix.shop.prompt.internal.service
-
-import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.dto.categories.CreatePromptCategoryRequest
 import com.jotoai.voenix.shop.prompt.internal.dto.categories.PromptCategoryDto
 import com.jotoai.voenix.shop.prompt.internal.dto.categories.UpdatePromptCategoryRequest
@@ -40,10 +38,7 @@ class PromptCategoryServiceImpl(
         id: Long,
         request: UpdatePromptCategoryRequest,
     ): PromptCategoryDto {
-        val promptCategory =
-            promptCategoryRepository
-                .findById(id)
-                .orElseThrow { ResourceNotFoundException("PromptCategory", "id", id) }
+        val promptCategory = promptCategoryRepository.getOrNotFound(id, "PromptCategory")
 
         request.name?.let { promptCategory.name = it }
 
@@ -55,10 +50,8 @@ class PromptCategoryServiceImpl(
 
     @Transactional
     fun deletePromptCategory(id: Long) {
-        if (!promptCategoryRepository.existsById(id)) {
-            throw ResourceNotFoundException("PromptCategory", "id", id)
-        }
-
+        // Align semantics with update: throw if not found, then delete
+        promptCategoryRepository.getOrNotFound(id, "PromptCategory")
         promptCategoryRepository.deleteById(id)
     }
 }

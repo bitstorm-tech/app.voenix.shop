@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.prompt.internal.service
 
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
-import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.CreatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.PromptSlotVariantDto
 import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.UpdatePromptSlotVariantRequest
@@ -12,7 +11,6 @@ import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantReposi
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.io.IOException
 
 @Service
 @Transactional(readOnly = true)
@@ -28,10 +26,9 @@ class PromptSlotVariantServiceImpl(
         promptSlotVariantRepository.findAll().map { promptSlotVariantAssembler.toDto(it) }
 
     fun getSlotVariantById(id: Long): PromptSlotVariantDto =
-        promptSlotVariantRepository
-            .findById(id)
-            .map { promptSlotVariantAssembler.toDto(it) }
-            .orElseThrow { ResourceNotFoundException("Prompt slot variant", "id", id) }
+        promptSlotVariantAssembler.toDto(
+            promptSlotVariantRepository.getOrNotFound(id, "PromptSlotVariant"),
+        )
 
     fun existsById(id: Long): Boolean = promptSlotVariantRepository.existsById(id)
 
@@ -68,10 +65,7 @@ class PromptSlotVariantServiceImpl(
         request: UpdatePromptSlotVariantRequest,
     ): PromptSlotVariantDto {
         // Find existing entity or throw exception
-        val promptSlotVariant =
-            promptSlotVariantRepository
-                .findById(id)
-            .orElseThrow { ResourceNotFoundException("PromptSlotVariant", "id", id) }
+        val promptSlotVariant = promptSlotVariantRepository.getOrNotFound(id, "PromptSlotVariant")
 
         // If promptSlotTypeId is provided, validate it exists
         request.promptSlotTypeId?.let { newPromptSlotTypeId ->
@@ -93,36 +87,11 @@ class PromptSlotVariantServiceImpl(
         request.prompt?.let { promptSlotVariant.prompt = it }
         request.description?.let { promptSlotVariant.description = it }
 
-        // Handle image update explicitly
-        // The standard ?.let pattern doesn't work here because we need to handle null differently:
-        // - null means "remove the image"
-        // - field not present in JSON means "don't change the image"
-        // Unfortunately, Kotlin data classes can't distinguish between these two cases.
-        // So we use a heuristic: if ANY field is provided in the request,
-        // then a null exampleImageFilename means delete.
+        // Handle image update explicitly using heuristic to distinguish intent
         if (hasAnyFieldProvided(request)) {
             val oldImageFilename = promptSlotVariant.exampleImageFilename
             val newImageFilename = request.exampleImageFilename
-
-            // Delete old image if:
-            // 1. We're setting to null (removal)
-            // 2. We're changing to a different filename
-            if (oldImageFilename != null && oldImageFilename != newImageFilename) {
-                try {
-                    imageService.delete(oldImageFilename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
-                } catch (e: IOException) {
-                    logger.warn(e) {
-                        "Failed to delete old example image file '$oldImageFilename' during slot variant update. " +
-                            "This may result in orphaned files."
-                    }
-                    // Don't fail the update if image deletion fails
-                    // This prevents orphaned files from blocking updates
-                }
-            }
-
-            // Always update the filename if any field was provided
-            // This handles both setting a new filename and clearing it (null)
-            promptSlotVariant.exampleImageFilename = newImageFilename
+            updateExampleImage(promptSlotVariant, oldImageFilename, newImageFilename)
         }
 
         // Save and return DTO
@@ -133,23 +102,11 @@ class PromptSlotVariantServiceImpl(
     @Transactional
     fun deleteSlotVariant(id: Long) {
         // Find the entity to get the image filename before deletion
-        val promptSlotVariant =
-            promptSlotVariantRepository
-                .findById(id)
-                .orElseThrow { ResourceNotFoundException("PromptSlotVariant", "id", id) }
+        val promptSlotVariant = promptSlotVariantRepository.getOrNotFound(id, "PromptSlotVariant")
 
         // Delete the associated image file if it exists
         promptSlotVariant.exampleImageFilename?.let { filename ->
-            try {
-                imageService.delete(filename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE)
-            } catch (e: IOException) {
-                logger.warn(e) {
-                    "Failed to delete example image file '$filename' during slot variant deletion. " +
-                        "This may result in orphaned files."
-                }
-                // Don't fail the deletion if image deletion fails
-                // This prevents orphaned files from blocking entity deletion
-            }
+            ServiceUtils.safeDeleteImage(imageService, filename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE, logger)
         }
 
         // Delete the entity
@@ -162,4 +119,15 @@ class PromptSlotVariantServiceImpl(
             request.description != null ||
             request.promptSlotTypeId != null ||
             request.exampleImageFilename != null
+
+    private fun updateExampleImage(
+        entity: PromptSlotVariant,
+        oldFilename: String?,
+        newFilename: String?,
+    ) {
+        if (oldFilename != null && oldFilename != newFilename) {
+            ServiceUtils.safeDeleteImage(imageService, oldFilename, ImageType.PROMPT_SLOT_VARIANT_EXAMPLE, logger)
+        }
+        entity.exampleImageFilename = newFilename
+    }
 }

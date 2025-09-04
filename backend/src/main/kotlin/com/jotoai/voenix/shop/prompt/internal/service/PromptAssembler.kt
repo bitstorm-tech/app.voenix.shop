@@ -29,14 +29,14 @@ class PromptAssembler(
      */
     fun toDto(entity: Prompt): PromptDto =
         PromptDto(
-            id = requireNotNull(entity.id) { "Prompt ID cannot be null when converting to DTO" },
+            id = idOrThrow(entity.id, "Prompt"),
             title = entity.title,
             promptText = entity.promptText,
             categoryId = entity.categoryId,
             category =
                 entity.category?.let {
                     PromptCategoryDto(
-                        id = requireNotNull(it.id) { "PromptCategory ID cannot be null when converting to DTO" },
+                        id = idOrThrow(it.id, "PromptCategory"),
                         name = it.name,
                         promptsCount = 0,
                         subcategoriesCount = 0,
@@ -48,11 +48,8 @@ class PromptAssembler(
             subcategory =
                 entity.subcategory?.let {
                     PromptSubCategoryDto(
-                        id = requireNotNull(it.id) { "PromptSubCategory ID cannot be null when converting to DTO" },
-                        promptCategoryId =
-                            requireNotNull(
-                                it.promptCategory.id,
-                            ) { "PromptCategory ID cannot be null when converting to DTO" },
+                        id = idOrThrow(it.id, "PromptSubCategory"),
+                        promptCategoryId = idOrThrow(it.promptCategory.id, "PromptCategory"),
                         name = it.name,
                         description = it.description,
                         promptsCount = 0,
@@ -82,7 +79,7 @@ class PromptAssembler(
      */
     fun toPublicDto(entity: Prompt): PublicPromptDto =
         PublicPromptDto(
-            id = requireNotNull(entity.id) { "Prompt ID cannot be null when converting to DTO" },
+            id = idOrThrow(entity.id, "Prompt"),
             title = entity.title,
             exampleImageUrl =
                 entity.exampleImageFilename?.let { filename ->
@@ -91,14 +88,14 @@ class PromptAssembler(
             category =
                 entity.category?.let {
                     PublicPromptCategoryDto(
-                        id = requireNotNull(it.id) { "PromptCategory ID cannot be null when converting to DTO" },
+                        id = idOrThrow(it.id, "PromptCategory"),
                         name = it.name,
                     )
                 },
             subcategory =
                 entity.subcategory?.let {
                     PublicPromptSubCategoryDto(
-                        id = requireNotNull(it.id) { "PromptSubCategory ID cannot be null when converting to DTO" },
+                        id = idOrThrow(it.id, "PromptSubCategory"),
                         name = it.name,
                         description = it.description,
                     )

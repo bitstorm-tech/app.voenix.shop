@@ -1,6 +1,4 @@
 package com.jotoai.voenix.shop.prompt.internal.service
-
-import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.dto.subcategories.CreatePromptSubCategoryRequest
 import com.jotoai.voenix.shop.prompt.internal.dto.subcategories.PromptSubCategoryDto
 import com.jotoai.voenix.shop.prompt.internal.dto.subcategories.UpdatePromptSubCategoryRequest
@@ -29,10 +27,7 @@ class PromptSubCategoryServiceImpl(
 
     @Transactional
     fun createPromptSubCategory(request: CreatePromptSubCategoryRequest): PromptSubCategoryDto {
-        val category =
-            promptCategoryRepository
-                .findById(request.promptCategoryId)
-                .orElseThrow { ResourceNotFoundException("PromptCategory", "id", request.promptCategoryId) }
+        val category = promptCategoryRepository.getOrNotFound(request.promptCategoryId, "PromptCategory")
 
         val promptSubCategory =
             PromptSubCategory(
@@ -52,18 +47,12 @@ class PromptSubCategoryServiceImpl(
         id: Long,
         request: UpdatePromptSubCategoryRequest,
     ): PromptSubCategoryDto {
-        val promptSubCategory =
-            promptSubCategoryRepository
-                .findById(id)
-                .orElseThrow { ResourceNotFoundException("PromptSubCategory", "id", id) }
+        val promptSubCategory = promptSubCategoryRepository.getOrNotFound(id, "PromptSubCategory")
 
         request.name?.let { promptSubCategory.name = it }
         request.description?.let { promptSubCategory.description = it }
         request.promptCategoryId?.let { categoryId ->
-            val category =
-                promptCategoryRepository
-                    .findById(categoryId)
-                    .orElseThrow { ResourceNotFoundException("PromptCategory", "id", categoryId) }
+            val category = promptCategoryRepository.getOrNotFound(categoryId, "PromptCategory")
             promptSubCategory.promptCategory = category
         }
 

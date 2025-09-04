@@ -49,10 +49,7 @@ class PromptSlotTypeServiceImpl(
         id: Long,
         request: UpdatePromptSlotTypeRequest,
     ): PromptSlotTypeDto {
-        val promptSlotType =
-            promptSlotTypeRepository
-                .findById(id)
-                .orElseThrow { ResourceNotFoundException("PromptSlotType", "id", id) }
+        val promptSlotType = promptSlotTypeRepository.getOrNotFound(id, "PromptSlotType")
 
         request.name?.let {
             require(!promptSlotTypeRepository.existsByNameAndIdNot(it, id)) {

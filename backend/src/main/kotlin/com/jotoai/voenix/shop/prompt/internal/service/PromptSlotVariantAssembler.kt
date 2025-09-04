@@ -24,7 +24,7 @@ class PromptSlotVariantAssembler(
      */
     fun toDto(entity: PromptSlotVariant): PromptSlotVariantDto =
         PromptSlotVariantDto(
-            id = requireNotNull(entity.id) { "PromptSlotVariant ID cannot be null when converting to DTO" },
+            id = idOrThrow(entity.id, "PromptSlotVariant"),
             promptSlotTypeId = entity.promptSlotTypeId,
             promptSlotType = entity.promptSlotType?.toDto(),
             name = entity.name,
@@ -47,7 +47,7 @@ class PromptSlotVariantAssembler(
      */
     fun toPublicDto(entity: PromptSlotVariant): PublicPromptSlotDto =
         PublicPromptSlotDto(
-            id = requireNotNull(entity.id) { "PromptSlotVariant ID cannot be null when converting to DTO" },
+            id = idOrThrow(entity.id, "PromptSlotVariant"),
             name = entity.name,
             description = entity.description,
             exampleImageUrl =

@@ -15,7 +15,6 @@ import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantReposi
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.io.IOException
 
 @Service
 @Transactional(readOnly = true)
@@ -81,9 +80,10 @@ class PromptServiceImpl(
         if (request.slots.isNotEmpty()) {
             request.slots.forEach { slotVariantRequest ->
                 val slotVariant =
-                    promptSlotVariantRepository
-                        .findById(slotVariantRequest.slotId)
-                        .orElseThrow { ResourceNotFoundException("Slot variant", "id", slotVariantRequest.slotId) }
+                    promptSlotVariantRepository.getOrNotFound(
+                        slotVariantRequest.slotId,
+                        "PromptSlotVariant",
+                    )
                 prompt.addPromptSlotVariant(slotVariant)
             }
         }
@@ -99,10 +99,7 @@ class PromptServiceImpl(
         id: Long,
         request: UpdatePromptRequest,
     ): PromptDto {
-        val prompt =
-            promptRepository
-                .findById(id)
-                .orElseThrow { ResourceNotFoundException("Prompt", "id", id) }
+        val prompt = promptRepository.getOrNotFound(id, "Prompt")
 
         // Validate category and subcategory if provided
         promptValidator.validateCategoryExists(request.categoryId)
@@ -115,16 +112,11 @@ class PromptServiceImpl(
         request.subcategoryId?.let { prompt.subcategoryId = it }
         request.active?.let { prompt.active = it }
 
-        // Handle example image filename change
+        // Handle example image filename change when provided
         request.exampleImageFilename?.let { newFilename ->
             val oldFilename = prompt.exampleImageFilename
             if (oldFilename != null && oldFilename != newFilename) {
-                // Delete old image if filename changed
-                try {
-                    imageService.delete(oldFilename, ImageType.PROMPT_EXAMPLE)
-                } catch (e: IOException) {
-                    logger.warn(e) { "Failed to delete old prompt example image: $oldFilename" }
-                }
+                ServiceUtils.safeDeleteImage(imageService, oldFilename, ImageType.PROMPT_EXAMPLE, logger)
             }
             prompt.exampleImageFilename = newFilename
         }
@@ -137,9 +129,10 @@ class PromptServiceImpl(
             prompt.clearPromptSlotVariants()
             slotVariants.forEach { slotVariantRequest ->
                 val promptSlotVariant =
-                    promptSlotVariantRepository
-                        .findById(slotVariantRequest.slotId)
-                        .orElseThrow { ResourceNotFoundException("Prompt slot variant", "id", slotVariantRequest.slotId) }
+                    promptSlotVariantRepository.getOrNotFound(
+                        slotVariantRequest.slotId,
+                        "PromptSlotVariant",
+                    )
                 prompt.addPromptSlotVariant(promptSlotVariant)
             }
         }
@@ -152,18 +145,11 @@ class PromptServiceImpl(
 
     @Transactional
     fun deletePrompt(id: Long) {
-        val prompt =
-            promptRepository
-                .findById(id)
-                .orElseThrow { ResourceNotFoundException("Prompt", "id", id) }
+        val prompt = promptRepository.getOrNotFound(id, "Prompt")
 
         // Delete associated image if exists
         prompt.exampleImageFilename?.let { filename ->
-            try {
-                imageService.delete(filename, ImageType.PROMPT_EXAMPLE)
-            } catch (e: IOException) {
-                logger.warn(e) { "Failed to delete prompt example image during prompt deletion: $filename" }
-            }
+            ServiceUtils.safeDeleteImage(imageService, filename, ImageType.PROMPT_EXAMPLE, logger)
         }
 
         promptRepository.deleteById(id)

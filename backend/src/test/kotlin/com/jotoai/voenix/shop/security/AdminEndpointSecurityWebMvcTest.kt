@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.security
 
+import com.jotoai.voenix.shop.article.internal.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.internal.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.article.internal.service.ArticleServiceImpl
-import com.jotoai.voenix.shop.article.internal.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.prompt.internal.service.PromptServiceImpl
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
