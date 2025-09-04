@@ -94,6 +94,9 @@ class FileStorageService(
 
         logger.info { "Storing file - Target path: ${filePath.toAbsolutePath()}" }
 
+        // Ensure target directory exists for this image type
+        ensureDirectoryExists(targetPath)
+
         var imageBytes = file.bytes
 
         // Apply cropping if provided
@@ -126,6 +129,9 @@ class FileStorageService(
         val filePath = targetPath.resolve(storedFilename)
 
         logger.info { "Storing image bytes - Target path: ${filePath.toAbsolutePath()}" }
+
+        // Ensure target directory exists for this image type
+        ensureDirectoryExists(targetPath)
 
         writeFile(filePath, bytes)
         logger.info { "Successfully stored image bytes: ${filePath.toAbsolutePath()}" }

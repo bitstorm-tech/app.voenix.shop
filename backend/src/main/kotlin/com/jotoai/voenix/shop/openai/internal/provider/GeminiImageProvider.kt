@@ -107,8 +107,6 @@ internal class GeminiImageProvider(
                     n = options.n,
                 )
 
-            logger.info { "Response: $response" }
-
             val imageBytesList = extractGeminiImageBytes(response.candidates!!)
             ImageEditBytesResponse(imageBytes = imageBytesList)
         }
@@ -133,13 +131,12 @@ internal class GeminiImageProvider(
                     promptText = combinedPrompt,
                     n = 1,
                 )
-            logger.info { "Response: $response" }
 
             val imageBytes = extractGeminiImageBytes(response.candidates!!)
             val imageData = ImageData.Bytes(imageBytes.first(), "gemini_test_${UUID.randomUUID()}.png")
-            val metadata = ImageMetadata(type = ImageType.PRIVATE)
+            val metadata = ImageMetadata(type = ImageType.PROMPT_TEST)
             val storedImage = imageService.store(imageData, metadata)
-            val imageUrl = imageService.getUrl(storedImage.filename, ImageType.PRIVATE)
+            val imageUrl = imageService.getUrl(storedImage.filename, ImageType.PROMPT_TEST)
 
             TestPromptResponse(
                 imageUrl = imageUrl,
