@@ -6,7 +6,7 @@ import com.jotoai.voenix.shop.prompt.api.PromptSlotVariantQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.CreatePromptSlotTypeRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantRequest
-import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSlotVariantNotFoundException
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import jakarta.persistence.EntityManager
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -296,7 +296,7 @@ class PromptSlotVariantIntegrationTest {
                 )
 
             // When/Then
-            assertThrows<PromptSlotVariantNotFoundException> {
+            assertThrows<ResourceNotFoundException> {
                 promptSlotVariantFacade.updateSlotVariant(99999L, updateRequest)
             }
         }
@@ -347,7 +347,7 @@ class PromptSlotVariantIntegrationTest {
             promptSlotVariantFacade.deleteSlotVariant(variantId)
 
             // Then
-            assertThrows<PromptSlotVariantNotFoundException> {
+            assertThrows<ResourceNotFoundException> {
                 promptSlotVariantQueryService.getSlotVariantById(variantId)
             }
             assertFalse(promptSlotVariantQueryService.existsById(variantId))
@@ -356,7 +356,7 @@ class PromptSlotVariantIntegrationTest {
         @Test
         fun `should fail to delete non-existent variant`() {
             // When/Then
-            assertThrows<PromptSlotVariantNotFoundException> {
+            assertThrows<ResourceNotFoundException> {
                 promptSlotVariantFacade.deleteSlotVariant(99999L)
             }
         }

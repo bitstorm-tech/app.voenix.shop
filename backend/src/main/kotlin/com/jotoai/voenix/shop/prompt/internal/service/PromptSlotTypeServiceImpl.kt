@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.CreatePromptSlotTypeRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.PromptSlotTypeDto
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.UpdatePromptSlotTypeRequest
-import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSlotTypeNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository
 import org.springframework.stereotype.Service
@@ -23,7 +23,7 @@ class PromptSlotTypeServiceImpl(
         promptSlotTypeRepository
             .findById(id)
             .map { it.toDto() }
-            .orElseThrow { PromptSlotTypeNotFoundException("PromptSlotType", "id", id) }
+            .orElseThrow { ResourceNotFoundException("PromptSlotType", "id", id) }
 
     fun existsById(id: Long): Boolean = promptSlotTypeRepository.existsById(id)
 
@@ -52,7 +52,7 @@ class PromptSlotTypeServiceImpl(
         val promptSlotType =
             promptSlotTypeRepository
                 .findById(id)
-                .orElseThrow { PromptSlotTypeNotFoundException("PromptSlotType", "id", id) }
+                .orElseThrow { ResourceNotFoundException("PromptSlotType", "id", id) }
 
         request.name?.let {
             require(!promptSlotTypeRepository.existsByNameAndIdNot(it, id)) {

@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.prompt.api.dto.categories.CreatePromptCategoryRequest
 import com.jotoai.voenix.shop.prompt.api.dto.categories.PromptCategoryDto
 import com.jotoai.voenix.shop.prompt.api.dto.categories.UpdatePromptCategoryRequest
-import com.jotoai.voenix.shop.prompt.api.exceptions.PromptCategoryNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptCategory
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptCategoryRepository
 import org.springframework.stereotype.Service
@@ -43,7 +43,7 @@ class PromptCategoryServiceImpl(
         val promptCategory =
             promptCategoryRepository
                 .findById(id)
-                .orElseThrow { PromptCategoryNotFoundException("PromptCategory", "id", id) }
+                .orElseThrow { ResourceNotFoundException("PromptCategory", "id", id) }
 
         request.name?.let { promptCategory.name = it }
 
@@ -56,7 +56,7 @@ class PromptCategoryServiceImpl(
     @Transactional
     fun deletePromptCategory(id: Long) {
         if (!promptCategoryRepository.existsById(id)) {
-            throw PromptCategoryNotFoundException("PromptCategory", "id", id)
+            throw ResourceNotFoundException("PromptCategory", "id", id)
         }
 
         promptCategoryRepository.deleteById(id)

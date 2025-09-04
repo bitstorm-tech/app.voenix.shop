@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.prompt.api.dto.subcategories.CreatePromptSubCategoryRequest
 import com.jotoai.voenix.shop.prompt.api.dto.subcategories.PromptSubCategoryDto
 import com.jotoai.voenix.shop.prompt.api.dto.subcategories.UpdatePromptSubCategoryRequest
-import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSubCategoryNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSubCategory
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptCategoryRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSubCategoryRepository
@@ -32,7 +32,7 @@ class PromptSubCategoryServiceImpl(
         val category =
             promptCategoryRepository
                 .findById(request.promptCategoryId)
-                .orElseThrow { PromptSubCategoryNotFoundException("PromptCategory", "id", request.promptCategoryId) }
+                .orElseThrow { ResourceNotFoundException("PromptCategory", "id", request.promptCategoryId) }
 
         val promptSubCategory =
             PromptSubCategory(
@@ -55,7 +55,7 @@ class PromptSubCategoryServiceImpl(
         val promptSubCategory =
             promptSubCategoryRepository
                 .findById(id)
-                .orElseThrow { PromptSubCategoryNotFoundException("PromptSubCategory", "id", id) }
+                .orElseThrow { ResourceNotFoundException("PromptSubCategory", "id", id) }
 
         request.name?.let { promptSubCategory.name = it }
         request.description?.let { promptSubCategory.description = it }
@@ -63,7 +63,7 @@ class PromptSubCategoryServiceImpl(
             val category =
                 promptCategoryRepository
                     .findById(categoryId)
-                    .orElseThrow { PromptSubCategoryNotFoundException("PromptCategory", "id", categoryId) }
+                    .orElseThrow { ResourceNotFoundException("PromptCategory", "id", categoryId) }
             promptSubCategory.promptCategory = category
         }
 

@@ -2,10 +2,10 @@ package com.jotoai.voenix.shop.prompt.internal.service
 
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.PromptSlotVariantDto
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantRequest
-import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSlotVariantNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
@@ -31,7 +31,7 @@ class PromptSlotVariantServiceImpl(
         promptSlotVariantRepository
             .findById(id)
             .map { promptSlotVariantAssembler.toDto(it) }
-            .orElseThrow { PromptSlotVariantNotFoundException("Prompt slot variant", "id", id) }
+            .orElseThrow { ResourceNotFoundException("Prompt slot variant", "id", id) }
 
     fun existsById(id: Long): Boolean = promptSlotVariantRepository.existsById(id)
 
@@ -71,7 +71,7 @@ class PromptSlotVariantServiceImpl(
         val promptSlotVariant =
             promptSlotVariantRepository
                 .findById(id)
-                .orElseThrow { PromptSlotVariantNotFoundException("PromptSlotVariant", "id", id) }
+            .orElseThrow { ResourceNotFoundException("PromptSlotVariant", "id", id) }
 
         // If promptSlotTypeId is provided, validate it exists
         request.promptSlotTypeId?.let { newPromptSlotTypeId ->
@@ -136,7 +136,7 @@ class PromptSlotVariantServiceImpl(
         val promptSlotVariant =
             promptSlotVariantRepository
                 .findById(id)
-                .orElseThrow { PromptSlotVariantNotFoundException("PromptSlotVariant", "id", id) }
+                .orElseThrow { ResourceNotFoundException("PromptSlotVariant", "id", id) }
 
         // Delete the associated image file if it exists
         promptSlotVariant.exampleImageFilename?.let { filename ->

@@ -3,12 +3,12 @@ package com.jotoai.voenix.shop.prompt.internal.service
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.CreatePromptRequest
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptSummaryDto
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.UpdatePromptRequest
 import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptDto
-import com.jotoai.voenix.shop.prompt.api.exceptions.PromptNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
@@ -40,7 +40,7 @@ class PromptServiceImpl(
             .findByIdWithRelations(id)
             .map { prompt ->
                 promptAssembler.toDto(prompt)
-            }.orElseThrow { PromptNotFoundException("Prompt", "id", id) }
+            }.orElseThrow { ResourceNotFoundException("Prompt", "id", id) }
 
     override fun existsById(id: Long): Boolean = promptRepository.existsById(id)
 
@@ -83,7 +83,7 @@ class PromptServiceImpl(
                 val slotVariant =
                     promptSlotVariantRepository
                         .findById(slotVariantRequest.slotId)
-                        .orElseThrow { PromptNotFoundException("Slot variant", "id", slotVariantRequest.slotId) }
+                        .orElseThrow { ResourceNotFoundException("Slot variant", "id", slotVariantRequest.slotId) }
                 prompt.addPromptSlotVariant(slotVariant)
             }
         }
@@ -102,7 +102,7 @@ class PromptServiceImpl(
         val prompt =
             promptRepository
                 .findById(id)
-                .orElseThrow { PromptNotFoundException("Prompt", "id", id) }
+                .orElseThrow { ResourceNotFoundException("Prompt", "id", id) }
 
         // Validate category and subcategory if provided
         promptValidator.validateCategoryExists(request.categoryId)
@@ -139,7 +139,7 @@ class PromptServiceImpl(
                 val promptSlotVariant =
                     promptSlotVariantRepository
                         .findById(slotVariantRequest.slotId)
-                        .orElseThrow { PromptNotFoundException("Prompt slot variant", "id", slotVariantRequest.slotId) }
+                        .orElseThrow { ResourceNotFoundException("Prompt slot variant", "id", slotVariantRequest.slotId) }
                 prompt.addPromptSlotVariant(promptSlotVariant)
             }
         }
@@ -155,7 +155,7 @@ class PromptServiceImpl(
         val prompt =
             promptRepository
                 .findById(id)
-                .orElseThrow { PromptNotFoundException("Prompt", "id", id) }
+                .orElseThrow { ResourceNotFoundException("Prompt", "id", id) }
 
         // Delete associated image if exists
         prompt.exampleImageFilename?.let { filename ->

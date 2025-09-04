@@ -4,7 +4,7 @@ import com.jotoai.voenix.shop.cart.CartOrderInfo
 import com.jotoai.voenix.shop.cart.CartOrderItemInfo
 import com.jotoai.voenix.shop.cart.internal.entity.Cart
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
-import com.jotoai.voenix.shop.prompt.api.exceptions.PromptNotFoundException
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 
@@ -34,7 +34,7 @@ class OrderInfoAssembler(
                             item.promptId?.let { pid ->
                                 try {
                                     promptQueryService.getPromptById(pid).promptText
-                                } catch (e: PromptNotFoundException) {
+                                } catch (e: ResourceNotFoundException) {
                                     logger.warn(e) {
                                         "Failed to fetch prompt text for promptId=$pid, prompt may have been deleted"
                                     }

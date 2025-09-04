@@ -4,7 +4,7 @@ import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantRequest
-import com.jotoai.voenix.shop.prompt.api.exceptions.PromptSlotVariantNotFoundException
+import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository
@@ -315,7 +315,7 @@ class PromptSlotVariantServiceImplTest {
 
             // When/Then
             val exception =
-                assertThrows<PromptSlotVariantNotFoundException> {
+                assertThrows<ResourceNotFoundException> {
                     service.updateSlotVariant(999L, request)
                 }
 
@@ -589,7 +589,7 @@ class PromptSlotVariantServiceImplTest {
 
             // When/Then
             val exception =
-                assertThrows<PromptSlotVariantNotFoundException> {
+                assertThrows<ResourceNotFoundException> {
                     service.deleteSlotVariant(999L)
                 }
 
@@ -661,7 +661,7 @@ class PromptSlotVariantServiceImplTest {
             every { promptSlotVariantRepository.findById(999L) } returns Optional.empty()
 
             // When/Then
-            assertThrows<PromptSlotVariantNotFoundException> {
+            assertThrows<ResourceNotFoundException> {
                 service.getSlotVariantById(999L)
             }
         }
