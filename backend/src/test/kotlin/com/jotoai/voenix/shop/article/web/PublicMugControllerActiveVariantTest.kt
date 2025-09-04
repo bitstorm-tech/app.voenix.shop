@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.article.web
 
-import com.jotoai.voenix.shop.article.api.ArticleService
 import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
+import com.jotoai.voenix.shop.article.internal.service.ArticleServiceImpl
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.confirmVerified
 import io.mockk.every
@@ -35,7 +35,7 @@ class PublicMugControllerActiveVariantTest {
     private lateinit var mockMvc: MockMvc
 
     @MockkBean
-    private lateinit var articleService: ArticleService
+    private lateinit var articleService: ArticleServiceImpl
 
     private lateinit var testMugWithMixedVariants: PublicMugDto
     private lateinit var testMugWithOnlyActiveVariants: PublicMugDto

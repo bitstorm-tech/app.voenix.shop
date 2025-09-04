@@ -38,7 +38,7 @@ class ArticleServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findAll(query: FindArticlesQuery): ArticlePaginatedResponse<ArticleDto> {
+    fun findAll(query: FindArticlesQuery): ArticlePaginatedResponse<ArticleDto> {
         val pageable = PageRequest.of(query.page, query.size, Sort.by("id").descending())
         val articlesPage =
             dependencies.articleRepository.findAllWithFilters(
@@ -59,7 +59,7 @@ class ArticleServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findById(id: Long): ArticleWithDetailsDto {
+    fun findById(id: Long): ArticleWithDetailsDto {
         // First, fetch article with basic details to determine the type
         val articleBasic =
             dependencies.articleRepository.findByIdWithBasicDetails(id)
@@ -76,7 +76,7 @@ class ArticleServiceImpl(
     }
 
     @Transactional
-    override fun create(request: CreateArticleRequest): ArticleWithDetailsDto {
+    fun create(request: CreateArticleRequest): ArticleWithDetailsDto {
         val category =
             dependencies.articleCategoryRepository
                 .findById(request.categoryId)
@@ -148,7 +148,7 @@ class ArticleServiceImpl(
     }
 
     @Transactional
-    override fun update(
+    fun update(
         id: Long,
         request: UpdateArticleRequest,
     ): ArticleWithDetailsDto {
@@ -214,7 +214,7 @@ class ArticleServiceImpl(
     }
 
     @Transactional
-    override fun delete(id: Long) {
+    fun delete(id: Long) {
         if (!dependencies.articleRepository.existsById(id)) {
             throw ArticleNotFoundException("Article not found with id: $id")
         }
@@ -483,7 +483,7 @@ class ArticleServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findPublicMugs(): List<PublicMugDto> {
+    fun findPublicMugs(): List<PublicMugDto> {
         // Find all active mug articles with their details
         val mugs = dependencies.articleRepository.findAllActiveMugsWithDetails(ArticleType.MUG)
 

@@ -1,12 +1,12 @@
 package com.jotoai.voenix.shop.article.internal.web
 
-import com.jotoai.voenix.shop.article.api.ArticleService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.article.api.dto.CreateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
+import com.jotoai.voenix.shop.article.internal.service.ArticleServiceImpl
 import com.jotoai.voenix.shop.article.internal.web.dto.ArticleSearchCriteria
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/articles")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminArticleController(
-    private val articleService: ArticleService,
+    private val articleService: ArticleServiceImpl,
 ) {
     @GetMapping
     fun findAll(
