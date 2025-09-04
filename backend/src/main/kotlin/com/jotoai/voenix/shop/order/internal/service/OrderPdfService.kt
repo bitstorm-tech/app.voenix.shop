@@ -5,11 +5,11 @@ import com.jotoai.voenix.shop.article.ArticleService
 import com.jotoai.voenix.shop.article.MugArticleDetailsDto
 import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import com.jotoai.voenix.shop.order.internal.dto.OrderForPdfDto
-import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
-import com.jotoai.voenix.shop.pdf.api.dto.ArticlePdfData
-import com.jotoai.voenix.shop.pdf.api.dto.MugDetailsPdfData
-import com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData
-import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
+import com.jotoai.voenix.shop.pdf.ArticlePdfData
+import com.jotoai.voenix.shop.pdf.MugDetailsPdfData
+import com.jotoai.voenix.shop.pdf.OrderItemPdfData
+import com.jotoai.voenix.shop.pdf.OrderPdfData
+import com.jotoai.voenix.shop.pdf.PdfGenerationService
 import org.springframework.stereotype.Service
 import java.util.UUID
 

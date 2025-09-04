@@ -4,9 +4,9 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.client.j2se.MatrixToImageWriter
 import com.google.zxing.qrcode.QRCodeWriter
 import com.jotoai.voenix.shop.image.ImageService
-import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
-import com.jotoai.voenix.shop.pdf.api.dto.OrderItemPdfData
-import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
+import com.jotoai.voenix.shop.pdf.OrderItemPdfData
+import com.jotoai.voenix.shop.pdf.OrderPdfData
+import com.jotoai.voenix.shop.pdf.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.internal.config.PdfConfig
 import com.jotoai.voenix.shop.pdf.internal.util.PlaceholderImage
 import com.lowagie.text.BadElementException

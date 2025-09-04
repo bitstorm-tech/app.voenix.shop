@@ -1,6 +1,4 @@
-package com.jotoai.voenix.shop.pdf.api
-
-import com.jotoai.voenix.shop.pdf.api.dto.OrderPdfData
+package com.jotoai.voenix.shop.pdf
 
 /**
  * PDF generation service interface.

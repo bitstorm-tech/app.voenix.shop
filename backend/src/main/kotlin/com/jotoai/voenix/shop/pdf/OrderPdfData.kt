@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.pdf.api.dto
+package com.jotoai.voenix.shop.pdf
 
 import java.util.UUID
 

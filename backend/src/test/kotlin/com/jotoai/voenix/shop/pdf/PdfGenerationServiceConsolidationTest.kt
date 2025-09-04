@@ -1,6 +1,5 @@
 package com.jotoai.voenix.shop.pdf
 
-import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.internal.service.PdfGenerationServiceImpl
 import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Test
