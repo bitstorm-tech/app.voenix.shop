@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.article.internal.web
 
-import com.jotoai.voenix.shop.article.api.ShirtVariantFacade
 import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
+import com.jotoai.voenix.shop.article.internal.service.ShirtVariantServiceImpl
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/articles/shirts")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminShirtVariantController(
-    private val shirtVariantFacade: ShirtVariantFacade,
+    private val shirtVariantFacade: ShirtVariantServiceImpl,
 ) {
     @PostMapping("/{articleId}/variants")
     fun create(

@@ -1,6 +1,4 @@
 package com.jotoai.voenix.shop.article.internal.service
-
-import com.jotoai.voenix.shop.article.api.ShirtVariantFacade
 import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
@@ -21,13 +19,13 @@ class ShirtVariantServiceImpl(
     private val shirtVariantRepository: ShirtArticleVariantRepository,
     private val imageService: ImageService,
     private val shirtArticleVariantAssembler: ShirtArticleVariantAssembler,
-) : ShirtVariantFacade {
+) {
     companion object {
         private val logger = KotlinLogging.logger {}
     }
 
     @Transactional
-    override fun create(
+    fun create(
         articleId: Long,
         request: CreateShirtArticleVariantRequest,
     ): ShirtArticleVariantDto {
@@ -48,7 +46,7 @@ class ShirtVariantServiceImpl(
     }
 
     @Transactional
-    override fun update(
+    fun update(
         variantId: Long,
         request: CreateShirtArticleVariantRequest,
     ): ShirtArticleVariantDto {
@@ -67,7 +65,7 @@ class ShirtVariantServiceImpl(
     }
 
     @Transactional
-    override fun delete(variantId: Long) {
+    fun delete(variantId: Long) {
         val variant =
             shirtVariantRepository
                 .findById(variantId)
