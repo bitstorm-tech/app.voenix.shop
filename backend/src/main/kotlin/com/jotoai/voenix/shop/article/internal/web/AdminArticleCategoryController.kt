@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.article.internal.web
 
-import com.jotoai.voenix.shop.article.api.ArticleCategoryService
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
 import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleCategoryRequest
 import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleCategoryRequest
+import com.jotoai.voenix.shop.article.internal.service.ArticleCategoryUnifiedService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/articles/categories")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminArticleCategoryController(
-    private val articleCategoryService: ArticleCategoryService,
+    private val articleCategoryService: ArticleCategoryUnifiedService,
 ) {
     @GetMapping
     fun getAllCategories(): List<ArticleCategoryDto> = articleCategoryService.getAllCategories()
