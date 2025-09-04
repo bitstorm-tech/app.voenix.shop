@@ -38,7 +38,7 @@ class OrderServiceImpl(
     private val articleQueryService: ArticleQueryService,
     private val imageService: ImageService,
     private val entityManager: EntityManager,
-    @param:Value("\${app.base-url:http://localhost:8080}") private val appBaseUrl: String,
+    @Value("\${app.base-url:http://localhost:8080}") private val appBaseUrl: String,
 ) : OrderService {
     private val logger = KotlinLogging.logger {}
 

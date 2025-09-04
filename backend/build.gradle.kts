@@ -19,6 +19,12 @@ repositories {
     mavenCentral()
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xannotation-default-target=param-property")
+    }
+}
+
 dependencies {
     // Kotlin
     implementation("org.jetbrains.kotlin:kotlin-reflect")

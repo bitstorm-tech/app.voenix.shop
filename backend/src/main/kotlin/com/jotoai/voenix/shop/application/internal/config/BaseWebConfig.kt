@@ -11,7 +11,7 @@ import org.springframework.web.servlet.resource.PathResourceResolver
 
 @Configuration
 class BaseWebConfig(
-    @param:Value("\${spring.profiles.active:default}") private val activeProfile: String,
+    @Value("\${spring.profiles.active:default}") private val activeProfile: String,
 ) : WebMvcConfigurer {
     companion object {
         private const val CORS_MAX_AGE_SECONDS = 3600L
