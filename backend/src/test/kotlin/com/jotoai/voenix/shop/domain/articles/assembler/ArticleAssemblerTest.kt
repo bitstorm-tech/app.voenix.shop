@@ -6,7 +6,7 @@ import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.assembler.ArticleAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
-import com.jotoai.voenix.shop.article.internal.dto.ShirtArticleVariantDto
+import com.jotoai.voenix.shop.article.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.entity.ArticleSubCategory

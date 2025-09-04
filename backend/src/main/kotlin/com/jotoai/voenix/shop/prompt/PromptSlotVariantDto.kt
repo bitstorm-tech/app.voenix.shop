@@ -1,6 +1,4 @@
-package com.jotoai.voenix.shop.prompt.internal.dto.slotvariants
-
-import com.jotoai.voenix.shop.prompt.internal.dto.slottypes.PromptSlotTypeDto
+package com.jotoai.voenix.shop.prompt
 import java.time.OffsetDateTime
 
 data class PromptSlotVariantDto(

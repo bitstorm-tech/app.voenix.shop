@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.prompt.internal.dto.slottypes
+package com.jotoai.voenix.shop.prompt
 
 import java.time.OffsetDateTime
 

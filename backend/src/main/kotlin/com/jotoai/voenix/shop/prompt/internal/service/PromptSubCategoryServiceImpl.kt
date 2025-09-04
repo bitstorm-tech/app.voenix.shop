@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 import com.jotoai.voenix.shop.prompt.internal.dto.subcategories.CreatePromptSubCategoryRequest
-import com.jotoai.voenix.shop.prompt.internal.dto.subcategories.PromptSubCategoryDto
+import com.jotoai.voenix.shop.prompt.PromptSubCategoryDto
 import com.jotoai.voenix.shop.prompt.internal.dto.subcategories.UpdatePromptSubCategoryRequest
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSubCategory
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptCategoryRepository

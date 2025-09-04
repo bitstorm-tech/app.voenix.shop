@@ -1,6 +1,7 @@
 package com.jotoai.voenix.shop.article.internal.dto
 
 import com.jotoai.voenix.shop.article.ArticleType
+import com.jotoai.voenix.shop.article.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.MugArticleDetailsDto
 import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import java.time.OffsetDateTime

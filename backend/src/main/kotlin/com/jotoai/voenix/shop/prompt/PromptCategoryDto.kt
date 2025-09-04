@@ -1,13 +1,12 @@
-package com.jotoai.voenix.shop.prompt.internal.dto.subcategories
+package com.jotoai.voenix.shop.prompt
 
 import java.time.OffsetDateTime
 
-data class PromptSubCategoryDto(
+data class PromptCategoryDto(
     val id: Long,
-    val promptCategoryId: Long,
     val name: String,
-    val description: String?,
     val promptsCount: Int = 0,
+    val subcategoriesCount: Int = 0,
     val createdAt: OffsetDateTime?,
     val updatedAt: OffsetDateTime?,
 )

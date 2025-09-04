@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.prompt.internal.web
 
 import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.CreatePromptSlotVariantRequest
-import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.PromptSlotVariantDto
+import com.jotoai.voenix.shop.prompt.PromptSlotVariantDto
 import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.UpdatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.internal.service.PromptSlotVariantServiceImpl
 import jakarta.validation.Valid

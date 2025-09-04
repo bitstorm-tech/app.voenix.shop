@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.assembler
 
-import com.jotoai.voenix.shop.article.internal.dto.ShirtArticleVariantDto
+import com.jotoai.voenix.shop.article.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
@@ -34,4 +34,5 @@ class ShirtArticleVariantAssembler(
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,
         )
+
 }

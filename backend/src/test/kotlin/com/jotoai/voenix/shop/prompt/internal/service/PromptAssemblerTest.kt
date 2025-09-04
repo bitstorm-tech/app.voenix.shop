@@ -4,7 +4,7 @@ import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.prompt.PromptDto
 import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptSlotDto
-import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.PromptSlotVariantDto
+import com.jotoai.voenix.shop.prompt.PromptSlotVariantDto
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptCategory
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType

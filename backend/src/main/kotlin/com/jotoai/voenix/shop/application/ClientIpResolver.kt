@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.application.internal.service
+package com.jotoai.voenix.shop.application
 
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.stereotype.Component

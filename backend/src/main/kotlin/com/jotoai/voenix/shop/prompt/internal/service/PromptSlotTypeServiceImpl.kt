@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.prompt.internal.service
 
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import com.jotoai.voenix.shop.prompt.internal.dto.slottypes.CreatePromptSlotTypeRequest
-import com.jotoai.voenix.shop.prompt.internal.dto.slottypes.PromptSlotTypeDto
+import com.jotoai.voenix.shop.prompt.PromptSlotTypeDto
 import com.jotoai.voenix.shop.prompt.internal.dto.slottypes.UpdatePromptSlotTypeRequest
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotTypeRepository

@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.prompt.internal.web
 
 import com.jotoai.voenix.shop.prompt.internal.dto.subcategories.CreatePromptSubCategoryRequest
-import com.jotoai.voenix.shop.prompt.internal.dto.subcategories.PromptSubCategoryDto
+import com.jotoai.voenix.shop.prompt.PromptSubCategoryDto
 import com.jotoai.voenix.shop.prompt.internal.dto.subcategories.UpdatePromptSubCategoryRequest
 import com.jotoai.voenix.shop.prompt.internal.service.PromptSubCategoryServiceImpl
 import jakarta.validation.Valid
