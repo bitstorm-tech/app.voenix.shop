@@ -15,15 +15,9 @@ import org.springframework.transaction.annotation.Transactional
 class VatServiceImpl(
     private val valueAddedTaxRepository: ValueAddedTaxRepository,
 ) : VatService {
-    override fun getAllVats(): List<ValueAddedTaxDto> = valueAddedTaxRepository.findAll().map { it.toDto() }
+    fun getAllVats(): List<ValueAddedTaxDto> = valueAddedTaxRepository.findAll().map { it.toDto() }
 
-    override fun getDefaultVat(): ValueAddedTaxDto? =
-        valueAddedTaxRepository
-            .findByIsDefaultTrue()
-            .map { it.toDto() }
-            .orElse(null)
-
-    override fun getVatById(id: Long): ValueAddedTaxDto =
+    fun getVatById(id: Long): ValueAddedTaxDto =
         valueAddedTaxRepository
             .findById(id)
             .map { it.toDto() }
@@ -32,7 +26,7 @@ class VatServiceImpl(
     override fun existsById(id: Long): Boolean = valueAddedTaxRepository.existsById(id)
 
     @Transactional
-    override fun createVat(request: CreateValueAddedTaxRequest): ValueAddedTaxDto {
+    fun createVat(request: CreateValueAddedTaxRequest): ValueAddedTaxDto {
         require(!valueAddedTaxRepository.existsByName(request.name)) {
             "VAT with name '${request.name}' already exists"
         }
@@ -54,7 +48,7 @@ class VatServiceImpl(
     }
 
     @Transactional
-    override fun updateVat(
+    fun updateVat(
         id: Long,
         request: UpdateValueAddedTaxRequest,
     ): ValueAddedTaxDto {
@@ -85,7 +79,7 @@ class VatServiceImpl(
     }
 
     @Transactional
-    override fun deleteVat(id: Long) {
+    fun deleteVat(id: Long) {
         if (!valueAddedTaxRepository.existsById(id)) {
             throw VatNotFoundException("ValueAddedTax", "id", id)
         }

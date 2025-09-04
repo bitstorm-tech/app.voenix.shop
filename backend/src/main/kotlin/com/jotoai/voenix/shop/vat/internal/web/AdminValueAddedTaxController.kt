@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.vat.internal.web
 
-import com.jotoai.voenix.shop.vat.api.VatService
 import com.jotoai.voenix.shop.vat.api.dto.CreateValueAddedTaxRequest
 import com.jotoai.voenix.shop.vat.api.dto.UpdateValueAddedTaxRequest
 import com.jotoai.voenix.shop.vat.api.dto.ValueAddedTaxDto
+import com.jotoai.voenix.shop.vat.internal.service.VatServiceImpl
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.security.access.prepost.PreAuthorize
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/vat")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminValueAddedTaxController(
-    private val vatService: VatService,
+    private val vatService: VatServiceImpl,
 ) {
     @GetMapping
     fun getAllVats(): List<ValueAddedTaxDto> = vatService.getAllVats()
