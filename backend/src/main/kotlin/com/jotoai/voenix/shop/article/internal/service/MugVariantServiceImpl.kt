@@ -6,10 +6,10 @@ import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
-import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.MugWithVariantsSummaryAssembler
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
+import com.jotoai.voenix.shop.article.internal.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
 import com.jotoai.voenix.shop.image.ImageService

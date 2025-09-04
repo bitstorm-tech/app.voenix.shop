@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.article.api.exception
+package com.jotoai.voenix.shop.article.internal.exception
 
 /**
  * Article module specific exception to avoid dependency on common module

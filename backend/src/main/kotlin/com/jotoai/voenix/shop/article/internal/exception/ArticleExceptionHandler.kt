@@ -1,6 +1,4 @@
 package com.jotoai.voenix.shop.article.internal.exception
-
-import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler

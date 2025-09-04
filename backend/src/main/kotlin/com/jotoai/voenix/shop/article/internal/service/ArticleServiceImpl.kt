@@ -16,12 +16,12 @@ import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.article.api.dto.UpdateCostCalculationRequest
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
-import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.config.ArticleServiceDependencies
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.CostCalculation
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
+import com.jotoai.voenix.shop.article.internal.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.image.ImageType
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort

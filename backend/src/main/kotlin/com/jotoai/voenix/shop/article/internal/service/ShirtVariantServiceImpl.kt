@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.article.internal.service
 import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
-import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
+import com.jotoai.voenix.shop.article.internal.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRepository
 import com.jotoai.voenix.shop.image.ImageService
