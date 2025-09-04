@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.article.api.categories
+package com.jotoai.voenix.shop.article.api
 
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleSubCategoryDto
