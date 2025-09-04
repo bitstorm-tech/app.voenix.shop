@@ -12,7 +12,6 @@ import java.util.UUID
 
 @Component
 internal class MockImageProvider : ImageGenerationProvider {
-
     companion object {
         private val logger = KotlinLogging.logger {}
     }
@@ -20,17 +19,18 @@ internal class MockImageProvider : ImageGenerationProvider {
     override suspend fun generateImages(
         imageFile: MultipartFile,
         prompt: PromptDto,
-        options: GenerationOptions
+        options: GenerationOptions,
     ): ImageEditBytesResponse {
         logger.info { "TEST MODE: Generating ${options.n} mock images for prompt ID: ${prompt.id}" }
         logger.debug { "TEST MODE: Using prompt '${prompt.promptText}' for mock generation" }
 
         // Return the original image N times
         val originalImageBytes = imageFile.bytes
-        val mockImageList = (1..options.n).map {
-            logger.debug { "TEST MODE: Creating mock image $it of ${options.n}" }
-            originalImageBytes.copyOf() // Create a copy to avoid reference issues
-        }
+        val mockImageList =
+            (1..options.n).map {
+                logger.debug { "TEST MODE: Creating mock image $it of ${options.n}" }
+                originalImageBytes.copyOf() // Create a copy to avoid reference issues
+            }
 
         logger.info { "TEST MODE: Successfully generated ${mockImageList.size} mock images" }
         return ImageEditBytesResponse(imageBytes = mockImageList)
@@ -38,7 +38,7 @@ internal class MockImageProvider : ImageGenerationProvider {
 
     override suspend fun testPrompt(
         imageFile: MultipartFile,
-        request: TestPromptRequest
+        request: TestPromptRequest,
     ): TestPromptResponse {
         logger.info { "TEST MODE: Testing prompt with master prompt: ${request.masterPrompt}" }
 
@@ -49,17 +49,18 @@ internal class MockImageProvider : ImageGenerationProvider {
 
         return TestPromptResponse(
             imageUrl = mockImageUrl,
-            requestParams = TestPromptRequestParams(
-                model = "test-mode-mock",
-                size = request.getSize().apiValue,
-                n = 1,
-                responseFormat = "url",
-                masterPrompt = request.masterPrompt,
-                specificPrompt = request.specificPrompt,
-                combinedPrompt = combinedPrompt,
-                quality = request.getQuality().apiValue,
-                background = request.getBackground().apiValue,
-            ),
+            requestParams =
+                TestPromptRequestParams(
+                    model = "test-mode-mock",
+                    size = request.getSize().apiValue,
+                    n = 1,
+                    responseFormat = "url",
+                    masterPrompt = request.masterPrompt,
+                    specificPrompt = request.specificPrompt,
+                    combinedPrompt = combinedPrompt,
+                    quality = request.getQuality().apiValue,
+                    background = request.getBackground().apiValue,
+                ),
         )
     }
 }

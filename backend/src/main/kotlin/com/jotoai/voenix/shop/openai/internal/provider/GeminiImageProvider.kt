@@ -28,21 +28,21 @@ import kotlin.io.encoding.Base64
 
 @Component
 internal class GeminiImageProvider(
-    @Value($$"${GOOGLE_API_KEY:}") private val googleApiKey: String,
+    @Value("\${GOOGLE_API_KEY:}") private val googleApiKey: String,
     private val httpClient: HttpClient,
     private val imageService: ImageService,
 ) : ImageGenerationProvider {
     companion object {
         private val logger = KotlinLogging.logger {}
-        private const val GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent"
-        private const val DEBUG_TEXT_PREVIEW_LENGTH = 50
+        private const val GEMINI_API_URL =
+            "https://generativelanguage.googleapis.com/v1beta/models/" +
+                "gemini-2.5-flash-image-preview:generateContent"
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiRequest(
         val contents: List<GeminiContent>,
         val generationConfig: GeminiGenerationConfig? = null,
-        val safetySettings: List<GeminiSafetySetting>? = null,
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -70,12 +70,6 @@ internal class GeminiImageProvider(
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    data class GeminiSafetySetting(
-        val category: String,
-        val threshold: String,
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiResponse(
         val candidates: List<GeminiCandidate>? = null,
         val error: GeminiError? = null,
@@ -84,14 +78,6 @@ internal class GeminiImageProvider(
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class GeminiCandidate(
         val content: GeminiContent? = null,
-        val finishReason: String? = null,
-        val safetyRatings: List<GeminiSafetyRating>? = null,
-    )
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    data class GeminiSafetyRating(
-        val category: String,
-        val probability: String,
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)

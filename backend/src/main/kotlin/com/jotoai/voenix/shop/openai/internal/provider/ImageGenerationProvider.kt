@@ -10,12 +10,12 @@ interface ImageGenerationProvider {
     suspend fun generateImages(
         imageFile: MultipartFile,
         prompt: PromptDto,
-        options: GenerationOptions
+        options: GenerationOptions,
     ): ImageEditBytesResponse
 
     suspend fun testPrompt(
         imageFile: MultipartFile,
-        request: TestPromptRequest
+        request: TestPromptRequest,
     ): TestPromptResponse
 }
 
@@ -23,5 +23,5 @@ data class GenerationOptions(
     val size: String,
     val background: String? = null,
     val quality: String? = null,
-    val n: Int = 4
+    val n: Int = 4,
 )
