@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.article.internal.web
 
-import com.jotoai.voenix.shop.article.api.MugVariantService
 import com.jotoai.voenix.shop.article.api.dto.CopyVariantsRequest
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
+import com.jotoai.voenix.shop.article.internal.service.MugVariantServiceImpl
 import com.jotoai.voenix.shop.article.internal.web.dto.MugVariantImageUploadRequest
 import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.image.ImageData
@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/articles/mugs")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminMugVariantController(
-    private val mugVariantService: MugVariantService,
+    private val mugVariantService: MugVariantServiceImpl,
     private val imageService: ImageService,
 ) {
     companion object {

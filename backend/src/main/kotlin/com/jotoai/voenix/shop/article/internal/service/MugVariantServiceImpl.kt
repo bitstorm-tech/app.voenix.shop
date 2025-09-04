@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.application.BadRequestException
-import com.jotoai.voenix.shop.article.api.MugVariantService
 import com.jotoai.voenix.shop.article.api.dto.CopyVariantsRequest
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
@@ -27,13 +26,13 @@ class MugVariantServiceImpl(
     private val imageService: ImageService,
     private val mugArticleVariantAssembler: MugArticleVariantAssembler,
     private val mugWithVariantsSummaryAssembler: MugWithVariantsSummaryAssembler,
-) : MugVariantService {
+) {
     companion object {
         private val logger = KotlinLogging.logger {}
     }
 
     @Transactional
-    override fun create(
+    fun create(
         articleId: Long,
         request: CreateMugArticleVariantRequest,
     ): MugArticleVariantDto {
@@ -68,7 +67,7 @@ class MugVariantServiceImpl(
     }
 
     @Transactional
-    override fun update(
+    fun update(
         variantId: Long,
         request: CreateMugArticleVariantRequest,
     ): MugArticleVariantDto {
@@ -118,7 +117,7 @@ class MugVariantServiceImpl(
     }
 
     @Transactional
-    override fun delete(variantId: Long) {
+    fun delete(variantId: Long) {
         val variant =
             mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
                 ?: throw ArticleNotFoundException("Mug variant not found with id: $variantId")
@@ -149,7 +148,7 @@ class MugVariantServiceImpl(
     }
 
     @Transactional
-    override fun updateExampleImage(
+    fun updateExampleImage(
         variantId: Long,
         filename: String,
     ): MugArticleVariantDto {
@@ -174,7 +173,7 @@ class MugVariantServiceImpl(
     }
 
     @Transactional
-    override fun removeExampleImage(variantId: Long): MugArticleVariantDto {
+    fun removeExampleImage(variantId: Long): MugArticleVariantDto {
         val variant =
             mugVariantRepository.findByIdWithArticle(variantId).orElse(null)
                 ?: throw ArticleNotFoundException("Mug variant not found with id: $variantId")
@@ -194,13 +193,13 @@ class MugVariantServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun findAllMugsWithVariants(excludeMugId: Long?): List<MugWithVariantsSummaryDto> {
+    fun findAllMugsWithVariants(excludeMugId: Long?): List<MugWithVariantsSummaryDto> {
         val articles = articleRepository.findAllMugsWithVariants(ArticleType.MUG, excludeMugId)
         return articles.map { mugWithVariantsSummaryAssembler.toDto(it) }
     }
 
     @Transactional
-    override fun copyVariants(
+    fun copyVariants(
         targetMugId: Long,
         request: CopyVariantsRequest,
     ): List<MugArticleVariantDto> {
