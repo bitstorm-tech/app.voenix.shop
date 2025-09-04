@@ -6,6 +6,7 @@ package com.jotoai.voenix.shop.image
 enum class ImageType {
     PUBLIC,
     PRIVATE,
+    PROMPT_TEST,
     PROMPT_EXAMPLE,
     PROMPT_SLOT_VARIANT_EXAMPLE,
     MUG_VARIANT_EXAMPLE,

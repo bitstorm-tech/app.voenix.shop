@@ -34,6 +34,13 @@ class StorageConfiguration {
                         urlPath = "/api/user/images",
                         isPubliclyAccessible = false,
                     ),
+                // Prompt test images - used for internal prompt testing flows
+                ImageType.PROMPT_TEST to
+                    ImageTypePathConfig(
+                        relativePath = "private/images/_prompt-test",
+                        urlPath = "/api/system/test-images",
+                        isPubliclyAccessible = false,
+                    ),
                 // Public images - accessed via API (though they could be made publicly accessible)
                 ImageType.PUBLIC to
                     ImageTypePathConfig(
