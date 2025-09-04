@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.article.api.variants
+package com.jotoai.voenix.shop.article.api
 
 import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto

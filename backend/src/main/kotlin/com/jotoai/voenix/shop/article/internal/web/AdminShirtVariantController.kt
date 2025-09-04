@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.article.internal.web
 
+import com.jotoai.voenix.shop.article.api.ShirtVariantFacade
 import com.jotoai.voenix.shop.article.api.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.ShirtArticleVariantDto
-import com.jotoai.voenix.shop.article.api.variants.ShirtVariantFacade
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
