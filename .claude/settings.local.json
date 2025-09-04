@@ -1,6 +1,9 @@
 {
   "permissions": {
     "allow": [
+      "Grep",
+      "Glob",
+      "Read",
       "Bash(./backend/gradlew:*)",
       "Bash(./gradlew:*)",
       "Bash(backend/gradlew:*)",
