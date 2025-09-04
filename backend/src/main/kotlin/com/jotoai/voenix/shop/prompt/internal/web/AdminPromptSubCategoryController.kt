@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.web
 
-import com.jotoai.voenix.shop.prompt.api.PromptSubCategoryFacade
-import com.jotoai.voenix.shop.prompt.api.PromptSubCategoryQueryService
+import com.jotoai.voenix.shop.prompt.internal.service.PromptSubCategoryServiceImpl
 import com.jotoai.voenix.shop.prompt.api.dto.subcategories.CreatePromptSubCategoryRequest
 import com.jotoai.voenix.shop.prompt.api.dto.subcategories.PromptSubCategoryDto
 import com.jotoai.voenix.shop.prompt.api.dto.subcategories.UpdatePromptSubCategoryRequest
@@ -22,33 +21,32 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/prompts/subcategories")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminPromptSubCategoryController(
-    private val promptSubCategoryQueryService: PromptSubCategoryQueryService,
-    private val promptSubCategoryFacade: PromptSubCategoryFacade,
+    private val promptSubCategoryService: PromptSubCategoryServiceImpl,
 ) {
     @GetMapping
-    fun getAllSubCategories(): List<PromptSubCategoryDto> = promptSubCategoryQueryService.getAllPromptSubCategories()
+    fun getAllSubCategories(): List<PromptSubCategoryDto> = promptSubCategoryService.getAllPromptSubCategories()
 
     @GetMapping("/category/{categoryId}")
     fun getSubCategoriesByCategoryId(
         @PathVariable categoryId: Long,
-    ): List<PromptSubCategoryDto> = promptSubCategoryQueryService.getPromptSubCategoriesByCategory(categoryId)
+    ): List<PromptSubCategoryDto> = promptSubCategoryService.getPromptSubCategoriesByCategory(categoryId)
 
     @PostMapping
     fun createPromptSubCategory(
         @Valid @RequestBody createPromptSubCategoryRequest: CreatePromptSubCategoryRequest,
-    ): PromptSubCategoryDto = promptSubCategoryFacade.createPromptSubCategory(createPromptSubCategoryRequest)
+    ): PromptSubCategoryDto = promptSubCategoryService.createPromptSubCategory(createPromptSubCategoryRequest)
 
     @PutMapping("/{id}")
     fun updatePromptSubCategory(
         @PathVariable id: Long,
         @Valid @RequestBody updatePromptSubCategoryRequest: UpdatePromptSubCategoryRequest,
-    ): PromptSubCategoryDto = promptSubCategoryFacade.updatePromptSubCategory(id, updatePromptSubCategoryRequest)
+    ): PromptSubCategoryDto = promptSubCategoryService.updatePromptSubCategory(id, updatePromptSubCategoryRequest)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deletePromptSubCategory(
         @PathVariable id: Long,
     ) {
-        promptSubCategoryFacade.deletePromptSubCategory(id)
+        promptSubCategoryService.deletePromptSubCategory(id)
     }
 }

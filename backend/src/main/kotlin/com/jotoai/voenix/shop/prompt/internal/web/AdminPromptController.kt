@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.web
 
-import com.jotoai.voenix.shop.prompt.api.PromptFacade
-import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.prompt.internal.service.PromptServiceImpl
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.CreatePromptRequest
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.UpdatePromptRequest
@@ -22,36 +21,33 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/prompts")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminPromptController(
-    private val promptQueryService: PromptQueryService,
-    private val promptFacade: PromptFacade? = null,
+    private val promptService: PromptServiceImpl,
 ) {
-    private val writeFacade: PromptFacade
-        get() = requireNotNull(promptFacade) { "PromptFacade bean is required for write operations" }
 
     @GetMapping
-    fun getAllPrompts(): List<PromptDto> = promptQueryService.getAllPrompts()
+    fun getAllPrompts(): List<PromptDto> = promptService.getAllPrompts()
 
     @GetMapping("/{id}")
     fun getPromptById(
         @PathVariable id: Long,
-    ): PromptDto = promptQueryService.getPromptById(id)
+    ): PromptDto = promptService.getPromptById(id)
 
     @PostMapping
     fun createPrompt(
         @Valid @RequestBody createPromptRequest: CreatePromptRequest,
-    ): PromptDto = writeFacade.createPrompt(createPromptRequest)
+    ): PromptDto = promptService.createPrompt(createPromptRequest)
 
     @PutMapping("/{id}")
     fun updatePrompt(
         @PathVariable id: Long,
         @Valid @RequestBody updatePromptRequest: UpdatePromptRequest,
-    ): PromptDto = writeFacade.updatePrompt(id, updatePromptRequest)
+    ): PromptDto = promptService.updatePrompt(id, updatePromptRequest)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deletePrompt(
         @PathVariable id: Long,
     ) {
-        writeFacade.deletePrompt(id)
+        promptService.deletePrompt(id)
     }
 }

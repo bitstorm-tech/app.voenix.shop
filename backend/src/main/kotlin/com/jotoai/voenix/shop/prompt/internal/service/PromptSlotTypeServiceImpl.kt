@@ -1,7 +1,5 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
-import com.jotoai.voenix.shop.prompt.api.PromptSlotTypeFacade
-import com.jotoai.voenix.shop.prompt.api.PromptSlotTypeQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.CreatePromptSlotTypeRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.PromptSlotTypeDto
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.UpdatePromptSlotTypeRequest
@@ -15,23 +13,22 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class PromptSlotTypeServiceImpl(
     private val promptSlotTypeRepository: PromptSlotTypeRepository,
-) : PromptSlotTypeFacade,
-    PromptSlotTypeQueryService {
-    override fun getAllPromptSlotTypes(): List<PromptSlotTypeDto> =
+) {
+    fun getAllPromptSlotTypes(): List<PromptSlotTypeDto> =
         promptSlotTypeRepository
             .findAll()
             .map { it.toDto() }
 
-    override fun getPromptSlotTypeById(id: Long): PromptSlotTypeDto =
+    fun getPromptSlotTypeById(id: Long): PromptSlotTypeDto =
         promptSlotTypeRepository
             .findById(id)
             .map { it.toDto() }
             .orElseThrow { PromptSlotTypeNotFoundException("PromptSlotType", "id", id) }
 
-    override fun existsById(id: Long): Boolean = promptSlotTypeRepository.existsById(id)
+    fun existsById(id: Long): Boolean = promptSlotTypeRepository.existsById(id)
 
     @Transactional
-    override fun createPromptSlotType(request: CreatePromptSlotTypeRequest): PromptSlotTypeDto {
+    fun createPromptSlotType(request: CreatePromptSlotTypeRequest): PromptSlotTypeDto {
         require(!promptSlotTypeRepository.existsByName(request.name)) {
             "PromptSlotType with name '${request.name}' already exists"
         }
@@ -48,7 +45,7 @@ class PromptSlotTypeServiceImpl(
     }
 
     @Transactional
-    override fun updatePromptSlotType(
+    fun updatePromptSlotType(
         id: Long,
         request: UpdatePromptSlotTypeRequest,
     ): PromptSlotTypeDto {
@@ -77,7 +74,7 @@ class PromptSlotTypeServiceImpl(
     }
 
     @Transactional
-    override fun deletePromptSlotType(id: Long) {
+    fun deletePromptSlotType(id: Long) {
         promptSlotTypeRepository.deleteById(id)
     }
 }

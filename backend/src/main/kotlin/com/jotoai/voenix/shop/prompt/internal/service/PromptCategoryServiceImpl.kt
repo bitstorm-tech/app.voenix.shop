@@ -1,7 +1,5 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
-import com.jotoai.voenix.shop.prompt.api.PromptCategoryFacade
-import com.jotoai.voenix.shop.prompt.api.PromptCategoryQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.categories.CreatePromptCategoryRequest
 import com.jotoai.voenix.shop.prompt.api.dto.categories.PromptCategoryDto
 import com.jotoai.voenix.shop.prompt.api.dto.categories.UpdatePromptCategoryRequest
@@ -16,17 +14,16 @@ import org.springframework.transaction.annotation.Transactional
 class PromptCategoryServiceImpl(
     private val promptCategoryRepository: PromptCategoryRepository,
     private val promptCategoryAssembler: PromptCategoryAssembler,
-) : PromptCategoryFacade,
-    PromptCategoryQueryService {
-    override fun getAllPromptCategories(): List<PromptCategoryDto> =
+) {
+    fun getAllPromptCategories(): List<PromptCategoryDto> =
         promptCategoryRepository.findAll().map { category ->
             promptCategoryAssembler.toDto(category)
         }
 
-    override fun existsById(id: Long): Boolean = promptCategoryRepository.existsById(id)
+    fun existsById(id: Long): Boolean = promptCategoryRepository.existsById(id)
 
     @Transactional
-    override fun createPromptCategory(request: CreatePromptCategoryRequest): PromptCategoryDto {
+    fun createPromptCategory(request: CreatePromptCategoryRequest): PromptCategoryDto {
         val promptCategory =
             PromptCategory(
                 name = request.name,
@@ -39,7 +36,7 @@ class PromptCategoryServiceImpl(
     }
 
     @Transactional
-    override fun updatePromptCategory(
+    fun updatePromptCategory(
         id: Long,
         request: UpdatePromptCategoryRequest,
     ): PromptCategoryDto {
@@ -57,7 +54,7 @@ class PromptCategoryServiceImpl(
     }
 
     @Transactional
-    override fun deletePromptCategory(id: Long) {
+    fun deletePromptCategory(id: Long) {
         if (!promptCategoryRepository.existsById(id)) {
             throw PromptCategoryNotFoundException("PromptCategory", "id", id)
         }

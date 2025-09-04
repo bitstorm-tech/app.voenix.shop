@@ -1,7 +1,5 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
-import com.jotoai.voenix.shop.prompt.api.PromptSubCategoryFacade
-import com.jotoai.voenix.shop.prompt.api.PromptSubCategoryQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.subcategories.CreatePromptSubCategoryRequest
 import com.jotoai.voenix.shop.prompt.api.dto.subcategories.PromptSubCategoryDto
 import com.jotoai.voenix.shop.prompt.api.dto.subcategories.UpdatePromptSubCategoryRequest
@@ -18,20 +16,19 @@ class PromptSubCategoryServiceImpl(
     private val promptSubCategoryRepository: PromptSubCategoryRepository,
     private val promptCategoryRepository: PromptCategoryRepository,
     private val promptSubCategoryAssembler: PromptSubCategoryAssembler,
-) : PromptSubCategoryFacade,
-    PromptSubCategoryQueryService {
-    override fun getAllPromptSubCategories(): List<PromptSubCategoryDto> =
+) {
+    fun getAllPromptSubCategories(): List<PromptSubCategoryDto> =
         promptSubCategoryRepository.findAll().map {
             promptSubCategoryAssembler.toDto(it)
         }
 
-    override fun getPromptSubCategoriesByCategory(categoryId: Long): List<PromptSubCategoryDto> =
+    fun getPromptSubCategoriesByCategory(categoryId: Long): List<PromptSubCategoryDto> =
         promptSubCategoryRepository.findByPromptCategoryId(categoryId).map { promptSubCategoryAssembler.toDto(it) }
 
-    override fun existsById(id: Long): Boolean = promptSubCategoryRepository.existsById(id)
+    fun existsById(id: Long): Boolean = promptSubCategoryRepository.existsById(id)
 
     @Transactional
-    override fun createPromptSubCategory(request: CreatePromptSubCategoryRequest): PromptSubCategoryDto {
+    fun createPromptSubCategory(request: CreatePromptSubCategoryRequest): PromptSubCategoryDto {
         val category =
             promptCategoryRepository
                 .findById(request.promptCategoryId)
@@ -51,7 +48,7 @@ class PromptSubCategoryServiceImpl(
     }
 
     @Transactional
-    override fun updatePromptSubCategory(
+    fun updatePromptSubCategory(
         id: Long,
         request: UpdatePromptSubCategoryRequest,
     ): PromptSubCategoryDto {
@@ -77,5 +74,5 @@ class PromptSubCategoryServiceImpl(
     }
 
     @Transactional
-    override fun deletePromptSubCategory(id: Long) = promptSubCategoryRepository.deleteById(id)
+    fun deletePromptSubCategory(id: Long) = promptSubCategoryRepository.deleteById(id)
 }

@@ -2,8 +2,6 @@ package com.jotoai.voenix.shop.prompt.internal.service
 
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
-import com.jotoai.voenix.shop.prompt.api.PromptSlotVariantFacade
-import com.jotoai.voenix.shop.prompt.api.PromptSlotVariantQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.PromptSlotVariantDto
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantRequest
@@ -23,23 +21,22 @@ class PromptSlotVariantServiceImpl(
     private val promptSlotTypeRepository: PromptSlotTypeRepository,
     private val promptSlotVariantAssembler: PromptSlotVariantAssembler,
     private val imageService: ImageService,
-) : PromptSlotVariantFacade,
-    PromptSlotVariantQueryService {
+) {
     private val logger = KotlinLogging.logger {}
 
-    override fun getAllSlotVariants(): List<PromptSlotVariantDto> =
+    fun getAllSlotVariants(): List<PromptSlotVariantDto> =
         promptSlotVariantRepository.findAll().map { promptSlotVariantAssembler.toDto(it) }
 
-    override fun getSlotVariantById(id: Long): PromptSlotVariantDto =
+    fun getSlotVariantById(id: Long): PromptSlotVariantDto =
         promptSlotVariantRepository
             .findById(id)
             .map { promptSlotVariantAssembler.toDto(it) }
             .orElseThrow { PromptSlotVariantNotFoundException("Prompt slot variant", "id", id) }
 
-    override fun existsById(id: Long): Boolean = promptSlotVariantRepository.existsById(id)
+    fun existsById(id: Long): Boolean = promptSlotVariantRepository.existsById(id)
 
     @Transactional
-    override fun createSlotVariant(request: CreatePromptSlotVariantRequest): PromptSlotVariantDto {
+    fun createSlotVariant(request: CreatePromptSlotVariantRequest): PromptSlotVariantDto {
         // Validate that promptSlotTypeId exists
         require(promptSlotTypeRepository.existsById(request.promptSlotTypeId)) {
             "PromptSlotType with id '${request.promptSlotTypeId}' does not exist"
@@ -66,7 +63,7 @@ class PromptSlotVariantServiceImpl(
     }
 
     @Transactional
-    override fun updateSlotVariant(
+    fun updateSlotVariant(
         id: Long,
         request: UpdatePromptSlotVariantRequest,
     ): PromptSlotVariantDto {
@@ -134,7 +131,7 @@ class PromptSlotVariantServiceImpl(
     }
 
     @Transactional
-    override fun deleteSlotVariant(id: Long) {
+    fun deleteSlotVariant(id: Long) {
         // Find the entity to get the image filename before deletion
         val promptSlotVariant =
             promptSlotVariantRepository

@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.web
 
-import com.jotoai.voenix.shop.prompt.api.PromptCategoryFacade
-import com.jotoai.voenix.shop.prompt.api.PromptCategoryQueryService
+import com.jotoai.voenix.shop.prompt.internal.service.PromptCategoryServiceImpl
 import com.jotoai.voenix.shop.prompt.api.dto.categories.CreatePromptCategoryRequest
 import com.jotoai.voenix.shop.prompt.api.dto.categories.PromptCategoryDto
 import com.jotoai.voenix.shop.prompt.api.dto.categories.UpdatePromptCategoryRequest
@@ -22,28 +21,27 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/prompts/categories")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminPromptCategoryController(
-    private val promptCategoryQueryService: PromptCategoryQueryService,
-    private val promptCategoryFacade: PromptCategoryFacade,
+    private val promptCategoryService: PromptCategoryServiceImpl,
 ) {
     @GetMapping
-    fun getAllCategories(): List<PromptCategoryDto> = promptCategoryQueryService.getAllPromptCategories()
+    fun getAllCategories(): List<PromptCategoryDto> = promptCategoryService.getAllPromptCategories()
 
     @PostMapping
     fun createPromptCategory(
         @Valid @RequestBody createPromptCategoryRequest: CreatePromptCategoryRequest,
-    ): PromptCategoryDto = promptCategoryFacade.createPromptCategory(createPromptCategoryRequest)
+    ): PromptCategoryDto = promptCategoryService.createPromptCategory(createPromptCategoryRequest)
 
     @PutMapping("/{id}")
     fun updatePromptCategory(
         @PathVariable id: Long,
         @Valid @RequestBody updatePromptCategoryRequest: UpdatePromptCategoryRequest,
-    ): PromptCategoryDto = promptCategoryFacade.updatePromptCategory(id, updatePromptCategoryRequest)
+    ): PromptCategoryDto = promptCategoryService.updatePromptCategory(id, updatePromptCategoryRequest)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deletePromptCategory(
         @PathVariable id: Long,
     ) {
-        promptCategoryFacade.deletePromptCategory(id)
+        promptCategoryService.deletePromptCategory(id)
     }
 }

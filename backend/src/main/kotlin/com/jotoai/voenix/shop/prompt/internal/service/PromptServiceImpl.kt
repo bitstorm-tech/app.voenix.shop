@@ -2,7 +2,6 @@ package com.jotoai.voenix.shop.prompt.internal.service
 
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
-import com.jotoai.voenix.shop.prompt.api.PromptFacade
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.CreatePromptRequest
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
@@ -26,13 +25,12 @@ class PromptServiceImpl(
     private val imageService: ImageService,
     private val promptAssembler: PromptAssembler,
     private val promptValidator: PromptValidator,
-) : PromptFacade,
-    PromptQueryService {
+) : PromptQueryService {
     companion object {
         private val logger = KotlinLogging.logger {}
     }
 
-    override fun getAllPrompts(): List<PromptDto> =
+    fun getAllPrompts(): List<PromptDto> =
         promptRepository.findAllWithRelations().map { prompt ->
             promptAssembler.toDto(prompt)
         }
@@ -46,12 +44,12 @@ class PromptServiceImpl(
 
     override fun existsById(id: Long): Boolean = promptRepository.existsById(id)
 
-    override fun getAllPublicPrompts(): List<PublicPromptDto> =
+    fun getAllPublicPrompts(): List<PublicPromptDto> =
         promptRepository.findAllActiveWithRelations().map { prompt ->
             promptAssembler.toPublicDto(prompt)
         }
 
-    override fun getPromptSummariesByIds(ids: List<Long>): List<PromptSummaryDto> {
+    fun getPromptSummariesByIds(ids: List<Long>): List<PromptSummaryDto> {
         if (ids.isEmpty()) return emptyList()
 
         return promptRepository
@@ -65,7 +63,7 @@ class PromptServiceImpl(
     }
 
     @Transactional
-    override fun createPrompt(request: CreatePromptRequest): PromptDto {
+    fun createPrompt(request: CreatePromptRequest): PromptDto {
         // Validate the entire prompt request
         val slotVariantIds = request.slots.map { it.slotId }
         promptValidator.validatePromptRequest(request.categoryId, request.subcategoryId, slotVariantIds)
@@ -97,7 +95,7 @@ class PromptServiceImpl(
     }
 
     @Transactional
-    override fun updatePrompt(
+    fun updatePrompt(
         id: Long,
         request: UpdatePromptRequest,
     ): PromptDto {
@@ -153,7 +151,7 @@ class PromptServiceImpl(
     }
 
     @Transactional
-    override fun deletePrompt(id: Long) {
+    fun deletePrompt(id: Long) {
         val prompt =
             promptRepository
                 .findById(id)

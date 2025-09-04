@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.web
 
-import com.jotoai.voenix.shop.prompt.api.PromptSlotVariantFacade
-import com.jotoai.voenix.shop.prompt.api.PromptSlotVariantQueryService
+import com.jotoai.voenix.shop.prompt.internal.service.PromptSlotVariantServiceImpl
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.PromptSlotVariantDto
 import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantRequest
@@ -22,33 +21,32 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/prompts/slot-variants")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminPromptSlotVariantController(
-    private val promptSlotVariantQueryService: PromptSlotVariantQueryService,
-    private val promptSlotVariantFacade: PromptSlotVariantFacade,
+    private val promptSlotVariantService: PromptSlotVariantServiceImpl,
 ) {
     @GetMapping
-    fun getAllSlotVariants(): List<PromptSlotVariantDto> = promptSlotVariantQueryService.getAllSlotVariants()
+    fun getAllSlotVariants(): List<PromptSlotVariantDto> = promptSlotVariantService.getAllSlotVariants()
 
     @GetMapping("/{id}")
     fun getSlotVariantById(
         @PathVariable id: Long,
-    ): PromptSlotVariantDto = promptSlotVariantQueryService.getSlotVariantById(id)
+    ): PromptSlotVariantDto = promptSlotVariantService.getSlotVariantById(id)
 
     @PostMapping
     fun createSlotVariant(
         @Valid @RequestBody createPromptSlotVariantRequest: CreatePromptSlotVariantRequest,
-    ): PromptSlotVariantDto = promptSlotVariantFacade.createSlotVariant(createPromptSlotVariantRequest)
+    ): PromptSlotVariantDto = promptSlotVariantService.createSlotVariant(createPromptSlotVariantRequest)
 
     @PutMapping("/{id}")
     fun updateSlotVariant(
         @PathVariable id: Long,
         @Valid @RequestBody updatePromptSlotVariantRequest: UpdatePromptSlotVariantRequest,
-    ): PromptSlotVariantDto = promptSlotVariantFacade.updateSlotVariant(id, updatePromptSlotVariantRequest)
+    ): PromptSlotVariantDto = promptSlotVariantService.updateSlotVariant(id, updatePromptSlotVariantRequest)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteSlotVariant(
         @PathVariable id: Long,
     ) {
-        promptSlotVariantFacade.deleteSlotVariant(id)
+        promptSlotVariantService.deleteSlotVariant(id)
     }
 }

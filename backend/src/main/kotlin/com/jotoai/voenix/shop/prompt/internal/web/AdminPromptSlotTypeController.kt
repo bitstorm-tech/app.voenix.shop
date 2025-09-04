@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.web
 
-import com.jotoai.voenix.shop.prompt.api.PromptSlotTypeFacade
-import com.jotoai.voenix.shop.prompt.api.PromptSlotTypeQueryService
+import com.jotoai.voenix.shop.prompt.internal.service.PromptSlotTypeServiceImpl
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.CreatePromptSlotTypeRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.PromptSlotTypeDto
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.UpdatePromptSlotTypeRequest
@@ -21,33 +20,32 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/prompts/prompt-slot-types")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminPromptSlotTypeController(
-    private val promptSlotTypeQueryService: PromptSlotTypeQueryService,
-    private val promptSlotTypeFacade: PromptSlotTypeFacade,
+    private val promptSlotTypeService: PromptSlotTypeServiceImpl,
 ) {
     @GetMapping
-    fun getAllPromptSlotTypes(): List<PromptSlotTypeDto> = promptSlotTypeQueryService.getAllPromptSlotTypes()
+    fun getAllPromptSlotTypes(): List<PromptSlotTypeDto> = promptSlotTypeService.getAllPromptSlotTypes()
 
     @GetMapping("/{id}")
     fun getPromptSlotTypeById(
         @PathVariable id: Long,
-    ): PromptSlotTypeDto = promptSlotTypeQueryService.getPromptSlotTypeById(id)
+    ): PromptSlotTypeDto = promptSlotTypeService.getPromptSlotTypeById(id)
 
     @PostMapping
     fun createPromptSlotType(
         @Valid @RequestBody createPromptSlotTypeRequest: CreatePromptSlotTypeRequest,
-    ): PromptSlotTypeDto = promptSlotTypeFacade.createPromptSlotType(createPromptSlotTypeRequest)
+    ): PromptSlotTypeDto = promptSlotTypeService.createPromptSlotType(createPromptSlotTypeRequest)
 
     @PutMapping("/{id}")
     fun updatePromptSlotType(
         @PathVariable id: Long,
         @Valid @RequestBody updatePromptSlotTypeRequest: UpdatePromptSlotTypeRequest,
-    ): PromptSlotTypeDto = promptSlotTypeFacade.updatePromptSlotType(id, updatePromptSlotTypeRequest)
+    ): PromptSlotTypeDto = promptSlotTypeService.updatePromptSlotType(id, updatePromptSlotTypeRequest)
 
     @DeleteMapping("/{id}")
     fun deletePromptSlotType(
         @PathVariable id: Long,
     ): ResponseEntity<Void> {
-        promptSlotTypeFacade.deletePromptSlotType(id)
+        promptSlotTypeService.deletePromptSlotType(id)
         return ResponseEntity.noContent().build()
     }
 }
