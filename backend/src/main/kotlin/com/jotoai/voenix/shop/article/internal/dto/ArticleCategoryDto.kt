@@ -1,10 +1,9 @@
-package com.jotoai.voenix.shop.article.api.dto.categories
+package com.jotoai.voenix.shop.article.internal.dto
 
 import java.time.OffsetDateTime
 
-data class ArticleSubCategoryDto(
+data class ArticleCategoryDto(
     val id: Long,
-    val articleCategoryId: Long,
     val name: String,
     val description: String?,
     val createdAt: OffsetDateTime?,

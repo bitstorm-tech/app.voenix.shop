@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.article.internal.service
-import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
-import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleCategoryRequest
-import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleCategoryRequest
+import com.jotoai.voenix.shop.article.internal.dto.ArticleCategoryDto
+import com.jotoai.voenix.shop.article.internal.dto.CreateArticleCategoryRequest
+import com.jotoai.voenix.shop.article.internal.dto.UpdateArticleCategoryRequest
 import com.jotoai.voenix.shop.article.internal.categories.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.categories.repository.ArticleCategoryRepository
 import com.jotoai.voenix.shop.article.internal.exception.ArticleNotFoundException

@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.article.internal.web
 
-import com.jotoai.voenix.shop.article.api.dto.categories.ArticleSubCategoryDto
-import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleSubCategoryRequest
-import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleSubCategoryRequest
+import com.jotoai.voenix.shop.article.internal.dto.ArticleSubCategoryDto
+import com.jotoai.voenix.shop.article.internal.dto.CreateArticleSubCategoryRequest
+import com.jotoai.voenix.shop.article.internal.dto.UpdateArticleSubCategoryRequest
 import com.jotoai.voenix.shop.article.internal.service.ArticleCategoryUnifiedService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus

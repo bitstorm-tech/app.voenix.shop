@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.categories.entity
 
-import com.jotoai.voenix.shop.article.api.dto.categories.ArticleSubCategoryDto
+import com.jotoai.voenix.shop.article.internal.dto.ArticleSubCategoryDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.FetchType
