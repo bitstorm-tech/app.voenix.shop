@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.article.api.enums
+package com.jotoai.voenix.shop.article.internal.enum
 
 enum class PurchaseActiveRow {
     COST,

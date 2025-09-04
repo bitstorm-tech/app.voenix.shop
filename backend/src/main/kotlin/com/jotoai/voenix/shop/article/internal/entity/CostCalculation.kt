@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.article.internal.entity
 
-import com.jotoai.voenix.shop.article.api.enums.CalculationMode
-import com.jotoai.voenix.shop.article.api.enums.PurchaseActiveRow
-import com.jotoai.voenix.shop.article.api.enums.SalesActiveRow
+import com.jotoai.voenix.shop.article.internal.enum.CalculationMode
+import com.jotoai.voenix.shop.article.internal.enum.PurchaseActiveRow
+import com.jotoai.voenix.shop.article.internal.enum.SalesActiveRow
 import com.jotoai.voenix.shop.article.internal.dto.CostCalculationDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.article.internal.dto
 
 import com.fasterxml.jackson.annotation.JsonAlias
-import com.jotoai.voenix.shop.article.api.enums.CalculationMode
-import com.jotoai.voenix.shop.article.api.enums.PurchaseActiveRow
-import com.jotoai.voenix.shop.article.api.enums.SalesActiveRow
+import com.jotoai.voenix.shop.article.internal.enum.CalculationMode
+import com.jotoai.voenix.shop.article.internal.enum.PurchaseActiveRow
+import com.jotoai.voenix.shop.article.internal.enum.SalesActiveRow
 import jakarta.validation.constraints.DecimalMax
 import jakarta.validation.constraints.DecimalMin
 import jakarta.validation.constraints.Max
