@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.prompt.internal.web
 
 import com.jotoai.voenix.shop.prompt.internal.service.PromptSlotTypeServiceImpl
-import com.jotoai.voenix.shop.prompt.api.dto.slottypes.CreatePromptSlotTypeRequest
+import com.jotoai.voenix.shop.prompt.internal.dto.slottypes.CreatePromptSlotTypeRequest
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.PromptSlotTypeDto
-import com.jotoai.voenix.shop.prompt.api.dto.slottypes.UpdatePromptSlotTypeRequest
+import com.jotoai.voenix.shop.prompt.internal.dto.slottypes.UpdatePromptSlotTypeRequest
 import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize

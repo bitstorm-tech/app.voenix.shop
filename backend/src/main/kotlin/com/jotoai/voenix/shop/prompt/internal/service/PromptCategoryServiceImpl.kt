@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
-import com.jotoai.voenix.shop.prompt.api.dto.categories.CreatePromptCategoryRequest
+import com.jotoai.voenix.shop.prompt.internal.dto.categories.CreatePromptCategoryRequest
 import com.jotoai.voenix.shop.prompt.api.dto.categories.PromptCategoryDto
-import com.jotoai.voenix.shop.prompt.api.dto.categories.UpdatePromptCategoryRequest
+import com.jotoai.voenix.shop.prompt.internal.dto.categories.UpdatePromptCategoryRequest
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptCategory
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptCategoryRepository
 import org.springframework.stereotype.Service

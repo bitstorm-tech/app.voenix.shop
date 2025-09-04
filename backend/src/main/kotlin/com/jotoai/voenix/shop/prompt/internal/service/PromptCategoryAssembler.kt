@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.prompt.internal.service
 
 import com.jotoai.voenix.shop.prompt.api.dto.categories.PromptCategoryDto
-import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptCategoryDto
+import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptCategoryDto
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptCategory
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSubCategoryRepository

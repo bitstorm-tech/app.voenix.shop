@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.prompt.api.dto.categories
+package com.jotoai.voenix.shop.prompt.internal.dto.categories
 
 import jakarta.validation.constraints.Size
 

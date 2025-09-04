@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.prompt.api.dto.pub
+package com.jotoai.voenix.shop.prompt.internal.dto.pub
 
 data class PublicPromptDto(
     val id: Long,

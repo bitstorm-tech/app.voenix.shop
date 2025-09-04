@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.prompt.api.dto.prompts
+package com.jotoai.voenix.shop.prompt.internal.dto.prompts
 
 /**
  * Lightweight DTO for prompt summary information.

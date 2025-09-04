@@ -1,6 +1,6 @@
-package com.jotoai.voenix.shop.prompt.api.dto.prompts
+package com.jotoai.voenix.shop.prompt.internal.dto.prompts
 
-import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.PromptSlotVariantRequest
+import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.PromptSlotVariantRequest
 import jakarta.validation.Valid
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.Size

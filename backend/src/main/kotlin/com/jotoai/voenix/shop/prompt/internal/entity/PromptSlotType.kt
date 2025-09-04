@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.prompt.internal.entity
 
-import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptSlotTypeDto
+import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptSlotTypeDto
 import com.jotoai.voenix.shop.prompt.api.dto.slottypes.PromptSlotTypeDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity

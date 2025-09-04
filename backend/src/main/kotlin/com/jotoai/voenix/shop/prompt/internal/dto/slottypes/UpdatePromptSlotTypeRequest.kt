@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.prompt.api.dto.slottypes
+package com.jotoai.voenix.shop.prompt.internal.dto.slottypes
 
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.Size

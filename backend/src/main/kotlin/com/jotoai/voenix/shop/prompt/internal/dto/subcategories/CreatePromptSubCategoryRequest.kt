@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.prompt.api.dto.subcategories
+package com.jotoai.voenix.shop.prompt.internal.dto.subcategories
 
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull

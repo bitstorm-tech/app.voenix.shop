@@ -4,9 +4,9 @@ import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.prompt.api.dto.categories.PromptCategoryDto
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
-import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptCategoryDto
-import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptDto
-import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptSubCategoryDto
+import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptCategoryDto
+import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptDto
+import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptSubCategoryDto
 import com.jotoai.voenix.shop.prompt.api.dto.subcategories.PromptSubCategoryDto
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import org.springframework.stereotype.Component

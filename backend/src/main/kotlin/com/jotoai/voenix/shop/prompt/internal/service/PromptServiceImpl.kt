@@ -4,11 +4,11 @@ import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
-import com.jotoai.voenix.shop.prompt.api.dto.prompts.CreatePromptRequest
+import com.jotoai.voenix.shop.prompt.internal.dto.prompts.CreatePromptRequest
 import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptDto
-import com.jotoai.voenix.shop.prompt.api.dto.prompts.PromptSummaryDto
-import com.jotoai.voenix.shop.prompt.api.dto.prompts.UpdatePromptRequest
-import com.jotoai.voenix.shop.prompt.api.dto.pub.PublicPromptDto
+import com.jotoai.voenix.shop.prompt.internal.dto.prompts.PromptSummaryDto
+import com.jotoai.voenix.shop.prompt.internal.dto.prompts.UpdatePromptRequest
+import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptDto
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptRepository
 import com.jotoai.voenix.shop.prompt.internal.repository.PromptSlotVariantRepository
