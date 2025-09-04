@@ -3,7 +3,7 @@ package com.jotoai.voenix.shop.security
 import com.jotoai.voenix.shop.article.internal.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.article.internal.service.ArticleServiceImpl
 import com.jotoai.voenix.shop.article.internal.dto.ArticlePaginatedResponse
-import com.jotoai.voenix.shop.prompt.api.PromptQueryService
+import com.jotoai.voenix.shop.prompt.internal.service.PromptServiceImpl
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
 import org.junit.jupiter.api.Test
@@ -26,7 +26,7 @@ class AdminEndpointSecurityWebMvcTest {
     private lateinit var mockMvc: MockMvc
 
     @MockkBean
-    private lateinit var promptQueryService: PromptQueryService
+    private lateinit var promptService: PromptServiceImpl
 
     @MockkBean
     private lateinit var articleService: ArticleServiceImpl
@@ -60,7 +60,7 @@ class AdminEndpointSecurityWebMvcTest {
     @WithMockUser(username = "admin@test.com", roles = ["ADMIN"])
     fun testAdminEndpointsAccessibleWithAdminRole() {
         // Mock service responses
-        every { promptQueryService.getAllPrompts() } returns emptyList()
+        every { promptService.getAllPrompts() } returns emptyList()
         every { articleService.findAll(FindArticlesQuery(page = 0, size = 20)) } returns
             ArticlePaginatedResponse(
                 content = emptyList(),
