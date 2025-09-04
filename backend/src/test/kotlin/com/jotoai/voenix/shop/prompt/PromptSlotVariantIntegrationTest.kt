@@ -2,9 +2,9 @@ package com.jotoai.voenix.shop.prompt
 
 import com.jotoai.voenix.shop.prompt.internal.service.PromptSlotTypeServiceImpl
 import com.jotoai.voenix.shop.prompt.internal.service.PromptSlotVariantServiceImpl
-import com.jotoai.voenix.shop.prompt.api.dto.slottypes.CreatePromptSlotTypeRequest
-import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.CreatePromptSlotVariantRequest
-import com.jotoai.voenix.shop.prompt.api.dto.slotvariants.UpdatePromptSlotVariantRequest
+import com.jotoai.voenix.shop.prompt.internal.dto.slottypes.CreatePromptSlotTypeRequest
+import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.CreatePromptSlotVariantRequest
+import com.jotoai.voenix.shop.prompt.internal.dto.slotvariants.UpdatePromptSlotVariantRequest
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
 import jakarta.persistence.EntityManager
 import org.junit.jupiter.api.Assertions.assertEquals
