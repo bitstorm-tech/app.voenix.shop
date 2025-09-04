@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.article.api.dto
+package com.jotoai.voenix.shop.article.internal.dto
 
 data class MugArticleVariantSummaryDto(
     val id: Long,

@@ -1,11 +1,11 @@
 package com.jotoai.voenix.shop.article.internal.web
 
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
-import com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse
-import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
-import com.jotoai.voenix.shop.article.api.dto.CreateArticleRequest
-import com.jotoai.voenix.shop.article.api.dto.FindArticlesQuery
-import com.jotoai.voenix.shop.article.api.dto.UpdateArticleRequest
+import com.jotoai.voenix.shop.article.internal.dto.ArticlePaginatedResponse
+import com.jotoai.voenix.shop.article.internal.dto.ArticleWithDetailsDto
+import com.jotoai.voenix.shop.article.internal.dto.CreateArticleRequest
+import com.jotoai.voenix.shop.article.internal.dto.FindArticlesQuery
+import com.jotoai.voenix.shop.article.internal.dto.UpdateArticleRequest
 import com.jotoai.voenix.shop.article.internal.service.ArticleServiceImpl
 import com.jotoai.voenix.shop.article.internal.web.dto.ArticleSearchCriteria
 import jakarta.validation.Valid

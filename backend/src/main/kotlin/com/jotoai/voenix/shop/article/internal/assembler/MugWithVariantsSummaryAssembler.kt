@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.article.internal.assembler
 
-import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantSummaryDto
-import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
+import com.jotoai.voenix.shop.article.internal.dto.MugArticleVariantSummaryDto
+import com.jotoai.voenix.shop.article.internal.dto.MugWithVariantsSummaryDto
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.image.ImageService

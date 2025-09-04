@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.article.internal.entity
 
-import com.jotoai.voenix.shop.article.api.dto.ShirtArticleDetailsDto
 import com.jotoai.voenix.shop.article.api.enums.FitType
+import com.jotoai.voenix.shop.article.internal.dto.ShirtArticleDetailsDto
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EnumType

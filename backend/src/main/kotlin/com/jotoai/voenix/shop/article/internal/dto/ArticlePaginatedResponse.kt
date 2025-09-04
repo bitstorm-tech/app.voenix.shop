@@ -1,4 +1,4 @@
-package com.jotoai.voenix.shop.article.api.dto
+package com.jotoai.voenix.shop.article.internal.dto
 
 /**
  * Article module specific paginated response to avoid dependency on common module
