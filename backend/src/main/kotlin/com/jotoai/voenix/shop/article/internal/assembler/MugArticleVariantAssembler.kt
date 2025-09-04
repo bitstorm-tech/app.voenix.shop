@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.assembler
 
-import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType

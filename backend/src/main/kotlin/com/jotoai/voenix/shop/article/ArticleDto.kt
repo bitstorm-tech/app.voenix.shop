@@ -1,6 +1,5 @@
-package com.jotoai.voenix.shop.article.api.dto
+package com.jotoai.voenix.shop.article
 
-import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.article.internal.dto.ShirtArticleVariantDto
 import java.time.OffsetDateTime
 

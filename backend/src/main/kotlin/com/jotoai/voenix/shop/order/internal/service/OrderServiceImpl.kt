@@ -2,9 +2,9 @@ package com.jotoai.voenix.shop.order.internal.service
 
 import com.jotoai.voenix.shop.application.BadRequestException
 import com.jotoai.voenix.shop.application.PaginatedResponse
-import com.jotoai.voenix.shop.article.api.ArticleService
-import com.jotoai.voenix.shop.article.api.dto.ArticleDto
-import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.ArticleDto
+import com.jotoai.voenix.shop.article.ArticleService
+import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import com.jotoai.voenix.shop.cart.CartOrderInfo
 import com.jotoai.voenix.shop.cart.CartService
 import com.jotoai.voenix.shop.image.GeneratedImageDto

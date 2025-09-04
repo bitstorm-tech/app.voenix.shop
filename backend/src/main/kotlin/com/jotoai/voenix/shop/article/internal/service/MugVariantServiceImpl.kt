@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.application.BadRequestException
-import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
-import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.ArticleType
+import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.MugWithVariantsSummaryAssembler
 import com.jotoai.voenix.shop.article.internal.dto.CopyVariantsRequest

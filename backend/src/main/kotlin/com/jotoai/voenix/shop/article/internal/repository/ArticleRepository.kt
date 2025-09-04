@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.repository
 
-import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.ArticleType
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable

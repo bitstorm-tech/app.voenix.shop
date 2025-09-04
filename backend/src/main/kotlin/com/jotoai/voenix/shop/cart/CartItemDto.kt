@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.cart
 
-import com.jotoai.voenix.shop.article.api.dto.ArticleDto
-import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.ArticleDto
+import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import java.time.OffsetDateTime
 
 data class CartItemDto(

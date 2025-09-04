@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.domain.articles.service
 
-import com.jotoai.voenix.shop.article.internal.dto.CreateMugArticleVariantRequest
-import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
-import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.ArticleType
+import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.MugWithVariantsSummaryAssembler
+import com.jotoai.voenix.shop.article.internal.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant

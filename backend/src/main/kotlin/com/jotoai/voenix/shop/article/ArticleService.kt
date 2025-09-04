@@ -1,8 +1,4 @@
-package com.jotoai.voenix.shop.article.api
-
-import com.jotoai.voenix.shop.article.api.dto.ArticleDto
-import com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto
-import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
+package com.jotoai.voenix.shop.article
 
 /**
  * Public article API used by other modules.

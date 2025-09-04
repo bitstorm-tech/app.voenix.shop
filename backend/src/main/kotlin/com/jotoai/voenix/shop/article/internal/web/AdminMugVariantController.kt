@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.web
 
-import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.dto.CopyVariantsRequest
 import com.jotoai.voenix.shop.article.internal.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.internal.dto.MugWithVariantsSummaryDto

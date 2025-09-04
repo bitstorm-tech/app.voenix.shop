@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.order.internal.service
 
-import com.jotoai.voenix.shop.article.api.ArticleService
-import com.jotoai.voenix.shop.article.api.dto.ArticleDto
-import com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto
-import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.ArticleDto
+import com.jotoai.voenix.shop.article.ArticleService
+import com.jotoai.voenix.shop.article.MugArticleDetailsDto
+import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import com.jotoai.voenix.shop.order.internal.dto.OrderForPdfDto
 import com.jotoai.voenix.shop.pdf.api.PdfGenerationService
 import com.jotoai.voenix.shop.pdf.api.dto.ArticlePdfData

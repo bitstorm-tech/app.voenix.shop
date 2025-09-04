@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.web.dto
 
-import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.ArticleType
 
 data class ArticleSearchCriteria(
     val page: Int = 0,

@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.cart.internal.service
 
 import com.jotoai.voenix.shop.application.BadRequestException
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
-import com.jotoai.voenix.shop.article.api.ArticleService
+import com.jotoai.voenix.shop.article.ArticleService
 import com.jotoai.voenix.shop.cart.AddToCartRequest
 import com.jotoai.voenix.shop.cart.CartDto
 import com.jotoai.voenix.shop.cart.CartOrderInfo

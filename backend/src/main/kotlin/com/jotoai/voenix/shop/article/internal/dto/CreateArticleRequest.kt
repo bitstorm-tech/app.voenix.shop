@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.dto
 
-import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.ArticleType
 import com.jotoai.voenix.shop.article.internal.enum.FitType
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull

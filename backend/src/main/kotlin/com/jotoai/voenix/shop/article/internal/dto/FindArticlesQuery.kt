@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.dto
 
-import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.ArticleType
 
 /**
  * Query object for searching articles with pagination and optional filters.

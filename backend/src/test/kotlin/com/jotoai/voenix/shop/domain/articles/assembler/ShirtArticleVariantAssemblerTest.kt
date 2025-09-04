@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.domain.articles.assembler
 
-import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.ArticleType
 import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.ArticleCategory

@@ -1,9 +1,9 @@
 package com.jotoai.voenix.shop.cart.internal.assembler
 
-import com.jotoai.voenix.shop.article.api.ArticleService
-import com.jotoai.voenix.shop.article.api.dto.ArticleDto
-import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
-import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.ArticleDto
+import com.jotoai.voenix.shop.article.ArticleService
+import com.jotoai.voenix.shop.article.ArticleType
+import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import com.jotoai.voenix.shop.cart.CartDto
 import com.jotoai.voenix.shop.cart.CartItemDto
 import com.jotoai.voenix.shop.cart.CartStatus

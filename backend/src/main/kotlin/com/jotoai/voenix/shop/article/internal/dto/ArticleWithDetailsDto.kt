@@ -1,8 +1,8 @@
 package com.jotoai.voenix.shop.article.internal.dto
 
-import com.jotoai.voenix.shop.article.api.enums.ArticleType
-import com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto
-import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.ArticleType
+import com.jotoai.voenix.shop.article.MugArticleDetailsDto
+import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import java.time.OffsetDateTime
 
 data class ArticleWithDetailsDto(

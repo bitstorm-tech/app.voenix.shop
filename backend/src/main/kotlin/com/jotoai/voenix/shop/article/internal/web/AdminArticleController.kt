@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.web
 
-import com.jotoai.voenix.shop.article.api.dto.ArticleDto
+import com.jotoai.voenix.shop.article.ArticleDto
 import com.jotoai.voenix.shop.article.internal.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.internal.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.article.internal.dto.CreateArticleRequest

@@ -1,10 +1,10 @@
 package com.jotoai.voenix.shop.article.internal.service
 
-import com.jotoai.voenix.shop.article.api.ArticleService
-import com.jotoai.voenix.shop.article.api.dto.ArticleDto
-import com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto
-import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
-import com.jotoai.voenix.shop.article.api.enums.ArticleType
+import com.jotoai.voenix.shop.article.ArticleDto
+import com.jotoai.voenix.shop.article.ArticleService
+import com.jotoai.voenix.shop.article.ArticleType
+import com.jotoai.voenix.shop.article.MugArticleDetailsDto
+import com.jotoai.voenix.shop.article.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.config.ArticleServiceDependencies
 import com.jotoai.voenix.shop.article.internal.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.internal.dto.ArticleWithDetailsDto
