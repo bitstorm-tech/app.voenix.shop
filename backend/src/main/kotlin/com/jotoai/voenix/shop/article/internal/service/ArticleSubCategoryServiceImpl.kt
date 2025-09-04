@@ -1,7 +1,4 @@
 package com.jotoai.voenix.shop.article.internal.service
-
-import com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryFacade
-import com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryQueryService
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleSubCategoryDto
 import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleSubCategoryRequest
 import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleSubCategoryRequest
@@ -17,24 +14,23 @@ import org.springframework.transaction.annotation.Transactional
 class ArticleSubCategoryServiceImpl(
     private val articleSubCategoryRepository: ArticleSubCategoryRepository,
     private val articleCategoryRepository: ArticleCategoryRepository,
-) : ArticleSubCategoryQueryService,
-    ArticleSubCategoryFacade {
-    override fun getAllSubCategories(): List<ArticleSubCategoryDto> =
+) {
+    fun getAllSubCategories(): List<ArticleSubCategoryDto> =
         articleSubCategoryRepository
             .findAll()
             .map { it.toDto() }
 
-    override fun getSubCategoryById(id: Long): ArticleSubCategoryDto =
+    fun getSubCategoryById(id: Long): ArticleSubCategoryDto =
         articleSubCategoryRepository
             .findById(id)
             .map { it.toDto() }
             .orElseThrow { ArticleNotFoundException("ArticleSubCategory not found with id: $id") }
 
-    override fun getSubCategoriesByCategoryId(categoryId: Long): List<ArticleSubCategoryDto> =
+    fun getSubCategoriesByCategoryId(categoryId: Long): List<ArticleSubCategoryDto> =
         articleSubCategoryRepository.findByArticleCategoryId(categoryId).map { it.toDto() }
 
     @Transactional
-    override fun createSubCategory(request: CreateArticleSubCategoryRequest): ArticleSubCategoryDto {
+    fun createSubCategory(request: CreateArticleSubCategoryRequest): ArticleSubCategoryDto {
         val articleCategory =
             articleCategoryRepository
                 .findById(request.articleCategoryId)
@@ -65,7 +61,7 @@ class ArticleSubCategoryServiceImpl(
     }
 
     @Transactional
-    override fun updateSubCategory(
+    fun updateSubCategory(
         id: Long,
         request: UpdateArticleSubCategoryRequest,
     ): ArticleSubCategoryDto {
@@ -100,7 +96,7 @@ class ArticleSubCategoryServiceImpl(
     }
 
     @Transactional
-    override fun deleteSubCategory(id: Long) {
+    fun deleteSubCategory(id: Long) {
         if (!articleSubCategoryRepository.existsById(id)) {
             throw ArticleNotFoundException("ArticleSubCategory not found with id: $id")
         }

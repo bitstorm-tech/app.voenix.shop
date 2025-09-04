@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.web
 
-import com.jotoai.voenix.shop.article.api.categories.ArticleCategoryFacade
-import com.jotoai.voenix.shop.article.api.categories.ArticleCategoryQueryService
+import com.jotoai.voenix.shop.article.api.categories.ArticleCategoryService
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
 import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleCategoryRequest
 import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleCategoryRequest
@@ -22,33 +21,32 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/articles/categories")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminArticleCategoryController(
-    private val articleCategoryQueryService: ArticleCategoryQueryService,
-    private val articleCategoryFacade: ArticleCategoryFacade,
+    private val articleCategoryService: ArticleCategoryService,
 ) {
     @GetMapping
-    fun getAllCategories(): List<ArticleCategoryDto> = articleCategoryQueryService.getAllCategories()
+    fun getAllCategories(): List<ArticleCategoryDto> = articleCategoryService.getAllCategories()
 
     @GetMapping("/{id}")
     fun getCategoryById(
         @PathVariable id: Long,
-    ): ArticleCategoryDto = articleCategoryQueryService.getCategoryById(id)
+    ): ArticleCategoryDto = articleCategoryService.getCategoryById(id)
 
     @PostMapping
     fun createArticleCategory(
         @Valid @RequestBody createArticleCategoryRequest: CreateArticleCategoryRequest,
-    ): ArticleCategoryDto = articleCategoryFacade.createCategory(createArticleCategoryRequest)
+    ): ArticleCategoryDto = articleCategoryService.createCategory(createArticleCategoryRequest)
 
     @PutMapping("/{id}")
     fun updateArticleCategory(
         @PathVariable id: Long,
         @Valid @RequestBody updateArticleCategoryRequest: UpdateArticleCategoryRequest,
-    ): ArticleCategoryDto = articleCategoryFacade.updateCategory(id, updateArticleCategoryRequest)
+    ): ArticleCategoryDto = articleCategoryService.updateCategory(id, updateArticleCategoryRequest)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteArticleCategory(
         @PathVariable id: Long,
     ) {
-        articleCategoryFacade.deleteCategory(id)
+        articleCategoryService.deleteCategory(id)
     }
 }

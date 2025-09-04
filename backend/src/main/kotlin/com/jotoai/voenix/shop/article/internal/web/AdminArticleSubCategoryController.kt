@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.web
 
-import com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryFacade
-import com.jotoai.voenix.shop.article.api.categories.ArticleSubCategoryQueryService
+import com.jotoai.voenix.shop.article.api.categories.ArticleCategoryService
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleSubCategoryDto
 import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleSubCategoryRequest
 import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleSubCategoryRequest
@@ -22,38 +21,37 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/articles/subcategories")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminArticleSubCategoryController(
-    private val articleSubCategoryQueryService: ArticleSubCategoryQueryService,
-    private val articleSubCategoryFacade: ArticleSubCategoryFacade,
+    private val articleCategoryService: ArticleCategoryService,
 ) {
     @GetMapping
-    fun getAllSubCategories(): List<ArticleSubCategoryDto> = articleSubCategoryQueryService.getAllSubCategories()
+    fun getAllSubCategories(): List<ArticleSubCategoryDto> = articleCategoryService.getAllSubCategories()
 
     @GetMapping("/{id}")
     fun getSubCategoryById(
         @PathVariable id: Long,
-    ): ArticleSubCategoryDto = articleSubCategoryQueryService.getSubCategoryById(id)
+    ): ArticleSubCategoryDto = articleCategoryService.getSubCategoryById(id)
 
     @GetMapping("/category/{categoryId}")
     fun getSubCategoriesByCategoryId(
         @PathVariable categoryId: Long,
-    ): List<ArticleSubCategoryDto> = articleSubCategoryQueryService.getSubCategoriesByCategoryId(categoryId)
+    ): List<ArticleSubCategoryDto> = articleCategoryService.getSubCategoriesByCategoryId(categoryId)
 
     @PostMapping
     fun createArticleSubCategory(
         @Valid @RequestBody createArticleSubCategoryRequest: CreateArticleSubCategoryRequest,
-    ): ArticleSubCategoryDto = articleSubCategoryFacade.createSubCategory(createArticleSubCategoryRequest)
+    ): ArticleSubCategoryDto = articleCategoryService.createSubCategory(createArticleSubCategoryRequest)
 
     @PutMapping("/{id}")
     fun updateArticleSubCategory(
         @PathVariable id: Long,
         @Valid @RequestBody updateArticleSubCategoryRequest: UpdateArticleSubCategoryRequest,
-    ): ArticleSubCategoryDto = articleSubCategoryFacade.updateSubCategory(id, updateArticleSubCategoryRequest)
+    ): ArticleSubCategoryDto = articleCategoryService.updateSubCategory(id, updateArticleSubCategoryRequest)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun deleteArticleSubCategory(
         @PathVariable id: Long,
     ) {
-        articleSubCategoryFacade.deleteSubCategory(id)
+        articleCategoryService.deleteSubCategory(id)
     }
 }

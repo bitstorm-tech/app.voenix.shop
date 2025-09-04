@@ -1,7 +1,4 @@
 package com.jotoai.voenix.shop.article.internal.service
-
-import com.jotoai.voenix.shop.article.api.categories.ArticleCategoryFacade
-import com.jotoai.voenix.shop.article.api.categories.ArticleCategoryQueryService
 import com.jotoai.voenix.shop.article.api.dto.categories.ArticleCategoryDto
 import com.jotoai.voenix.shop.article.api.dto.categories.CreateArticleCategoryRequest
 import com.jotoai.voenix.shop.article.api.dto.categories.UpdateArticleCategoryRequest
@@ -15,18 +12,17 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 class ArticleCategoryServiceImpl(
     private val articleCategoryRepository: ArticleCategoryRepository,
-) : ArticleCategoryQueryService,
-    ArticleCategoryFacade {
-    override fun getAllCategories(): List<ArticleCategoryDto> = articleCategoryRepository.findAll().map { it.toDto() }
+) {
+    fun getAllCategories(): List<ArticleCategoryDto> = articleCategoryRepository.findAll().map { it.toDto() }
 
-    override fun getCategoryById(id: Long): ArticleCategoryDto =
+    fun getCategoryById(id: Long): ArticleCategoryDto =
         articleCategoryRepository
             .findById(id)
             .map { it.toDto() }
             .orElseThrow { ArticleNotFoundException("ArticleCategory not found with id: $id") }
 
     @Transactional
-    override fun createCategory(request: CreateArticleCategoryRequest): ArticleCategoryDto {
+    fun createCategory(request: CreateArticleCategoryRequest): ArticleCategoryDto {
         require(!articleCategoryRepository.existsByNameIgnoreCase(request.name)) {
             "Category with name '${request.name}' already exists"
         }
@@ -42,7 +38,7 @@ class ArticleCategoryServiceImpl(
     }
 
     @Transactional
-    override fun updateCategory(
+    fun updateCategory(
         id: Long,
         request: UpdateArticleCategoryRequest,
     ): ArticleCategoryDto {
@@ -65,7 +61,7 @@ class ArticleCategoryServiceImpl(
     }
 
     @Transactional
-    override fun deleteCategory(id: Long) {
+    fun deleteCategory(id: Long) {
         if (!articleCategoryRepository.existsById(id)) {
             throw ArticleNotFoundException("ArticleCategory not found with id: $id")
         }
