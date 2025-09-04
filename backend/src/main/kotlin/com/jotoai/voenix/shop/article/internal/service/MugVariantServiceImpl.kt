@@ -1,14 +1,13 @@
 package com.jotoai.voenix.shop.article.internal.service
 
 import com.jotoai.voenix.shop.application.BadRequestException
+import com.jotoai.voenix.shop.article.api.MugVariantService
 import com.jotoai.voenix.shop.article.api.dto.CopyVariantsRequest
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
 import com.jotoai.voenix.shop.article.api.exception.ArticleNotFoundException
-import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
-import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.MugWithVariantsSummaryAssembler
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
@@ -28,8 +27,7 @@ class MugVariantServiceImpl(
     private val imageService: ImageService,
     private val mugArticleVariantAssembler: MugArticleVariantAssembler,
     private val mugWithVariantsSummaryAssembler: MugWithVariantsSummaryAssembler,
-) : MugVariantQueryService,
-    MugVariantFacade {
+) : MugVariantService {
     companion object {
         private val logger = KotlinLogging.logger {}
     }

@@ -1,13 +1,18 @@
-package com.jotoai.voenix.shop.article.api.variants
+package com.jotoai.voenix.shop.article.api
 
 import com.jotoai.voenix.shop.article.api.dto.CopyVariantsRequest
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
 
 /**
- * Facade for Mug variant write operations.
+ * Unified service for Mug variant operations (read + write).
  */
-interface MugVariantFacade {
+interface MugVariantService {
+    // Read operations
+    fun findAllMugsWithVariants(excludeMugId: Long?): List<MugWithVariantsSummaryDto>
+
+    // Write operations
     fun create(
         articleId: Long,
         request: CreateMugArticleVariantRequest,

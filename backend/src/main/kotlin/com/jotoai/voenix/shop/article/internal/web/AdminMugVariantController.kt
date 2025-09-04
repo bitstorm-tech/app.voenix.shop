@@ -1,11 +1,10 @@
 package com.jotoai.voenix.shop.article.internal.web
 
+import com.jotoai.voenix.shop.article.api.MugVariantService
 import com.jotoai.voenix.shop.article.api.dto.CopyVariantsRequest
 import com.jotoai.voenix.shop.article.api.dto.CreateMugArticleVariantRequest
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.dto.MugWithVariantsSummaryDto
-import com.jotoai.voenix.shop.article.api.variants.MugVariantFacade
-import com.jotoai.voenix.shop.article.api.variants.MugVariantQueryService
 import com.jotoai.voenix.shop.article.internal.web.dto.MugVariantImageUploadRequest
 import com.jotoai.voenix.shop.image.CropArea
 import com.jotoai.voenix.shop.image.ImageData
@@ -33,8 +32,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/articles/mugs")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminMugVariantController(
-    private val mugVariantQueryService: MugVariantQueryService,
-    private val mugVariantFacade: MugVariantFacade,
+    private val mugVariantService: MugVariantService,
     private val imageService: ImageService,
 ) {
     companion object {
@@ -46,7 +44,7 @@ class AdminMugVariantController(
         @PathVariable articleId: Long,
         @Valid @RequestBody request: CreateMugArticleVariantRequest,
     ): ResponseEntity<MugArticleVariantDto> {
-        val variant = mugVariantFacade.create(articleId, request)
+        val variant = mugVariantService.create(articleId, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(variant)
     }
 
@@ -55,7 +53,7 @@ class AdminMugVariantController(
         @PathVariable variantId: Long,
         @Valid @RequestBody request: CreateMugArticleVariantRequest,
     ): ResponseEntity<MugArticleVariantDto> {
-        val variant = mugVariantFacade.update(variantId, request)
+        val variant = mugVariantService.update(variantId, request)
         return ResponseEntity.ok(variant)
     }
 
@@ -63,7 +61,7 @@ class AdminMugVariantController(
     fun delete(
         @PathVariable variantId: Long,
     ): ResponseEntity<Void> {
-        mugVariantFacade.delete(variantId)
+        mugVariantService.delete(variantId)
         return ResponseEntity.noContent().build()
     }
 
@@ -100,7 +98,7 @@ class AdminMugVariantController(
         val storedFilename = imageDto.filename
 
         // Update the variant with the new image filename
-        val updatedVariant = mugVariantFacade.updateExampleImage(variantId, storedFilename)
+        val updatedVariant = mugVariantService.updateExampleImage(variantId, storedFilename)
 
         logger.info { "Successfully uploaded image for variant $variantId - Filename: $storedFilename" }
         return ResponseEntity.ok(updatedVariant)
@@ -111,7 +109,7 @@ class AdminMugVariantController(
         @PathVariable variantId: Long,
     ): ResponseEntity<MugArticleVariantDto> {
         logger.info { "Deleting image for variant $variantId" }
-        val updatedVariant = mugVariantFacade.removeExampleImage(variantId)
+        val updatedVariant = mugVariantService.removeExampleImage(variantId)
         return ResponseEntity.ok(updatedVariant)
     }
 
@@ -120,7 +118,7 @@ class AdminMugVariantController(
         @RequestParam(required = false) excludeMugId: Long?,
     ): ResponseEntity<List<MugWithVariantsSummaryDto>> {
         logger.info { "Fetching variants catalog, excluding mug ID: $excludeMugId" }
-        val catalog = mugVariantQueryService.findAllMugsWithVariants(excludeMugId)
+        val catalog = mugVariantService.findAllMugsWithVariants(excludeMugId)
         return ResponseEntity.ok(catalog)
     }
 
@@ -130,7 +128,7 @@ class AdminMugVariantController(
         @Valid @RequestBody request: CopyVariantsRequest,
     ): ResponseEntity<List<MugArticleVariantDto>> {
         logger.info { "Copying ${request.variantIds.size} variants to mug $mugId" }
-        val copiedVariants = mugVariantFacade.copyVariants(mugId, request)
+        val copiedVariants = mugVariantService.copyVariants(mugId, request)
         return ResponseEntity.status(HttpStatus.CREATED).body(copiedVariants)
     }
 }
