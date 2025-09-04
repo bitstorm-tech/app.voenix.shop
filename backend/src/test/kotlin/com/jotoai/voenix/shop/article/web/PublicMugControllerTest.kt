@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.article.web
 
-import com.jotoai.voenix.shop.article.api.ArticleFacade
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.ArticleService
 import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
 import com.ninjasquad.springmockk.MockkBean
@@ -26,16 +25,13 @@ class PublicMugControllerTest {
     private lateinit var mockMvc: MockMvc
 
     @MockkBean
-    private lateinit var articleQueryService: ArticleQueryService
-
-    @MockkBean
-    private lateinit var articleFacade: ArticleFacade
+    private lateinit var articleService: ArticleService
 
     @Test
     fun `should return list of public mugs without authentication`() {
         // Given
         val mugs = listOf(createClassicMug(), createTravelMug())
-        every { articleQueryService.findPublicMugs() } returns mugs
+        every { articleService.findPublicMugs() } returns mugs
 
         // When & Then
         mockMvc
@@ -129,7 +125,7 @@ class PublicMugControllerTest {
     @Test
     fun `should return empty list when no mugs available`() {
         // Given
-        every { articleQueryService.findPublicMugs() } returns emptyList()
+        every { articleService.findPublicMugs() } returns emptyList()
 
         // When & Then
         mockMvc

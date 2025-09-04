@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.service
 
-import com.jotoai.voenix.shop.article.api.ArticleFacade
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.ArticleService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
@@ -33,8 +32,7 @@ import org.springframework.transaction.annotation.Transactional
 @Suppress("TooManyFunctions")
 class ArticleServiceImpl(
     private val dependencies: ArticleServiceDependencies,
-) : ArticleQueryService,
-    ArticleFacade {
+) : ArticleService {
     companion object {
         private const val CENTS_TO_EUROS = 100.0
     }

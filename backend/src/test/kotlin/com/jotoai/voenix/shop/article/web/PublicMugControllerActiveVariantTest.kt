@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.article.web
 
-import com.jotoai.voenix.shop.article.api.ArticleFacade
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.ArticleService
 import com.jotoai.voenix.shop.article.api.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.api.dto.PublicMugVariantDto
 import com.ninjasquad.springmockk.MockkBean
@@ -36,10 +35,7 @@ class PublicMugControllerActiveVariantTest {
     private lateinit var mockMvc: MockMvc
 
     @MockkBean
-    private lateinit var articleQueryService: ArticleQueryService
-
-    @MockkBean
-    private lateinit var articleFacade: ArticleFacade
+    private lateinit var articleService: ArticleService
 
     private lateinit var testMugWithMixedVariants: PublicMugDto
     private lateinit var testMugWithOnlyActiveVariants: PublicMugDto
@@ -154,7 +150,7 @@ class PublicMugControllerActiveVariantTest {
     fun getAllMugs_ReturnsOnlyActiveVariants() {
         // Given
         val mugs = listOf(testMugWithMixedVariants, testMugWithOnlyActiveVariants)
-        every { articleQueryService.findPublicMugs() } returns mugs
+        every { articleService.findPublicMugs() } returns mugs
 
         // When & Then
         mockMvc
@@ -173,7 +169,7 @@ class PublicMugControllerActiveVariantTest {
             .andExpect(jsonPath("$[1].variants.length()").value(1))
             .andExpect(jsonPath("$[1].variants[0].active").value(true))
 
-        verify(exactly = 1) { articleQueryService.findPublicMugs() }
+        verify(exactly = 1) { articleService.findPublicMugs() }
     }
 
     @Test
@@ -181,7 +177,7 @@ class PublicMugControllerActiveVariantTest {
     fun getAllMugs_HandlesNoActiveVariants() {
         // Given - Including a mug with no active variants
         val mugs = listOf(testMugWithOnlyActiveVariants, testMugWithNoActiveVariants)
-        every { articleQueryService.findPublicMugs() } returns mugs
+        every { articleService.findPublicMugs() } returns mugs
 
         // When & Then
         mockMvc
@@ -199,7 +195,7 @@ class PublicMugControllerActiveVariantTest {
     @DisplayName("GET /api/mugs should return empty list when no mugs available")
     fun getAllMugs_ReturnsEmptyListWhenNoMugs() {
         // Given
-        every { articleQueryService.findPublicMugs() } returns emptyList()
+        every { articleService.findPublicMugs() } returns emptyList()
 
         // When & Then
         mockMvc
@@ -216,7 +212,7 @@ class PublicMugControllerActiveVariantTest {
     fun getAllMugs_ActiveVariantsHaveProperStructure() {
         // Given
         val mugs = listOf(testMugWithMixedVariants)
-        every { articleQueryService.findPublicMugs() } returns mugs
+        every { articleService.findPublicMugs() } returns mugs
 
         // When & Then
         mockMvc
@@ -237,7 +233,7 @@ class PublicMugControllerActiveVariantTest {
     fun getAllMugs_DefaultVariantIsActive() {
         // Given
         val mugs = listOf(testMugWithMixedVariants)
-        every { articleQueryService.findPublicMugs() } returns mugs
+        every { articleService.findPublicMugs() } returns mugs
 
         // When & Then
         mockMvc
@@ -255,7 +251,7 @@ class PublicMugControllerActiveVariantTest {
         // active/inactive filtering - it's handled at the service layer
 
         // Given
-        every { articleQueryService.findPublicMugs() } returns listOf(testMugWithMixedVariants)
+        every { articleService.findPublicMugs() } returns listOf(testMugWithMixedVariants)
 
         // When
         mockMvc
@@ -265,7 +261,7 @@ class PublicMugControllerActiveVariantTest {
         // Then
         // Controller just passes through what service returns
         // Service is responsible for filtering
-        verify(exactly = 1) { articleQueryService.findPublicMugs() }
-        confirmVerified(articleQueryService)
+        verify(exactly = 1) { articleService.findPublicMugs() }
+        confirmVerified(articleService)
     }
 }

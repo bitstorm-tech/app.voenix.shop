@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.web
 
-import com.jotoai.voenix.shop.article.api.ArticleFacade
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.ArticleService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.api.dto.ArticleWithDetailsDto
@@ -27,15 +26,14 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/admin/articles")
 @PreAuthorize("hasRole('ADMIN')")
 class AdminArticleController(
-    private val articleQueryService: ArticleQueryService,
-    private val articleFacade: ArticleFacade,
+    private val articleService: ArticleService,
 ) {
     @GetMapping
     fun findAll(
         @ModelAttribute criteria: ArticleSearchCriteria,
     ): ResponseEntity<ArticlePaginatedResponse<ArticleDto>> {
         val response =
-            articleQueryService.findAll(
+            articleService.findAll(
                 FindArticlesQuery(
                     page = criteria.page,
                     size = criteria.size,
@@ -52,7 +50,7 @@ class AdminArticleController(
     fun findById(
         @PathVariable id: Long,
     ): ResponseEntity<ArticleWithDetailsDto> {
-        val article = articleQueryService.findById(id)
+        val article = articleService.findById(id)
         return ResponseEntity.ok(article)
     }
 
@@ -60,7 +58,7 @@ class AdminArticleController(
     fun create(
         @Valid @RequestBody request: CreateArticleRequest,
     ): ResponseEntity<ArticleWithDetailsDto> {
-        val article = articleFacade.create(request)
+        val article = articleService.create(request)
         return ResponseEntity.status(HttpStatus.CREATED).body(article)
     }
 
@@ -69,7 +67,7 @@ class AdminArticleController(
         @PathVariable id: Long,
         @Valid @RequestBody request: UpdateArticleRequest,
     ): ResponseEntity<ArticleWithDetailsDto> {
-        val article = articleFacade.update(id, request)
+        val article = articleService.update(id, request)
         return ResponseEntity.ok(article)
     }
 
@@ -77,7 +75,7 @@ class AdminArticleController(
     fun delete(
         @PathVariable id: Long,
     ): ResponseEntity<Void> {
-        articleFacade.delete(id)
+        articleService.delete(id)
         return ResponseEntity.noContent().build()
     }
 }

@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.order.internal.service
 
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.ArticleService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleDetailsDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
@@ -24,7 +24,7 @@ import java.util.UUID
 class OrderPdfService(
     private val orderService: OrderServiceImpl,
     private val pdfGenerationService: PdfGenerationService,
-    private val articleQueryService: ArticleQueryService,
+    private val articleService: ArticleService,
 ) {
     fun generateOrderPdf(
         userId: Long,
@@ -74,8 +74,8 @@ class OrderPdfService(
         val variantIds = items.map { it.variantId }.distinct()
 
         return PdfItemData(
-            articles = articleQueryService.getArticlesByIds(articleIds),
-            variants = articleQueryService.getMugVariantsByIds(variantIds),
+            articles = articleService.getArticlesByIds(articleIds),
+            variants = articleService.getMugVariantsByIds(variantIds),
             mugDetails = fetchMugDetailsBatch(articleIds),
         )
     }
@@ -85,7 +85,7 @@ class OrderPdfService(
         // and the distinct() call in fetchAllPdfItemData ensures we don't fetch the same data multiple times
         return articleIds
             .mapNotNull { articleId ->
-                articleQueryService.getMugDetailsByArticleId(articleId)?.let { articleId to it }
+                articleService.getMugDetailsByArticleId(articleId)?.let { articleId to it }
             }.toMap()
     }
 

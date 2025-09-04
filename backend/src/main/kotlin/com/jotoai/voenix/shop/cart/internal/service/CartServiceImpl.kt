@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.cart.internal.service
 
 import com.jotoai.voenix.shop.application.BadRequestException
 import com.jotoai.voenix.shop.application.ResourceNotFoundException
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.ArticleService
 import com.jotoai.voenix.shop.cart.AddToCartRequest
 import com.jotoai.voenix.shop.cart.CartDto
 import com.jotoai.voenix.shop.cart.CartOrderInfo
@@ -35,7 +35,7 @@ class CartServiceImpl(
     private val promptQueryService: PromptQueryService,
     private val cartAssembler: CartAssembler,
     private val orderInfoAssembler: OrderInfoAssembler,
-    private val articleQueryService: ArticleQueryService,
+    private val articleService: ArticleService,
 ) : CartService {
     private val logger = KotlinLogging.logger {}
 
@@ -67,7 +67,7 @@ class CartServiceImpl(
 
         // Update prices to current
         cart.items.forEach { item ->
-            val currentPrice = articleQueryService.getCurrentGrossPrice(item.articleId)
+            val currentPrice = articleService.getCurrentGrossPrice(item.articleId)
             if (item.priceAtTime != currentPrice) {
                 logger.warn {
                     "Price changed for cart item ${item.id}: ${item.priceAtTime} -> $currentPrice"
@@ -127,7 +127,7 @@ class CartServiceImpl(
         validateAddToCartRequest(userId, request)
 
         val cart = getOrCreateActiveCartEntity(userId)
-        val currentPrice = articleQueryService.getCurrentGrossPrice(request.articleId)
+        val currentPrice = articleService.getCurrentGrossPrice(request.articleId)
 
         val cartItem = createCartItem(cart, request, currentPrice)
         cart.addOrUpdateItem(cartItem)
@@ -246,7 +246,7 @@ class CartServiceImpl(
         var pricesUpdated = false
 
         cart.items.forEach { item ->
-            val currentPrice = articleQueryService.getCurrentGrossPrice(item.articleId)
+            val currentPrice = articleService.getCurrentGrossPrice(item.articleId)
             if (item.originalPrice != currentPrice) {
                 item.originalPrice = currentPrice
                 pricesUpdated = true
@@ -290,13 +290,13 @@ class CartServiceImpl(
     }
 
     private fun validateArticleAndVariant(request: AddToCartRequest) {
-        if (request.articleId !in articleQueryService.getArticlesByIds(listOf(request.articleId))) {
+        if (request.articleId !in articleService.getArticlesByIds(listOf(request.articleId))) {
             throw ResourceNotFoundException("Article not found with id: ${request.articleId}")
         }
-        if (request.variantId !in articleQueryService.getMugVariantsByIds(listOf(request.variantId))) {
+        if (request.variantId !in articleService.getMugVariantsByIds(listOf(request.variantId))) {
             throw ResourceNotFoundException("Variant not found with id: ${request.variantId}")
         }
-        if (!articleQueryService.validateVariantBelongsToArticle(request.articleId, request.variantId)) {
+        if (!articleService.validateVariantBelongsToArticle(request.articleId, request.variantId)) {
             throw BadRequestException("Variant ${request.variantId} does not belong to article ${request.articleId}")
         }
     }

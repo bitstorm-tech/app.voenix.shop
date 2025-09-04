@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.cart.internal.assembler
 
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.ArticleService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.article.api.enums.ArticleType
@@ -25,15 +25,15 @@ import org.junit.jupiter.api.assertThrows
 import java.time.OffsetDateTime
 
 class CartAssemblerTest {
-    private lateinit var articleQueryService: ArticleQueryService
+    private lateinit var articleService: ArticleService
     private lateinit var imageService: ImageService
     private lateinit var cartAssembler: CartAssembler
 
     @BeforeEach
     fun setUp() {
-        articleQueryService = mockk()
+        articleService = mockk()
         imageService = mockk()
-        cartAssembler = CartAssembler(articleQueryService, imageService)
+        cartAssembler = CartAssembler(articleService, imageService)
     }
 
     @Test
@@ -99,12 +99,12 @@ class CartAssemblerTest {
         val image1 = createGeneratedImageDto(filename = "image1.jpg", promptId = 4001L)
         val image2 = createGeneratedImageDto(filename = "image2.jpg", promptId = 4002L)
 
-        every { articleQueryService.getArticlesByIds(listOf(1001L, 1002L)) } returns
+        every { articleService.getArticlesByIds(listOf(1001L, 1002L)) } returns
             mapOf(
                 1001L to article1,
                 1002L to article2,
             )
-        every { articleQueryService.getMugVariantsByIds(listOf(2001L, 2002L)) } returns
+        every { articleService.getMugVariantsByIds(listOf(2001L, 2002L)) } returns
             mapOf(
                 2001L to variant1,
                 2002L to variant2,
@@ -164,11 +164,11 @@ class CartAssemblerTest {
         val article = createArticleDto(id = 1001L, name = "Basic Mug")
         val variant = createMugVariantDto(id = 2001L, articleId = 1001L, colorCode = "WHITE")
 
-        every { articleQueryService.getArticlesByIds(listOf(1001L)) } returns
+        every { articleService.getArticlesByIds(listOf(1001L)) } returns
             mapOf(
                 1001L to article,
             )
-        every { articleQueryService.getMugVariantsByIds(listOf(2001L)) } returns
+        every { articleService.getMugVariantsByIds(listOf(2001L)) } returns
             mapOf(
                 2001L to variant,
             )
@@ -230,12 +230,12 @@ class CartAssemblerTest {
 
         val image = createGeneratedImageDto(filename = "custom-image.jpg", promptId = 4001L)
 
-        every { articleQueryService.getArticlesByIds(listOf(1001L, 1002L)) } returns
+        every { articleService.getArticlesByIds(listOf(1001L, 1002L)) } returns
             mapOf(
                 1001L to article1,
                 1002L to article2,
             )
-        every { articleQueryService.getMugVariantsByIds(listOf(2001L, 2002L)) } returns
+        every { articleService.getMugVariantsByIds(listOf(2001L, 2002L)) } returns
             mapOf(
                 2001L to variant1,
                 2002L to variant2,
@@ -284,11 +284,11 @@ class CartAssemblerTest {
         val article = createArticleDto(id = 1001L, name = "Custom Mug")
         val variant = createMugVariantDto(id = 2001L, articleId = 1001L, colorCode = "RED")
 
-        every { articleQueryService.getArticlesByIds(listOf(1001L)) } returns
+        every { articleService.getArticlesByIds(listOf(1001L)) } returns
             mapOf(
                 1001L to article,
             )
-        every { articleQueryService.getMugVariantsByIds(listOf(2001L)) } returns
+        every { articleService.getMugVariantsByIds(listOf(2001L)) } returns
             mapOf(
                 2001L to variant,
             )
@@ -383,8 +383,8 @@ class CartAssemblerTest {
                 3002L to createGeneratedImageDto(filename = "unique-image.jpg"),
             )
 
-        every { articleQueryService.getArticlesByIds(listOf(1001L, 1002L, 1003L)) } returns articles
-        every { articleQueryService.getMugVariantsByIds(listOf(2001L, 2002L, 2003L)) } returns variants
+        every { articleService.getArticlesByIds(listOf(1001L, 1002L, 1003L)) } returns articles
+        every { articleService.getMugVariantsByIds(listOf(2001L, 2002L, 2003L)) } returns variants
         every { imageService.find(listOf(3001L, 3002L)) } returns images
     }
 
@@ -422,8 +422,8 @@ class CartAssemblerTest {
         cart.items.add(item)
         item.cart = cart
 
-        every { articleQueryService.getArticlesByIds(listOf(1001L)) } returns emptyMap()
-        every { articleQueryService.getMugVariantsByIds(listOf(2001L)) } returns
+        every { articleService.getArticlesByIds(listOf(1001L)) } returns emptyMap()
+        every { articleService.getMugVariantsByIds(listOf(2001L)) } returns
             mapOf(
                 2001L to createMugVariantDto(id = 2001L, articleId = 1001L),
             )
@@ -452,11 +452,11 @@ class CartAssemblerTest {
         cart.items.add(item)
         item.cart = cart
 
-        every { articleQueryService.getArticlesByIds(listOf(1001L)) } returns
+        every { articleService.getArticlesByIds(listOf(1001L)) } returns
             mapOf(
                 1001L to createArticleDto(id = 1001L, name = "Mug"),
             )
-        every { articleQueryService.getMugVariantsByIds(listOf(2001L)) } returns emptyMap()
+        every { articleService.getMugVariantsByIds(listOf(2001L)) } returns emptyMap()
         every { imageService.find(emptyList()) } returns emptyMap()
 
         // When & Then

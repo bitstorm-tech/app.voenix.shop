@@ -1,7 +1,6 @@
 package com.jotoai.voenix.shop.security
 
-import com.jotoai.voenix.shop.article.api.ArticleFacade
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.ArticleService
 import com.jotoai.voenix.shop.article.api.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.prompt.api.PromptQueryService
 import com.ninjasquad.springmockk.MockkBean
@@ -29,10 +28,7 @@ class AdminEndpointSecurityWebMvcTest {
     private lateinit var promptQueryService: PromptQueryService
 
     @MockkBean
-    private lateinit var articleQueryService: ArticleQueryService
-
-    @MockkBean
-    private lateinit var articleFacade: ArticleFacade
+    private lateinit var articleService: ArticleService
 
     @Test
     fun testAdminEndpointsRequireAuthentication() {
@@ -64,7 +60,7 @@ class AdminEndpointSecurityWebMvcTest {
     fun testAdminEndpointsAccessibleWithAdminRole() {
         // Mock service responses
         every { promptQueryService.getAllPrompts() } returns emptyList()
-        every { articleQueryService.findAll(FindArticlesQuery(page = 0, size = 20)) } returns
+        every { articleService.findAll(FindArticlesQuery(page = 0, size = 20)) } returns
             com.jotoai.voenix.shop.article.api.dto.ArticlePaginatedResponse(
                 content = emptyList(),
                 currentPage = 0,

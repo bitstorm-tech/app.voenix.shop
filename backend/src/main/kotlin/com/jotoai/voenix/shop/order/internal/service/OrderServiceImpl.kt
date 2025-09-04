@@ -2,7 +2,7 @@ package com.jotoai.voenix.shop.order.internal.service
 
 import com.jotoai.voenix.shop.application.BadRequestException
 import com.jotoai.voenix.shop.application.PaginatedResponse
-import com.jotoai.voenix.shop.article.api.ArticleQueryService
+import com.jotoai.voenix.shop.article.api.ArticleService
 import com.jotoai.voenix.shop.article.api.dto.ArticleDto
 import com.jotoai.voenix.shop.article.api.dto.MugArticleVariantDto
 import com.jotoai.voenix.shop.cart.CartOrderInfo
@@ -35,7 +35,7 @@ class OrderServiceImpl(
     private val orderRepository: OrderRepository,
     private val cartService: CartService,
     private val userService: UserService,
-    private val articleQueryService: ArticleQueryService,
+    private val articleService: ArticleService,
     private val imageService: ImageService,
     private val entityManager: EntityManager,
     @Value($$"${app.base-url:http://localhost:8080}") private val appBaseUrl: String,
@@ -277,8 +277,8 @@ class OrderServiceImpl(
         val imageIds = items.mapNotNull { it.generatedImageId }.distinct()
 
         return ItemLookupData(
-            articles = articleQueryService.getArticlesByIds(articleIds),
-            variants = articleQueryService.getMugVariantsByIds(variantIds),
+            articles = articleService.getArticlesByIds(articleIds),
+            variants = articleService.getMugVariantsByIds(variantIds),
             images = imageService.find(imageIds).mapValues { it.value as GeneratedImageDto },
         )
     }
