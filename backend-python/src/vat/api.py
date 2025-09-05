@@ -8,7 +8,7 @@ from sqlmodel import SQLModel
 
 from src.database import get_db
 
-from ._internal.entity import ValueAddedTax
+from ._internal.entities import ValueAddedTax
 
 router = APIRouter(prefix="/api/vat", tags=["vat"])
 
