@@ -9,6 +9,7 @@ from .vat_entity import ValueAddedTax
 
 router = APIRouter(prefix="/api/vat", tags=["vat"])
 
+
 @router.get("/", response_model=list[ValueAddedTax])
 def get_vats(db: Session = Depends(get_db)):
     """Return all VAT rows with all columns."""
