@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from src.database import get_db
 
-from .vat_entity import ValueAddedTax
+from ._internal.entity import ValueAddedTax
 
 router = APIRouter(prefix="/api/vat", tags=["vat"])
 

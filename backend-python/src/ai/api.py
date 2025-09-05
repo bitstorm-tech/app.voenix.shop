@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel
 
-from src.ai import edit_image_with_gemini
+from src.ai.factories import AIImageGeneratorFactory, AIImageProvider
 from src.image import convert_image_to_png_bytes, store_image_bytes
 
 router = APIRouter(prefix="/api/ai/images", tags=["ai"])
@@ -16,11 +16,12 @@ class GeminiEditResponse(BaseModel):
     images: list[str]
 
 
-@router.post("/gemini/edit", response_model=GeminiEditResponse)
+@router.post("/ai/edit", response_model=GeminiEditResponse)
 async def post_gemini_edit(
     image: UploadFile = File(..., description="Image to edit/manipulate"),
     prompt: str = Form(..., description="Instruction describing the edit"),
     n: int = Form(1, ge=1, le=8, description="Number of images to return"),
+    generator: AIImageProvider = Form(AIImageProvider.GEMINI, description="OpenAI, Gemini or Flux"),
 ):
     """Upload an image and a prompt, forward to Gemini, and return edited images.
 
@@ -39,7 +40,8 @@ async def post_gemini_edit(
             )
 
         data = await image.read()
-        outputs = edit_image_with_gemini(
+        generator = AIImageGeneratorFactory.create(generator)
+        outputs = generator.edit(
             image=data,
             prompt=prompt,
             candidate_count=n,

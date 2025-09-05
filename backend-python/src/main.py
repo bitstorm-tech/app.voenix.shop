@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .ai import api as ai_api
-from .vat import vat_api
+from .vat import api as vat_api
 
 
 @asynccontextmanager

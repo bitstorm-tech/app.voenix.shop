@@ -44,6 +44,8 @@ from pathlib import Path
 import httpx
 from dotenv import load_dotenv
 
+from src.ai.interfaces import AIImageGenerator
+
 # Load environment variables from a .env if present
 load_dotenv()
 
@@ -189,7 +191,7 @@ def _post_json(url: str, params: dict, json_body: dict, timeout: float = 60.0) -
         return resp.json()
 
 
-def edit_image_with_gemini(
+def _edit_image_with_gemini(
     image: bytes | str | Path,
     prompt: str,
     *,
@@ -245,6 +247,55 @@ def edit_image_with_gemini(
     return _extract_images_from_response(resp_json)
 
 
+class GeminiImageGenerator(AIImageGenerator):
+    """AiImageGenerator implementation backed by Google Gemini Image model.
+
+    Wraps `edit_image_with_gemini` and allows configuring API key, model, and
+    default generation parameters during construction.
+    """
+
+    def __init__(
+        self,
+        *,
+        api_key: str | None = None,
+        model: str | None = None,
+        default_candidate_count: int = 1,
+        default_max_output_tokens: int | None = 8192,
+        default_temperature: float | None = 0.7,
+        default_timeout: float = 60.0,
+    ) -> None:
+        self._api_key = (api_key or os.getenv("GOOGLE_API_KEY", "")).strip() or None
+        self._model = (model or _DEFAULT_MODEL).strip() or None
+        self._default_candidate_count = int(default_candidate_count)
+        self._default_max_output_tokens = default_max_output_tokens
+        self._default_temperature = default_temperature
+        self._default_timeout = float(default_timeout)
+
+    def edit(
+        self,
+        image: bytes | str | Path,
+        prompt: str,
+        *,
+        candidate_count: int = 1,
+        mime_type: str | None = None,
+        max_output_tokens: int | None = 8192,
+        temperature: float | None = 0.7,
+        timeout: float = 60.0,
+    ) -> list[bytes]:
+        # Use instance defaults when caller leaves parameters as default values
+        return _edit_image_with_gemini(
+            image=image,
+            prompt=prompt,
+            api_key=self._api_key,
+            model=self._model,
+            candidate_count=candidate_count or self._default_candidate_count,
+            mime_type=mime_type,
+            max_output_tokens=(max_output_tokens if max_output_tokens is not None else self._default_max_output_tokens),
+            temperature=temperature if temperature is not None else self._default_temperature,
+            timeout=timeout if timeout is not None else self._default_timeout,
+        )
+
+
 __all__ = [
-    "edit_image_with_gemini",
+    "GeminiImageGenerator",
 ]

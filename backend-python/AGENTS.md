@@ -16,6 +16,7 @@
 
 ## Coding Style & Naming Conventions
 - Python style: format with Ruff formatter; keep imports sorted; aim for 88–100 col width.
+- Use absolute imports instead of relative imports
 - Naming: modules/files `snake_case`, classes `PascalCase`, functions/vars `snake_case`.
 - Routers: place under `src/<domain>/<name>_api.py`; models/entities under `*_entity.py`.
 
@@ -34,3 +35,7 @@
 - Database: set `DATABASE_URL` (Postgres via `psycopg[binary]` or default SQLite).
 - CORS: configured in `src/main.py`; restrict origins in production.
 
+## Quality Gates
+At the end of the task run the following commands. The task is only considered as successful when there are no linter anf formatting errors!
+- uvx ruff check --fix
+- uvx ruff format
