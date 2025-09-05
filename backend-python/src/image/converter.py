@@ -27,13 +27,7 @@ import io
 from pathlib import Path
 from typing import BinaryIO
 
-try:  # Pillow is required for robust image handling
-    from PIL import Image, ImageOps, UnidentifiedImageError  # type: ignore
-except Exception as e:  # pragma: no cover - import-time guidance
-    raise ImportError(
-        "Pillow is required for image conversion. Install it with 'uv add pillow' or add 'pillow' to pyproject.toml."
-    ) from e
-
+from PIL import Image, ImageOps, UnidentifiedImageError  # type: ignore
 
 PathLike = str | Path
 BytesLike = bytes | bytearray

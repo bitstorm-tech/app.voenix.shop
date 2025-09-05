@@ -6,10 +6,8 @@ from pathlib import Path
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel
 
-from src.image.converter import convert_image_to_png_bytes
-from src.image.storage import store_image_bytes
-
-from .gemini_generator import edit_image_with_gemini
+from src.ai import edit_image_with_gemini
+from src.image import convert_image_to_png_bytes, store_image_bytes
 
 router = APIRouter(prefix="/api/ai/images", tags=["ai"])
 
