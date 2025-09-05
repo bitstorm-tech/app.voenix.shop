@@ -3,8 +3,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .ai import api as ai_api
+from .image import StorageLocations
 from .vat import api as vat_api
 
 
@@ -31,10 +33,9 @@ app.add_middleware(
 )
 
 
-@app.get("/health")
-def health():
-    return {"status": "ok!!!"}
-
-
 app.include_router(vat_api.router)
 app.include_router(ai_api.router)
+
+# Serve public assets directly from STORAGE_ROOT/public under /public/*
+public_dir = StorageLocations().root / "public"
+app.mount("/public", StaticFiles(directory=str(public_dir)), name="public")
