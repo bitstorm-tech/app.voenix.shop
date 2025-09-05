@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import base64
-from pathlib import Path
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel
 
 from src.ai.factories import AIImageGeneratorFactory, AIImageProvider
-from src.image import convert_image_to_png_bytes, store_image_bytes
+from src.image import StorageLocations, convert_image_to_png_bytes, store_image_bytes
 
 router = APIRouter(prefix="/api/ai/images", tags=["ai"])
 
@@ -47,8 +46,8 @@ async def post_gemini_edit(
             candidate_count=n,
         )
 
-        # Store each returned image under the specified storage directory
-        storage_dir = Path("/Users/joe/projects/joto-ai/app.voenix.shop/backend-python/storage")
+        # Store each returned image under configured storage location
+        storage_dir = StorageLocations().PROMPT_TEST
 
         # Try to convert to PNG if Pillow is available; otherwise store raw bytes
         for img_bytes in outputs:
