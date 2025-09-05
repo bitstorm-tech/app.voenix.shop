@@ -5,8 +5,8 @@ import hashlib
 import secrets
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, Security, status
-from fastapi.security import APIKeyCookie, OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, Security, status
+from fastapi.security import APIKeyCookie
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlmodel import SQLModel
@@ -96,20 +96,44 @@ def _get_user_from_session(db: Session, session_id: str | None) -> User | None:
     return result.scalar_one_or_none()
 
 
-@router.post("/login", response_model=UserPublic)
-def login(
+@router.post("/login")
+async def login(
     response: Response,
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    request: Request,
     db: Session = Depends(get_db),
 ):
-    """Login with username/password and set an HttpOnly session cookie.
+    """Login with email/password (JSON or form) and set an HttpOnly cookie.
 
-    Notes:
-    - `form_data.username` is treated as the user's email.
-    - Session IDs are stored in-memory and not persisted.
+    Accepts either:
+    - JSON: {"email": "...", "password": "..."}
+    - Form (OAuth2 style): username=<email>&password=...
     """
-    user = _get_user_by_email(db, form_data.username)
-    if not user or not user.is_active or not _verify_password(form_data.password, user.password):
+    content_type = (request.headers.get("content-type") or "").lower()
+    email: str | None = None
+    password: str | None = None
+
+    try:
+        if "application/json" in content_type:
+            payload = await request.json()
+            if isinstance(payload, dict):
+                email = payload.get("email") or payload.get("username")
+                password = payload.get("password")
+        else:
+            form = await request.form()
+            email = form.get("email") or form.get("username")  # type: ignore[assignment]
+            password = form.get("password")  # type: ignore[assignment]
+    except Exception:
+        # Fall through to validation error below
+        pass
+
+    if not email or not password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Missing credentials: provide email and password",
+        )
+
+    user = _get_user_by_email(db, email)
+    if not user or not user.is_active or not _verify_password(password, user.password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -129,7 +153,20 @@ def login(
         path="/",
     )
 
-    return _user_to_public(user)
+    # Prepare response matching frontend expectations (LoginResponse)
+    role_names = [r.name for r in (user.roles or [])]
+    return {
+        "user": {
+            "id": user.id or 0,
+            "email": user.email,
+            "firstName": user.first_name,
+            "lastName": user.last_name,
+            "phoneNumber": user.phone_number,
+            "roles": role_names,
+        },
+        "sessionId": session_id,
+        "roles": role_names,
+    }
 
 
 def get_current_user(
@@ -169,9 +206,22 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
 
-@router.get("/me", response_model=UserPublic)
+@router.get("/session")
 def read_me(current_user: User = Depends(get_current_user)):
-    return _user_to_public(current_user)
+    # Return SessionInfo shape expected by frontend
+    role_names = [r.name for r in (current_user.roles or [])]
+    return {
+        "authenticated": True,
+        "user": {
+            "id": current_user.id or 0,
+            "email": current_user.email,
+            "firstName": current_user.first_name,
+            "lastName": current_user.last_name,
+            "phoneNumber": current_user.phone_number,
+            "roles": role_names,
+        },
+        "roles": role_names,
+    }
 
 
 @router.post("/logout")
