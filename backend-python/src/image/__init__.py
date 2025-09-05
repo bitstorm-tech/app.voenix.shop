@@ -1,8 +1,9 @@
-from .image_converter import (
+from converter import (
     convert_image_to_png_bytes,
     convert_image_to_png_file,
 )
-from .image_storage import store_image_bytes
+
+from storage import store_image_bytes
 
 __all__ = [
     "convert_image_to_png_bytes",

@@ -40,7 +40,6 @@ import base64
 import mimetypes
 import os
 from pathlib import Path
-from typing import List, Optional, Tuple, Union
 
 import httpx
 from dotenv import load_dotenv
@@ -53,7 +52,7 @@ _DEFAULT_MODEL = os.getenv("GEMINI_IMAGE_MODEL", "gemini-2.5-flash-image-preview
 _BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 
 
-def _guess_mime_type(filename: Optional[str]) -> str:
+def _guess_mime_type(filename: str | None) -> str:
     """Guess a MIME type from a filename; default to image/png if unknown."""
     if not filename:
         return "image/png"
@@ -65,20 +64,20 @@ def _guess_mime_type(filename: Optional[str]) -> str:
 
 
 def _ensure_bytes_and_mime(
-    image: Union[bytes, str, Path],
-    explicit_mime: Optional[str] = None,
-) -> Tuple[bytes, str]:
+    image: bytes | str | Path,
+    explicit_mime: str | None = None,
+) -> tuple[bytes, str]:
     """Normalize input image to (bytes, mime_type).
 
     - If `image` is bytes, keep as-is and use `explicit_mime` or default.
     - If `image` is a path, read bytes and infer MIME from extension.
     """
-    if isinstance(image, (str, Path)):
+    if isinstance(image, str | Path):
         path = Path(image)
         data = path.read_bytes()
         mime = explicit_mime or _guess_mime_type(path.name)
         return data, mime
-    elif isinstance(image, (bytes, bytearray)):
+    elif isinstance(image, bytes | bytearray):
         data = bytes(image)
         mime = explicit_mime or "image/png"
         return data, mime
@@ -90,8 +89,8 @@ def _build_request_body(
     image_bytes: bytes,
     mime_type: str,
     candidate_count: int,
-    max_output_tokens: Optional[int] = 8192,
-    temperature: Optional[float] = 0.7,
+    max_output_tokens: int | None = 8192,
+    temperature: float | None = 0.7,
 ) -> dict:
     """Construct the JSON payload matching Gemini generateContent schema."""
     encoded = base64.b64encode(image_bytes).decode("ascii")
@@ -119,7 +118,7 @@ def _build_request_body(
     return body
 
 
-def _extract_images_from_response(resp_json: dict) -> List[bytes]:
+def _extract_images_from_response(resp_json: dict) -> list[bytes]:
     """Parse generateContent response and extract all inline image bytes.
 
     Expected structure (simplified):
@@ -142,12 +141,10 @@ def _extract_images_from_response(resp_json: dict) -> List[bytes]:
         message = err.get("message") or str(err)
         code = err.get("code")
         status = err.get("status")
-        raise RuntimeError(
-            f"Gemini API error: code={code} status={status} message={message}"
-        )
+        raise RuntimeError(f"Gemini API error: code={code} status={status} message={message}")
 
     candidates = resp_json.get("candidates") or []
-    images: List[bytes] = []
+    images: list[bytes] = []
 
     for cand in candidates:
         content = cand.get("content") or {}
@@ -193,17 +190,17 @@ def _post_json(url: str, params: dict, json_body: dict, timeout: float = 60.0) -
 
 
 def edit_image_with_gemini(
-    image: Union[bytes, str, Path],
+    image: bytes | str | Path,
     prompt: str,
     *,
-    api_key: Optional[str] = None,
-    model: Optional[str] = None,
+    api_key: str | None = None,
+    model: str | None = None,
     candidate_count: int = 1,
-    mime_type: Optional[str] = None,
-    max_output_tokens: Optional[int] = 8192,
-    temperature: Optional[float] = 0.7,
+    mime_type: str | None = None,
+    max_output_tokens: int | None = 8192,
+    temperature: float | None = 0.7,
     timeout: float = 60.0,
-) -> List[bytes]:
+) -> list[bytes]:
     """Send an image + instruction prompt to Gemini 2.5 Flash Image and return edited images.
 
     Parameters:

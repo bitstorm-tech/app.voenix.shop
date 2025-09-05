@@ -1,16 +1,15 @@
 from __future__ import annotations
 
+import contextlib
 import os
 import re
 import secrets
 from pathlib import Path
-from typing import Optional, Union
+
+PathLike = str | Path
 
 
-PathLike = Union[str, Path]
-
-
-def _ensure_ext(ext: Optional[str]) -> str:
+def _ensure_ext(ext: str | None) -> str:
     if not ext:
         return ".png"
     ext = ext.strip()
@@ -21,7 +20,7 @@ def _ensure_ext(ext: Optional[str]) -> str:
     return ext.lower()
 
 
-def _safe_stem(stem: Optional[str]) -> str:
+def _safe_stem(stem: str | None) -> str:
     if stem:
         cleaned = re.sub(r"[^A-Za-z0-9._-]+", "-", stem).strip("-_.")
         if cleaned:
@@ -32,11 +31,11 @@ def _safe_stem(stem: Optional[str]) -> str:
 def store_image_bytes(
     data: bytes,
     directory: PathLike,
-    filename: Optional[str] = None,
+    filename: str | None = None,
     *,
-    ext: Optional[str] = None,
+    ext: str | None = None,
     overwrite: bool = False,
-    mode: Optional[int] = None,
+    mode: int | None = None,
 ) -> Path:
     """Persist image bytes to the filesystem and return the path.
 
@@ -51,10 +50,7 @@ def store_image_bytes(
 
     if filename:
         name_path = Path(filename)
-        if name_path.suffix:
-            final_name = name_path.name
-        else:
-            final_name = name_path.name + _ensure_ext(ext)
+        final_name = name_path.name if name_path.suffix else name_path.name + _ensure_ext(ext)
     else:
         final_name = _safe_stem(None) + _ensure_ext(ext)
 
@@ -68,10 +64,8 @@ def store_image_bytes(
     os.replace(tmp, dest)
 
     if mode is not None:
-        try:
+        with contextlib.suppress(Exception):
             os.chmod(dest, mode)
-        except Exception:
-            pass
 
     return dest
 
@@ -79,4 +73,3 @@ def store_image_bytes(
 __all__ = [
     "store_image_bytes",
 ]
-

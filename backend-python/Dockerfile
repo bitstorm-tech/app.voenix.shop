@@ -6,14 +6,14 @@ FROM ghcr.io/astral-sh/uv:python3.13-bookworm AS builder
 WORKDIR /app
 
 # Leverage Docker layer caching for dependency install
-COPY backend-python/pyproject.toml ./pyproject.toml
-COPY backend-python/uv.lock ./uv.lock
+COPY pyproject.toml ./pyproject.toml
+COPY uv.lock ./uv.lock
 
 # Create a virtualenv at /app/.venv and install production deps (frozen lock)
 RUN uv sync --frozen --no-dev
 
 # Copy application source
-COPY backend-python/src ./src
+COPY src ./src
 
 
 # --- Runtime: slim Python with prebuilt virtualenv ---
@@ -34,10 +34,4 @@ EXPOSE 8000
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Default to uvicorn. Override with `docker run ... <CMD>` as needed.
-CMD [
-  "uvicorn",
-  "src.main:app",
-  "--host","0.0.0.0",
-  "--port","8000"
-]
-
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000"]

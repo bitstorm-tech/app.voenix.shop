@@ -12,3 +12,19 @@ dependencies = [
     "python-dotenv>=1.1.1",
     "sqlmodel>=0.0.24",
 ]
+
+[dependency-groups]
+dev = ["ruff>=0.12.12"]
+
+[tool.ruff]
+line-length = 120
+lint.select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes (includes some import checks)
+    "I",   # isort (import sorting)
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+]
+lint.ignore = ["B904", "B008"]

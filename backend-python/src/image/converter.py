@@ -22,9 +22,10 @@ Typical usage:
 
 from __future__ import annotations
 
+import contextlib
 import io
 from pathlib import Path
-from typing import BinaryIO, Optional, Union
+from typing import BinaryIO
 
 try:  # Pillow is required for robust image handling
     from PIL import Image, ImageOps, UnidentifiedImageError  # type: ignore
@@ -34,9 +35,9 @@ except Exception as e:  # pragma: no cover - import-time guidance
     ) from e
 
 
-PathLike = Union[str, Path]
-BytesLike = Union[bytes, bytearray]
-ImageInput = Union[BytesLike, BinaryIO, PathLike]
+PathLike = str | Path
+BytesLike = bytes | bytearray
+ImageInput = BytesLike | BinaryIO | PathLike
 
 
 def _open_image(source: ImageInput) -> Image.Image:
@@ -45,7 +46,7 @@ def _open_image(source: ImageInput) -> Image.Image:
     Applies EXIF orientation (transpose) so output PNGs match user expectations.
     If the image is animated (e.g., GIF/WEBP), the first frame is used.
     """
-    if isinstance(source, (bytes, bytearray)):
+    if isinstance(source, bytes | bytearray):
         buf = io.BytesIO(source)
         img = Image.open(buf)
     elif hasattr(source, "read"):
@@ -57,11 +58,8 @@ def _open_image(source: ImageInput) -> Image.Image:
         img = Image.open(path)
 
     # Normalize orientation based on EXIF
-    try:
+    with contextlib.suppress(Exception):
         img = ImageOps.exif_transpose(img)
-    except Exception:
-        # If EXIF missing or unsupported, ignore
-        pass
 
     # For animated images, use the first frame as a representative PNG
     try:
@@ -126,7 +124,7 @@ def convert_image_to_png_bytes(source: ImageInput) -> bytes:
 
 def convert_image_to_png_file(
     input_path: PathLike,
-    output_path: Optional[PathLike] = None,
+    output_path: PathLike | None = None,
     *,
     overwrite: bool = False,
 ) -> Path:
