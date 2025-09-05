@@ -145,6 +145,30 @@ def get_current_user(
     return user
 
 
+def require_roles(*allowed_roles: str):
+    """Dependency factory that ensures the current user has any of the given roles.
+
+    Usage:
+        Depends(require_roles("ADMIN"))
+    """
+
+    def _dep(current_user: User = Depends(get_current_user)) -> User:
+        role_names = {r.name for r in (current_user.roles or [])}
+        if not any(role in role_names for role in allowed_roles):
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden: insufficient role")
+        return current_user
+
+    return _dep
+
+
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    """Dependency that restricts access to users with the ADMIN role."""
+    role_names = {r.name for r in (current_user.roles or [])}
+    if "ADMIN" not in role_names:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Forbidden: admin only")
+    return current_user
+
+
 @router.get("/me", response_model=UserPublic)
 def read_me(current_user: User = Depends(get_current_user)):
     return _user_to_public(current_user)

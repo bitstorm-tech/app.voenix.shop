@@ -2,10 +2,12 @@ from __future__ import annotations
 
 import base64
 
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from pydantic import BaseModel
 
 from src.ai.factories import AIImageGeneratorFactory, AIImageProvider
+from src.auth._internal.entities import User
+from src.auth.api import require_admin
 from src.image import StorageLocations, convert_image_to_png_bytes, store_image_bytes
 
 router = APIRouter(prefix="/api/ai/images", tags=["ai"])
@@ -21,6 +23,7 @@ async def post_gemini_edit(
     prompt: str = Form(..., description="Instruction describing the edit"),
     n: int = Form(1, ge=1, le=8, description="Number of images to return"),
     generator: AIImageProvider = Form(AIImageProvider.GEMINI, description="GTP, Gemini or Flux"),
+    _: User = Depends(require_admin),
 ):
     """Upload an image and a prompt, forward to Gemini, and return edited images.
 
