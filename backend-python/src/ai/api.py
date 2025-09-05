@@ -16,7 +16,7 @@ class GeminiEditResponse(BaseModel):
     images: list[str]
 
 
-@router.post("/ai/edit", response_model=GeminiEditResponse)
+@router.post("/", response_model=GeminiEditResponse)
 async def post_gemini_edit(
     image: UploadFile = File(..., description="Image to edit/manipulate"),
     prompt: str = Form(..., description="Instruction describing the edit"),
