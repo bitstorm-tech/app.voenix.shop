@@ -1,5 +1,5 @@
 """
-Stub implementation for an OpenAI-based image generator.
+Stub implementation for an GPT-based image generator.
 
 This class satisfies the `AiImageGenerator` protocol but is not yet
 implemented. The `edit` method raises NotImplementedError.
@@ -12,7 +12,7 @@ from pathlib import Path
 from src.ai.interfaces import AIImageGenerator
 
 
-class OpenAIImageGenerator(AIImageGenerator):
+class GptImageGenerator(AIImageGenerator):
     def __init__(
         self,
         *,
@@ -41,7 +41,7 @@ class OpenAIImageGenerator(AIImageGenerator):
         temperature: float | None = 0.7,
         timeout: float = 60.0,
     ) -> list[bytes]:
-        raise NotImplementedError("OpenAIImageGenerator is not implemented yet")
+        raise NotImplementedError("GptImageGenerator is not implemented yet")
 
 
-__all__ = ["OpenAIImageGenerator"]
+__all__ = ["GptImageGenerator"]

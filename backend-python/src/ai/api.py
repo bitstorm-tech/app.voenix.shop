@@ -21,7 +21,7 @@ async def post_gemini_edit(
     image: UploadFile = File(..., description="Image to edit/manipulate"),
     prompt: str = Form(..., description="Instruction describing the edit"),
     n: int = Form(1, ge=1, le=8, description="Number of images to return"),
-    generator: AIImageProvider = Form(AIImageProvider.GEMINI, description="OpenAI, Gemini or Flux"),
+    generator: AIImageProvider = Form(AIImageProvider.GEMINI, description="GTP, Gemini or Flux"),
 ):
     """Upload an image and a prompt, forward to Gemini, and return edited images.
 

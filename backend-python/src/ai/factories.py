@@ -5,7 +5,7 @@ from typing import Any
 
 from ._internal.flux_generator import FluxImageGenerator
 from ._internal.gemini_generator import GeminiImageGenerator
-from ._internal.openai_generator import OpenAIImageGenerator
+from ._internal.gpt_generator import GptImageGenerator
 from .interfaces import AIImageGenerator
 
 """
@@ -14,14 +14,14 @@ Factory for creating AI image generators.
 Supports:
 - Gemini (implemented)
 - Flux (stub)
-- OpenAI (stub)
+- GPT (stub)
 """
 
 
 class AIImageProvider(str, Enum):
     GEMINI = "gemini"
     FLUX = "flux"
-    OPENAI = "openai"
+    GPT = "gpt"
 
 
 class AIImageGeneratorFactory:
@@ -34,8 +34,8 @@ class AIImageGeneratorFactory:
             return GeminiImageGenerator(**kwargs)
         if key == AIImageProvider.FLUX.value:
             return FluxImageGenerator(**kwargs)
-        if key == AIImageProvider.OPENAI.value:
-            return OpenAIImageGenerator(**kwargs)
+        if key == AIImageProvider.GPT.value:
+            return GptImageGenerator(**kwargs)
         raise ValueError(f"Unknown AI image provider: {provider}")
 
 
