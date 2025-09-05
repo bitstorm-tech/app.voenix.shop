@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from .ai import api as ai_api
+from .auth import api as auth_api
 from .image import StorageLocations
 from .vat import api as vat_api
 
@@ -35,6 +36,7 @@ app.add_middleware(
 
 app.include_router(vat_api.router)
 app.include_router(ai_api.router)
+app.include_router(auth_api.router)
 
 # Serve public assets directly from STORAGE_ROOT/public under /public/*
 public_dir = StorageLocations().root / "public"

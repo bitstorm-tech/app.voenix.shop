@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, String, func
+from sqlalchemy.orm import relationship
 from sqlmodel import Field, Relationship, SQLModel
 
 
@@ -37,7 +38,13 @@ class Role(SQLModel, table=True):
     )
 
     # Back-reference to users (many-to-many)
-    users: list[User] = Relationship(back_populates="roles", link_model=UserRoleLink)
+    users: list[User] = Relationship(
+        sa_relationship=relationship(
+            "User",
+            secondary=UserRoleLink.__table__,
+            back_populates="roles",
+        )
+    )
 
     def __repr__(self) -> str:  # pragma: no cover - debug representation only
         return f"Role(id={self.id!r}, name={self.name!r})"
@@ -80,7 +87,13 @@ class User(SQLModel, table=True):
     )
 
     # Many-to-many: users <-> roles
-    roles: list[Role] = Relationship(back_populates="users", link_model=UserRoleLink)
+    roles: list[Role] = Relationship(
+        sa_relationship=relationship(
+            "Role",
+            secondary=UserRoleLink.__table__,
+            back_populates="users",
+        )
+    )
 
     def __repr__(self) -> str:  # pragma: no cover - debug representation only
         return f"User(id={self.id!r}, email={self.email!r})"
