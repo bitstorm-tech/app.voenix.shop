@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import contextlib
 import os
-import re
-import secrets
+import uuid
 from pathlib import Path
 
 PathLike = str | Path
@@ -18,14 +17,6 @@ def _ensure_ext(ext: str | None) -> str:
     if not ext.startswith("."):
         ext = "." + ext
     return ext.lower()
-
-
-def _safe_stem(stem: str | None) -> str:
-    if stem:
-        cleaned = re.sub(r"[^A-Za-z0-9._-]+", "-", stem).strip("-_.")
-        if cleaned:
-            return cleaned
-    return secrets.token_hex(8)
 
 
 def store_image_bytes(
@@ -52,7 +43,7 @@ def store_image_bytes(
         name_path = Path(filename)
         final_name = name_path.name if name_path.suffix else name_path.name + _ensure_ext(ext)
     else:
-        final_name = _safe_stem(None) + _ensure_ext(ext)
+        final_name = str(uuid.uuid4()) + _ensure_ext(ext)
 
     dest = dir_path / final_name
 
