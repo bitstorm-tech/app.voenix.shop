@@ -31,6 +31,38 @@ class StorageLocations:
         """
         return self.root / "private" / "images" / "0_prompt-test"
 
+    @property
+    def PROMPT_EXAMPLE(self) -> Path:
+        """Location for prompt example images.
+
+        {storage.root}/public/images/prompt-example-images
+        """
+        return self.root / "public" / "images" / "prompt-example-images"
+
+    @property
+    def PROMPT_SLOT_VARIANT_EXAMPLE(self) -> Path:
+        """Location for prompt slot variant example images.
+
+        {storage.root}/public/images/prompt-slot-variant-example-images
+        """
+        return self.root / "public" / "images" / "prompt-slot-variant-example-images"
+
+    @property
+    def MUG_VARIANT_EXAMPLE(self) -> Path:
+        """Location for mug variant example images.
+
+        {storage.root}/public/images/articles/mugs/variant-example-images
+        """
+        return self.root / "public" / "images" / "articles" / "mugs" / "variant-example-images"
+
+    @property
+    def SHIRT_VARIANT_EXAMPLE(self) -> Path:
+        """Location for shirt variant example images.
+
+        {storage.root}/public/images/articles/shirts/variant-example-images
+        """
+        return self.root / "public" / "images" / "articles" / "shirts" / "variant-example-images"
+
 
 __all__ = [
     "StorageLocations",
