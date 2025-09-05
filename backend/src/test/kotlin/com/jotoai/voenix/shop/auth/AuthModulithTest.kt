@@ -1,5 +1,6 @@
 package com.jotoai.voenix.shop.auth
 
+import com.ninjasquad.springmockk.MockkBean
 import org.junit.jupiter.api.Test
 import org.springframework.modulith.core.ApplicationModules
 import org.springframework.modulith.test.ApplicationModuleTest
@@ -29,6 +30,9 @@ class AuthModulithTest {
  */
 @ApplicationModuleTest
 class AuthModuleIntegrationTest {
+    @MockkBean(relaxed = true)
+    lateinit var userService: com.jotoai.voenix.shop.user.UserService
+
     @Test
     fun `should bootstrap auth module successfully`() {
         // This test verifies that the auth module can be started in isolation

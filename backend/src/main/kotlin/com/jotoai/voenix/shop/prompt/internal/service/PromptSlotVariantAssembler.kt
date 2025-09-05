@@ -3,8 +3,8 @@ package com.jotoai.voenix.shop.prompt.internal.service
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.prompt.PromptSlotTypeDto
-import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptSlotDto
 import com.jotoai.voenix.shop.prompt.PromptSlotVariantDto
+import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptSlotDto
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotVariant
 import org.springframework.stereotype.Component
 

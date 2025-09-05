@@ -34,5 +34,4 @@ class ShirtArticleVariantAssembler(
             createdAt = entity.createdAt,
             updatedAt = entity.updatedAt,
         )
-
 }

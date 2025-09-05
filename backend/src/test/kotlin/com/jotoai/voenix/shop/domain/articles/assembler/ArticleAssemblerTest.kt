@@ -3,10 +3,10 @@ package com.jotoai.voenix.shop.domain.articles.assembler
 import com.jotoai.voenix.shop.article.ArticleDto
 import com.jotoai.voenix.shop.article.ArticleType
 import com.jotoai.voenix.shop.article.MugArticleVariantDto
+import com.jotoai.voenix.shop.article.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.assembler.ArticleAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.MugArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
-import com.jotoai.voenix.shop.article.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.entity.Article
 import com.jotoai.voenix.shop.article.internal.entity.ArticleCategory
 import com.jotoai.voenix.shop.article.internal.entity.ArticleSubCategory
@@ -500,7 +500,7 @@ class ArticleAssemblerTest {
         assertEquals("SMN-001", result.supplierArticleNumber)
         assertNotNull(result.mugVariants)
         assertEquals(1, result.mugVariants!!.size)
-        assertEquals(expectedVariant, result.mugVariants!![0])
+        assertEquals(expectedVariant, result.mugVariants[0])
         assertNull(result.shirtVariants)
         assertEquals(createdAt, result.createdAt)
         assertEquals(updatedAt, result.updatedAt)
@@ -565,7 +565,7 @@ class ArticleAssemblerTest {
         assertNull(result.mugVariants)
         assertNotNull(result.shirtVariants)
         assertEquals(1, result.shirtVariants!!.size)
-        assertEquals(expectedVariant, result.shirtVariants!![0])
+        assertEquals(expectedVariant, result.shirtVariants[0])
     }
 
     private fun verifyShirtArticleInteractions(testShirtVariant: ShirtArticleVariant) {
@@ -662,8 +662,8 @@ class ArticleAssemblerTest {
         assertEquals(ArticleType.MUG, result.articleType)
         assertNotNull(result.mugVariants)
         assertEquals(2, result.mugVariants!!.size)
-        assertEquals(expectedDto1, result.mugVariants!![0])
-        assertEquals(expectedDto2, result.mugVariants!![1])
+        assertEquals(expectedDto1, result.mugVariants[0])
+        assertEquals(expectedDto2, result.mugVariants[1])
         assertNull(result.shirtVariants)
     }
 
@@ -754,8 +754,8 @@ class ArticleAssemblerTest {
         assertNull(result.mugVariants)
         assertNotNull(result.shirtVariants)
         assertEquals(2, result.shirtVariants!!.size)
-        assertEquals(expectedDto1, result.shirtVariants!![0])
-        assertEquals(expectedDto2, result.shirtVariants!![1])
+        assertEquals(expectedDto1, result.shirtVariants[0])
+        assertEquals(expectedDto2, result.shirtVariants[1])
     }
 
     private fun verifyMultipleShirtVariantsInteractions(

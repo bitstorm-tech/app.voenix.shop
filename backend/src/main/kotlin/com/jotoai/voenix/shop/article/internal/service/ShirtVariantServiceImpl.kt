@@ -1,7 +1,7 @@
 package com.jotoai.voenix.shop.article.internal.service
+import com.jotoai.voenix.shop.article.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAssembler
 import com.jotoai.voenix.shop.article.internal.dto.CreateShirtArticleVariantRequest
-import com.jotoai.voenix.shop.article.ShirtArticleVariantDto
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.article.internal.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository

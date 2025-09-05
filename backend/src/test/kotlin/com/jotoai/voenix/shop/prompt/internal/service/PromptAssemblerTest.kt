@@ -3,8 +3,8 @@ package com.jotoai.voenix.shop.prompt.internal.service
 import com.jotoai.voenix.shop.image.ImageService
 import com.jotoai.voenix.shop.image.ImageType
 import com.jotoai.voenix.shop.prompt.PromptDto
-import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptSlotDto
 import com.jotoai.voenix.shop.prompt.PromptSlotVariantDto
+import com.jotoai.voenix.shop.prompt.internal.dto.pub.PublicPromptSlotDto
 import com.jotoai.voenix.shop.prompt.internal.entity.Prompt
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptCategory
 import com.jotoai.voenix.shop.prompt.internal.entity.PromptSlotType
@@ -288,10 +288,10 @@ class PromptAssemblerTest {
         assertEquals(expectedImageUrl, result.exampleImageUrl)
         assertNotNull(result.category)
         assertEquals(1L, result.category!!.id)
-        assertEquals("Test Category", result.category!!.name)
+        assertEquals("Test Category", result.category.name)
         assertNotNull(result.subcategory)
         assertEquals(2L, result.subcategory!!.id)
-        assertEquals("Test Subcategory", result.subcategory!!.name)
+        assertEquals("Test Subcategory", result.subcategory.name)
         assertEquals(1, result.slots.size)
         assertEquals(expectedPublicSlotDto, result.slots[0])
 
@@ -476,14 +476,14 @@ class PromptAssemblerTest {
 
         // Then
         assertEquals(999L, dtoResult.category!!.id)
-        assertEquals("Complex & Special Characters", dtoResult.category!!.name)
+        assertEquals("Complex & Special Characters", dtoResult.category.name)
         assertEquals(888L, dtoResult.subcategory!!.id)
-        assertEquals("Complex Sub & Category", dtoResult.subcategory!!.name)
+        assertEquals("Complex Sub & Category", dtoResult.subcategory.name)
 
         assertEquals(999L, publicResult.category!!.id)
-        assertEquals("Complex & Special Characters", publicResult.category!!.name)
+        assertEquals("Complex & Special Characters", publicResult.category.name)
         assertEquals(888L, publicResult.subcategory!!.id)
-        assertEquals("Complex Sub & Category", publicResult.subcategory!!.name)
+        assertEquals("Complex Sub & Category", publicResult.subcategory.name)
     }
 
     // Helper methods for full DTO conversion test
@@ -552,11 +552,11 @@ class PromptAssemblerTest {
         assertEquals(1L, result.categoryId)
         assertNotNull(result.category)
         assertEquals(1L, result.category!!.id)
-        assertEquals("Test Category", result.category!!.name)
+        assertEquals("Test Category", result.category.name)
         assertEquals(2L, result.subcategoryId)
         assertNotNull(result.subcategory)
         assertEquals(2L, result.subcategory!!.id)
-        assertEquals("Test Subcategory", result.subcategory!!.name)
+        assertEquals("Test Subcategory", result.subcategory.name)
         assertEquals(true, result.active)
         assertEquals(1, result.slots.size)
         assertEquals(expectedSlotDto, result.slots[0])
