@@ -15,12 +15,13 @@ export default defineConfig({
     }),
     tailwindcss(),
     // Only include visualizer in analyze mode
-    process.env.NODE_ENV === 'analyze' && visualizer({
-      open: true,
-      filename: 'dist/bundle-stats.html',
-      gzipSize: true,
-      brotliSize: true,
-    }),
+    process.env.NODE_ENV === 'analyze' &&
+      visualizer({
+        open: true,
+        filename: 'dist/bundle-stats.html',
+        gzipSize: true,
+        brotliSize: true,
+      }),
   ].filter(Boolean),
   resolve: {
     alias: {
@@ -51,7 +52,7 @@ export default defineConfig({
             'lucide-react',
             'clsx',
             'tailwind-merge',
-            'class-variance-authority'
+            'class-variance-authority',
           ],
           'vendor-3d': ['three', '@react-three/fiber', '@react-three/drei'],
           'vendor-query': ['@tanstack/react-query', '@tanstack/react-query-devtools'],
@@ -69,11 +70,15 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8000',
         changeOrigin: true,
       },
       '/image': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8000',
+        changeOrigin: true,
+      },
+      '/public': {
+        target: 'http://localhost:8000',
         changeOrigin: true,
       },
     },
