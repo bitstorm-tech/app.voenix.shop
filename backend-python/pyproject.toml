@@ -1,0 +1,12 @@
+[project]
+name = "backend-python"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi[standard]>=0.116.1",
+    "psycopg[binary]>=3.2.9",
+    "python-dotenv>=1.1.1",
+    "sqlmodel>=0.0.24",
+]
