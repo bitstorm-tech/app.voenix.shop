@@ -4,14 +4,12 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import Base, engine
+from .ai import api as ai_api
 from .vat import vat_api
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-    # Create tables on startup for simple setups. For production, use migrations.
-    Base.metadata.create_all(bind=engine)
     yield
 
 
@@ -39,3 +37,4 @@ def health():
 
 
 app.include_router(vat_api.router)
+app.include_router(ai_api.router)
