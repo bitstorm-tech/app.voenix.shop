@@ -14,12 +14,13 @@ from sqlmodel import SQLModel
 from src.database import get_db
 
 from ._internal.entities import User
+from ._internal.session_service import (
+    create_session_for_user,
+    delete_session,
+    get_user_from_session,
+)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
-
-
-# In-memory session store: session_id -> user_id
-_SESSIONS: dict[str, int] = {}
 
 
 # Cookie extractor using FastAPI's built-in APIKeyCookie security scheme
@@ -75,27 +76,6 @@ def _get_user_by_email(db: Session, email: str) -> User | None:
     return result.scalar_one_or_none()
 
 
-def _create_session_for_user(user_id: int) -> str:
-    session_id = secrets.token_urlsafe(32)
-    _SESSIONS[session_id] = user_id
-    return session_id
-
-
-def _pop_session(session_id: str | None) -> None:
-    if session_id and session_id in _SESSIONS:
-        _SESSIONS.pop(session_id, None)
-
-
-def _get_user_from_session(db: Session, session_id: str | None) -> User | None:
-    if not session_id:
-        return None
-    user_id = _SESSIONS.get(session_id)
-    if not user_id:
-        return None
-    result = db.execute(select(User).where(User.id == user_id))
-    return result.scalar_one_or_none()
-
-
 @router.post("/login")
 async def login(
     response: Response,
@@ -140,7 +120,7 @@ async def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    session_id = _create_session_for_user(user.id or 0)
+    session_id = create_session_for_user(db, user.id or 0)
 
     # Set cookie: HttpOnly for security; adjust samesite/secure for your environment
     response.set_cookie(
@@ -173,7 +153,7 @@ def get_current_user(
     session_id: Annotated[str | None, Security(session_cookie)],
     db: Session = Depends(get_db),
 ) -> User:
-    user = _get_user_from_session(db, session_id)
+    user = get_user_from_session(db, session_id)
     if not user or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -228,8 +208,10 @@ def read_me(current_user: User = Depends(get_current_user)):
 def logout(
     response: Response,
     session_id: Annotated[str | None, Security(session_cookie)],
+    db: Session = Depends(get_db),
 ):
-    _pop_session(session_id)
+    # Remove the DB-backed session if present
+    delete_session(db=db, session_id=session_id)
 
     # Remove cookie by setting it expired
     response.delete_cookie(key="session_id", path="/")

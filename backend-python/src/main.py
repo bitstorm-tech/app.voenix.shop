@@ -4,15 +4,20 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlmodel import SQLModel
 
 from .ai import api as ai_api
 from .auth import api as auth_api
+from .database import engine
 from .image import StorageLocations
 from .vat import api as vat_api
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
+    # Ensure all SQLModel tables exist (including auth sessions)
+    # Models are imported via routers above, so metadata is populated.
+    SQLModel.metadata.create_all(engine)
     yield
 
 

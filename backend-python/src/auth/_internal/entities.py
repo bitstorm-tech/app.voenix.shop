@@ -102,3 +102,28 @@ class User(SQLModel, table=True):
     def is_active(self) -> bool:
         """True if the user is not soft-deleted."""
         return self.deleted_at is None
+
+
+class Session(SQLModel, table=True):
+    """Server-side session stored in the database.
+
+    Links a random session ID to a user. Optionally supports expiration.
+    """
+
+    __tablename__ = "sessions"
+
+    # Random, URL-safe token as the session identifier
+    id: str = Field(sa_column=Column(String(128), primary_key=True))
+
+    # Owner of this session
+    user_id: int = Field(foreign_key="users.id", nullable=False)
+
+    # Timestamps
+    created_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=False, server_default=func.now()),
+    )
+    expires_at: datetime | None = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True),
+    )
