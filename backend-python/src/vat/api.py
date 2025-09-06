@@ -6,11 +6,16 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from sqlmodel import SQLModel
 
+from src.auth.api import require_admin
 from src.database import get_db
 
 from ._internal.entities import ValueAddedTax
 
-router = APIRouter(prefix="/api/admin/vat", tags=["vat"])
+router = APIRouter(
+    prefix="/api/admin/vat",
+    tags=["vat"],
+    dependencies=[Depends(require_admin)],
+)
 
 
 @router.get("/", response_model=list[ValueAddedTax])
