@@ -10,6 +10,7 @@ from .ai import api as ai_api
 from .auth import api as auth_api
 from .database import engine
 from .image import StorageLocations
+from .supplier import api as supplier_api
 from .vat import api as vat_api
 
 
@@ -40,6 +41,7 @@ app.add_middleware(
 
 
 app.include_router(vat_api.router)
+app.include_router(supplier_api.router)
 app.include_router(ai_api.router)
 app.include_router(auth_api.router)
 
