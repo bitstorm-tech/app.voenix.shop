@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
 
 
 class ValueAddedTaxCreate(BaseModel):
@@ -17,7 +18,7 @@ class ValueAddedTaxUpdate(ValueAddedTaxCreate):
 
 
 class ValueAddedTaxRead(BaseModel):
-    model_config = dict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, alias_generator=to_camel, populate_by_name=True)
 
     id: int
     name: str

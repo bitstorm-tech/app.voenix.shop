@@ -18,14 +18,14 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=list[ValueAddedTaxRead])
+@router.get("/", response_model=list[ValueAddedTaxRead], response_model_by_alias=True)
 def get_vats(db: Session = Depends(get_db)):
     """Return all VAT rows with all columns."""
     result = db.execute(select(ValueAddedTax))
     return result.scalars().all()
 
 
-@router.get("/{id}", response_model=ValueAddedTaxRead)
+@router.get("/{id}", response_model=ValueAddedTaxRead, response_model_by_alias=True)
 def get_vat(id: int, db: Session = Depends(get_db)):
     """Return VAT row by ID. 404 if not found."""
     result = db.execute(select(ValueAddedTax).where(ValueAddedTax.id == id))
@@ -35,7 +35,7 @@ def get_vat(id: int, db: Session = Depends(get_db)):
     return vat
 
 
-@router.post("/", response_model=ValueAddedTaxRead, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ValueAddedTaxRead, response_model_by_alias=True, status_code=status.HTTP_201_CREATED)
 def create_vat(payload: ValueAddedTaxCreate, db: Session = Depends(get_db)):
     """Create a new VAT entry.
 
@@ -59,7 +59,7 @@ def create_vat(payload: ValueAddedTaxCreate, db: Session = Depends(get_db)):
         ) from e
 
 
-@router.put("/{id}", response_model=ValueAddedTaxRead)
+@router.put("/{id}", response_model=ValueAddedTaxRead, response_model_by_alias=True)
 def update_vat(id: int, payload: ValueAddedTaxUpdate, db: Session = Depends(get_db)):
     """Update an existing VAT entry by ID.
 

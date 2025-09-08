@@ -1,13 +1,19 @@
 from __future__ import annotations
 
-import re
 from datetime import datetime
+from typing import ClassVar
 
-from pydantic import AnyUrl, BaseModel, EmailStr, field_validator
+from pydantic import AnyUrl, BaseModel, ConfigDict, EmailStr, field_validator
+from pydantic.alias_generators import to_camel
+
+from ._internal.entities import Supplier
 
 
 class SupplierBase(BaseModel):
     """Base schema with validation rules (mirrors Kotlin SupplierRequest)."""
+
+    # Accept camelCase input while keeping snake_case internally
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
 
     name: str | None = None
     title: str | None = None
@@ -27,7 +33,7 @@ class SupplierBase(BaseModel):
     website: AnyUrl | None = None
 
     # --- Validation helpers (mirror Kotlin SupplierRequest) ---
-    _PHONE_RE = re.compile(r"^[+]?[0-9\s\-\(\)]+$")
+    # _PHONE_RE = re.compile(r"^[+]?[0-9\s\-\(\)]+$")
 
     @staticmethod
     def _validate_len(value: str | None, max_len: int, field: str) -> str | None:
@@ -64,8 +70,8 @@ class SupplierBase(BaseModel):
             return v
         if len(v) > 50:
             raise ValueError("phone number must not exceed 50 characters")
-        if not cls._PHONE_RE.match(v):
-            raise ValueError("Invalid phone number format")
+        # if not cls._PHONE_RE.match(v):
+        #     raise ValueError("Invalid phone number format")
         return v
 
     @field_validator("email")
@@ -103,11 +109,39 @@ class SupplierCreate(SupplierBase):
 class SupplierUpdate(SupplierBase):
     """Schema for update requests (all fields optional)."""
 
+    # Keep a whitelist of fields that may be updated through the API
+    _UPDATABLE_FIELDS: ClassVar[set[str]] = {
+        "name",
+        "title",
+        "first_name",
+        "last_name",
+        "street",
+        "house_number",
+        "city",
+        "postal_code",
+        "country_id",
+        "phone_number1",
+        "phone_number2",
+        "phone_number3",
+        "email",
+        "website",
+    }
+
+    def apply(self, supplier: Supplier) -> None:
+        """Apply provided (set) fields onto the given Supplier instance.
+
+        Uses snake_case internal names and respects exclude_unset to avoid clearing fields.
+        """
+        data = self.model_dump(mode="json", exclude_unset=True)
+        for field in self._UPDATABLE_FIELDS:
+            if field in data:
+                setattr(supplier, field, data[field])
+
 
 class SupplierRead(BaseModel):
     """Response DTO for suppliers (parses from ORM)."""
 
-    model_config = dict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, alias_generator=to_camel, populate_by_name=True)
 
     id: int
 

@@ -15,7 +15,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=list[CountryRead])
+@router.get("/", response_model=list[CountryRead], response_model_by_alias=True)
 def get_countries(db: Session = Depends(get_db)):
     """Return all countries (public endpoint).
 

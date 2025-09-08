@@ -17,7 +17,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=list[SupplierRead])
+@router.get("/", response_model=list[SupplierRead], response_model_by_alias=True)
 def get_suppliers(db: Session = Depends(get_db)):
     """List all suppliers with full entity fields.
 
@@ -28,7 +28,7 @@ def get_suppliers(db: Session = Depends(get_db)):
     return result.scalars().all()
 
 
-@router.get("/{id}", response_model=SupplierRead)
+@router.get("/{id}", response_model=SupplierRead, response_model_by_alias=True)
 def get_supplier(id: int, db: Session = Depends(get_db)):
     """Fetch a supplier by ID.
 
@@ -78,24 +78,8 @@ def update_supplier(id: int, payload: SupplierUpdate, db: Session = Depends(get_
     if not supplier:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Supplier not found")
 
-    # Use model_dump() to coerce AnyUrl/EmailStr to str
-    data = payload.model_dump(mode="json")
-
-    # Apply updates field-by-field to preserve explicitness
-    supplier.name = data.get("name")
-    supplier.title = data.get("title")
-    supplier.first_name = data.get("first_name")
-    supplier.last_name = data.get("last_name")
-    supplier.street = data.get("street")
-    supplier.house_number = data.get("house_number")
-    supplier.city = data.get("city")
-    supplier.postal_code = data.get("postal_code")
-    supplier.country_id = data.get("country_id")
-    supplier.phone_number1 = data.get("phone_number1")
-    supplier.phone_number2 = data.get("phone_number2")
-    supplier.phone_number3 = data.get("phone_number3")
-    supplier.email = data.get("email")
-    supplier.website = data.get("website")
+    # Apply updates via schema helper to keep entity thin and logic centralized
+    payload.apply(supplier)
 
     db.add(supplier)
     db.commit()

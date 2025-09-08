@@ -31,9 +31,9 @@ def _user_to_public(user: User, roles: list[str]) -> UserPublic:
     return UserPublic(
         id=user.id or 0,
         email=user.email,
-        firstName=user.first_name,
-        lastName=user.last_name,
-        phoneNumber=user.phone_number,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        phone_number=user.phone_number,
         roles=roles,
     )
 
@@ -69,7 +69,7 @@ def _get_user_by_email(db: Session, email: str) -> User | None:
     return result.scalar_one_or_none()
 
 
-@router.post("/login", response_model=LoginResponse)
+@router.post("/login", response_model=LoginResponse, response_model_by_alias=True)
 async def login(
     response: Response,
     request: Request,
@@ -128,7 +128,7 @@ async def login(
 
     # Prepare response matching frontend expectations (LoginResponse)
     role_names = [r.name for r in (user.roles or [])]
-    return LoginResponse(user=_user_to_public(user, role_names), sessionId=session_id, roles=role_names)
+    return LoginResponse(user=_user_to_public(user, role_names), session_id=session_id, roles=role_names)
 
 
 def get_current_user(
@@ -168,7 +168,7 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
 
-@router.get("/session", response_model=SessionInfo)
+@router.get("/session", response_model=SessionInfo, response_model_by_alias=True)
 def read_me(current_user: User = Depends(get_current_user)):
     # Return SessionInfo shape expected by frontend
     role_names = [r.name for r in (current_user.roles or [])]
