@@ -3,11 +3,10 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
-from pydantic import AnyUrl, EmailStr, field_validator
-from sqlmodel import SQLModel
+from pydantic import AnyUrl, BaseModel, EmailStr, field_validator
 
 
-class SupplierBase(SQLModel):
+class SupplierBase(BaseModel):
     """Base schema with validation rules (mirrors Kotlin SupplierRequest)."""
 
     name: str | None = None
@@ -105,7 +104,7 @@ class SupplierUpdate(SupplierBase):
     """Schema for update requests (all fields optional)."""
 
 
-class SupplierRead(SQLModel):
+class SupplierRead(BaseModel):
     """Response DTO for suppliers (parses from ORM)."""
 
     model_config = dict(from_attributes=True)
@@ -132,4 +131,3 @@ class SupplierRead(SQLModel):
 
     created_at: datetime | None = None
     updated_at: datetime | None = None
-

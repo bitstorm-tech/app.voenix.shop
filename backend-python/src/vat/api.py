@@ -4,12 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
-from sqlmodel import SQLModel
 
 from src.auth.api import require_admin
 from src.database import get_db
 
 from ._internal.entities import ValueAddedTax
+from .schemas import ValueAddedTaxCreate, ValueAddedTaxRead, ValueAddedTaxUpdate
 
 router = APIRouter(
     prefix="/api/admin/vat",
@@ -18,14 +18,14 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=list[ValueAddedTax])
+@router.get("/", response_model=list[ValueAddedTaxRead])
 def get_vats(db: Session = Depends(get_db)):
     """Return all VAT rows with all columns."""
     result = db.execute(select(ValueAddedTax))
     return result.scalars().all()
 
 
-@router.get("/{id}", response_model=ValueAddedTax)
+@router.get("/{id}", response_model=ValueAddedTaxRead)
 def get_vat(id: int, db: Session = Depends(get_db)):
     """Return VAT row by ID. 404 if not found."""
     result = db.execute(select(ValueAddedTax).where(ValueAddedTax.id == id))
@@ -35,15 +35,8 @@ def get_vat(id: int, db: Session = Depends(get_db)):
     return vat
 
 
-class CreateValueAddedTax(SQLModel):
-    name: str
-    percent: int
-    description: str | None = None
-    is_default: bool = False
-
-
-@router.post("/", response_model=ValueAddedTax, status_code=status.HTTP_201_CREATED)
-def create_vat(payload: CreateValueAddedTax, db: Session = Depends(get_db)):
+@router.post("/", response_model=ValueAddedTaxRead, status_code=status.HTTP_201_CREATED)
+def create_vat(payload: ValueAddedTaxCreate, db: Session = Depends(get_db)):
     """Create a new VAT entry.
 
     - Enforces unique `name` (409 if already exists).
@@ -53,7 +46,7 @@ def create_vat(payload: CreateValueAddedTax, db: Session = Depends(get_db)):
         if payload.is_default:
             db.execute(update(ValueAddedTax).values(is_default=False))
 
-        vat = ValueAddedTax(**payload.model_dump())
+        vat = ValueAddedTax(**payload.model_dump(mode="json"))
         db.add(vat)
         db.commit()
         db.refresh(vat)
@@ -66,8 +59,8 @@ def create_vat(payload: CreateValueAddedTax, db: Session = Depends(get_db)):
         ) from e
 
 
-@router.put("/{id}", response_model=ValueAddedTax)
-def update_vat(id: int, payload: CreateValueAddedTax, db: Session = Depends(get_db)):
+@router.put("/{id}", response_model=ValueAddedTaxRead)
+def update_vat(id: int, payload: ValueAddedTaxUpdate, db: Session = Depends(get_db)):
     """Update an existing VAT entry by ID.
 
     - Returns 404 if the VAT does not exist.
@@ -86,10 +79,11 @@ def update_vat(id: int, payload: CreateValueAddedTax, db: Session = Depends(get_
             db.execute(update(ValueAddedTax).values(is_default=False))
 
         # Apply updates
-        vat.name = payload.name
-        vat.percent = payload.percent
-        vat.description = payload.description
-        vat.is_default = payload.is_default
+        data = payload.model_dump(mode="json")
+        vat.name = data.get("name")
+        vat.percent = data.get("percent")
+        vat.description = data.get("description")
+        vat.is_default = data.get("is_default", False)
 
         db.add(vat)
         db.commit()

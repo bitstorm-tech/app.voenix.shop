@@ -9,7 +9,6 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, Securi
 from fastapi.security import APIKeyCookie
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from sqlmodel import SQLModel
 
 from src.database import get_db
 
@@ -19,6 +18,7 @@ from ._internal.session_service import (
     delete_session,
     get_user_from_session,
 )
+from .schemas import LoginResponse, SessionInfo, UserPublic
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -27,21 +27,14 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 session_cookie = APIKeyCookie(name="session_id", auto_error=False)
 
 
-class UserPublic(SQLModel):
-    id: int
-    email: str
-    first_name: str | None = None
-    last_name: str | None = None
-    phone_number: str | None = None
-
-
-def _user_to_public(user: User) -> UserPublic:
+def _user_to_public(user: User, roles: list[str]) -> UserPublic:
     return UserPublic(
         id=user.id or 0,
         email=user.email,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        phone_number=user.phone_number,
+        firstName=user.first_name,
+        lastName=user.last_name,
+        phoneNumber=user.phone_number,
+        roles=roles,
     )
 
 
@@ -76,7 +69,7 @@ def _get_user_by_email(db: Session, email: str) -> User | None:
     return result.scalar_one_or_none()
 
 
-@router.post("/login")
+@router.post("/login", response_model=LoginResponse)
 async def login(
     response: Response,
     request: Request,
@@ -135,18 +128,7 @@ async def login(
 
     # Prepare response matching frontend expectations (LoginResponse)
     role_names = [r.name for r in (user.roles or [])]
-    return {
-        "user": {
-            "id": user.id or 0,
-            "email": user.email,
-            "firstName": user.first_name,
-            "lastName": user.last_name,
-            "phoneNumber": user.phone_number,
-            "roles": role_names,
-        },
-        "sessionId": session_id,
-        "roles": role_names,
-    }
+    return LoginResponse(user=_user_to_public(user, role_names), sessionId=session_id, roles=role_names)
 
 
 def get_current_user(
@@ -186,22 +168,11 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
     return current_user
 
 
-@router.get("/session")
+@router.get("/session", response_model=SessionInfo)
 def read_me(current_user: User = Depends(get_current_user)):
     # Return SessionInfo shape expected by frontend
     role_names = [r.name for r in (current_user.roles or [])]
-    return {
-        "authenticated": True,
-        "user": {
-            "id": current_user.id or 0,
-            "email": current_user.email,
-            "firstName": current_user.first_name,
-            "lastName": current_user.last_name,
-            "phoneNumber": current_user.phone_number,
-            "roles": role_names,
-        },
-        "roles": role_names,
-    }
+    return SessionInfo(authenticated=True, user=_user_to_public(current_user, role_names), roles=role_names)
 
 
 @router.post("/logout")

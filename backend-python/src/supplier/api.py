@@ -3,7 +3,6 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from sqlmodel import SQLModel
 
 from src.auth.api import require_admin
 from src.database import get_db
@@ -22,7 +21,7 @@ router = APIRouter(
 def get_suppliers(db: Session = Depends(get_db)):
     """List all suppliers with full entity fields.
 
-    Returns: list[Supplier] – Complete supplier rows ordered by database default.
+    Returns: list[SupplierRead] – Complete supplier rows ordered by database default.
     Status: 200 OK
     """
     result = db.execute(select(Supplier))
@@ -47,8 +46,6 @@ def get_supplier(id: int, db: Session = Depends(get_db)):
     return supplier
 
 
-
-
 @router.post("/", response_model=SupplierRead, status_code=status.HTTP_201_CREATED)
 def create_supplier(payload: SupplierCreate, db: Session = Depends(get_db)):
     """Create a new supplier.
@@ -57,7 +54,7 @@ def create_supplier(payload: SupplierCreate, db: Session = Depends(get_db)):
     Returns: SupplierRead – Newly created row
     Status: 201 Created
     """
-    supplier = Supplier(**payload.model_dump())
+    supplier = Supplier(**payload.model_dump(mode="json"))
     db.add(supplier)
     db.commit()
     db.refresh(supplier)
@@ -82,7 +79,7 @@ def update_supplier(id: int, payload: SupplierUpdate, db: Session = Depends(get_
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Supplier not found")
 
     # Use model_dump() to coerce AnyUrl/EmailStr to str
-    data = payload.model_dump()
+    data = payload.model_dump(mode="json")
 
     # Apply updates field-by-field to preserve explicitness
     supplier.name = data.get("name")

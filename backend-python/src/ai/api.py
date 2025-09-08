@@ -3,18 +3,15 @@ from __future__ import annotations
 import base64
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
-from pydantic import BaseModel
 
 from src.ai.factories import AIImageGeneratorFactory, AIImageProvider
 from src.auth._internal.entities import User
 from src.auth.api import require_admin
 from src.image import StorageLocations, convert_image_to_png_bytes, store_image_bytes
 
+from .schemas import GeminiEditResponse
+
 router = APIRouter(prefix="/api/ai/images", tags=["ai"])
-
-
-class GeminiEditResponse(BaseModel):
-    images: list[str]
 
 
 @router.post("/", response_model=GeminiEditResponse)
