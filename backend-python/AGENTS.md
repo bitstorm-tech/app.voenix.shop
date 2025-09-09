@@ -17,6 +17,7 @@
 ## Coding Style & Naming Conventions
 - Python style: format with Ruff formatter; keep imports sorted; aim for 88–100 col width.
 - Use absolute imports instead of relative imports
+- Never use inline imports; place all imports at module top.
 - Naming: modules/files `snake_case`, classes `PascalCase`, functions/vars `snake_case`.
 - Routers: place under `src/<domain>/<name>_api.py`; models/entities under `*_entity.py`.
 
