@@ -449,12 +449,14 @@ export const imagesApi = {
     const formData = new FormData();
     formData.append('file', file);
 
-    const request = {
-      imageType,
-      cropArea: cropArea || null,
-    };
-
-    formData.append('request', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+    // Backend expects these as regular form fields, not a JSON 'request' part
+    formData.append('imageType', imageType);
+    if (cropArea) {
+      formData.append('cropX', String(cropArea.x));
+      formData.append('cropY', String(cropArea.y));
+      formData.append('cropWidth', String(cropArea.width));
+      formData.append('cropHeight', String(cropArea.height));
+    }
 
     const response = await fetch('/api/admin/images', {
       method: 'POST',
