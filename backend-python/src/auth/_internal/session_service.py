@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import secrets
 from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -37,9 +38,9 @@ def get_user_from_session(db: Session, session_id: str | None) -> User | None:
         return None
 
     # Load session and join user
-    result = db.execute(
-        select(User, DBSession).join(DBSession, DBSession.user_id == User.id).where(DBSession.id == session_id)
-    )
+    join_on: Any = DBSession.user_id == User.id
+    where_clause: Any = DBSession.id == session_id
+    result = db.execute(select(User, DBSession).join(DBSession, join_on).where(where_clause))
     row = result.first()
     if not row:
         return None

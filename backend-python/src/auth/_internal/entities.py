@@ -10,14 +10,14 @@ from sqlmodel import Field, Relationship, SQLModel
 class UserRoleLink(SQLModel, table=True):
     """Association table for many-to-many relation between users and roles."""
 
-    __tablename__ = "user_roles"
+    __tablename__ = "user_roles"  # type: ignore[assignment]
 
     user_id: int | None = Field(default=None, foreign_key="users.id", primary_key=True)
     role_id: int | None = Field(default=None, foreign_key="roles.id", primary_key=True)
 
 
 class Role(SQLModel, table=True):
-    __tablename__ = "roles"
+    __tablename__ = "roles"  # type: ignore[assignment]
 
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(sa_column=Column(String(50), unique=True, nullable=False))
@@ -41,7 +41,7 @@ class Role(SQLModel, table=True):
     users: list[User] = Relationship(
         sa_relationship=relationship(
             "User",
-            secondary=UserRoleLink.__table__,
+            secondary="user_roles",
             back_populates="roles",
         )
     )
@@ -51,7 +51,7 @@ class Role(SQLModel, table=True):
 
 
 class User(SQLModel, table=True):
-    __tablename__ = "users"
+    __tablename__ = "users"  # type: ignore[assignment]
 
     id: int | None = Field(default=None, primary_key=True)
 
@@ -90,7 +90,7 @@ class User(SQLModel, table=True):
     roles: list[Role] = Relationship(
         sa_relationship=relationship(
             "Role",
-            secondary=UserRoleLink.__table__,
+            secondary="user_roles",
             back_populates="users",
         )
     )
@@ -110,7 +110,7 @@ class Session(SQLModel, table=True):
     Links a random session ID to a user. Optionally supports expiration.
     """
 
-    __tablename__ = "sessions"
+    __tablename__ = "sessions"  # type: ignore[assignment]
 
     # Random, URL-safe token as the session identifier
     id: str = Field(sa_column=Column(String(128), primary_key=True))

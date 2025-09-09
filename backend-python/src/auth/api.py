@@ -3,7 +3,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import secrets
-from typing import Annotated
+from typing import Annotated, cast
 
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, Security, status
 from fastapi.security import APIKeyCookie
@@ -65,7 +65,7 @@ def _verify_password(plain_password: str, stored_password: str | None) -> bool:
 
 
 def _get_user_by_email(db: Session, email: str) -> User | None:
-    result = db.execute(select(User).where(User.email == email))
+    result = db.execute(select(User).where(User.email == email))  # type: ignore
     return result.scalar_one_or_none()
 
 
@@ -93,8 +93,11 @@ async def login(
                 password = payload.get("password")
         else:
             form = await request.form()
-            email = form.get("email") or form.get("username")  # type: ignore[assignment]
-            password = form.get("password")  # type: ignore[assignment]
+            raw_email: object | None = form.get("email") or form.get("username")
+            raw_password: object | None = form.get("password")
+
+            email = cast(str | None, raw_email if isinstance(raw_email, str) else None)
+            password = cast(str | None, raw_password if isinstance(raw_password, str) else None)
     except Exception:
         # Fall through to validation error below
         pass
