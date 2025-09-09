@@ -11,8 +11,9 @@ from .auth import api as auth_api
 from .country import api as country_api
 from .database import engine
 from .image import StorageLocations
-from .image import api as image_api
-from .prompt import api as prompt_router
+from .image import admin_api as image_admin_api
+from .image import user_api as image_user_api
+from .prompt import api as prompt_api
 from .supplier import api as supplier_api
 from .vat import api as vat_api
 
@@ -43,13 +44,14 @@ app.add_middleware(
 )
 
 
-app.include_router(vat_api.router)
-app.include_router(supplier_api.router)
-app.include_router(country_api.router)
 app.include_router(ai_api.router)
 app.include_router(auth_api.router)
-app.include_router(prompt_router.router)
-app.include_router(image_api.router)
+app.include_router(country_api.router)
+app.include_router(image_admin_api.router)
+app.include_router(image_user_api.router)
+app.include_router(prompt_api.router)
+app.include_router(supplier_api.router)
+app.include_router(vat_api.router)
 
 # Serve public assets directly from STORAGE_ROOT/public under /public/*
 public_dir = StorageLocations().root / "public"

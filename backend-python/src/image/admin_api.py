@@ -2,25 +2,23 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.responses import Response
 
 from src.auth._internal.entities import User
-from src.auth.api import require_admin, require_roles
+from src.auth.api import require_admin
 from src.image import StorageLocations, convert_image_to_png_bytes, store_image_bytes
 from src.image._internal.image_conversion_service import crop_image_bytes
 from src.image._internal.image_file_service import load_image_bytes_and_type
 from src.image._internal.sanitize_service import safe_filename
 from src.image._internal.schemas import UploadRequest
 from src.image._internal.upload_request_service import parse_upload_request
-from src.image._internal.user_images_service import scan_user_images, sort_filter_paginate, user_images_dir
 
-router = APIRouter(tags=["images"])
-
-
-# -----------------------------
-# Admin: generic upload (multipart)
-# -----------------------------
+router = APIRouter(
+    prefix="/api/admin/images",
+    tags=["images"],
+    dependencies=[Depends(require_admin)],
+)
 
 
 def _parse_mixed_upload_request(
@@ -45,12 +43,12 @@ def _parse_mixed_upload_request(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
 
 
-@router.post("/api/admin/images", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def admin_upload_image(
     _admin: Annotated[User, Depends(require_admin)],  # noqa: ANN001
+    http_request: Request,
     file: UploadFile = File(...),
-    # Either JSON 'request' part (from frontend) or discrete fields
-    request: str | None = Form(None, description="JSON with imageType and cropArea"),
+    # Discrete fields (alternative to JSON 'request' part)
     imageType: str | None = Form(None),
     cropX: float | None = Form(None),
     cropY: float | None = Form(None),
@@ -63,8 +61,25 @@ async def admin_upload_image(
     - `file` + `request` (JSON: {imageType, cropArea:{x,y,width,height}})
     - `file` + form fields (imageType, cropX, cropY, cropWidth, cropHeight)
     """
+    # Support both styles for the 'request' part:
+    # - as a regular form field (string)
+    # - as a file/blob part with Content-Type application/json
+    form = await http_request.form()
+    request_json_value = None
+    if "request" in form:
+        req_part = form.get("request")
+        if isinstance(req_part, UploadFile):
+            # Frontend may send JSON as a Blob/file named 'request'
+            content = await req_part.read()
+            try:
+                request_json_value = content.decode("utf-8", errors="ignore")
+            except Exception:
+                request_json_value = None
+        else:
+            request_json_value = str(req_part) if req_part is not None else None
+
     req = _parse_mixed_upload_request(
-        request_json=request,
+        request_json=request_json_value,
         image_type_field=imageType,
         crop_x=cropX,
         crop_y=cropY,
@@ -100,12 +115,7 @@ async def admin_upload_image(
     return {"filename": path.name, "imageType": req.imageType}
 
 
-# -----------------------------
-# Admin: prompt-test serve/delete
-# -----------------------------
-
-
-@router.get("/api/admin/images/prompt-test/{filename}")
+@router.get("/prompt-test/{filename}")
 def admin_get_prompt_test_image(
     filename: str,
     _admin: Annotated[User, Depends(require_admin)],  # noqa: ANN001
@@ -123,7 +133,7 @@ def admin_get_prompt_test_image(
     return Response(content=data, media_type=content_type, headers=headers)
 
 
-@router.delete("/api/admin/images/prompt-test/{filename}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/prompt-test/{filename}", status_code=status.HTTP_204_NO_CONTENT)
 def admin_delete_prompt_test_image(
     filename: str,
     _admin: Annotated[User, Depends(require_admin)],  # noqa: ANN001
@@ -137,53 +147,3 @@ def admin_delete_prompt_test_image(
             # Surface as 500 if filesystem fails
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Delete failed")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-# -----------------------------
-# User: serve image by filename (per-user folder)
-# -----------------------------
-
-
-@router.get("/api/user/images/{filename}")
-def user_get_image(
-    filename: str,
-    current_user: Annotated[User, Depends(require_roles("USER", "ADMIN"))],
-):
-    # Files are stored under private/images/{userId}/
-    fname = safe_filename(filename)
-    base = user_images_dir(current_user.id or 0)
-    path = base / fname
-    if not path.exists():
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-
-    try:
-        data, content_type = load_image_bytes_and_type(path)
-    except FileNotFoundError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    headers = {"Content-Disposition": f'inline; filename="{path.name}"'}
-    return Response(content=data, media_type=content_type, headers=headers)
-
-
-# -----------------------------
-# User: list images (filesystem-based, simple pagination)
-# -----------------------------
-
-
-@router.get("/api/user/images")
-def list_user_images(
-    current_user: Annotated[User, Depends(require_roles("USER", "ADMIN"))],
-    page: int = Query(0, ge=0),
-    size: int = Query(20, ge=1, le=200),
-    type: str = Query("all"),  # all|uploaded|generated
-    sortBy: str = Query("createdAt"),  # createdAt|type
-    sortDirection: str = Query("DESC"),  # ASC|DESC
-):
-    items = scan_user_images(current_user.id or 0)
-    return sort_filter_paginate(
-        items,
-        type_=type,
-        sort_by=sortBy,
-        sort_dir=sortDirection,
-        page=page,
-        size=size,
-    )
