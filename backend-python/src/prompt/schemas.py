@@ -30,11 +30,13 @@ def _public_slot_variant_example_url(filename: str | None) -> str | None:
 # Slot types
 # -----------------------------
 class PromptSlotTypeCreate(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     name: str = Field(..., max_length=255)
     position: int
 
 
 class PromptSlotTypeUpdate(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     name: str | None = Field(default=None, max_length=255)
     position: int | None = None
 
@@ -53,6 +55,7 @@ class PromptSlotTypeRead(BaseModel):
 # Slot variants
 # -----------------------------
 class PromptSlotVariantCreate(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     prompt_slot_type_id: int = Field(..., ge=1)
     name: str = Field(..., max_length=255)
     prompt: str | None = None
@@ -61,6 +64,7 @@ class PromptSlotVariantCreate(BaseModel):
 
 
 class PromptSlotVariantUpdate(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     prompt_slot_type_id: int | None = Field(default=None, ge=1)
     name: str | None = Field(default=None, max_length=255)
     prompt: str | None = None
@@ -100,10 +104,12 @@ class PromptSlotVariantRead(BaseModel):
 # Categories
 # -----------------------------
 class PromptCategoryCreate(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     name: str = Field(..., max_length=255)
 
 
 class PromptCategoryUpdate(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     name: str | None = Field(default=None, max_length=255)
 
 
@@ -122,12 +128,14 @@ class PromptCategoryRead(BaseModel):
 # Subcategories
 # -----------------------------
 class PromptSubCategoryCreate(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     prompt_category_id: int
     name: str = Field(..., max_length=255)
     description: str | None = Field(default=None, max_length=1000)
 
 
 class PromptSubCategoryUpdate(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     prompt_category_id: int | None = None
     name: str | None = Field(default=None, max_length=255)
     description: str | None = Field(default=None, max_length=1000)
@@ -149,10 +157,13 @@ class PromptSubCategoryRead(BaseModel):
 # Prompt (create/update/read)
 # -----------------------------
 class PromptSlotVariantRef(BaseModel):
+    # Accept both snake_case (slot_id) and camelCase (slotId)
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     slot_id: int = Field(..., ge=1)
 
 
 class PromptCreate(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     title: str = Field(..., max_length=500)
     prompt_text: str | None = None
     category_id: int | None = None
@@ -162,6 +173,7 @@ class PromptCreate(BaseModel):
 
 
 class PromptUpdate(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     title: str | None = Field(default=None, max_length=500)
     prompt_text: str | None = None
     category_id: int | None = None
@@ -247,23 +259,27 @@ class PromptRead(BaseModel):
 # Public DTOs and summaries
 # -----------------------------
 class PublicPromptCategoryRead(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     id: int
     name: str
 
 
 class PublicPromptSubCategoryRead(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     id: int
     name: str
     description: str | None = None
 
 
 class PublicPromptSlotTypeRead(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     id: int
     name: str
     position: int
 
 
 class PublicPromptSlotRead(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     id: int
     name: str
     description: str | None = None
@@ -272,6 +288,7 @@ class PublicPromptSlotRead(BaseModel):
 
 
 class PublicPromptRead(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     id: int
     title: str
     example_image_url: str | None = None
@@ -281,5 +298,6 @@ class PublicPromptRead(BaseModel):
 
 
 class PromptSummaryRead(BaseModel):
+    model_config = ConfigDict(alias_generator=to_camel, populate_by_name=True)
     id: int
     title: str
