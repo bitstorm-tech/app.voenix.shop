@@ -35,7 +35,9 @@
 - Database: set `DATABASE_URL` (Postgres via `psycopg[binary]` or default SQLite).
 - CORS: configured in `src/main.py`; restrict origins in production.
 
-## Quality Gates
-At the end of the task run the following commands. The task is only considered as successful when there are no linter anf formatting errors!
-- uvx ruff check --fix
-- uvx ruff format
+## Quality Checks
+Run these after each Python code change and again before requesting review. The task is only considered successful when there are no linter and formatting errors.
+- `uvx ruff check --fix`
+- `uvx ruff format`
+
+Tip: if not using `uvx`, you can run Ruff from your virtualenv, e.g., `.venv/bin/ruff check --fix` and `.venv/bin/ruff format`.
