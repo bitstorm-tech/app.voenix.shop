@@ -6,6 +6,7 @@
 - `src/vat/`: Domain module with router (`vat_api.py`) and SQLModel entity (`vat_entity.py`).
 - `.env`: Local config (e.g., `DATABASE_URL`); defaults to `sqlite:///./app.db`.
 - `pyproject.toml`: Dependencies and Python version; `uv.lock` present (uses `uv`).
+- Encapsulation: keep as much code private as possible; place non-API helpers and implementation details under `src/<domain>/_internal/` and expose only a minimal public surface via `__all__`.
 
 ## Build, Test, and Development Commands
 - Setup (preferred): `uv sync` — creates/updates `.venv` from `pyproject.toml`.
