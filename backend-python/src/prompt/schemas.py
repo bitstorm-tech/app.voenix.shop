@@ -232,12 +232,30 @@ class PromptRead(BaseModel):
             )
 
         # Gracefully handle missing relationship collections (can be None on partially-loaded entities)
+        # In some query shapes, ORM may yield tuples; extract the variant robustly.
         mappings = entity.prompt_slot_variant_mappings or []
-        slots = [
-            PromptSlotVariantRead.from_entity(m.prompt_slot_variant)
-            for m in mappings
-            if m is not None and m.prompt_slot_variant is not None
-        ]
+        slots: list[PromptSlotVariantRead] = []
+        for m in mappings:
+            if m is None:
+                continue
+            variant: PromptSlotVariant | None = None
+            # Typical case: association entity with attribute
+            if hasattr(m, "prompt_slot_variant"):
+                variant = m.prompt_slot_variant
+            # Sometimes a direct variant sneaks in
+            elif isinstance(m, PromptSlotVariant):
+                variant = m
+            # Defensive: handle tuple results from certain joined queries
+            elif isinstance(m, tuple):
+                for part in m:
+                    if isinstance(part, PromptSlotVariant):
+                        variant = part
+                        break
+                    if hasattr(part, "prompt_slot_variant"):
+                        variant = part.prompt_slot_variant
+                        break
+            if variant is not None:
+                slots.append(PromptSlotVariantRead.from_entity(variant))
 
         return cls(
             id=entity.id or 0,
