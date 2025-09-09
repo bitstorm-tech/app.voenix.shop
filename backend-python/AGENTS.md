@@ -39,7 +39,8 @@
 
 ## Quality Checks
 Run these after each Python code change and again before requesting review. The task is only considered successful when there are no linter and formatting errors.
+- `uvx pyright`
 - `uvx ruff check --fix`
 - `uvx ruff format`
 
-Tip: if not using `uvx`, you can run Ruff from your virtualenv, e.g., `.venv/bin/ruff check --fix` and `.venv/bin/ruff format`.
+Tip: if not using `uvx`, you can run Ruff and Pyright from your virtualenv, e.g., `.venv/bin/pyright` and `.venv/bin/ruff check --fix` and `.venv/bin/ruff format`.

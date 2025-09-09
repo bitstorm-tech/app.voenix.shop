@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session, selectinload
 
 from src.auth.api import require_admin
 from src.database import get_db
-from src.image.locations import StorageLocations
+from src.image import StorageLocations
 
 from ._internal.entities import (
     Prompt,

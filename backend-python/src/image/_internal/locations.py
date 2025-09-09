@@ -63,6 +63,41 @@ class StorageLocations:
         """
         return self.root / "public" / "images" / "articles" / "shirts" / "variant-example-images"
 
+    @property
+    def PUBLIC_IMAGES(self) -> Path:
+        """Base directory for public images.
+
+        {storage.root}/public/images
+        """
+        return self.root / "public" / "images"
+
+    @property
+    def PRIVATE_IMAGES(self) -> Path:
+        """Base directory for private images.
+
+        {storage.root}/private/images
+        """
+        return self.root / "private" / "images"
+
+    def resolve_admin_dir(self, image_type: str) -> Path:
+        """Resolve admin-managed image type to a directory.
+
+        Raises ValueError if the image_type is unsupported.
+        """
+        mapping = {
+            "PROMPT_EXAMPLE": self.PROMPT_EXAMPLE,
+            "PROMPT_SLOT_VARIANT_EXAMPLE": self.PROMPT_SLOT_VARIANT_EXAMPLE,
+            "MUG_VARIANT_EXAMPLE": self.MUG_VARIANT_EXAMPLE,
+            "SHIRT_VARIANT_EXAMPLE": self.SHIRT_VARIANT_EXAMPLE,
+            "PROMPT_TEST": self.PROMPT_TEST,
+            "PUBLIC": self.PUBLIC_IMAGES,
+            "PRIVATE": self.PRIVATE_IMAGES,
+        }
+        try:
+            return mapping[image_type.upper()]
+        except KeyError as exc:
+            raise ValueError(f"Unsupported imageType: {image_type}") from exc
+
 
 __all__ = [
     "StorageLocations",

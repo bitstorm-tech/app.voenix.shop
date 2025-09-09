@@ -1,5 +1,5 @@
 """
-Image conversion utilities.
+Image conversion utilities (service).
 
 This module provides helper functions to convert an input image of many
 popular formats (JPEG/JPG, PNG, WEBP, GIF, BMP, TIFF, etc.) into a PNG.
@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import contextlib
 import io
+from io import BytesIO
 from pathlib import Path
 from typing import BinaryIO
 
@@ -146,3 +147,25 @@ __all__ = [
     "convert_image_to_png_bytes",
     "convert_image_to_png_file",
 ]
+
+
+def crop_image_bytes(image_bytes: bytes, *, x: float, y: float, width: float, height: float) -> bytes:
+    """Crop an image from bytes and return PNG bytes.
+
+    - Clamps coordinates to image bounds.
+    - Always returns PNG bytes for consistency.
+    - On any processing error, returns original bytes (fail-open behavior).
+    """
+    try:
+        with Image.open(BytesIO(image_bytes)) as img:
+            ix, iy, iw, ih = int(x), int(y), int(width), int(height)
+            ix = max(0, min(ix, img.width - 1))
+            iy = max(0, min(iy, img.height - 1))
+            iw = max(1, min(iw, img.width - ix))
+            ih = max(1, min(ih, img.height - iy))
+            cropped = img.crop((ix, iy, ix + iw, iy + ih))
+            out = io.BytesIO()
+            cropped.save(out, format="PNG", optimize=True)
+            return out.getvalue()
+    except Exception:
+        return image_bytes
