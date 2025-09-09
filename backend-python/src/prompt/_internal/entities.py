@@ -101,8 +101,8 @@ class PromptSlotVariant(SQLModel, table=True):
 
     id: int | None = Field(default=None, primary_key=True)
 
-    prompt_slot_type_id: int = Field(foreign_key="prompt_slot_types.id", nullable=False)
-    prompt_slot_type: PromptSlotType | None = Relationship(sa_relationship=relationship("PromptSlotType"))
+    slot_type_id: int = Field(foreign_key="prompt_slot_types.id", nullable=False)
+    slot_type: PromptSlotType | None = Relationship(sa_relationship=relationship("PromptSlotType"))
 
     name: str = Field(sa_column=Column(String(255), unique=True, nullable=False))
     prompt: str | None = Field(default=None, sa_column=Column(Text, nullable=True))

@@ -111,7 +111,7 @@ def _load_prompt_with_relations(db: Session, id_value: int) -> Prompt | None:
             selectinload(Prompt.subcategory),
             selectinload(Prompt.prompt_slot_variant_mappings)
             .selectinload(PromptSlotVariantMapping.prompt_slot_variant)
-            .selectinload(PromptSlotVariant.prompt_slot_type),
+            .selectinload(PromptSlotVariant.slot_type),
         )
     )
     return db.execute(stmt).scalars().first()
@@ -125,7 +125,7 @@ def _all_prompts_with_relations(db: Session) -> list[Prompt]:
             selectinload(Prompt.subcategory),
             selectinload(Prompt.prompt_slot_variant_mappings)
             .selectinload(PromptSlotVariantMapping.prompt_slot_variant)
-            .selectinload(PromptSlotVariant.prompt_slot_type),
+            .selectinload(PromptSlotVariant.slot_type),
         )
         .order_by(Prompt.id.desc())
     )
@@ -228,7 +228,7 @@ admin_slot_variants = APIRouter(
 def get_all_slot_variants(db: Session = Depends(get_db)):
     result = db.execute(
         select(PromptSlotVariant)
-        .options(selectinload(PromptSlotVariant.prompt_slot_type))
+        .options(selectinload(PromptSlotVariant.slot_type))
         .order_by(PromptSlotVariant.id.desc())
     )
     items = result.scalars().all()
@@ -241,7 +241,7 @@ def get_slot_variant(id: int, db: Session = Depends(get_db)):
         db.execute(
             select(PromptSlotVariant)
             .where(PromptSlotVariant.id == id)
-            .options(selectinload(PromptSlotVariant.prompt_slot_type))
+            .options(selectinload(PromptSlotVariant.slot_type))
         )
         .scalars()
         .first()
@@ -265,7 +265,7 @@ def create_slot_variant(payload: PromptSlotVariantCreate, db: Session = Depends(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="PromptSlotVariant name already exists")
 
     entity = PromptSlotVariant(
-        prompt_slot_type_id=payload.prompt_slot_type_id,
+        slot_type_id=payload.prompt_slot_type_id,
         name=payload.name,
         prompt=payload.prompt,
         description=payload.description,
@@ -283,12 +283,12 @@ def update_slot_variant(id: int, payload: PromptSlotVariantUpdate, db: Session =
     _ensure_exists(entity, "PromptSlotVariant", id)
 
     # Validate/assign slot type
-    if payload.prompt_slot_type_id is not None and payload.prompt_slot_type_id != entity.prompt_slot_type_id:
+    if payload.prompt_slot_type_id is not None and payload.prompt_slot_type_id != entity.slot_type_id:
         if not db.scalar(
             select(func.count()).select_from(PromptSlotType).where(PromptSlotType.id == payload.prompt_slot_type_id)
         ):
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="PromptSlotType not found")
-        entity.prompt_slot_type_id = payload.prompt_slot_type_id
+        entity.slot_type_id = payload.prompt_slot_type_id
 
     # Unique name if changed
     if payload.name is not None and payload.name != entity.name:
@@ -718,7 +718,7 @@ def get_all_public_prompts(db: Session = Depends(get_db)):
             selectinload(Prompt.subcategory),
             selectinload(Prompt.prompt_slot_variant_mappings)
             .selectinload(PromptSlotVariantMapping.prompt_slot_variant)
-            .selectinload(PromptSlotVariant.prompt_slot_type),
+            .selectinload(PromptSlotVariant.slot_type),
         )
         .order_by(Prompt.id.desc())
     )
@@ -740,10 +740,8 @@ def get_all_public_prompts(db: Session = Depends(get_db)):
         for m in p.prompt_slot_variant_mappings:
             v = m.prompt_slot_variant
             slot_type = (
-                PublicPromptSlotTypeRead(
-                    id=v.prompt_slot_type.id or 0, name=v.prompt_slot_type.name, position=v.prompt_slot_type.position
-                )
-                if v.prompt_slot_type is not None
+                PublicPromptSlotTypeRead(id=v.slot_type.id or 0, name=v.slot_type.name, position=v.slot_type.position)
+                if v.slot_type is not None
                 else None
             )
             slots.append(

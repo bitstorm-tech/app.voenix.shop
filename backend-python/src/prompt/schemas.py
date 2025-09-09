@@ -85,10 +85,8 @@ class PromptSlotVariantRead(BaseModel):
     def from_entity(cls, entity: PromptSlotVariant) -> PromptSlotVariantRead:
         return cls(
             id=entity.id or 0,
-            prompt_slot_type_id=entity.prompt_slot_type_id,
-            prompt_slot_type=PromptSlotTypeRead.model_validate(entity.prompt_slot_type)
-            if entity.prompt_slot_type
-            else None,
+            prompt_slot_type_id=entity.slot_type_id,
+            prompt_slot_type=PromptSlotTypeRead.model_validate(entity.slot_type) if entity.slot_type else None,
             name=entity.name,
             prompt=entity.prompt,
             description=entity.description,
