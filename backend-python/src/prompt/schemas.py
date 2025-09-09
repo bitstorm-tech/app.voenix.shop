@@ -221,7 +221,13 @@ class PromptRead(BaseModel):
                 updated_at=entity.subcategory.updated_at,
             )
 
-        slots = [PromptSlotVariantRead.from_entity(m.prompt_slot_variant) for m in entity.prompt_slot_variant_mappings]
+        # Gracefully handle missing relationship collections (can be None on partially-loaded entities)
+        mappings = entity.prompt_slot_variant_mappings or []
+        slots = [
+            PromptSlotVariantRead.from_entity(m.prompt_slot_variant)
+            for m in mappings
+            if m is not None and m.prompt_slot_variant is not None
+        ]
 
         return cls(
             id=entity.id or 0,
