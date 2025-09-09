@@ -19,7 +19,7 @@ async def post_gemini_edit(
     image: UploadFile = File(..., description="Image to edit/manipulate"),
     prompt: str = Form(..., description="Instruction describing the edit"),
     n: int = Form(1, ge=1, le=8, description="Number of images to return"),
-    generator: AIImageProvider = Form(AIImageProvider.GEMINI, description="GTP, Gemini or Flux"),
+    provider: AIImageProvider = Form(AIImageProvider.GEMINI, description="GTP, Gemini or Flux"),
     _: User = Depends(require_admin),
 ):
     """Upload an image and a prompt, forward to Gemini, and return edited images.
@@ -39,8 +39,8 @@ async def post_gemini_edit(
             )
 
         data = await image.read()
-        generator = AIImageGeneratorFactory.create(generator)
-        outputs = generator.edit(
+        image_generator = AIImageGeneratorFactory.create(provider)
+        outputs = image_generator.edit(
             image=data,
             prompt=prompt,
             candidate_count=n,
