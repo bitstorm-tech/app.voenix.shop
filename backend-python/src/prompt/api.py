@@ -143,12 +143,13 @@ admin_slot_types = APIRouter(
 
 
 @admin_slot_types.get("/", response_model=list[PromptSlotTypeRead], response_model_by_alias=True)
+@admin_slot_types.get("", response_model=list[PromptSlotTypeRead], response_model_by_alias=True)
 def get_all_prompt_slot_types(db: Session = Depends(get_db)):
     result = db.execute(select(PromptSlotType))
     return result.scalars().all()
 
 
-@admin_slot_types.get("/{id}", response_model=PromptSlotTypeRead, response_model_by_alias=True)
+@admin_slot_types.get("/{id:int}", response_model=PromptSlotTypeRead, response_model_by_alias=True)
 def get_prompt_slot_type(id: int, db: Session = Depends(get_db)):
     result = db.execute(select(PromptSlotType).where(PromptSlotType.id == id))
     entity = result.scalar_one_or_none()
@@ -173,7 +174,7 @@ def create_prompt_slot_type(payload: PromptSlotTypeCreate, db: Session = Depends
     return entity
 
 
-@admin_slot_types.put("/{id}", response_model=PromptSlotTypeRead, response_model_by_alias=True)
+@admin_slot_types.put("/{id:int}", response_model=PromptSlotTypeRead, response_model_by_alias=True)
 def update_prompt_slot_type(id: int, payload: PromptSlotTypeUpdate, db: Session = Depends(get_db)):
     entity = db.execute(select(PromptSlotType).where(PromptSlotType.id == id)).scalar_one_or_none()
     _ensure_exists(entity, "PromptSlotType", id)
@@ -204,7 +205,7 @@ def update_prompt_slot_type(id: int, payload: PromptSlotTypeUpdate, db: Session 
     return entity
 
 
-@admin_slot_types.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@admin_slot_types.delete("/{id:int}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_prompt_slot_type(id: int, db: Session = Depends(get_db)):
     entity = db.execute(select(PromptSlotType).where(PromptSlotType.id == id)).scalar_one_or_none()
     _ensure_exists(entity, "PromptSlotType", id)
@@ -223,6 +224,7 @@ admin_slot_variants = APIRouter(
 
 
 @admin_slot_variants.get("/", response_model=list[PromptSlotVariantRead], response_model_by_alias=True)
+@admin_slot_variants.get("", response_model=list[PromptSlotVariantRead], response_model_by_alias=True)
 def get_all_slot_variants(db: Session = Depends(get_db)):
     result = db.execute(
         select(PromptSlotVariant)
@@ -233,7 +235,7 @@ def get_all_slot_variants(db: Session = Depends(get_db)):
     return [PromptSlotVariantRead.from_entity(it) for it in items]
 
 
-@admin_slot_variants.get("/{id}", response_model=PromptSlotVariantRead, response_model_by_alias=True)
+@admin_slot_variants.get("/{id:int}", response_model=PromptSlotVariantRead, response_model_by_alias=True)
 def get_slot_variant(id: int, db: Session = Depends(get_db)):
     entity = (
         db.execute(
@@ -275,7 +277,7 @@ def create_slot_variant(payload: PromptSlotVariantCreate, db: Session = Depends(
     return get_slot_variant(entity.id or 0, db)
 
 
-@admin_slot_variants.put("/{id}", response_model=PromptSlotVariantRead, response_model_by_alias=True)
+@admin_slot_variants.put("/{id:int}", response_model=PromptSlotVariantRead, response_model_by_alias=True)
 def update_slot_variant(id: int, payload: PromptSlotVariantUpdate, db: Session = Depends(get_db)):
     entity = db.execute(select(PromptSlotVariant).where(PromptSlotVariant.id == id)).scalar_one_or_none()
     _ensure_exists(entity, "PromptSlotVariant", id)
@@ -316,7 +318,7 @@ def update_slot_variant(id: int, payload: PromptSlotVariantUpdate, db: Session =
     return get_slot_variant(id, db)
 
 
-@admin_slot_variants.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@admin_slot_variants.delete("/{id:int}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_slot_variant(id: int, db: Session = Depends(get_db)):
     entity = db.execute(select(PromptSlotVariant).where(PromptSlotVariant.id == id)).scalar_one_or_none()
     _ensure_exists(entity, "PromptSlotVariant", id)
@@ -340,6 +342,7 @@ admin_categories = APIRouter(
 
 
 @admin_categories.get("/", response_model=list[PromptCategoryRead], response_model_by_alias=True)
+@admin_categories.get("", response_model=list[PromptCategoryRead], response_model_by_alias=True)
 def get_all_categories(db: Session = Depends(get_db)):
     categories = db.execute(select(PromptCategory)).scalars().all()
     result: list[PromptCategoryRead] = []
@@ -375,7 +378,7 @@ def create_category(payload: PromptCategoryCreate, db: Session = Depends(get_db)
     )
 
 
-@admin_categories.put("/{id}", response_model=PromptCategoryRead, response_model_by_alias=True)
+@admin_categories.put("/{id:int}", response_model=PromptCategoryRead, response_model_by_alias=True)
 def update_category(id: int, payload: PromptCategoryUpdate, db: Session = Depends(get_db)):
     entity = db.execute(select(PromptCategory).where(PromptCategory.id == id)).scalar_one_or_none()
     _ensure_exists(entity, "PromptCategory", id)
@@ -395,7 +398,7 @@ def update_category(id: int, payload: PromptCategoryUpdate, db: Session = Depend
     )
 
 
-@admin_categories.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@admin_categories.delete("/{id:int}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_category(id: int, db: Session = Depends(get_db)):
     entity = db.execute(select(PromptCategory).where(PromptCategory.id == id)).scalar_one_or_none()
     _ensure_exists(entity, "PromptCategory", id)
@@ -414,6 +417,7 @@ admin_subcategories = APIRouter(
 
 
 @admin_subcategories.get("/", response_model=list[PromptSubCategoryRead], response_model_by_alias=True)
+@admin_subcategories.get("", response_model=list[PromptSubCategoryRead], response_model_by_alias=True)
 def get_all_subcategories(db: Session = Depends(get_db)):
     items = db.execute(select(PromptSubCategory)).scalars().all()
     out: list[PromptSubCategoryRead] = []
@@ -433,7 +437,7 @@ def get_all_subcategories(db: Session = Depends(get_db)):
 
 
 @admin_subcategories.get(
-    "/category/{category_id}", response_model=list[PromptSubCategoryRead], response_model_by_alias=True
+    "/category/{category_id:int}", response_model=list[PromptSubCategoryRead], response_model_by_alias=True
 )
 def get_subcategories_by_category(category_id: int, db: Session = Depends(get_db)):
     items = (
@@ -482,7 +486,7 @@ def create_subcategory(payload: PromptSubCategoryCreate, db: Session = Depends(g
     )
 
 
-@admin_subcategories.put("/{id}", response_model=PromptSubCategoryRead, response_model_by_alias=True)
+@admin_subcategories.put("/{id:int}", response_model=PromptSubCategoryRead, response_model_by_alias=True)
 def update_subcategory(id: int, payload: PromptSubCategoryUpdate, db: Session = Depends(get_db)):
     entity = db.execute(select(PromptSubCategory).where(PromptSubCategory.id == id)).scalar_one_or_none()
     _ensure_exists(entity, "PromptSubCategory", id)
@@ -512,7 +516,7 @@ def update_subcategory(id: int, payload: PromptSubCategoryUpdate, db: Session = 
     )
 
 
-@admin_subcategories.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@admin_subcategories.delete("/{id:int}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_subcategory(id: int, db: Session = Depends(get_db)):
     entity = db.execute(select(PromptSubCategory).where(PromptSubCategory.id == id)).scalar_one_or_none()
     _ensure_exists(entity, "PromptSubCategory", id)
@@ -548,7 +552,7 @@ def get_all_prompts(db: Session = Depends(get_db)):
     return out
 
 
-@admin_prompts.get("/{id}", response_model=PromptRead, response_model_by_alias=True)
+@admin_prompts.get("/{id:int}", response_model=PromptRead, response_model_by_alias=True)
 def get_prompt(id: int, db: Session = Depends(get_db)):
     e = _load_prompt_with_relations(db, id)
     _ensure_exists(e, "Prompt", id)
@@ -619,7 +623,7 @@ def create_prompt(payload: PromptCreate, db: Session = Depends(get_db)):
     return get_prompt(entity.id or 0, db)
 
 
-@admin_prompts.put("/{id}", response_model=PromptRead, response_model_by_alias=True)
+@admin_prompts.put("/{id:int}", response_model=PromptRead, response_model_by_alias=True)
 def update_prompt(id: int, payload: PromptUpdate, db: Session = Depends(get_db)):
     entity = db.execute(select(Prompt).where(Prompt.id == id)).scalar_one_or_none()
     _ensure_exists(entity, "Prompt", id)
@@ -686,7 +690,7 @@ def update_prompt(id: int, payload: PromptUpdate, db: Session = Depends(get_db))
     return get_prompt(id, db)
 
 
-@admin_prompts.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@admin_prompts.delete("/{id:int}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_prompt(id: int, db: Session = Depends(get_db)):
     entity = db.execute(select(Prompt).where(Prompt.id == id)).scalar_one_or_none()
     _ensure_exists(entity, "Prompt", id)
