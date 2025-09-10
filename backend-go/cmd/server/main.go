@@ -14,6 +14,7 @@ import (
 	"voenix/backend-go/internal/auth"
 	"voenix/backend-go/internal/country"
 	"voenix/backend-go/internal/database"
+	"voenix/backend-go/internal/image"
 	"voenix/backend-go/internal/supplier"
 	"voenix/backend-go/internal/vat"
 )
@@ -76,6 +77,8 @@ func main() {
 	country.RegisterRoutes(r, db)
 	// Supplier admin routes
 	supplier.RegisterRoutes(r, db)
+	// Image admin/user routes
+	image.RegisterRoutes(r, db)
 
 	addr := os.Getenv("ADDR")
 	if addr == "" {

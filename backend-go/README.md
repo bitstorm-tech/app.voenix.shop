@@ -1,12 +1,17 @@
 Voenix Go Backend (Gin + GORM)
 
-This is a new Go backend targeting a gradual migration from the existing Python/FastAPI service. It currently implements `auth`, `vat`, `supplier` admin CRUD, and the public `country` listing endpoint.
+This is a new Go backend targeting a gradual migration from the existing Python/FastAPI service. It currently implements `auth`, `vat`, `supplier` admin CRUD, the public `country` listing endpoint, and image upload/serving endpoints compatible with the Python module.
 
 Endpoints
 - POST `/api/auth/login` – Accepts JSON `{ email|username, password }` or form fields. Creates a DB-backed session and sets `session_id` HttpOnly cookie.
 - GET `/api/auth/session` – Returns current session info if authenticated; otherwise 401.
 - POST `/api/auth/logout` – Deletes the DB-backed session and clears cookie.
 - GET `/api/public/countries` – Public list of countries `{ id, name, createdAt, updatedAt }`.
+ - POST `/api/admin/images` – Admin upload: `file` + (`request` JSON or discrete `imageType`, `cropX|Y|Width|Height`). Converts to PNG and stores under `STORAGE_ROOT`.
+ - GET `/api/admin/images/prompt-test/:filename` – Serve admin prompt test image.
+ - DELETE `/api/admin/images/prompt-test/:filename` – Delete admin prompt test image.
+ - GET `/api/user/images/:filename` – Serve current user's private image.
+ - GET `/api/user/images` – List current user's images with pagination and sorting.
 
 Models
 - `users`, `roles`, `user_roles` (many-to-many), `sessions` tables are modeled to match the Python SQLModel definitions.
@@ -17,6 +22,9 @@ Configuration
 - `SESSION_TTL_SECONDS` – optional override for session expiry (default 7 days).
 - `ADDR` – address/port to bind (default `:8081`).
 - `CORS_ALLOWED_ORIGINS` – comma-separated list of allowed origins (include `*` to allow any; dev only). Uses gin-contrib/cors.
+ - `STORAGE_ROOT` – required filesystem root for image storage (e.g. `./storage`). The server creates subdirectories as needed:
+   - `${STORAGE_ROOT}/public/images`
+   - `${STORAGE_ROOT}/private/images`
 
 .env support
 - The server loads environment variables from `.env` automatically if present.
