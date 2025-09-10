@@ -11,8 +11,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 
-	"voenix/backend-go/internal/auth"
 	"voenix/backend-go/internal/ai"
+	"voenix/backend-go/internal/auth"
 	"voenix/backend-go/internal/country"
 	"voenix/backend-go/internal/database"
 	"voenix/backend-go/internal/image"

@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm"
 
 	"voenix/backend-go/internal/database"
-	"voenix/backend-go/internal/util"
 )
 
 type userPublic struct {
@@ -84,7 +83,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusUnauthorized, gin.H{"detail": "Incorrect username or password"})
 			return
 		}
-		ok, _ := util.VerifyPassword(password, u.Password)
+		ok, _ := VerifyPassword(password, u.Password)
 		if !ok {
 			c.Header("WWW-Authenticate", "Bearer")
 			c.JSON(http.StatusUnauthorized, gin.H{"detail": "Incorrect username or password"})
