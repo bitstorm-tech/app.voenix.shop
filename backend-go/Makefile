@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: dev run fmt vet lint help
+.PHONY: dev run build fmt vet lint check help
 
 dev: ## Run server with hot reload via Air
 	@if ! command -v air >/dev/null 2>&1; then \
@@ -11,6 +11,15 @@ dev: ## Run server with hot reload via Air
 
 run: ## Run server without hot reload
 	go run ./cmd/server
+
+build: ## Build server binary to ./bin/server
+	@mkdir -p bin .cache/go-build .cache/gomod
+	GOCACHE=$(PWD)/.cache/go-build GOMODCACHE=$(PWD)/.cache/gomod go build -o ./bin/server ./cmd/server
+
+check: ## Run lint, vet, then build
+	$(MAKE) lint
+	$(MAKE) vet
+	$(MAKE) build
 
 fmt: ## Format all Go files
 	GOCACHE=$(PWD)/.cache/go-build go fmt ./...

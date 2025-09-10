@@ -44,7 +44,8 @@
 - Avoid logging secrets and PII; validate and sanitize all inputs.
 
 ## Quality Checks
-Run these commands after each code change in the Golang backend and again before requesting review. The task is only considered successful when there are no linter and formatting errors.
+Run these commands after each code change in the Golang backend `backend-go` and again before requesting review. The task is only considered successful when there are no linter and formatting errors.
 - `make vet`
 - `make lint`
+- `make build`
 - `make fmt`

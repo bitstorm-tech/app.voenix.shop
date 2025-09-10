@@ -16,6 +16,7 @@ import (
 	"voenix/backend-go/internal/country"
 	"voenix/backend-go/internal/database"
 	"voenix/backend-go/internal/image"
+	"voenix/backend-go/internal/prompt"
 	"voenix/backend-go/internal/supplier"
 	"voenix/backend-go/internal/vat"
 )
@@ -34,8 +35,13 @@ func main() {
 		log.Fatalf("failed to open DB: %v", err)
 	}
 
-	// Optional migration for auth tables only
-	if err := database.AutoMigrateIfEnabled(db, &auth.User{}, &auth.Role{}, &auth.Session{}, &vat.ValueAddedTax{}, &country.Country{}, &supplier.Supplier{}); err != nil {
+	// Optional migration for auth and domain tables
+	if err := database.AutoMigrateIfEnabled(
+		db,
+		&auth.User{}, &auth.Role{}, &auth.Session{},
+		&vat.ValueAddedTax{}, &country.Country{}, &supplier.Supplier{},
+		&prompt.PromptCategory{}, &prompt.PromptSubCategory{}, &prompt.PromptSlotType{}, &prompt.PromptSlotVariant{}, &prompt.Prompt{}, &prompt.PromptSlotVariantMapping{},
+	); err != nil {
 		log.Fatalf("auto-migrate failed: %v", err)
 	}
 
@@ -82,6 +88,8 @@ func main() {
 	image.RegisterRoutes(r, db)
 	// AI image routes (admin)
 	ai.RegisterRoutes(r, db)
+	// Prompt module routes (admin + public)
+	prompt.RegisterRoutes(r, db)
 
 	addr := os.Getenv("ADDR")
 	if addr == "" {
