@@ -13,6 +13,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"voenix/backend-go/internal/ai"
+	"voenix/backend-go/internal/article"
 	"voenix/backend-go/internal/auth"
 	"voenix/backend-go/internal/country"
 	"voenix/backend-go/internal/database"
@@ -42,6 +43,8 @@ func main() {
 		&auth.User{}, &auth.Role{}, &auth.Session{},
 		&vat.ValueAddedTax{}, &country.Country{}, &supplier.Supplier{},
 		&prompt.PromptCategory{}, &prompt.PromptSubCategory{}, &prompt.PromptSlotType{}, &prompt.PromptSlotVariant{}, &prompt.Prompt{}, &prompt.PromptSlotVariantMapping{},
+		// Article module
+		&article.ArticleCategory{}, &article.ArticleSubCategory{}, &article.Article{}, &article.MugVariant{}, &article.ShirtVariant{}, &article.MugDetails{}, &article.ShirtDetails{}, &article.CostCalculation{},
 	); err != nil {
 		log.Fatalf("auto-migrate failed: %v", err)
 	}
@@ -101,6 +104,8 @@ func main() {
 	ai.RegisterRoutes(r, db)
 	// Prompt module routes (admin + public)
 	prompt.RegisterRoutes(r, db)
+	// Article module routes (admin + public)
+	article.RegisterRoutes(r, db)
 
 	addr := os.Getenv("ADDR")
 	if addr == "" {
