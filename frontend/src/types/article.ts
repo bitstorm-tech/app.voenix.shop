@@ -173,8 +173,8 @@ export interface CostCalculation {
   // UI state
   purchasePriceCorresponds: boolean;
   salesPriceCorresponds: boolean;
-  purchaseActiveRow: 'cost' | 'costPercent';
-  salesActiveRow: 'margin' | 'marginPercent' | 'total';
+  purchaseActiveRow: 'COST' | 'COST_PERCENT';
+  salesActiveRow: 'MARGIN' | 'MARGIN_PERCENT' | 'TOTAL';
 }
 
 export type CreateCostCalculationRequest = Partial<CostCalculation>;
