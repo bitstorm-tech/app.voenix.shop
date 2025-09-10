@@ -1,0 +1,27 @@
+# Air configuration for hot reloading the Go backend
+
+root = "."
+tmp_dir = "tmp"
+
+[build]
+# Build the server binary into the tmp directory for faster restarts
+cmd = "go build -o ./tmp/server ./cmd/server"
+bin = "./tmp/server"
+full_bin = "./tmp/server"
+
+# Watch only our source directories and common template/types
+include_dir = ["cmd", "internal"]
+include_ext = ["go", "tpl", "tmpl", "html", "env"]
+exclude_dir = ["tmp", "vendor", ".git", "node_modules", ".gocache"]
+
+# Rebuild/rerun behavior
+delay = 1000
+stop_on_error = true
+kill_delay = 500
+follow_symlink = true
+
+[log]
+time = true
+
+[screen]
+clear_on_rebuild = true
