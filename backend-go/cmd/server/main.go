@@ -12,6 +12,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"voenix/backend-go/internal/auth"
+	"voenix/backend-go/internal/ai"
 	"voenix/backend-go/internal/country"
 	"voenix/backend-go/internal/database"
 	"voenix/backend-go/internal/image"
@@ -79,6 +80,8 @@ func main() {
 	supplier.RegisterRoutes(r, db)
 	// Image admin/user routes
 	image.RegisterRoutes(r, db)
+	// AI image routes (admin)
+	ai.RegisterRoutes(r, db)
 
 	addr := os.Getenv("ADDR")
 	if addr == "" {

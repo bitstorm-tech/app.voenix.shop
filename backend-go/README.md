@@ -10,8 +10,9 @@ Endpoints
  - POST `/api/admin/images` – Admin upload: `file` + (`request` JSON or discrete `imageType`, `cropX|Y|Width|Height`). Converts to PNG and stores under `STORAGE_ROOT`.
  - GET `/api/admin/images/prompt-test/:filename` – Serve admin prompt test image.
  - DELETE `/api/admin/images/prompt-test/:filename` – Delete admin prompt test image.
- - GET `/api/user/images/:filename` – Serve current user's private image.
- - GET `/api/user/images` – List current user's images with pagination and sorting.
+- GET `/api/user/images/:filename` – Serve current user's private image.
+- GET `/api/user/images` – List current user's images with pagination and sorting.
+ - POST `/api/ai/images` – Admin: Upload `image` + `prompt` (+ optional `n`, `provider`). Forwards to Gemini to edit/manipulate, stores PNGs under `STORAGE_ROOT/private/images/0_prompt-test`, returns base64 images.
 
 Models
 - `users`, `roles`, `user_roles` (many-to-many), `sessions` tables are modeled to match the Python SQLModel definitions.
@@ -25,6 +26,8 @@ Configuration
  - `STORAGE_ROOT` – required filesystem root for image storage (e.g. `./storage`). The server creates subdirectories as needed:
    - `${STORAGE_ROOT}/public/images`
    - `${STORAGE_ROOT}/private/images`
+ - `GOOGLE_API_KEY` – required for `/api/ai/images` Gemini integration.
+ - `GEMINI_IMAGE_MODEL` – optional Gemini image model (default `gemini-2.5-flash-image-preview`).
 
 .env support
 - The server loads environment variables from `.env` automatically if present.
