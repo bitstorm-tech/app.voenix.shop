@@ -14,6 +14,7 @@ import (
 
 	"voenix/backend-go/internal/ai"
 	"voenix/backend-go/internal/article"
+	"voenix/backend-go/internal/cart"
 	"voenix/backend-go/internal/auth"
 	"voenix/backend-go/internal/country"
 	"voenix/backend-go/internal/database"
@@ -45,6 +46,8 @@ func main() {
 		&prompt.PromptCategory{}, &prompt.PromptSubCategory{}, &prompt.PromptSlotType{}, &prompt.PromptSlotVariant{}, &prompt.Prompt{}, &prompt.PromptSlotVariantMapping{},
 		// Article module
 		&article.ArticleCategory{}, &article.ArticleSubCategory{}, &article.Article{}, &article.MugVariant{}, &article.ShirtVariant{}, &article.MugDetails{}, &article.ShirtDetails{}, &article.CostCalculation{},
+		// Cart module
+		&cart.Cart{}, &cart.CartItem{},
 	); err != nil {
 		log.Fatalf("auto-migrate failed: %v", err)
 	}
@@ -106,6 +109,8 @@ func main() {
 	prompt.RegisterRoutes(r, db)
 	// Article module routes (admin + public)
 	article.RegisterRoutes(r, db)
+	// Cart routes (user)
+	cart.RegisterRoutes(r, db)
 
 	addr := os.Getenv("ADDR")
 	if addr == "" {
