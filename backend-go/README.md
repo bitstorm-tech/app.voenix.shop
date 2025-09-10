@@ -6,6 +6,7 @@ Endpoints
 - POST `/api/auth/login` – Accepts JSON `{ email|username, password }` or form fields. Creates a DB-backed session and sets `session_id` HttpOnly cookie.
 - GET `/api/auth/session` – Returns current session info if authenticated; otherwise 401.
 - POST `/api/auth/logout` – Deletes the DB-backed session and clears cookie.
+- GET `/public/*` – Serves static files from `${STORAGE_ROOT}/public` (e.g. images at `/public/images/...`).
 - GET `/api/public/countries` – Public list of countries `{ id, name, createdAt, updatedAt }`.
  - POST `/api/admin/images` – Admin upload: `file` + (`request` JSON or discrete `imageType`, `cropX|Y|Width|Height`). Converts to PNG and stores under `STORAGE_ROOT`.
  - GET `/api/admin/images/prompt-test/:filename` – Serve admin prompt test image.
@@ -23,9 +24,10 @@ Configuration
 - `SESSION_TTL_SECONDS` – optional override for session expiry (default 7 days).
 - `ADDR` – address/port to bind (default `:8081`).
 - `CORS_ALLOWED_ORIGINS` – comma-separated list of allowed origins (include `*` to allow any; dev only). Uses gin-contrib/cors.
- - `STORAGE_ROOT` – required filesystem root for image storage (e.g. `./storage`). The server creates subdirectories as needed:
+- `STORAGE_ROOT` – required filesystem root for image storage (e.g. `./storage`). The server creates subdirectories as needed:
    - `${STORAGE_ROOT}/public/images`
    - `${STORAGE_ROOT}/private/images`
+  - Static files under `${STORAGE_ROOT}/public` are served at `/public/*`.
  - `GOOGLE_API_KEY` – required for `/api/ai/images` Gemini integration.
  - `GEMINI_IMAGE_MODEL` – optional Gemini image model (default `gemini-2.5-flash-image-preview`).
 

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -75,6 +76,16 @@ func main() {
 
 	// Health
 	r.GET("/health", func(c *gin.Context) { c.JSON(http.StatusOK, gin.H{"ok": true}) })
+
+	// Static public files: serve ${STORAGE_ROOT}/public at /public
+	if loc, err := image.NewStorageLocations(); err != nil {
+		log.Printf("warning: STORAGE_ROOT not set; static /public disabled: %v", err)
+	} else {
+		publicDir := filepath.Join(loc.Root, "public")
+		// Disable directory listing (last arg = false)
+		r.StaticFS("/public", gin.Dir(publicDir, false))
+		log.Printf("Serving static files at /public from %s", publicDir)
+	}
 
 	// Auth routes
 	auth.RegisterRoutes(r, db)
