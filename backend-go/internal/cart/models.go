@@ -2,6 +2,8 @@ package cart
 
 import (
     "time"
+
+    "voenix/backend-go/internal/article"
 )
 
 // CartStatus mirrors Kotlin values but kept simple as string.
@@ -68,7 +70,7 @@ type MugVariantDto struct {
 
 type CartItemDto struct {
     ID                    int               `json:"id"`
-    Article               interface{}       `json:"article"` // article.ArticleRead (avoid import cycle in DTO file)
+    Article               article.ArticleRead `json:"article"`
     Variant               *MugVariantDto    `json:"variant"`
     Quantity              int               `json:"quantity"`
     PriceAtTime           int               `json:"priceAtTime"`

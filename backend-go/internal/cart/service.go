@@ -16,7 +16,7 @@ const defaultCartExpiryDays = 30
 // getOrCreateActiveCart returns the active cart for user or creates one.
 func getOrCreateActiveCart(db *gorm.DB, userID int) (*Cart, error) {
     var c Cart
-    err := db.Preload("Items", func(tx *gorm.DB) *gorm.DB { return tx.Order("position asc, created_at asc") }).Where("user_id = ? AND status = ?", userID, string(CartStatusActive)).First(&c).Error
+    err := db.Preload("Items", withItemOrder).Where("user_id = ? AND status = ?", userID, string(CartStatusActive)).First(&c).Error
     if err == nil {
         return &c, nil
     }
@@ -35,7 +35,7 @@ func getOrCreateActiveCart(db *gorm.DB, userID int) (*Cart, error) {
 // loadActiveCart loads the existing active cart for user (with items), or returns nil if not found.
 func loadActiveCart(db *gorm.DB, userID int) (*Cart, error) {
     var c Cart
-    err := db.Preload("Items", func(tx *gorm.DB) *gorm.DB { return tx.Order("position asc, created_at asc") }).Where("user_id = ? AND status = ?", userID, string(CartStatusActive)).First(&c).Error
+    err := db.Preload("Items", withItemOrder).Where("user_id = ? AND status = ?", userID, string(CartStatusActive)).First(&c).Error
     if err != nil {
         if errors.Is(err, gorm.ErrRecordNotFound) {
             return nil, nil
@@ -95,24 +95,12 @@ func validatePromptIfProvided(db *gorm.DB, promptID *int) error {
 
 // mergeOrAppendItem merges quantity if an item with same articleId, variantId and customData exists; otherwise appends.
 func mergeOrAppendItem(c *Cart, item CartItem) {
-    // Simple equality on JSON map by stringification order is non-deterministic; compare by key/value shallow.
-    // Since our expected customData is small (crop data), a shallow comparison is acceptable.
-    eqMap := func(a, b map[string]any) bool {
-        if len(a) != len(b) {
-            return false
-        }
-        for k, va := range a {
-            if vb, ok := b[k]; !ok || !deepEqualJSONValue(va, vb) {
-                return false
-            }
-        }
-        return true
-    }
-    // Convert existing CustomData from JSON string for comparison
+    // Normalize custom data JSON once for stable comparisons
+    item.CustomData = canonicalizeJSON(item.CustomData)
     for i := range c.Items {
         it := &c.Items[i]
-        m := parseJSONMap(it.CustomData)
-        if it.ArticleID == item.ArticleID && it.VariantID == item.VariantID && eqMap(m, parseJSONMap(item.CustomData)) {
+        if it.ArticleID == item.ArticleID && it.VariantID == item.VariantID &&
+            canonicalizeJSON(it.CustomData) == item.CustomData {
             it.Quantity += item.Quantity
             return
         }
@@ -123,36 +111,7 @@ func mergeOrAppendItem(c *Cart, item CartItem) {
 }
 
 // deepEqualJSONValue compares primitive JSON-like values with limited recursion for maps.
-func deepEqualJSONValue(a, b any) bool {
-    switch av := a.(type) {
-    case map[string]any:
-        bv, ok := b.(map[string]any)
-        if !ok || len(av) != len(bv) {
-            return false
-        }
-        for k, v := range av {
-            if !deepEqualJSONValue(v, bv[k]) {
-                return false
-            }
-        }
-        return true
-    case []any:
-        bv, ok := b.([]any)
-        if !ok || len(av) != len(bv) {
-            return false
-        }
-        for i := range av {
-            if !deepEqualJSONValue(av[i], bv[i]) {
-                return false
-            }
-        }
-        return true
-    default:
-        // fall back to Go equality for scalars
-        return av == b
-    }
-}
-
+// parseJSONMap safely parses a JSON object string to a map.
 func parseJSONMap(s string) map[string]any {
     if s == "" {
         return map[string]any{}
@@ -163,3 +122,17 @@ func parseJSONMap(s string) map[string]any {
     }
     return m
 }
+
+// canonicalizeJSON returns a stable JSON string for comparisons.
+// It tolerates empty/invalid input by returning "{}".
+func canonicalizeJSON(s string) string {
+    m := parseJSONMap(s)
+    b, err := json.Marshal(m)
+    if err != nil {
+        return "{}"
+    }
+    return string(b)
+}
+
+// withItemOrder applies a consistent ordering for preloading items.
+func withItemOrder(tx *gorm.DB) *gorm.DB { return tx.Order("position asc, created_at asc") }

@@ -1,11 +1,11 @@
 package cart
 
 import (
-    "fmt"
+    "encoding/json"
     "net/http"
     "path/filepath"
+    "strconv"
     "time"
-    "encoding/json"
 
     "github.com/gin-gonic/gin"
     "gorm.io/gorm"
@@ -22,11 +22,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
     grp.Use(auth.RequireRoles(db, "USER", "ADMIN"))
 
     grp.GET("/", func(c *gin.Context) {
-        u := currentUser(c)
-        if u == nil {
-            c.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
-            return
-        }
+        u, ok := requireUser(c)
+        if !ok { return }
         cart, err := getOrCreateActiveCart(db, u.ID)
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to load cart"})
@@ -41,11 +38,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
     })
 
     grp.GET("/summary", func(c *gin.Context) {
-        u := currentUser(c)
-        if u == nil {
-            c.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
-            return
-        }
+        u, ok := requireUser(c)
+        if !ok { return }
         cart, err := loadActiveCart(db, u.ID)
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to load cart"})
@@ -65,11 +59,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
     })
 
     grp.POST("/items", func(c *gin.Context) {
-        u := currentUser(c)
-        if u == nil {
-            c.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
-            return
-        }
+        u, ok := requireUser(c)
+        if !ok { return }
         var req AddToCartRequest
         if err := c.ShouldBindJSON(&req); err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid request"})
@@ -100,7 +91,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
             c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch price"})
             return
         }
-        // marshal custom data to JSON string for storage
+        // Marshal custom data to a canonical JSON string for stable comparisons
         cdStr := "{}"
         if req.CustomData != nil {
             if b, err := json.Marshal(req.CustomData); err == nil {
@@ -124,7 +115,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
             return
         }
         // reload items in order
-        if err := db.Preload("Items", func(tx *gorm.DB) *gorm.DB { return tx.Order("position asc, created_at asc") }).First(cart, cart.ID).Error; err != nil {
+        if err := db.Preload("Items", withItemOrder).First(cart, cart.ID).Error; err != nil {
             // continue with existing in-memory items
         }
         dto, err := assembleCartDto(db, cart)
@@ -136,13 +127,10 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
     })
 
     grp.PUT("/items/:itemId", func(c *gin.Context) {
-        u := currentUser(c)
-        if u == nil {
-            c.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
-            return
-        }
-        var itemID int
-        if _, err := fmt.Sscan(c.Param("itemId"), &itemID); err != nil {
+        u, ok := requireUser(c)
+        if !ok { return }
+        itemID, err := strconv.Atoi(c.Param("itemId"))
+        if err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid item id"})
             return
         }
@@ -181,7 +169,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
             return
         }
         // reload
-        _ = db.Preload("Items", func(tx *gorm.DB) *gorm.DB { return tx.Order("position asc, created_at asc") }).First(cart, cart.ID).Error
+        _ = db.Preload("Items", withItemOrder).First(cart, cart.ID).Error
         dto, err := assembleCartDto(db, cart)
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble cart"})
@@ -191,13 +179,10 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
     })
 
     grp.DELETE("/items/:itemId", func(c *gin.Context) {
-        u := currentUser(c)
-        if u == nil {
-            c.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
-            return
-        }
-        var itemID int
-        if _, err := fmt.Sscan(c.Param("itemId"), &itemID); err != nil {
+        u, ok := requireUser(c)
+        if !ok { return }
+        itemID, err := strconv.Atoi(c.Param("itemId"))
+        if err != nil {
             c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid item id"})
             return
         }
@@ -237,7 +222,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
             }
         }
         // reload
-        _ = db.Preload("Items", func(tx *gorm.DB) *gorm.DB { return tx.Order("position asc, created_at asc") }).First(cart, cart.ID).Error
+        _ = db.Preload("Items", withItemOrder).First(cart, cart.ID).Error
         dto, err := assembleCartDto(db, cart)
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble cart"})
@@ -247,11 +232,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
     })
 
     grp.DELETE("/", func(c *gin.Context) {
-        u := currentUser(c)
-        if u == nil {
-            c.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
-            return
-        }
+        u, ok := requireUser(c)
+        if !ok { return }
         cart, err := loadActiveCart(db, u.ID)
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to load cart"})
@@ -267,7 +249,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
             return
         }
         // reload empty cart
-        _ = db.Preload("Items").First(cart, cart.ID).Error
+        _ = db.Preload("Items", withItemOrder).First(cart, cart.ID).Error
         dto, err := assembleCartDto(db, cart)
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble cart"})
@@ -277,11 +259,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
     })
 
     grp.POST("/refresh-prices", func(c *gin.Context) {
-        u := currentUser(c)
-        if u == nil {
-            c.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
-            return
-        }
+        u, ok := requireUser(c)
+        if !ok { return }
         cart, err := loadActiveCart(db, u.ID)
         if err != nil {
             c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to load cart"})
@@ -309,7 +288,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
             }
         }
         if changed {
-            _ = db.Preload("Items", func(tx *gorm.DB) *gorm.DB { return tx.Order("position asc, created_at asc") }).First(cart, cart.ID).Error
+            _ = db.Preload("Items", withItemOrder).First(cart, cart.ID).Error
         }
         dto, err := assembleCartDto(db, cart)
         if err != nil {
@@ -324,6 +303,16 @@ func currentUser(c *gin.Context) *auth.User {
     uVal, _ := c.Get("currentUser")
     u, _ := uVal.(*auth.User)
     return u
+}
+
+// requireUser writes 401 if no user and returns ok=false.
+func requireUser(c *gin.Context) (*auth.User, bool) {
+    u := currentUser(c)
+    if u == nil {
+        c.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
+        return nil, false
+    }
+    return u, true
 }
 
 // assembleCartDto converts a Cart+Items into a response DTO.
