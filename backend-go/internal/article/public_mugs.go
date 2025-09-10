@@ -26,12 +26,12 @@ func registerPublicMugRoutes(r *gin.Engine, db *gorm.DB) {
 				continue
 			}
 			// Load only active variants
-        var vs []MugVariant
-        _ = db.Where("article_id = ? AND active = ?", a.ID, true).Order("id asc").Find(&vs).Error
-        def := ""
-        if dv := defaultMugVariant(vs); dv != nil {
-            def = publicMugVariantExampleURL(dv.ExampleImageFilename)
-        }
+			var vs []MugVariant
+			_ = db.Where("article_id = ? AND active = ?", a.ID, true).Order("id asc").Find(&vs).Error
+			def := ""
+			if dv := defaultMugVariant(vs); dv != nil {
+				def = publicMugVariantExampleURL(dv.ExampleImageFilename)
+			}
 			// price in euros: salesTotalGross is in cents
 			var cc CostCalculation
 			_ = db.First(&cc, "article_id = ?", a.ID).Error

@@ -1,15 +1,15 @@
 package article
 
 import (
-    "net/http"
-    "strconv"
-    "strings"
+	"net/http"
+	"strconv"
+	"strings"
 
-    "github.com/gin-gonic/gin"
-    "gorm.io/gorm"
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
-    "voenix/backend-go/internal/auth"
-    "voenix/backend-go/internal/supplier"
+	"voenix/backend-go/internal/auth"
+	"voenix/backend-go/internal/supplier"
 )
 
 // Requests

@@ -1,0 +1,125 @@
+package cart
+
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+)
+
+func getCartHandler(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u, ok := requireUser(c)
+		if !ok {
+			return
+		}
+		cart, err := getOrCreateActiveCart(db, u.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to load cart"})
+			return
+		}
+		dto, err := assembleCartDto(db, cart)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble cart"})
+			return
+		}
+		c.JSON(http.StatusOK, dto)
+	}
+}
+
+func getCartSummaryHandler(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u, ok := requireUser(c)
+		if !ok {
+			return
+		}
+		cart, err := loadActiveCart(db, u.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to load cart"})
+			return
+		}
+		if cart == nil || len(cart.Items) == 0 {
+			c.JSON(http.StatusOK, CartSummaryDto{ItemCount: 0, TotalPrice: 0, HasItems: false})
+			return
+		}
+		itemCount := 0
+		total := 0
+		for _, it := range cart.Items {
+			itemCount += it.Quantity
+			total += it.PriceAtTime * it.Quantity
+		}
+		c.JSON(http.StatusOK, CartSummaryDto{ItemCount: itemCount, TotalPrice: total, HasItems: itemCount > 0})
+	}
+}
+
+func clearCartHandler(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u, ok := requireUser(c)
+		if !ok {
+			return
+		}
+		cart, err := loadActiveCart(db, u.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to load cart"})
+			return
+		}
+		if cart == nil {
+			c.JSON(http.StatusNotFound, gin.H{"detail": "Active cart not found"})
+			return
+		}
+		if err := db.Where("cart_id = ?", cart.ID).Delete(&CartItem{}).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to clear cart"})
+			return
+		}
+		_ = db.Preload("Items", withItemOrder).First(cart, cart.ID).Error
+		dto, err := assembleCartDto(db, cart)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble cart"})
+			return
+		}
+		c.JSON(http.StatusOK, dto)
+	}
+}
+
+func refreshPricesHandler(db *gorm.DB) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		u, ok := requireUser(c)
+		if !ok {
+			return
+		}
+		cart, err := loadActiveCart(db, u.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to load cart"})
+			return
+		}
+		if cart == nil {
+			c.JSON(http.StatusNotFound, gin.H{"detail": "Active cart not found"})
+			return
+		}
+		changed := false
+		for i := range cart.Items {
+			cur, err := currentGrossPrice(db, cart.Items[i].ArticleID)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to refresh prices"})
+				return
+			}
+			if cart.Items[i].OriginalPrice != cur {
+				cart.Items[i].OriginalPrice = cur
+				if err := db.Model(&cart.Items[i]).Update("original_price", cur).Error; err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update prices"})
+					return
+				}
+				changed = true
+			}
+		}
+		if changed {
+			_ = db.Preload("Items", withItemOrder).First(cart, cart.ID).Error
+		}
+		dto, err := assembleCartDto(db, cart)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble cart"})
+			return
+		}
+		c.JSON(http.StatusOK, dto)
+	}
+}
