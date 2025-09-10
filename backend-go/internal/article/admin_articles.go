@@ -1,16 +1,15 @@
 package article
 
 import (
-	"net/http"
-	"strconv"
-	"strings"
+    "net/http"
+    "strconv"
+    "strings"
 
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+    "github.com/gin-gonic/gin"
+    "gorm.io/gorm"
 
-	"voenix/backend-go/internal/auth"
-	"voenix/backend-go/internal/supplier"
-	"voenix/backend-go/internal/vat"
+    "voenix/backend-go/internal/auth"
+    "voenix/backend-go/internal/supplier"
 )
 
 // Requests
@@ -162,46 +161,11 @@ func registerAdminArticleRoutes(r *gin.Engine, db *gorm.DB) {
 		out := make([]ArticleRead, 0, len(rows))
 		for i := range rows {
 			a := rows[i]
-			var cat ArticleCategory
-			var catName string
-			if err := db.First(&cat, "id = ?", a.CategoryID).Error; err == nil {
-				catName = cat.Name
-			}
-			var subName *string
-			if a.SubcategoryID != nil {
-				var sc ArticleSubCategory
-				if err := db.First(&sc, "id = ?", *a.SubcategoryID).Error; err == nil {
-					subName = &sc.Name
-				}
-			}
-			var suppName *string
-			if a.SupplierID != nil {
-				var s supplier.Supplier
-				if err := db.First(&s, "id = ?", *a.SupplierID).Error; err == nil && s.Name != nil {
-					suppName = s.Name
-				}
-			}
+			catName, subName, suppName := articleNames(db, &a)
 			ar := toArticleRead(&a, catName, subName, suppName, nil, nil)
-			// Populate variant arrays for the list response to match admin expectations
-			if a.ArticleType == ArticleTypeMug {
-				var mvs []MugVariant
-				_ = db.Where("article_id = ?", a.ID).Order("id asc").Find(&mvs).Error
-				mvReads := make([]ArticleMugVariantRead, 0, len(mvs))
-				for j := range mvs {
-					mvReads = append(mvReads, toMugVariantRead(&mvs[j]))
-				}
-				ar.MugVariants = mvReads
-				// Leave ShirtVariants as nil to serialize as null
-			} else if a.ArticleType == ArticleTypeShirt {
-				var svs []ShirtVariant
-				_ = db.Where("article_id = ?", a.ID).Order("id asc").Find(&svs).Error
-				svReads := make([]ArticleShirtVariantRead, 0, len(svs))
-				for j := range svs {
-					svReads = append(svReads, toShirtVariantRead(&svs[j]))
-				}
-				ar.ShirtVariants = svReads
-				// Leave MugVariants as nil to serialize as null
-			}
+			mv, sv := listArticleVariantsRead(db, &a)
+			ar.MugVariants = mv
+			ar.ShirtVariants = sv
 			out = append(out, ar)
 		}
 		resp := PaginatedResponse[ArticleRead]{
@@ -226,30 +190,11 @@ func registerAdminArticleRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch article"})
 			return
 		}
-		// preload category/subcategory names
-		var cat ArticleCategory
-		var catName string
-		if err := db.First(&cat, "id = ?", art.CategoryID).Error; err == nil {
-			catName = cat.Name
-		}
-		var subName *string
-		if art.SubcategoryID != nil {
-			var sc ArticleSubCategory
-			if err := db.First(&sc, "id = ?", *art.SubcategoryID).Error; err == nil {
-				subName = &sc.Name
-			}
-		}
-		var suppName *string
-		if art.SupplierID != nil {
-			var s supplier.Supplier
-			if err := db.First(&s, "id = ?", *art.SupplierID).Error; err == nil && s.Name != nil {
-				suppName = s.Name
-			}
-		}
+		// preload names
+		catName, subName, suppName := articleNames(db, &art)
 
 		// Load variants/details depending on type
-		mugVariants := []ArticleMugVariantRead{}
-		shirtVariants := []ArticleShirtVariantRead{}
+		mv, sv := listArticleVariantsRead(db, &art)
 		var mugDetails *MugDetails
 		var shirtDetails *ShirtDetails
 		var cc *CostCalculation
@@ -259,26 +204,16 @@ func registerAdminArticleRoutes(r *gin.Engine, db *gorm.DB) {
 			if err := db.First(&mds, "article_id = ?", art.ID).Error; err == nil {
 				mugDetails = &mds
 			}
-			var vs []MugVariant
-			_ = db.Where("article_id = ?", art.ID).Order("id asc").Find(&vs).Error
-			for i := range vs {
-				mugVariants = append(mugVariants, toMugVariantRead(&vs[i]))
-			}
 		} else if art.ArticleType == ArticleTypeShirt {
 			var sds ShirtDetails
 			if err := db.First(&sds, "article_id = ?", art.ID).Error; err == nil {
 				shirtDetails = &sds
 			}
-			var vs []ShirtVariant
-			_ = db.Where("article_id = ?", art.ID).Order("id asc").Find(&vs).Error
-			for i := range vs {
-				shirtVariants = append(shirtVariants, toShirtVariantRead(&vs[i]))
-			}
 		}
 
 		ar := toArticleRead(&art, catName, subName, suppName, mugDetails, shirtDetails)
-		ar.MugVariants = mugVariants
-		ar.ShirtVariants = shirtVariants
+		ar.MugVariants = mv
+		ar.ShirtVariants = sv
 		ar.CostCalculation = toCostRead(cc)
 		c.JSON(http.StatusOK, ar)
 	})
@@ -334,23 +269,10 @@ func registerAdminArticleRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create article"})
 			return
 		}
-		// Type-specific details
-		if a.ArticleType == ArticleTypeMug && payload.MugDetails != nil {
-			md := payload.MugDetails
-			row := MugDetails{
-				ArticleID:                    a.ID,
-				HeightMm:                     md.HeightMm,
-				DiameterMm:                   md.DiameterMm,
-				PrintTemplateWidthMm:         md.PrintTemplateWidthMm,
-				PrintTemplateHeightMm:        md.PrintTemplateHeightMm,
-				DocumentFormatWidthMm:        md.DocumentFormatWidthMm,
-				DocumentFormatHeightMm:       md.DocumentFormatHeightMm,
-				DocumentFormatMarginBottomMm: md.DocumentFormatMarginBottomMm,
-				FillingQuantity:              md.FillingQuantity,
-				DishwasherSafe:               md.DishwasherSafe,
-			}
-			if err := db.Create(&row).Error; err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create mug details"})
+		// Type-specific details and optional cost calculation
+		if a.ArticleType == ArticleTypeMug {
+			if err := upsertMugDetails(db, a.ID, payload.MugDetails); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
 				return
 			}
 			// initial mug variants
@@ -368,12 +290,9 @@ func registerAdminArticleRoutes(r *gin.Engine, db *gorm.DB) {
 				_ = db.Create(&mv).Error
 			}
 		}
-		if a.ArticleType == ArticleTypeShirt && payload.ShirtDetails != nil {
-			sd := payload.ShirtDetails
-			sizes := strings.Join(sd.AvailableSizes, ",")
-			row := ShirtDetails{ArticleID: a.ID, Material: sd.Material, CareInstructions: sd.CareInstructions, FitType: sd.FitType, AvailableSizes: sizes}
-			if err := db.Create(&row).Error; err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create shirt details"})
+		if a.ArticleType == ArticleTypeShirt {
+			if err := upsertShirtDetails(db, a.ID, payload.ShirtDetails); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
 				return
 			}
 			for _, v := range payload.ShirtVariants {
@@ -381,50 +300,9 @@ func registerAdminArticleRoutes(r *gin.Engine, db *gorm.DB) {
 				_ = db.Create(&sv).Error
 			}
 		}
-		// Cost calculation
-		if payload.CostCalculation != nil {
-			cc := payload.CostCalculation
-			if cc.PurchaseVatRateId != nil && !existsByID[vat.ValueAddedTax](db, *cc.PurchaseVatRateId) {
-				c.JSON(http.StatusBadRequest, gin.H{"detail": "Purchase VAT not found"})
-				return
-			}
-			if cc.SalesVatRateId != nil && !existsByID[vat.ValueAddedTax](db, *cc.SalesVatRateId) {
-				c.JSON(http.StatusBadRequest, gin.H{"detail": "Sales VAT not found"})
-				return
-			}
-			row := CostCalculation{
-				ArticleID:                a.ID,
-				PurchasePriceNet:         cc.PurchasePriceNet,
-				PurchasePriceTax:         cc.PurchasePriceTax,
-				PurchasePriceGross:       cc.PurchasePriceGross,
-				PurchaseCostNet:          cc.PurchaseCostNet,
-				PurchaseCostTax:          cc.PurchaseCostTax,
-				PurchaseCostGross:        cc.PurchaseCostGross,
-				PurchaseCostPercent:      cc.PurchaseCostPercent,
-				PurchaseTotalNet:         cc.PurchaseTotalNet,
-				PurchaseTotalTax:         cc.PurchaseTotalTax,
-				PurchaseTotalGross:       cc.PurchaseTotalGross,
-				PurchasePriceUnit:        cc.PurchasePriceUnit,
-				PurchaseVatRateID:        cc.PurchaseVatRateId,
-				PurchaseVatRatePercent:   cc.PurchaseVatRatePercent,
-				PurchaseCalculationMode:  cc.PurchaseCalculationMode,
-				SalesVatRateID:           cc.SalesVatRateId,
-				SalesVatRatePercent:      cc.SalesVatRatePercent,
-				SalesMarginNet:           cc.SalesMarginNet,
-				SalesMarginTax:           cc.SalesMarginTax,
-				SalesMarginGross:         cc.SalesMarginGross,
-				SalesMarginPercent:       cc.SalesMarginPercent,
-				SalesTotalNet:            cc.SalesTotalNet,
-				SalesTotalTax:            cc.SalesTotalTax,
-				SalesTotalGross:          cc.SalesTotalGross,
-				SalesPriceUnit:           cc.SalesPriceUnit,
-				SalesCalculationMode:     cc.SalesCalculationMode,
-				PurchasePriceCorresponds: cc.PurchasePriceCorresponds,
-				SalesPriceCorresponds:    cc.SalesPriceCorresponds,
-				PurchaseActiveRow:        cc.PurchaseActiveRow,
-				SalesActiveRow:           cc.SalesActiveRow,
-			}
-			_ = db.Create(&row).Error
+		if err := upsertCostCalculation(db, a.ID, payload.CostCalculation); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
+			return
 		}
 		// Return full resource
 		c.Redirect(http.StatusSeeOther, "/api/admin/articles/"+strconv.Itoa(a.ID))
@@ -471,97 +349,22 @@ func registerAdminArticleRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update article"})
 			return
 		}
-		// Details upsert
-		if existing.ArticleType == ArticleTypeMug && payload.MugDetails != nil {
-			var row MugDetails
-			if err := db.First(&row, "article_id = ?", existing.ID).Error; err != nil {
-				// create
-				md := payload.MugDetails
-				row = MugDetails{ArticleID: existing.ID, HeightMm: md.HeightMm, DiameterMm: md.DiameterMm,
-					PrintTemplateWidthMm: md.PrintTemplateWidthMm, PrintTemplateHeightMm: md.PrintTemplateHeightMm,
-					DocumentFormatWidthMm: md.DocumentFormatWidthMm, DocumentFormatHeightMm: md.DocumentFormatHeightMm,
-					DocumentFormatMarginBottomMm: md.DocumentFormatMarginBottomMm, FillingQuantity: md.FillingQuantity,
-					DishwasherSafe: md.DishwasherSafe,
-				}
-				_ = db.Create(&row).Error
-			} else {
-				md := payload.MugDetails
-				row.HeightMm = md.HeightMm
-				row.DiameterMm = md.DiameterMm
-				row.PrintTemplateWidthMm = md.PrintTemplateWidthMm
-				row.PrintTemplateHeightMm = md.PrintTemplateHeightMm
-				row.DocumentFormatWidthMm = md.DocumentFormatWidthMm
-				row.DocumentFormatHeightMm = md.DocumentFormatHeightMm
-				row.DocumentFormatMarginBottomMm = md.DocumentFormatMarginBottomMm
-				row.FillingQuantity = md.FillingQuantity
-				row.DishwasherSafe = md.DishwasherSafe
-				_ = db.Save(&row).Error
-			}
-		}
-		if existing.ArticleType == ArticleTypeShirt && payload.ShirtDetails != nil {
-			var row ShirtDetails
-			if err := db.First(&row, "article_id = ?", existing.ID).Error; err != nil {
-				sd := payload.ShirtDetails
-				row = ShirtDetails{ArticleID: existing.ID, Material: sd.Material, CareInstructions: sd.CareInstructions, FitType: sd.FitType, AvailableSizes: strings.Join(sd.AvailableSizes, ",")}
-				_ = db.Create(&row).Error
-			} else {
-				sd := payload.ShirtDetails
-				row.Material = sd.Material
-				row.CareInstructions = sd.CareInstructions
-				row.FitType = sd.FitType
-				row.AvailableSizes = strings.Join(sd.AvailableSizes, ",")
-				_ = db.Save(&row).Error
-			}
-		}
-		// Cost calc upsert
-		if payload.CostCalculation != nil {
-			ccReq := payload.CostCalculation
-			if ccReq.PurchaseVatRateId != nil && !existsByID[vat.ValueAddedTax](db, *ccReq.PurchaseVatRateId) {
-				c.JSON(http.StatusBadRequest, gin.H{"detail": "Purchase VAT not found"})
+		// Details + cost calc upsert
+		if existing.ArticleType == ArticleTypeMug {
+			if err := upsertMugDetails(db, existing.ID, payload.MugDetails); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
 				return
 			}
-			if ccReq.SalesVatRateId != nil && !existsByID[vat.ValueAddedTax](db, *ccReq.SalesVatRateId) {
-				c.JSON(http.StatusBadRequest, gin.H{"detail": "Sales VAT not found"})
+		}
+		if existing.ArticleType == ArticleTypeShirt {
+			if err := upsertShirtDetails(db, existing.ID, payload.ShirtDetails); err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
 				return
 			}
-			var cc CostCalculation
-			if err := db.First(&cc, "article_id = ?", existing.ID).Error; err != nil {
-				cc = CostCalculation{ArticleID: existing.ID}
-			}
-			cc.PurchasePriceNet = ccReq.PurchasePriceNet
-			cc.PurchasePriceTax = ccReq.PurchasePriceTax
-			cc.PurchasePriceGross = ccReq.PurchasePriceGross
-			cc.PurchaseCostNet = ccReq.PurchaseCostNet
-			cc.PurchaseCostTax = ccReq.PurchaseCostTax
-			cc.PurchaseCostGross = ccReq.PurchaseCostGross
-			cc.PurchaseCostPercent = ccReq.PurchaseCostPercent
-			cc.PurchaseTotalNet = ccReq.PurchaseTotalNet
-			cc.PurchaseTotalTax = ccReq.PurchaseTotalTax
-			cc.PurchaseTotalGross = ccReq.PurchaseTotalGross
-			cc.PurchasePriceUnit = ccReq.PurchasePriceUnit
-			cc.PurchaseVatRateID = ccReq.PurchaseVatRateId
-			cc.PurchaseVatRatePercent = ccReq.PurchaseVatRatePercent
-			cc.PurchaseCalculationMode = ccReq.PurchaseCalculationMode
-			cc.SalesVatRateID = ccReq.SalesVatRateId
-			cc.SalesVatRatePercent = ccReq.SalesVatRatePercent
-			cc.SalesMarginNet = ccReq.SalesMarginNet
-			cc.SalesMarginTax = ccReq.SalesMarginTax
-			cc.SalesMarginGross = ccReq.SalesMarginGross
-			cc.SalesMarginPercent = ccReq.SalesMarginPercent
-			cc.SalesTotalNet = ccReq.SalesTotalNet
-			cc.SalesTotalTax = ccReq.SalesTotalTax
-			cc.SalesTotalGross = ccReq.SalesTotalGross
-			cc.SalesPriceUnit = ccReq.SalesPriceUnit
-			cc.SalesCalculationMode = ccReq.SalesCalculationMode
-			cc.PurchasePriceCorresponds = ccReq.PurchasePriceCorresponds
-			cc.SalesPriceCorresponds = ccReq.SalesPriceCorresponds
-			cc.PurchaseActiveRow = ccReq.PurchaseActiveRow
-			cc.SalesActiveRow = ccReq.SalesActiveRow
-			if cc.ID == 0 {
-				_ = db.Create(&cc).Error
-			} else {
-				_ = db.Save(&cc).Error
-			}
+		}
+		if err := upsertCostCalculation(db, existing.ID, payload.CostCalculation); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
+			return
 		}
 		// Return full updated resource
 		c.Redirect(http.StatusSeeOther, "/api/admin/articles/"+c.Param("id"))
