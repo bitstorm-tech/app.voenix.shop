@@ -25,6 +25,10 @@
 - Errors: return `error` values; prefer wrapping/context where helpful; avoid panics in handlers.
 - HTTP handlers should validate input and return structured JSON errors (`{"detail": "..."}`).
 
+## Dependencies & Libraries
+- Prefer the Go standard library whenever possible before adding a third‑party dependency or writing custom implementations.
+- Priority order: Go standard library > 3rd‑party library > self implementation.
+
 ## Testing Guidelines
 - Place tests alongside code as `*_test.go` using the standard `testing` package.
 - Prefer table‑driven tests and focused unit tests for handlers, services, and utilities.
