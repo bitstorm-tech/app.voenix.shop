@@ -4,6 +4,8 @@ import (
     "bytes"
     "errors"
     "fmt"
+    "image"
+    "image/draw"
     "image/png"
     "math"
     "strings"
@@ -15,116 +17,138 @@ import (
 
 // PDFService implements Service using a PDF backend.
 type PDFService struct {
-    cfg    Config
+    config    Config
     loader ImageLoaderFunc
 }
 
 // NewService constructs a new service with options.
-func NewService(opt Options) *PDFService {
-    cfg := opt.Config
-    if cfg.Size.WidthMM == 0 || cfg.Size.HeightMM == 0 {
-        cfg = DefaultConfig()
+func NewService(options Options) *PDFService {
+    config := options.Config
+    if config.Size.WidthMM == 0 || config.Size.HeightMM == 0 {
+        config = DefaultConfig()
     }
-    svc := &PDFService{cfg: cfg}
-    if opt.ImageLoader != nil {
-        svc.loader = opt.ImageLoader
+    service := &PDFService{config: config}
+    if options.ImageLoader != nil {
+        service.loader = options.ImageLoader
     } else {
-        svc.loader = defaultImageLoader
+        service.loader = defaultImageLoader
     }
-    return svc
+    return service
 }
 
-func (s *PDFService) GenerateOrderPDF(data OrderPdfData) ([]byte, error) {
+func (service *PDFService) GenerateOrderPDF(data OrderPdfData) ([]byte, error) {
     total := data.TotalItemCount()
     if total == 0 {
         total = 1
     }
 
     // Prepare PDF
-    wPt, hPt := s.pageSizeForFirst(data)
+    widthPoints, heightPoints := service.pageSizeForFirst(data)
     var out bytes.Buffer
-    pdf := gopdf.GoPdf{}
-    pdf.Start(gopdf.Config{PageSize: gopdf.Rect{W: wPt, H: hPt}})
-    pdf.AddPage()
+    document := gopdf.GoPdf{}
+    document.Start(gopdf.Config{PageSize: gopdf.Rect{W: widthPoints, H: heightPoints}})
+    document.AddPage()
 
     // Register embedded Go fonts to avoid external font files.
-    _ = pdf.AddTTFFontData("Go-Regular", goregular.TTF)
-    _ = pdf.AddTTFFontData("Go-Bold", gobold.TTF)
-    _ = pdf.SetFont("Go-Regular", "", s.cfg.Fonts.HeaderSizePt)
+    _ = document.AddTTFFontData("Go-Regular", goregular.TTF)
+    _ = document.AddTTFFontData("Go-Bold", gobold.TTF)
+    _ = document.SetFont("Go-Regular", "", service.config.Fonts.HeaderSizePt)
 
-    pageNum := 1
+    pageNumber := 1
     for i := range data.Items {
         item := data.Items[i]
-        qty := item.Quantity
-        if qty <= 0 {
+        quantity := item.Quantity
+        if quantity <= 0 {
             continue
         }
-        for j := 0; j < qty; j++ {
-            if pageNum > 1 {
-                iwPt, ihPt := s.pageSizeForItem(item)
-                pdf.AddPageWithOption(gopdf.PageOption{PageSize: &gopdf.Rect{W: iwPt, H: ihPt}})
-                _ = pdf.SetFont("Go-Regular", "", s.cfg.Fonts.HeaderSizePt)
+        for j := 0; j < quantity; j++ {
+            if pageNumber > 1 {
+                itemWidthPoints, itemHeightPoints := service.pageSizeForItem(item)
+                document.AddPageWithOption(gopdf.PageOption{PageSize: &gopdf.Rect{W: itemWidthPoints, H: itemHeightPoints}})
+                _ = document.SetFont("Go-Regular", "", service.config.Fonts.HeaderSizePt)
             } else {
                 // Resize first page if different
-                iwPt, ihPt := s.pageSizeForItem(item)
-                if math.Abs(iwPt-wPt) > 0.1 || math.Abs(ihPt-hPt) > 0.1 {
-                    pdf.AddPageWithOption(gopdf.PageOption{PageSize: &gopdf.Rect{W: iwPt, H: ihPt}})
-                    _ = pdf.SetFont("Go-Regular", "", s.cfg.Fonts.HeaderSizePt)
+                itemWidthPoints, itemHeightPoints := service.pageSizeForItem(item)
+                if math.Abs(itemWidthPoints-widthPoints) > 0.1 || math.Abs(itemHeightPoints-heightPoints) > 0.1 {
+                    document.AddPageWithOption(gopdf.PageOption{PageSize: &gopdf.Rect{W: itemWidthPoints, H: itemHeightPoints}})
+                    _ = document.SetFont("Go-Regular", "", service.config.Fonts.HeaderSizePt)
                 }
             }
-            if err := s.drawPage(&pdf, data, item, pageNum, total); err != nil {
+            if err := service.drawPage(&document, data, item, pageNumber, total); err != nil {
                 return nil, err
             }
-            pageNum++
+            pageNumber++
         }
     }
 
-    if pageNum == 1 {
-        _ = s.drawPage(&pdf, data, OrderItemPdfData{Quantity: 1, Article: ArticlePdfData{}}, 1, 1)
+    if pageNumber == 1 {
+        _ = service.drawPage(&document, data, OrderItemPdfData{Quantity: 1, Article: ArticlePdfData{}}, 1, 1)
     }
 
-    if err := pdf.Write(&out); err != nil {
+    if err := document.Write(&out); err != nil {
         return nil, err
     }
     return out.Bytes(), nil
 }
 
 // drawPage renders a single page following the intended layout.
-func (s *PDFService) drawPage(pdf *gopdf.GoPdf, data OrderPdfData, item OrderItemPdfData, page, total int) error {
-    pageW, pageH := s.pageSizeForItem(item)
+func (service *PDFService) drawPage(document *gopdf.GoPdf, data OrderPdfData, item OrderItemPdfData, page, total int) error {
+    pageWidth, pageHeight := service.pageSizeForItem(item)
 
     // Left vertical header (order number + page/total)
-    hdr := s.headerText(data, page, total)
-    _ = pdf.SetFont("Go-Bold", "", s.cfg.Fonts.HeaderSizePt)
-    pdf.Rotate(90, 15, pageH/2)
-    pdf.SetX(15)
-    pdf.SetY(pageH / 2)
-    pdf.Cell(nil, hdr)
-    pdf.RotateReset()
+    header := service.headerText(data, page, total)
+    _ = document.SetFont("Go-Bold", "", service.config.Fonts.HeaderSizePt)
+    if w, err := document.MeasureTextWidth(header); err == nil {
+        x := 15.0
+        y := (pageHeight + w) / 2
+        document.SetX(x)
+        document.SetY(y)
+        // Rotate counterclockwise 90° to match expected vertical text
+        document.Rotate(-90, x, y)
+        _ = document.Cell(nil, header)
+        document.RotateReset()
+    } else {
+        // Fallback without centering if measurement fails
+        document.SetX(15)
+        document.SetY(pageHeight / 2)
+        document.Rotate(-90, 15, pageHeight/2)
+        _ = document.Cell(nil, header)
+        document.RotateReset()
+    }
 
     // Right vertical product info
-    if info := s.productInfoLine(item); info != "" {
-        _ = pdf.SetFont("Go-Regular", "", s.cfg.Fonts.HeaderSizePt)
-        pdf.Rotate(90, pageW-5, pageH/2)
-        pdf.SetX(pageW - 5)
-        pdf.SetY(pageH / 2)
-        pdf.Cell(nil, info)
-        pdf.RotateReset()
+    if info := service.productInfoLine(item); info != "" {
+        _ = document.SetFont("Go-Regular", "", service.config.Fonts.HeaderSizePt)
+        if w, err := document.MeasureTextWidth(info); err == nil {
+            x := pageWidth - 5.0
+            y := (pageHeight + w) / 2
+            document.SetX(x)
+            document.SetY(y)
+            document.Rotate(-90, x, y)
+            _ = document.Cell(nil, info)
+            document.RotateReset()
+        } else {
+            document.SetX(pageWidth - 5)
+            document.SetY(pageHeight / 2)
+            document.Rotate(-90, pageWidth-5, pageHeight/2)
+            _ = document.Cell(nil, info)
+            document.RotateReset()
+        }
     }
 
     // Centered product image at intended print size
-    if err := s.drawCenteredImage(pdf, data, item, pageW, pageH); err != nil {
+    if err := service.drawCenteredImage(document, data, item, pageWidth, pageHeight); err != nil {
         return err
     }
 
     // QR bottom-left (within margin)
     if data.ID != "" {
         // place QR within page margin at bottom-left
-        margin := s.marginForItem(item)
-        qrSize := s.cfg.QRCode.SizePt
-        x := margin
-        y := pageH - margin - qrSize
-        if err := s.drawQRCode(pdf, data.ID, x, y, qrSize); err != nil {
+        margin := service.marginForItem(item)
+        qrSize := service.config.QRCode.SizePt
+        xPosition := margin
+        yPosition := pageHeight - margin - qrSize
+        if err := service.drawQRCode(document, data.ID, xPosition, yPosition, qrSize); err != nil {
             // keep going even if QR fails
             _ = err
         }
@@ -132,108 +156,137 @@ func (s *PDFService) drawPage(pdf *gopdf.GoPdf, data OrderPdfData, item OrderIte
     return nil
 }
 
-func (s *PDFService) pageSizeForFirst(data OrderPdfData) (float64, float64) {
+func (service *PDFService) pageSizeForFirst(data OrderPdfData) (float64, float64) {
     if len(data.Items) == 0 {
-        return s.cfg.Size.WidthMM * MMToPoints, s.cfg.Size.HeightMM * MMToPoints
+        return service.config.Size.WidthMM * MMToPoints, service.config.Size.HeightMM * MMToPoints
     }
-    return s.pageSizeForItem(data.Items[0])
+    return service.pageSizeForItem(data.Items[0])
 }
 
-func (s *PDFService) pageSizeForItem(item OrderItemPdfData) (float64, float64) {
-    if md := item.Article.MugDetails; md != nil {
-        if md.DocumentFormatWidthMM != nil && md.DocumentFormatHeightMM != nil {
-            return float64(*md.DocumentFormatWidthMM) * MMToPoints, float64(*md.DocumentFormatHeightMM) * MMToPoints
+func (service *PDFService) pageSizeForItem(item OrderItemPdfData) (float64, float64) {
+    // Mirror Kotlin logic: compute width/height independently,
+    // falling back to configured defaults when a dimension is missing.
+    width := service.config.Size.WidthMM * MMToPoints
+    height := service.config.Size.HeightMM * MMToPoints
+    if mugDetails := item.Article.MugDetails; mugDetails != nil {
+        if mugDetails.DocumentFormatWidthMM != nil {
+            width = float64(*mugDetails.DocumentFormatWidthMM) * MMToPoints
+        }
+        if mugDetails.DocumentFormatHeightMM != nil {
+            height = float64(*mugDetails.DocumentFormatHeightMM) * MMToPoints
         }
     }
-    return s.cfg.Size.WidthMM * MMToPoints, s.cfg.Size.HeightMM * MMToPoints
+    return width, height
 }
 
-func (s *PDFService) marginForItem(item OrderItemPdfData) float64 {
-    if md := item.Article.MugDetails; md != nil {
-        if md.DocumentFormatMarginBottomMM != nil {
-            return float64(*md.DocumentFormatMarginBottomMM) * MMToPoints
+func (service *PDFService) marginForItem(item OrderItemPdfData) float64 {
+    if mugDetails := item.Article.MugDetails; mugDetails != nil {
+        if mugDetails.DocumentFormatMarginBottomMM != nil {
+            return float64(*mugDetails.DocumentFormatMarginBottomMM) * MMToPoints
         }
     }
-    return s.cfg.MarginMM * MMToPoints
+    return service.config.MarginMM * MMToPoints
 }
 
-func (s *PDFService) headerText(data OrderPdfData, page, total int) string {
-    ord := "UNKNOWN"
+func (service *PDFService) headerText(data OrderPdfData, page, total int) string {
+    order := "UNKNOWN"
     if data.OrderNumber != nil && *data.OrderNumber != "" {
-        ord = *data.OrderNumber
+        order = *data.OrderNumber
     }
-    return fmt.Sprintf("%s (%d/%d)", ord, page, total)
+    return fmt.Sprintf("%s (%d/%d)", order, page, total)
 }
 
-func (s *PDFService) productInfoLine(item OrderItemPdfData) string {
-    vals := make([]string, 0, 3)
-    if n := item.Article.SupplierArticleName; n != nil && *n != "" {
-        vals = append(vals, *n)
+func (service *PDFService) productInfoLine(item OrderItemPdfData) string {
+    values := make([]string, 0, 3)
+    if name := item.Article.SupplierArticleName; name != nil && *name != "" {
+        values = append(values, *name)
     }
-    if n := item.Article.SupplierArticleNumber; n != nil && *n != "" {
-        vals = append(vals, *n)
+    if number := item.Article.SupplierArticleNumber; number != nil && *number != "" {
+        values = append(values, *number)
     }
-    if v := item.VariantName; v != nil && *v != "" {
-        vals = append(vals, *v)
+    if variant := item.VariantName; variant != nil && *variant != "" {
+        values = append(values, *variant)
     }
-    return strings.Join(vals, " | ")
+    return strings.Join(values, " | ")
 }
 
-func (s *PDFService) drawCenteredImage(pdf *gopdf.GoPdf, data OrderPdfData, item OrderItemPdfData, pageW, pageH float64) error {
-    margin := s.marginForItem(item)
-    imgW := (pageW - 2*margin)
-    imgH := (pageH - 2*margin - (15 * MMToPoints))
-    if md := item.Article.MugDetails; md != nil {
-        if md.PrintTemplateWidthMM > 0 {
-            imgW = float64(md.PrintTemplateWidthMM) * MMToPoints
+func (service *PDFService) drawCenteredImage(document *gopdf.GoPdf, data OrderPdfData, item OrderItemPdfData, pageWidth, pageHeight float64) error {
+    margin := service.marginForItem(item)
+    imageWidth := (pageWidth - 2*margin)
+    imageHeight := (pageHeight - 2*margin - (15 * MMToPoints))
+    if mugDetails := item.Article.MugDetails; mugDetails != nil {
+        if mugDetails.PrintTemplateWidthMM > 0 {
+            imageWidth = float64(mugDetails.PrintTemplateWidthMM) * MMToPoints
         }
-        if md.PrintTemplateHeightMM > 0 {
-            imgH = float64(md.PrintTemplateHeightMM) * MMToPoints
+        if mugDetails.PrintTemplateHeightMM > 0 {
+            imageHeight = float64(mugDetails.PrintTemplateHeightMM) * MMToPoints
         }
     }
 
     // Load image bytes
-    var b []byte
+    var imageBytes []byte
     if len(item.GeneratedImageBytes) > 0 {
-        b = item.GeneratedImageBytes
+        imageBytes = item.GeneratedImageBytes
     } else if item.GeneratedImageFilename != nil && *item.GeneratedImageFilename != "" {
-        if s.loader == nil {
+        if service.loader == nil {
             return errors.New("image loader not configured")
         }
-        bb, _, err := s.loader(data.UserID, *item.GeneratedImageFilename)
-        if err == nil && len(bb) > 0 {
-            b = bb
+        loadedBytes, _, err := service.loader(data.UserID, *item.GeneratedImageFilename)
+        if err == nil && len(loadedBytes) > 0 {
+            imageBytes = loadedBytes
         }
     }
-    if len(b) == 0 {
-        b = DefaultPlaceholderPNG()
+    if len(imageBytes) == 0 {
+        imageBytes = DefaultPlaceholderPNG()
     }
 
-    holder, err := gopdf.ImageHolderByBytes(b)
+    // Normalize PNGs to 8-bit depth to avoid decoder limitations
+    imageBytes = normalizePNGTo8Bit(imageBytes)
+
+    imageHolder, err := gopdf.ImageHolderByBytes(imageBytes)
     if err != nil {
         // fallback to placeholder
-        holder, err = gopdf.ImageHolderByBytes(DefaultPlaceholderPNG())
+        imageHolder, err = gopdf.ImageHolderByBytes(DefaultPlaceholderPNG())
         if err != nil {
             return err
         }
     }
 
-    x := (pageW - imgW) / 2
-    y := (pageH - imgH) / 2
-    return pdf.ImageByHolder(holder, x, y, &gopdf.Rect{W: imgW, H: imgH})
+    xPosition := (pageWidth - imageWidth) / 2
+    yPosition := (pageHeight - imageHeight) / 2
+    return document.ImageByHolder(imageHolder, xPosition, yPosition, &gopdf.Rect{W: imageWidth, H: imageHeight})
 }
 
-func (s *PDFService) drawQRCode(pdf *gopdf.GoPdf, payload string, x, y, sizePt float64) error {
-    pngBytes, err := generateQRPNG(payload, s.cfg.QRCode.SizePixels)
+// normalizePNGTo8Bit attempts to decode PNG bytes and re-encode as 8-bit RGBA PNG.
+// If data is not PNG or decoding fails, returns the original bytes unchanged.
+func normalizePNGTo8Bit(data []byte) []byte {
+    // Fast path: try to decode as PNG
+    img, err := png.Decode(bytes.NewReader(data))
+    if err != nil {
+        return data
+    }
+    // Convert to 8-bit RGBA
+    b := img.Bounds()
+    rgba := image.NewRGBA(b)
+    draw.Draw(rgba, b, img, b.Min, draw.Src)
+    var buf bytes.Buffer
+    if err := png.Encode(&buf, rgba); err != nil {
+        return data
+    }
+    return buf.Bytes()
+}
+
+func (service *PDFService) drawQRCode(document *gopdf.GoPdf, payload string, xPosition, yPosition, sizePoints float64) error {
+    pngBytes, err := generateQRPNG(payload, service.config.QRCode.SizePixels)
     if err != nil || len(pngBytes) == 0 {
         // produce a 1x1 transparent PNG as fallback
         var buf bytes.Buffer
         _ = png.Encode(&buf, image1x1Transparent())
         pngBytes = buf.Bytes()
     }
-    holder, err := gopdf.ImageHolderByBytes(pngBytes)
+    imageHolder, err := gopdf.ImageHolderByBytes(pngBytes)
     if err != nil {
         return err
     }
-    return pdf.ImageByHolder(holder, x, y, &gopdf.Rect{W: sizePt, H: sizePt})
+    return document.ImageByHolder(imageHolder, xPosition, yPosition, &gopdf.Rect{W: sizePoints, H: sizePoints})
 }

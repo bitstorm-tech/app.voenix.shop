@@ -123,8 +123,9 @@ func downloadOrderPDFHandler(db *gorm.DB) gin.HandlerFunc {
 		gen := pdf.NewService(pdf.Options{Config: pdf.DefaultConfig()})
 		pdfBytes, gerr := gen.GenerateOrderPDF(dto)
 		if gerr != nil || len(pdfBytes) == 0 {
-			// Fallback to placeholder if generation fails
-			pdfBytes = generateOrderPDFPlaceholder(ord)
+			// Fail the request when generation fails; no fallback
+			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to generate PDF"})
+			return
 		}
 		filename := pdf.FilenameFromOrderNumber(ord.OrderNumber)
 		c.Header("Content-Disposition", "attachment; filename=\""+filename+"\"")
