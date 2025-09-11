@@ -1,13 +1,14 @@
 package order
 
 import (
-	"net/http"
-	"strconv"
+    "net/http"
+    "strconv"
 
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
+    "github.com/gin-gonic/gin"
+    "gorm.io/gorm"
 
-	"voenix/backend-go/internal/auth"
+    "voenix/backend-go/internal/auth"
+    "voenix/backend-go/internal/pdf"
 )
 
 // RegisterRoutes mounts user order routes under /api/user
@@ -101,22 +102,34 @@ func getOrderHandler(db *gorm.DB) gin.HandlerFunc {
 }
 
 func downloadOrderPDFHandler(db *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		u, ok := requireUser(c)
-		if !ok {
-			return
-		}
-		orderID := c.Param("orderId")
-		ord, err := FindOrder(db, u.ID, orderID)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"detail": "Order not found"})
-			return
-		}
-		filename := pdfFilename(ord.OrderNumber)
-		pdfBytes := generateOrderPDFPlaceholder(ord)
-		c.Header("Content-Disposition", "attachment; filename=\""+filename+"\"")
-		c.Data(http.StatusOK, "application/pdf", pdfBytes)
-	}
+    return func(c *gin.Context) {
+        u, ok := requireUser(c)
+        if !ok {
+            return
+        }
+        orderID := c.Param("orderId")
+        ord, err := FindOrder(db, u.ID, orderID)
+        if err != nil {
+            c.JSON(http.StatusNotFound, gin.H{"detail": "Order not found"})
+            return
+        }
+        // Build DTO for pdf module
+        dto, derr := buildOrderPdfData(db, ord)
+        if derr != nil {
+            c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to prepare PDF"})
+            return
+        }
+        // Generate PDF using UniPDF
+        gen := pdf.NewService(pdf.Options{Config: pdf.DefaultConfig()})
+        pdfBytes, gerr := gen.GenerateOrderPDF(dto)
+        if gerr != nil || len(pdfBytes) == 0 {
+            // Fallback to placeholder if generation fails
+            pdfBytes = generateOrderPDFPlaceholder(ord)
+        }
+        filename := pdf.FilenameFromOrderNumber(ord.OrderNumber)
+        c.Header("Content-Disposition", "attachment; filename=\""+filename+"\"")
+        c.Data(http.StatusOK, "application/pdf", pdfBytes)
+    }
 }
 
 // helpers
