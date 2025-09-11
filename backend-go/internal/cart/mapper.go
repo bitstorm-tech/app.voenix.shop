@@ -13,34 +13,59 @@ import (
 
 // assembleCartDto converts a Cart+Items into a response DTO.
 func assembleCartDto(db *gorm.DB, c *Cart) (*CartDto, error) {
-	items := make([]CartItemDto, 0, len(c.Items))
-	totalCount := 0
-	totalPrice := 0
-	for i := range c.Items {
-		ci := c.Items[i]
-		art, err := loadArticleRead(db, ci.ArticleID)
-		if err != nil {
-			return nil, err
-		}
-		mv, _ := loadMugVariantDto(db, ci.VariantID)
-		cd := parseJSONMap(ci.CustomData)
-		item := CartItemDto{
-			ID:                     ci.ID,
-			Article:                art,
-			Variant:                mv,
-			Quantity:               ci.Quantity,
-			PriceAtTime:            ci.PriceAtTime,
-			OriginalPrice:          ci.OriginalPrice,
-			HasPriceChanged:        ci.PriceAtTime != ci.OriginalPrice,
-			TotalPrice:             ci.PriceAtTime * ci.Quantity,
-			CustomData:             cd,
-			GeneratedImageID:       ci.GeneratedImageID,
-			GeneratedImageFilename: nil, // No image DB in Go backend
-			PromptID:               ci.PromptID,
-			Position:               ci.Position,
-			CreatedAt:              ci.CreatedAt,
-			UpdatedAt:              ci.UpdatedAt,
-		}
+    items := make([]CartItemDto, 0, len(c.Items))
+    totalCount := 0
+    totalPrice := 0
+    // Preload generated image filenames for any items with GeneratedImageID
+    genIDToFilename := map[int]string{}
+    {
+        ids := make([]int, 0, len(c.Items))
+        for i := range c.Items {
+            if c.Items[i].GeneratedImageID != nil {
+                ids = append(ids, *c.Items[i].GeneratedImageID)
+            }
+        }
+        if len(ids) > 0 {
+            type row struct{ ID int; Filename string }
+            var rows []row
+            if err := db.Table("generated_images").Select("id, filename").Where("id IN ?", ids).Scan(&rows).Error; err == nil {
+                for _, r := range rows {
+                    genIDToFilename[r.ID] = r.Filename
+                }
+            }
+        }
+    }
+    for i := range c.Items {
+        ci := c.Items[i]
+        art, err := loadArticleRead(db, ci.ArticleID)
+        if err != nil {
+            return nil, err
+        }
+        mv, _ := loadMugVariantDto(db, ci.VariantID)
+        cd := parseJSONMap(ci.CustomData)
+        var genFilename *string
+        if ci.GeneratedImageID != nil {
+            if fn, ok := genIDToFilename[*ci.GeneratedImageID]; ok && fn != "" {
+                genFilename = &fn
+            }
+        }
+        item := CartItemDto{
+            ID:                     ci.ID,
+            Article:                art,
+            Variant:                mv,
+            Quantity:               ci.Quantity,
+            PriceAtTime:            ci.PriceAtTime,
+            OriginalPrice:          ci.OriginalPrice,
+            HasPriceChanged:        ci.PriceAtTime != ci.OriginalPrice,
+            TotalPrice:             ci.PriceAtTime * ci.Quantity,
+            CustomData:             cd,
+            GeneratedImageID:       ci.GeneratedImageID,
+            GeneratedImageFilename: genFilename,
+            PromptID:               ci.PromptID,
+            Position:               ci.Position,
+            CreatedAt:              ci.CreatedAt,
+            UpdatedAt:              ci.UpdatedAt,
+        }
 		items = append(items, item)
 		totalCount += ci.Quantity
 		totalPrice += item.TotalPrice

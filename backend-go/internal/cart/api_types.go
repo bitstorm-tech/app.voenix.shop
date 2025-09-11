@@ -47,9 +47,9 @@ type CartItemDto struct {
 	HasPriceChanged        bool                `json:"hasPriceChanged"`
 	TotalPrice             int                 `json:"totalPrice"`
 	CustomData             map[string]any      `json:"customData"`
-	GeneratedImageID       *int                `json:"generatedImageId,omitempty"`
-	GeneratedImageFilename *string             `json:"generatedImageFilename,omitempty"`
-	PromptID               *int                `json:"promptId,omitempty"`
+    GeneratedImageID       *int                `json:"generatedImageId"`
+    GeneratedImageFilename *string             `json:"generatedImageFilename"`
+    PromptID               *int                `json:"promptId"`
 	Position               int                 `json:"position"`
 	CreatedAt              time.Time           `json:"createdAt"`
 	UpdatedAt              time.Time           `json:"updatedAt"`
