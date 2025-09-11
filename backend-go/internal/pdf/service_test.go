@@ -27,7 +27,7 @@ func TestGenerateOrderPDF_Minimal(t *testing.T) {
 	if len(b) == 0 {
 		t.Fatalf("no pdf bytes produced")
 	}
-	if !bytes.HasPrefix(b, []byte("%PDF")) {
-		t.Fatalf("pdf does not start with %PDF header")
-	}
+    if !bytes.HasPrefix(b, []byte("%PDF")) {
+        t.Fatalf("pdf does not start with %%PDF header")
+    }
 }
