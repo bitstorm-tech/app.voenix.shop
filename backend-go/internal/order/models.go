@@ -62,7 +62,7 @@ type OrderItem struct {
 	PricePerItem       int64     `gorm:"column:price_per_item;not null" json:"pricePerItem"`
 	TotalPrice         int64     `gorm:"column:total_price;not null" json:"totalPrice"`
 	GeneratedImageID   *int      `gorm:"column:generated_image_id" json:"generatedImageId"`
-	GeneratedImageFile *string   `gorm:"column:generated_image_filename;size:255" json:"generatedImageFilename"`
+	GeneratedImageFile *string   `gorm:"-" json:"generatedImageFilename"`
 	PromptID           *int      `gorm:"column:prompt_id" json:"promptId"`
 	CustomData         string    `gorm:"column:custom_data;type:text;not null" json:"customData"`
 	CreatedAt          time.Time `gorm:"column:created_at;autoCreateTime" json:"createdAt"`

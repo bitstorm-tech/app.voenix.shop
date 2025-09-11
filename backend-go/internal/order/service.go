@@ -205,6 +205,28 @@ func toAddressDtoFromOrder(o *Order) (AddressDto, *AddressDto) {
 func toOrderDto(db *gorm.DB, o *Order, baseURL string) (OrderDto, error) {
 	ship, bill := toAddressDtoFromOrder(o)
 	items := make([]OrderItemDto, 0, len(o.Items))
+	// Preload generated image filenames for any items with GeneratedImageID
+	genIDToFilename := map[int]string{}
+	{
+		ids := make([]int, 0, len(o.Items))
+		for i := range o.Items {
+			if o.Items[i].GeneratedImageID != nil {
+				ids = append(ids, *o.Items[i].GeneratedImageID)
+			}
+		}
+		if len(ids) > 0 {
+			type row struct {
+				ID       int
+				Filename string
+			}
+			var rows []row
+			if err := db.Table("generated_images").Select("id, filename").Where("id IN ?", ids).Scan(&rows).Error; err == nil {
+				for _, r := range rows {
+					genIDToFilename[r.ID] = r.Filename
+				}
+			}
+		}
+	}
 	for i := range o.Items {
 		it := o.Items[i]
 		art, err := loadArticleRead(db, it.ArticleID)
@@ -212,6 +234,12 @@ func toOrderDto(db *gorm.DB, o *Order, baseURL string) (OrderDto, error) {
 			return OrderDto{}, err
 		}
 		mv, _ := loadMugVariantDto(db, it.VariantID)
+		var genFilename *string
+		if it.GeneratedImageID != nil {
+			if fn, ok := genIDToFilename[*it.GeneratedImageID]; ok && fn != "" {
+				genFilename = &fn
+			}
+		}
 		items = append(items, OrderItemDto{
 			ID:                     it.ID,
 			Article:                art,
@@ -220,7 +248,7 @@ func toOrderDto(db *gorm.DB, o *Order, baseURL string) (OrderDto, error) {
 			PricePerItem:           it.PricePerItem,
 			TotalPrice:             it.TotalPrice,
 			GeneratedImageID:       it.GeneratedImageID,
-			GeneratedImageFilename: it.GeneratedImageFile,
+			GeneratedImageFilename: genFilename,
 			PromptID:               it.PromptID,
 			CustomData:             parseJSONMap(it.CustomData),
 			CreatedAt:              it.CreatedAt,
