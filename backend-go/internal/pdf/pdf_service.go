@@ -95,12 +95,9 @@ func (service *PDFService) GenerateOrderPDF(data OrderPdfData) ([]byte, error) {
 func (service *PDFService) drawPage(document *gopdf.GoPdf, data OrderPdfData, item OrderItemPdfData, page, total int) error {
 	pageWidth, pageHeight := service.pageSizeForItem(item)
 
-	// Prepare header text
-	header := service.headerText(data, page, total)
-
 	// Right vertical product info
 	if info := service.productInfoLine(item); info != "" {
-		_ = document.SetFont("Go-Regular", "", service.config.Fonts.HeaderSizePt)
+		_ = document.SetFont("Arial", "", service.config.Fonts.HeaderSizePt)
 		if w, err := document.MeasureTextWidth(info); err == nil {
 			x := pageWidth - 15.0
 			y := (pageHeight + w) / 2
@@ -124,8 +121,8 @@ func (service *PDFService) drawPage(document *gopdf.GoPdf, data OrderPdfData, it
 	}
 
 	// Left vertical header (order number + page/total)
-	if header != "" {
-		_ = document.SetFont("Go-Bold", "", service.config.Fonts.HeaderSizePt)
+	if header := service.headerText(data, page, total); header != "" {
+		_ = document.SetFont("Arial", "", service.config.Fonts.HeaderSizePt)
 		if w, err := document.MeasureTextWidth(header); err == nil {
 			x := 5.0
 			y := (pageHeight + w) / 2
