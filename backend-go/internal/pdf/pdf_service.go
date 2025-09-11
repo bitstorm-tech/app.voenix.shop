@@ -13,20 +13,19 @@ import (
     goregular "golang.org/x/image/font/gofont/goregular"
 )
 
-// UniPDFService now implements Service using signintech/gopdf.
-// We keep the type name and constructor to avoid ripple changes elsewhere.
-type UniPDFService struct {
+// PDFService implements Service using a PDF backend.
+type PDFService struct {
     cfg    Config
     loader ImageLoaderFunc
 }
 
 // NewService constructs a new service with options.
-func NewService(opt Options) *UniPDFService {
+func NewService(opt Options) *PDFService {
     cfg := opt.Config
     if cfg.Size.WidthMM == 0 || cfg.Size.HeightMM == 0 {
         cfg = DefaultConfig()
     }
-    svc := &UniPDFService{cfg: cfg}
+    svc := &PDFService{cfg: cfg}
     if opt.ImageLoader != nil {
         svc.loader = opt.ImageLoader
     } else {
@@ -35,7 +34,7 @@ func NewService(opt Options) *UniPDFService {
     return svc
 }
 
-func (s *UniPDFService) GenerateOrderPDF(data OrderPdfData) ([]byte, error) {
+func (s *PDFService) GenerateOrderPDF(data OrderPdfData) ([]byte, error) {
     total := data.TotalItemCount()
     if total == 0 {
         total = 1
@@ -73,7 +72,7 @@ func (s *UniPDFService) GenerateOrderPDF(data OrderPdfData) ([]byte, error) {
                     _ = pdf.SetFont("Go-Regular", "", s.cfg.Fonts.HeaderSizePt)
                 }
             }
-            if err := s.drawPageGoPDF(&pdf, data, item, pageNum, total); err != nil {
+            if err := s.drawPage(&pdf, data, item, pageNum, total); err != nil {
                 return nil, err
             }
             pageNum++
@@ -81,7 +80,7 @@ func (s *UniPDFService) GenerateOrderPDF(data OrderPdfData) ([]byte, error) {
     }
 
     if pageNum == 1 {
-        _ = s.drawPageGoPDF(&pdf, data, OrderItemPdfData{Quantity: 1, Article: ArticlePdfData{}}, 1, 1)
+        _ = s.drawPage(&pdf, data, OrderItemPdfData{Quantity: 1, Article: ArticlePdfData{}}, 1, 1)
     }
 
     if err := pdf.Write(&out); err != nil {
@@ -90,8 +89,8 @@ func (s *UniPDFService) GenerateOrderPDF(data OrderPdfData) ([]byte, error) {
     return out.Bytes(), nil
 }
 
-// drawPageGoPDF draws a page using gopdf, following the Kotlin layout.
-func (s *UniPDFService) drawPageGoPDF(pdf *gopdf.GoPdf, data OrderPdfData, item OrderItemPdfData, page, total int) error {
+// drawPage renders a single page following the intended layout.
+func (s *PDFService) drawPage(pdf *gopdf.GoPdf, data OrderPdfData, item OrderItemPdfData, page, total int) error {
     pageW, pageH := s.pageSizeForItem(item)
 
     // Left vertical header (order number + page/total)
@@ -114,7 +113,7 @@ func (s *UniPDFService) drawPageGoPDF(pdf *gopdf.GoPdf, data OrderPdfData, item 
     }
 
     // Centered product image at intended print size
-    if err := s.drawCenteredImageGoPDF(pdf, data, item, pageW, pageH); err != nil {
+    if err := s.drawCenteredImage(pdf, data, item, pageW, pageH); err != nil {
         return err
     }
 
@@ -125,7 +124,7 @@ func (s *UniPDFService) drawPageGoPDF(pdf *gopdf.GoPdf, data OrderPdfData, item 
         qrSize := s.cfg.QRCode.SizePt
         x := margin
         y := pageH - margin - qrSize
-        if err := s.drawQRCodeGoPDF(pdf, data.ID, x, y, qrSize); err != nil {
+        if err := s.drawQRCode(pdf, data.ID, x, y, qrSize); err != nil {
             // keep going even if QR fails
             _ = err
         }
@@ -133,14 +132,14 @@ func (s *UniPDFService) drawPageGoPDF(pdf *gopdf.GoPdf, data OrderPdfData, item 
     return nil
 }
 
-func (s *UniPDFService) pageSizeForFirst(data OrderPdfData) (float64, float64) {
+func (s *PDFService) pageSizeForFirst(data OrderPdfData) (float64, float64) {
     if len(data.Items) == 0 {
         return s.cfg.Size.WidthMM * MMToPoints, s.cfg.Size.HeightMM * MMToPoints
     }
     return s.pageSizeForItem(data.Items[0])
 }
 
-func (s *UniPDFService) pageSizeForItem(item OrderItemPdfData) (float64, float64) {
+func (s *PDFService) pageSizeForItem(item OrderItemPdfData) (float64, float64) {
     if md := item.Article.MugDetails; md != nil {
         if md.DocumentFormatWidthMM != nil && md.DocumentFormatHeightMM != nil {
             return float64(*md.DocumentFormatWidthMM) * MMToPoints, float64(*md.DocumentFormatHeightMM) * MMToPoints
@@ -149,7 +148,7 @@ func (s *UniPDFService) pageSizeForItem(item OrderItemPdfData) (float64, float64
     return s.cfg.Size.WidthMM * MMToPoints, s.cfg.Size.HeightMM * MMToPoints
 }
 
-func (s *UniPDFService) marginForItem(item OrderItemPdfData) float64 {
+func (s *PDFService) marginForItem(item OrderItemPdfData) float64 {
     if md := item.Article.MugDetails; md != nil {
         if md.DocumentFormatMarginBottomMM != nil {
             return float64(*md.DocumentFormatMarginBottomMM) * MMToPoints
@@ -158,7 +157,7 @@ func (s *UniPDFService) marginForItem(item OrderItemPdfData) float64 {
     return s.cfg.MarginMM * MMToPoints
 }
 
-func (s *UniPDFService) headerText(data OrderPdfData, page, total int) string {
+func (s *PDFService) headerText(data OrderPdfData, page, total int) string {
     ord := "UNKNOWN"
     if data.OrderNumber != nil && *data.OrderNumber != "" {
         ord = *data.OrderNumber
@@ -166,7 +165,7 @@ func (s *UniPDFService) headerText(data OrderPdfData, page, total int) string {
     return fmt.Sprintf("%s (%d/%d)", ord, page, total)
 }
 
-func (s *UniPDFService) productInfoLine(item OrderItemPdfData) string {
+func (s *PDFService) productInfoLine(item OrderItemPdfData) string {
     vals := make([]string, 0, 3)
     if n := item.Article.SupplierArticleName; n != nil && *n != "" {
         vals = append(vals, *n)
@@ -180,7 +179,7 @@ func (s *UniPDFService) productInfoLine(item OrderItemPdfData) string {
     return strings.Join(vals, " | ")
 }
 
-func (s *UniPDFService) drawCenteredImageGoPDF(pdf *gopdf.GoPdf, data OrderPdfData, item OrderItemPdfData, pageW, pageH float64) error {
+func (s *PDFService) drawCenteredImage(pdf *gopdf.GoPdf, data OrderPdfData, item OrderItemPdfData, pageW, pageH float64) error {
     margin := s.marginForItem(item)
     imgW := (pageW - 2*margin)
     imgH := (pageH - 2*margin - (15 * MMToPoints))
@@ -224,7 +223,7 @@ func (s *UniPDFService) drawCenteredImageGoPDF(pdf *gopdf.GoPdf, data OrderPdfDa
     return pdf.ImageByHolder(holder, x, y, &gopdf.Rect{W: imgW, H: imgH})
 }
 
-func (s *UniPDFService) drawQRCodeGoPDF(pdf *gopdf.GoPdf, payload string, x, y, sizePt float64) error {
+func (s *PDFService) drawQRCode(pdf *gopdf.GoPdf, payload string, x, y, sizePt float64) error {
     pngBytes, err := generateQRPNG(payload, s.cfg.QRCode.SizePixels)
     if err != nil || len(pngBytes) == 0 {
         // produce a 1x1 transparent PNG as fallback
