@@ -18,6 +18,9 @@
 - Format: `make fmt` (runs `go fmt ./...`).
 - Test: `go test ./...` (add `-v` or `-cover` as needed).
 
+## Documentation
+- Always use context7 mcp to get the latest official documentation for the Go standard library, third‑party packages, and tooling before implementing or changing behavior.
+
 ## Coding Style & Naming Conventions
 - Use `gofmt`/`go fmt` and idiomatic Go. No manual formatting.
 - Packages: short, lowercase (`auth`, `database`). Files: lowercase with underscores if needed.
