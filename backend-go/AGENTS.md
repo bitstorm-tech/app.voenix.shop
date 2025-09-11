@@ -27,6 +27,7 @@
 - Exported identifiers use PascalCase; unexported use camelCase.
 - Errors: return `error` values; prefer wrapping/context where helpful; avoid panics in handlers.
 - HTTP handlers should validate input and return structured JSON errors (`{"detail": "..."}`).
+- DO NOT use abbreviations for variable names! Example instead of `mv` use `mugVariant` or instead of `imgW` use `imageWidth`
 
 ## Dependencies & Libraries
 - Prefer the Go standard library whenever possible before adding a third‑party dependency or writing custom implementations.
