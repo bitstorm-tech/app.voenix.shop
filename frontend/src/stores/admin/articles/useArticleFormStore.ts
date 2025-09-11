@@ -140,8 +140,8 @@ const initialCostCalculation: CostCalculation = {
   // UI state
   purchasePriceCorresponds: false,
   salesPriceCorresponds: false,
-  purchaseActiveRow: 'cost',
-  salesActiveRow: 'margin',
+  purchaseActiveRow: 'COST',
+  salesActiveRow: 'MARGIN',
 };
 
 export const useArticleFormStore = create<ArticleFormState>()(
@@ -523,7 +523,7 @@ export const useArticleFormStore = create<ArticleFormState>()(
         }
 
         // Recalculate sales totals with new VAT rate if not directly editing sales total
-        if (state.costCalculation.salesActiveRow !== 'total') {
+        if (state.costCalculation.salesActiveRow !== 'TOTAL') {
           const salesNet = state.costCalculation.purchaseTotalNet * (1 + state.costCalculation.salesMarginPercent / 100);
           const salesTax = salesNet * (percent / 100);
           const salesGross = salesNet + salesTax;

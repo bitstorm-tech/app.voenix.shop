@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: dev run build fmt vet lint check help
+.PHONY: dev run build fmt vet lint check help test
 
 dev: ## Run server with hot reload via Air
 	@if ! command -v air >/dev/null 2>&1; then \
@@ -13,8 +13,8 @@ run: ## Run server without hot reload
 	go run ./cmd/server
 
 build: ## Build server binary to ./bin/server
-	@mkdir -p bin .cache/go-build .cache/gomod
-	GOCACHE=$(PWD)/.cache/go-build GOMODCACHE=$(PWD)/.cache/gomod go build -o ./bin/server ./cmd/server
+	@mkdir -p bin
+	go build -o ./bin/server ./cmd/server
 
 check: ## Run lint, vet, then build
 	$(MAKE) lint
@@ -22,18 +22,20 @@ check: ## Run lint, vet, then build
 	$(MAKE) build
 
 fmt: ## Format all Go files
-	GOCACHE=$(PWD)/.cache/go-build go fmt ./...
+	go fmt ./...
 
 vet: ## Static analysis with go vet
-	GOCACHE=$(PWD)/.cache/go-build GOMODCACHE=$(PWD)/.cache/gomod go vet ./...
+	go vet ./...
 
 lint: ## Run golangci-lint (aggregated linters)
 	@if ! command -v golangci-lint >/dev/null 2>&1; then \
 		echo "golangci-lint not found. Install with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest"; \
 		exit 1; \
 	fi
-	@mkdir -p .cache/golangci-lint
-	GOLANGCI_LINT_CACHE=$(PWD)/.cache/golangci-lint GOCACHE=$(PWD)/.cache/go-build golangci-lint run
+	golangci-lint run
+
+test: ## Run Go tests
+	go test ./...
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' Makefile | sed -E 's/:.*?## /\t- /'

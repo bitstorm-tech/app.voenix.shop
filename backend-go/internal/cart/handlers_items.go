@@ -119,7 +119,9 @@ func updateItemHandler(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusNotFound, gin.H{"detail": "Cart item not found"})
 			return
 		}
-		if err := db.Save(cart).Error; err != nil {
+		if err := db.Model(&CartItem{}).
+			Where("id = ? AND cart_id = ?", itemID, cart.ID).
+			Update("quantity", req.Quantity).Error; err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Cart update failed"})
 			return
 		}

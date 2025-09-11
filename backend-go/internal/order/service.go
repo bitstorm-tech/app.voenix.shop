@@ -1,14 +1,14 @@
 package order
 
 import (
-    "crypto/rand"
-    "encoding/hex"
-    "encoding/json"
-    "errors"
-    "fmt"
-    "os"
-    "path/filepath"
-    "strings"
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"gorm.io/gorm"
 
@@ -61,13 +61,13 @@ func CreateOrderFromCart(db *gorm.DB, userID int, req CreateOrderRequest) (*Orde
 		bill = &ship
 	}
 
-    ord := &Order{
-        ID:              newUUIDv4(),
-        UserID:          userID,
-        CustomerEmail:   req.CustomerEmail,
-        CustomerFirst:   req.CustomerFirstName,
-        CustomerLast:    req.CustomerLastName,
-        CustomerPhone:   req.CustomerPhone,
+	ord := &Order{
+		ID:              newUUIDv4(),
+		UserID:          userID,
+		CustomerEmail:   req.CustomerEmail,
+		CustomerFirst:   req.CustomerFirstName,
+		CustomerLast:    req.CustomerLastName,
+		CustomerPhone:   req.CustomerPhone,
 		ShippingStreet1: ship.StreetAddress1,
 		ShippingStreet2: ship.StreetAddress2,
 		ShippingCity:    ship.City,

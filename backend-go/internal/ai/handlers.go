@@ -1,10 +1,7 @@
 package ai
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
-	"hash/crc32"
 	"io"
 	"net/http"
 	"path/filepath"
@@ -334,7 +331,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 		cropY, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropY")), 64)
 		cropW, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropWidth")), 64)
 		cropH, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropHeight")), 64)
-		hasCrop := !isZero(cropW) && !isZero(cropH)
+		hasCrop := cropW != 0 && cropH != 0
 
 		// Provider
 		provStr := c.DefaultQuery("provider", c.PostForm("provider"))
@@ -477,26 +474,6 @@ func derefPtr(p *string) string {
 		return ""
 	}
 	return *p
-}
-
-func isZero(f float64) bool { return f == 0 }
-
-func randomHex(n int) string {
-	if n <= 0 {
-		n = 16
-	}
-	buf := make([]byte, n)
-	if _, err := rand.Read(buf); err != nil {
-		return ""
-	}
-	return hex.EncodeToString(buf)
-}
-
-func pseudoID(s string) int {
-	// Create a stable positive int from a string
-	v := crc32.ChecksumIEEE([]byte(s))
-	// Ensure positive when converted to int
-	return int(v & 0x7fffffff)
 }
 
 func safeErr(err error) string {

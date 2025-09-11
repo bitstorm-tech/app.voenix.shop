@@ -85,9 +85,9 @@ func (service *PDFService) GenerateOrderPDF(data OrderPdfData) ([]byte, error) {
 		_ = service.drawPage(&document, data, OrderItemPdfData{Quantity: 1, Article: ArticlePdfData{}}, 1, 1)
 	}
 
-	if err := document.Write(&out); err != nil {
-		return nil, err
-	}
+    if _, err := document.WriteTo(&out); err != nil {
+        return nil, err
+    }
 	return out.Bytes(), nil
 }
 
