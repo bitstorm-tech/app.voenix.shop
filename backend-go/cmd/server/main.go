@@ -19,6 +19,7 @@ import (
 	"voenix/backend-go/internal/country"
 	"voenix/backend-go/internal/database"
 	"voenix/backend-go/internal/image"
+	"voenix/backend-go/internal/order"
 	"voenix/backend-go/internal/prompt"
 	"voenix/backend-go/internal/supplier"
 	"voenix/backend-go/internal/vat"
@@ -48,6 +49,8 @@ func main() {
 		&article.ArticleCategory{}, &article.ArticleSubCategory{}, &article.Article{}, &article.MugVariant{}, &article.ShirtVariant{}, &article.MugDetails{}, &article.ShirtDetails{}, &article.CostCalculation{},
 		// Cart module
 		&cart.Cart{}, &cart.CartItem{},
+		// Order module
+		&order.Order{}, &order.OrderItem{},
 	); err != nil {
 		log.Fatalf("auto-migrate failed: %v", err)
 	}
@@ -111,6 +114,8 @@ func main() {
 	article.RegisterRoutes(r, db)
 	// Cart routes (user)
 	cart.RegisterRoutes(r, db)
+	// Order routes (user)
+	order.RegisterRoutes(r, db)
 
 	addr := os.Getenv("ADDR")
 	if addr == "" {

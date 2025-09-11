@@ -1,0 +1,72 @@
+package order
+
+import (
+    "time"
+)
+
+// OrderStatus mirrors Kotlin enum values.
+const (
+    StatusPending    = "PENDING"
+    StatusProcessing = "PROCESSING"
+    StatusShipped    = "SHIPPED"
+    StatusDelivered  = "DELIVERED"
+    StatusCancelled  = "CANCELLED"
+)
+
+// Order GORM model mapped to table "orders" compatible with Kotlin schema.
+// Uses string UUIDs managed by the application for portability (sqlite/postgres).
+type Order struct {
+    ID               string     `gorm:"primaryKey;column:id;size:36" json:"id"`
+    OrderNumber      string     `gorm:"column:order_number;size:50;uniqueIndex" json:"orderNumber"`
+    UserID           int        `gorm:"column:user_id;not null" json:"userId"`
+    CustomerEmail    string     `gorm:"column:customer_email;size:255;not null" json:"customerEmail"`
+    CustomerFirst    string     `gorm:"column:customer_first_name;size:255;not null" json:"customerFirstName"`
+    CustomerLast     string     `gorm:"column:customer_last_name;size:255;not null" json:"customerLastName"`
+    CustomerPhone    *string    `gorm:"column:customer_phone;size:50" json:"customerPhone"`
+    // Shipping address
+    ShippingStreet1  string  `gorm:"column:shipping_street_address_1;size:255;not null" json:"-"`
+    ShippingStreet2  *string `gorm:"column:shipping_street_address_2;size:255" json:"-"`
+    ShippingCity     string  `gorm:"column:shipping_city;size:100;not null" json:"-"`
+    ShippingState    string  `gorm:"column:shipping_state;size:100;not null" json:"-"`
+    ShippingPostal   string  `gorm:"column:shipping_postal_code;size:20;not null" json:"-"`
+    ShippingCountry  string  `gorm:"column:shipping_country;size:100;not null" json:"-"`
+    // Billing address
+    BillingStreet1   *string `gorm:"column:billing_street_address_1;size:255" json:"-"`
+    BillingStreet2   *string `gorm:"column:billing_street_address_2;size:255" json:"-"`
+    BillingCity      *string `gorm:"column:billing_city;size:100" json:"-"`
+    BillingState     *string `gorm:"column:billing_state;size:100" json:"-"`
+    BillingPostal    *string `gorm:"column:billing_postal_code;size:20" json:"-"`
+    BillingCountry   *string `gorm:"column:billing_country;size:100" json:"-"`
+    // Pricing
+    Subtotal         int64      `gorm:"column:subtotal;not null" json:"subtotal"`
+    TaxAmount        int64      `gorm:"column:tax_amount;not null" json:"taxAmount"`
+    ShippingAmount   int64      `gorm:"column:shipping_amount;not null" json:"shippingAmount"`
+    TotalAmount      int64      `gorm:"column:total_amount;not null" json:"totalAmount"`
+    Status           string     `gorm:"column:status;size:20;not null" json:"status"`
+    CartID           int        `gorm:"column:cart_id;not null" json:"cartId"`
+    Notes            *string    `gorm:"column:notes;type:text" json:"notes"`
+    Items            []OrderItem `gorm:"foreignKey:OrderID;references:ID" json:"-"`
+    CreatedAt        time.Time  `gorm:"column:created_at;autoCreateTime" json:"createdAt"`
+    UpdatedAt        time.Time  `gorm:"column:updated_at;autoUpdateTime" json:"updatedAt"`
+}
+
+func (Order) TableName() string { return "orders" }
+
+// OrderItem GORM model mapped to "order_items"
+type OrderItem struct {
+    ID                  string    `gorm:"primaryKey;column:id;size:36" json:"id"`
+    OrderID             string    `gorm:"column:order_id;size:36;not null;index" json:"orderId"`
+    ArticleID           int       `gorm:"column:article_id;not null" json:"articleId"`
+    VariantID           int       `gorm:"column:variant_id;not null" json:"variantId"`
+    Quantity            int       `gorm:"column:quantity;not null" json:"quantity"`
+    PricePerItem        int64     `gorm:"column:price_per_item;not null" json:"pricePerItem"`
+    TotalPrice          int64     `gorm:"column:total_price;not null" json:"totalPrice"`
+    GeneratedImageID    *int      `gorm:"column:generated_image_id" json:"generatedImageId"`
+    GeneratedImageFile  *string   `gorm:"column:generated_image_filename;size:255" json:"generatedImageFilename"`
+    PromptID            *int      `gorm:"column:prompt_id" json:"promptId"`
+    CustomData          string    `gorm:"column:custom_data;type:text;not null" json:"customData"`
+    CreatedAt           time.Time `gorm:"column:created_at;autoCreateTime" json:"createdAt"`
+}
+
+func (OrderItem) TableName() string { return "order_items" }
+
