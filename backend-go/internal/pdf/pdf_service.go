@@ -120,6 +120,18 @@ func (service *PDFService) drawPage(document *gopdf.GoPdf, data OrderPdfData, it
 		return err
 	}
 
+	// QR bottom-left (within margin)
+	if data.ID != "" {
+		margin := service.marginForItem(item)
+		qrSize := service.config.QRCode.SizePt
+		x := margin
+		y := pageHeight - margin - qrSize
+		document.RotateReset()
+		if err := service.drawQRCode(document, data.ID, x, y, qrSize); err != nil {
+			_ = err
+		}
+	}
+
 	// Left vertical header (order number + page/total)
 	if header := service.headerText(data, page, total); header != "" {
 		_ = document.SetFont("Arial", "", service.config.Fonts.HeaderSizePt)
