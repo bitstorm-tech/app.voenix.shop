@@ -27,6 +27,7 @@
 - Exported identifiers use PascalCase; unexported use camelCase.
 - Errors: return `error` values; prefer wrapping/context where helpful; avoid panics in handlers.
 - HTTP handlers should validate input and return structured JSON errors (`{"detail": "..."}`).
+- We prefer simple solutions over complex and over-engineered solutions
 - DO NOT use abbreviations for variable names! Example instead of `mv` use `mugVariant` or instead of `imgW` use `imageWidth`
 
 ## Dependencies & Libraries
