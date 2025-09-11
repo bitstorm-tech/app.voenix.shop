@@ -1,15 +1,14 @@
 package order
 
 import (
-	"crypto/rand"
-	"encoding/hex"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
-	"time"
+    "crypto/rand"
+    "encoding/hex"
+    "encoding/json"
+    "errors"
+    "fmt"
+    "os"
+    "path/filepath"
+    "strings"
 
 	"gorm.io/gorm"
 
@@ -62,14 +61,13 @@ func CreateOrderFromCart(db *gorm.DB, userID int, req CreateOrderRequest) (*Orde
 		bill = &ship
 	}
 
-	ord := &Order{
-		ID:              newUUIDv4(),
-		OrderNumber:     newOrderNumber(),
-		UserID:          userID,
-		CustomerEmail:   req.CustomerEmail,
-		CustomerFirst:   req.CustomerFirstName,
-		CustomerLast:    req.CustomerLastName,
-		CustomerPhone:   req.CustomerPhone,
+    ord := &Order{
+        ID:              newUUIDv4(),
+        UserID:          userID,
+        CustomerEmail:   req.CustomerEmail,
+        CustomerFirst:   req.CustomerFirstName,
+        CustomerLast:    req.CustomerLastName,
+        CustomerPhone:   req.CustomerPhone,
 		ShippingStreet1: ship.StreetAddress1,
 		ShippingStreet2: ship.StreetAddress2,
 		ShippingCity:    ship.City,
@@ -424,13 +422,6 @@ func newUUIDv4() string {
 	// Format 8-4-4-4-12
 	hexs := hex.EncodeToString(b)
 	return fmt.Sprintf("%s-%s-%s-%s-%s", hexs[0:8], hexs[8:12], hexs[12:16], hexs[16:20], hexs[20:32])
-}
-
-func newOrderNumber() string {
-	ts := time.Now().UTC().Format("20060102")
-	r := make([]byte, 3)
-	_, _ = rand.Read(r)
-	return fmt.Sprintf("ORD-%s-%s", ts, strings.ToUpper(hex.EncodeToString(r)))
 }
 
 func strPtrOrNil(s string) *string {
