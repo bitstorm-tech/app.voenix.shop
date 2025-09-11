@@ -1,23 +1,24 @@
 package ai
 
 import (
-    "crypto/rand"
-    "encoding/hex"
-    "encoding/json"
-    "hash/crc32"
-    "io"
-    "net/http"
-    "path/filepath"
-    "strconv"
-    "strings"
-    "time"
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
+	"hash/crc32"
+	"io"
+	"net/http"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"time"
 
-    "github.com/gin-gonic/gin"
-    "gorm.io/gorm"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 
-    "voenix/backend-go/internal/auth"
-    imgsvc "voenix/backend-go/internal/image"
-    "voenix/backend-go/internal/prompt"
+	"voenix/backend-go/internal/auth"
+	imgsvc "voenix/backend-go/internal/image"
+	"voenix/backend-go/internal/prompt"
 )
 
 // providerFromParam maps high-level provider names used by Kotlin/FE to internal providers.
@@ -282,190 +283,232 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 		c.JSON(http.StatusOK, imageEditResponse{ImageFilenames: out})
 	})
 
-    // User AI routes (stub)
-    user := r.Group("/api/user/ai/images")
-    user.Use(auth.RequireRoles(db, "USER", "ADMIN"))
-    user.POST("/generate", func(c *gin.Context) {
-        // Authenticated user
-        uVal, _ := c.Get("currentUser")
-        u, _ := uVal.(*auth.User)
-        if u == nil {
-            c.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
-            return
-        }
+	// User AI routes (stub)
+	user := r.Group("/api/user/ai/images")
+	user.Use(auth.RequireRoles(db, "USER", "ADMIN"))
+	user.POST("/generate", func(c *gin.Context) {
+		// Authenticated user
+		uVal, _ := c.Get("currentUser")
+		u, _ := uVal.(*auth.User)
+		if u == nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
+			return
+		}
 
-        // Parse multipart: image (required)
-        fileHeader, err := c.FormFile("image")
-        if err != nil || fileHeader == nil {
-            c.JSON(http.StatusBadRequest, gin.H{"message": "Missing image"})
-            return
-        }
-        if ct := fileHeader.Header.Get("Content-Type"); ct != "" && !strings.HasPrefix(ct, "image/") {
-            c.JSON(http.StatusBadRequest, gin.H{"message": "Uploaded file must be an image"})
-            return
-        }
+		// Parse multipart: image (required)
+		fileHeader, err := c.FormFile("image")
+		if err != nil || fileHeader == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Missing image"})
+			return
+		}
+		if ct := fileHeader.Header.Get("Content-Type"); ct != "" && !strings.HasPrefix(ct, "image/") {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Uploaded file must be an image"})
+			return
+		}
 
-        // promptId (required)
-        pidStr := strings.TrimSpace(c.PostForm("promptId"))
-        if pidStr == "" {
-            c.JSON(http.StatusBadRequest, gin.H{"message": "Missing promptId"})
-            return
-        }
-        pid64, err := strconv.ParseInt(pidStr, 10, 64)
-        if err != nil || pid64 <= 0 {
-            c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid promptId"})
-            return
-        }
-        // Load prompt text/title (best-effort)
-        var p prompt.Prompt
-        _ = db.First(&p, "id = ?", int(pid64)).Error
-        promptText := strings.TrimSpace(derefPtr(p.PromptText))
-        if promptText == "" {
-            promptText = strings.TrimSpace(p.Title)
-        }
-        if promptText == "" {
-            // As a last resort
-            promptText = ""
-        }
+		// promptId (required)
+		pidStr := strings.TrimSpace(c.PostForm("promptId"))
+		if pidStr == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Missing promptId"})
+			return
+		}
+		pid64, err := strconv.ParseInt(pidStr, 10, 64)
+		if err != nil || pid64 <= 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid promptId"})
+			return
+		}
+		// Load prompt text/title (best-effort)
+		var p prompt.Prompt
+		_ = db.First(&p, "id = ?", int(pid64)).Error
+		promptText := strings.TrimSpace(derefPtr(p.PromptText))
+		if promptText == "" {
+			promptText = strings.TrimSpace(p.Title)
+		}
+		if promptText == "" {
+			// As a last resort
+			promptText = ""
+		}
 
-        // Optional crop params
-        cropX, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropX")), 64)
-        cropY, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropY")), 64)
-        cropW, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropWidth")), 64)
-        cropH, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropHeight")), 64)
-        hasCrop := !isZero(cropW) && !isZero(cropH)
+		// Optional crop params
+		cropX, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropX")), 64)
+		cropY, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropY")), 64)
+		cropW, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropWidth")), 64)
+		cropH, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropHeight")), 64)
+		hasCrop := !isZero(cropW) && !isZero(cropH)
 
-        // Provider
-        provStr := c.DefaultQuery("provider", c.PostForm("provider"))
-        if provStr == "" {
-            provStr = "GOOGLE"
-        }
-        prov, ok := providerFromParam(provStr)
-        if !ok {
-            c.JSON(http.StatusBadRequest, gin.H{"message": "Provider not implemented"})
-            return
-        }
+		// Provider
+		provStr := c.DefaultQuery("provider", c.PostForm("provider"))
+		if provStr == "" {
+			provStr = "GOOGLE"
+		}
+		prov, ok := providerFromParam(provStr)
+		if !ok {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Provider not implemented"})
+			return
+		}
 
-        // Read file bytes
-        f, err := fileHeader.Open()
-        if err != nil {
-            c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to read upload"})
-            return
-        }
-        defer func() { _ = f.Close() }()
-        data, err := io.ReadAll(f)
-        if err != nil {
-            c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to read upload"})
-            return
-        }
+		// Read file bytes
+		f, err := fileHeader.Open()
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to read upload"})
+			return
+		}
+		defer func() { _ = f.Close() }()
+		data, err := io.ReadAll(f)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Failed to read upload"})
+			return
+		}
 
-        // Apply crop if provided
-        if hasCrop {
-            data = imgsvc.CropImageBytes(data, cropX, cropY, cropW, cropH)
-        }
-        // Normalize uploaded image to PNG for consistency
-        pngBytes, err := imgsvc.ConvertImageToPNGBytes(data)
-        if err != nil {
-            pngBytes = data // fall back to original
-        }
+		// Apply crop if provided
+		if hasCrop {
+			data = imgsvc.CropImageBytes(data, cropX, cropY, cropW, cropH)
+		}
+		// Normalize uploaded image to PNG for consistency
+		pngBytes, err := imgsvc.ConvertImageToPNGBytes(data)
+		if err != nil {
+			pngBytes = data // fall back to original
+		}
 
-        // Prepare storage locations and user directory
-        loc, err := imgsvc.NewStorageLocations()
-        if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-            return
-        }
-        userDir, err := imgsvc.UserImagesDir(u.ID)
-        if err != nil {
-            c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
-            return
-        }
-        _ = loc // keep loc referenced for potential future use
+		// Prepare storage locations and user directory
+		loc, err := imgsvc.NewStorageLocations()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+		userDir, err := imgsvc.UserImagesDir(u.ID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+			return
+		}
+		_ = loc // keep loc referenced for potential future use
 
-        // Generate a base ID to group original + generated variants
-        baseID := randomHex(16)
-        if baseID == "" {
-            baseID = strconv.FormatInt(time.Now().UnixNano(), 16)
-        }
-        // Store original (cropped) image
-        _, _ = imgsvc.StoreImageBytes(pngBytes, userDir, baseID+"_original", "png", false)
+		// Use UUID as filename base to match Kotlin and ensure consistency
+		uploadedUUID := uuid.NewString()
+		// Store original (cropped) image with UUID-based name and persist to DB (uploaded_images)
+		origNameBase := uploadedUUID + "_original"
+		origFullPath, err := imgsvc.StoreImageBytes(pngBytes, userDir, origNameBase, "png", false)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to store uploaded image"})
+			return
+		}
+		origStoredName := filepath.Base(origFullPath)
+		// Prefer normalized content type
+		uploadedContentType := "image/png"
+		uploadedSize := int64(len(pngBytes))
+		uploaded := imgsvc.UploadedImage{
+			UUID:             uploadedUUID,
+			OriginalFilename: fileHeader.Filename,
+			StoredFilename:   origStoredName,
+			ContentType:      uploadedContentType,
+			FileSize:         uploadedSize,
+			UserID:           u.ID,
+			CreatedAt:        time.Now().UTC(),
+		}
+		if err := db.Create(&uploaded).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to persist uploaded image"})
+			return
+		}
 
-        // Build generator and request N variants (default 4)
-        gen, err := Create(prov)
-        if err != nil {
-            c.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
-            return
-        }
-        mimeType := fileHeader.Header.Get("Content-Type")
-        // Use the same (cropped) data as source for edits
-        n := 4
-        images, err := gen.Edit(c.Request.Context(), data, promptText, Options{CandidateCount: n, MimeType: mimeType, Timeout: 60 * time.Second})
-        if err != nil || len(images) == 0 {
-            c.JSON(http.StatusBadGateway, gin.H{"message": "Image generation failed", "detail": safeErr(err)})
-            return
-        }
+		// Build generator and request N variants (default 4)
+		gen, err := Create(prov)
+		if err != nil {
+			c.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
+			return
+		}
+		mimeType := fileHeader.Header.Get("Content-Type")
+		// Use the same (cropped) data as source for edits
+		n := 4
+		images, err := gen.Edit(c.Request.Context(), data, promptText, Options{CandidateCount: n, MimeType: mimeType, Timeout: 60 * time.Second})
+		if err != nil || len(images) == 0 {
+			c.JSON(http.StatusBadGateway, gin.H{"message": "Image generation failed", "detail": safeErr(err)})
+			return
+		}
 
-        // Store generated images under the user directory and build URLs/IDs
-        urls := make([]string, 0, len(images))
-        ids := make([]int, 0, len(images))
-        for i, b := range images {
-            outBytes, err := imgsvc.ConvertImageToPNGBytes(b)
-            if err != nil {
-                outBytes = b
-            }
-            fname := baseID + "_generated_" + strconv.Itoa(i+1)
-            fullPath, err := imgsvc.StoreImageBytes(outBytes, userDir, fname, "png", false)
-            if err != nil {
-                c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to store image"})
-                return
-            }
-            justName := filepath.Base(fullPath)
-            urls = append(urls, "/api/user/images/"+justName)
-            ids = append(ids, pseudoID(justName))
-        }
+		// Store generated images under the user directory and build URLs/IDs
+		urls := make([]string, 0, len(images))
+		ids := make([]int, 0, len(images))
+		for i, b := range images {
+			outBytes, err := imgsvc.ConvertImageToPNGBytes(b)
+			if err != nil {
+				outBytes = b
+			}
+			fname := uploadedUUID + "_generated_" + strconv.Itoa(i+1)
+			fullPath, err := imgsvc.StoreImageBytes(outBytes, userDir, fname, "png", false)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to store image"})
+				return
+			}
+			justName := filepath.Base(fullPath)
+			// Persist to DB (generated_images)
+			genUUID := uuid.NewString()
+			ip := c.ClientIP()
+			gi := imgsvc.GeneratedImage{
+				UUID:            genUUID,
+				Filename:        justName,
+				PromptID:        int(pid64),
+				UserID:          &u.ID,
+				UploadedImageID: &uploaded.ID,
+				CreatedAt:       time.Now().UTC(),
+				IPAddress:       stringPtrNonEmpty(ip),
+			}
+			if err := db.Create(&gi).Error; err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to persist generated image"})
+				return
+			}
+			urls = append(urls, "/api/user/images/"+justName)
+			ids = append(ids, gi.ID)
+		}
 
-        c.JSON(http.StatusOK, gin.H{"imageUrls": urls, "generatedImageIds": ids})
-    })
+		c.JSON(http.StatusOK, gin.H{"imageUrls": urls, "generatedImageIds": ids})
+	})
 
-    // Public AI routes (stub)
-    pub := r.Group("/api/public/ai/images")
-    pub.POST("/generate", func(c *gin.Context) {
-        c.JSON(http.StatusNotImplemented, gin.H{"message": "Public image generation not implemented in Go backend"})
-    })
+	// Public AI routes (stub)
+	pub := r.Group("/api/public/ai/images")
+	pub.POST("/generate", func(c *gin.Context) {
+		c.JSON(http.StatusNotImplemented, gin.H{"message": "Public image generation not implemented in Go backend"})
+	})
 }
 
 // ---- helpers ----
 
 func derefPtr(p *string) string {
-    if p == nil {
-        return ""
-    }
-    return *p
+	if p == nil {
+		return ""
+	}
+	return *p
 }
 
 func isZero(f float64) bool { return f == 0 }
 
 func randomHex(n int) string {
-    if n <= 0 {
-        n = 16
-    }
-    buf := make([]byte, n)
-    if _, err := rand.Read(buf); err != nil {
-        return ""
-    }
-    return hex.EncodeToString(buf)
+	if n <= 0 {
+		n = 16
+	}
+	buf := make([]byte, n)
+	if _, err := rand.Read(buf); err != nil {
+		return ""
+	}
+	return hex.EncodeToString(buf)
 }
 
 func pseudoID(s string) int {
-    // Create a stable positive int from a string
-    v := crc32.ChecksumIEEE([]byte(s))
-    // Ensure positive when converted to int
-    return int(v & 0x7fffffff)
+	// Create a stable positive int from a string
+	v := crc32.ChecksumIEEE([]byte(s))
+	// Ensure positive when converted to int
+	return int(v & 0x7fffffff)
 }
 
 func safeErr(err error) string {
-    if err == nil {
-        return ""
-    }
-    return err.Error()
+	if err == nil {
+		return ""
+	}
+	return err.Error()
+}
+
+func stringPtrNonEmpty(s string) *string {
+	if s == "" {
+		return nil
+	}
+	return &s
 }
