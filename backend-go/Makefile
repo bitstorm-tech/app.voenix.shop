@@ -16,10 +16,7 @@ build: ## Build server binary to ./bin/server
 	@mkdir -p bin
 	go build -o ./bin/server ./cmd/server
 
-check: ## Run lint, vet, then build
-	$(MAKE) lint
-	$(MAKE) vet
-	$(MAKE) build
+check: lint vet build
 
 fmt: ## Format all Go files
 	go fmt ./...

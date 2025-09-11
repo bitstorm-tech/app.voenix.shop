@@ -18,5 +18,3 @@ yarn-error.log*
 
 # Docker artifacts
 Dockerfile
-nginx.conf
-
