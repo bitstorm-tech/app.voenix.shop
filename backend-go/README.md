@@ -30,6 +30,7 @@ Configuration
   - Static files under `${STORAGE_ROOT}/public` are served at `/public/*`.
  - `GOOGLE_API_KEY` – required for `/api/ai/images` Gemini integration.
  - `GEMINI_IMAGE_MODEL` – optional Gemini image model (default `gemini-2.5-flash-image-preview`).
+ - `TEST_MODE` – when `true`, forces the internal mock AI generator and bypasses all external AI calls (useful for tests/offline dev).
 
 .env support
 - The server loads environment variables from `.env` automatically if present.

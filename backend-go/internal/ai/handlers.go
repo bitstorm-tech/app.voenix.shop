@@ -19,6 +19,10 @@ import (
 // providerFromParam maps high-level provider names used by Kotlin/FE to internal providers.
 // Accepts: OPENAI|GOOGLE|FLUX (case-insensitive). Defaults to GOOGLE=>Gemini for broader coverage.
 func providerFromParam(p string) (Provider, bool) {
+	// In test mode, always use the mock provider regardless of input.
+	if isTestMode() {
+		return ProviderMock, true
+	}
 	switch strings.ToUpper(strings.TrimSpace(p)) {
 	case "GOOGLE", "GEMINI", string(ProviderGemini):
 		return ProviderGemini, true
@@ -26,6 +30,8 @@ func providerFromParam(p string) (Provider, bool) {
 		return ProviderFlux, false // not implemented
 	case "OPENAI", "GPT", string(ProviderGPT):
 		return ProviderGPT, false // not implemented
+	case "MOCK", "TEST", string(ProviderMock):
+		return ProviderMock, true
 	default:
 		// default to Gemini
 		return ProviderGemini, true
