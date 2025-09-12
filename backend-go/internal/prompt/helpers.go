@@ -156,17 +156,7 @@ func allPromptsWithRelations(db *gorm.DB) ([]Prompt, error) {
 	return rows, err
 }
 
-func countPromptsByCategory(db *gorm.DB, categoryID int) int {
-	var cnt int64
-	db.Model(&Prompt{}).Where("category_id = ?", categoryID).Count(&cnt)
-	return int(cnt)
-}
-
-func countSubCategoriesByCategory(db *gorm.DB, categoryID int) int {
-	var cnt int64
-	db.Model(&PromptSubCategory{}).Where("prompt_category_id = ?", categoryID).Count(&cnt)
-	return int(cnt)
-}
+// Category count helpers moved into Service for centralized DB access.
 
 func countPromptsBySubcategory(db *gorm.DB, subcategoryID int) int {
 	var cnt int64

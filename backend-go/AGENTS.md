@@ -29,6 +29,8 @@
 - HTTP handlers should validate input and return structured JSON errors (`{"detail": "..."}`).
 - We prefer simple solutions over complex and over-engineered solutions
 - DO NOT use abbreviations for variable names! Example instead of `mv` use `mugVariant` or instead of `imgW` use `imageWidth`
+- No one-line functions: never write single-line function definitions like `func a() int { return 1 }`; always use a multi-line body for readability.
+- Prefer unexported identifiers: keep functions, types, variables, and constants private (lowercase) unless they must be used from another package. Minimize the public API surface and export only when necessary.
 
 ## Dependencies & Libraries
 - Prefer the Go standard library whenever possible before adding a third‑party dependency or writing custom implementations.
