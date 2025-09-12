@@ -2,7 +2,6 @@ import { LazyLoadingFallback } from '@/components/LazyLoadingFallback';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
 import { queryClient } from '@/lib/queryClient';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { lazy, Suspense } from 'react';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { Toaster } from 'sonner';
@@ -40,7 +39,7 @@ export default function App() {
           </Routes>
         </Suspense>
         <Toaster position="top-center" richColors />
-        <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-left" />
+        {/* <ReactQueryDevtools initialIsOpen={false} buttonPosition="top-left" /> */}
       </Router>
     </QueryClientProvider>
   );
