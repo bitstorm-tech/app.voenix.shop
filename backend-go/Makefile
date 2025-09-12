@@ -14,7 +14,7 @@ build:
 	@mkdir -p bin
 	go build -o ./bin/server ./cmd/server
 
-check: lint vet build
+check: lint vet test build fmt
 
 fmt:
 	go fmt $(PACKAGES)

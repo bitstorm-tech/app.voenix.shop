@@ -3,6 +3,7 @@ package supplier
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -12,13 +13,14 @@ import (
 
 // RegisterRoutes mounts Supplier admin routes under /api/admin/suppliers.
 func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
+	svc := NewService(db)
 	grp := r.Group("/api/admin/suppliers")
 	grp.Use(auth.RequireAdmin(db))
 
 	// GET /api/admin/suppliers -> list all
 	grp.GET("", func(c *gin.Context) {
-		var rows []Supplier
-		if err := db.Preload("Country").Find(&rows).Error; err != nil {
+		rows, err := svc.ListSuppliers(c.Request.Context())
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch suppliers"})
 			return
 		}
@@ -27,8 +29,13 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 
 	// GET /api/admin/suppliers/:id -> single by id
 	grp.GET("/:id", func(c *gin.Context) {
-		var row Supplier
-		if err := db.Preload("Country").First(&row, "id = ?", c.Param("id")).Error; err != nil {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
+			return
+		}
+		row, err := svc.GetSupplierByID(c.Request.Context(), id)
+		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "Supplier not found"})
 				return
@@ -46,78 +53,46 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		s := Supplier{
-			Name:         payload.Name,
-			Title:        payload.Title,
-			FirstName:    payload.FirstName,
-			LastName:     payload.LastName,
-			Street:       payload.Street,
-			HouseNumber:  payload.HouseNumber,
-			City:         payload.City,
-			PostalCode:   payload.PostalCode,
-			CountryID:    payload.CountryID,
-			PhoneNumber1: payload.PhoneNumber1,
-			PhoneNumber2: payload.PhoneNumber2,
-			PhoneNumber3: payload.PhoneNumber3,
-			Email:        payload.Email,
-			Website:      payload.Website,
-		}
-		if err := db.Create(&s).Error; err != nil {
+		created, err := svc.CreateSupplier(c.Request.Context(), payload)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create supplier"})
 			return
 		}
-		// attach country if present (ignore preload errors intentionally)
-		_ = db.Preload("Country").First(&s, s.ID).Error
-		c.JSON(http.StatusCreated, s)
+		c.JSON(http.StatusCreated, created)
 	})
 
 	// PUT /api/admin/suppliers/:id -> update
 	grp.PUT("/:id", func(c *gin.Context) {
-		id := c.Param("id")
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
+			return
+		}
 		var payload SupplierUpdate
 		if err := c.ShouldBindJSON(&payload); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		var existing Supplier
-		if err := db.First(&existing, "id = ?", id).Error; err != nil {
+		updated, err := svc.UpdateSupplier(c.Request.Context(), id, payload)
+		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "Supplier not found"})
 				return
 			}
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch supplier"})
-			return
-		}
-
-		// Overwrite fields with incoming values (frontend sends all)
-		existing.Name = payload.Name
-		existing.Title = payload.Title
-		existing.FirstName = payload.FirstName
-		existing.LastName = payload.LastName
-		existing.Street = payload.Street
-		existing.HouseNumber = payload.HouseNumber
-		existing.City = payload.City
-		existing.PostalCode = payload.PostalCode
-		existing.CountryID = payload.CountryID
-		existing.PhoneNumber1 = payload.PhoneNumber1
-		existing.PhoneNumber2 = payload.PhoneNumber2
-		existing.PhoneNumber3 = payload.PhoneNumber3
-		existing.Email = payload.Email
-		existing.Website = payload.Website
-
-		if err := db.Save(&existing).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update supplier"})
 			return
 		}
-		// refresh with preloaded country (ignore preload errors)
-		_ = db.Preload("Country").First(&existing, existing.ID).Error
-		c.JSON(http.StatusOK, existing)
+		c.JSON(http.StatusOK, updated)
 	})
 
 	// DELETE /api/admin/suppliers/:id -> delete
 	grp.DELETE("/:id", func(c *gin.Context) {
-		id := c.Param("id")
-		if err := db.Delete(&Supplier{}, "id = ?", id).Error; err != nil {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
+			return
+		}
+		if err := svc.DeleteSupplier(c.Request.Context(), id); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete supplier"})
 			return
 		}
