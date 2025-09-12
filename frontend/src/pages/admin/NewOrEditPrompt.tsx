@@ -6,14 +6,16 @@ import { Input } from '@/components/ui/Input';
 import { InputWithCopy } from '@/components/ui/InputWithCopy';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Textarea } from '@/components/ui/Textarea';
 import type { CreatePromptRequest, PromptSlotUpdate, UpdatePromptRequest } from '@/lib/api';
 import { imagesApi, promptCategoriesApi, promptsApi, promptSubCategoriesApi } from '@/lib/api';
 import { generatePromptNumber, getArticleNumberPlaceholder } from '@/lib/articleNumberUtils';
 import type { PromptCategory, PromptSubCategory } from '@/types/prompt';
-import { Upload, X } from 'lucide-react';
+import { Calculator, FileText, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import PriceCalculationTab from './prompts/components/PriceCalculationTab';
 
 export default function NewOrEditPrompt() {
   const navigate = useNavigate();
@@ -38,6 +40,7 @@ export default function NewOrEditPrompt() {
   const [exampleImageUrl, setExampleImageUrl] = useState<string | null>(null);
   const [exampleImageFile, setExampleImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [activeTab, setActiveTab] = useState<'prompt' | 'cost-calculation'>('prompt');
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -250,152 +253,175 @@ export default function NewOrEditPrompt() {
 
   return (
     <div className="container mx-auto p-6">
-      <Card className="mx-auto max-w-2xl">
-        <CardHeader>
-          <CardTitle>{isEditing ? 'Edit Prompt' : 'New Prompt'}</CardTitle>
-          <CardDescription>{isEditing ? 'Update the prompt details below' : 'Create a new prompt with the form below'}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {error && <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
+      <div className="mx-auto max-w-4xl">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'prompt' | 'cost-calculation')} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-flow-col">
+            <TabsTrigger value="prompt" className="gap-2">
+              <FileText className="h-4 w-4" />
+              <span className="hidden sm:inline">Prompt</span>
+            </TabsTrigger>
+            <TabsTrigger value="cost-calculation" className="gap-2">
+              <Calculator className="h-4 w-4" />
+              <span className="hidden sm:inline">Price Calculation</span>
+            </TabsTrigger>
+          </TabsList>
 
-            <div className="space-y-2">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Enter prompt title"
-                required
-              />
-            </div>
+          <TabsContent value="prompt">
+            <Card>
+              <CardHeader>
+                <CardTitle>{isEditing ? 'Edit Prompt' : 'New Prompt'}</CardTitle>
+                <CardDescription>{isEditing ? 'Update the prompt details below' : 'Create a new prompt with the form below'}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {error && <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
 
-            <div className="space-y-2">
-              <Label htmlFor="promptNumber">Prompt Number</Label>
-              <InputWithCopy
-                id="promptNumber"
-                value={generatePromptNumber(formData.categoryId || null, formData.subcategoryId || null, promptId) || getArticleNumberPlaceholder()}
-                placeholder={getArticleNumberPlaceholder()}
-                className="[&_input]:bg-muted"
-              />
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Title</Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      placeholder="Enter prompt title"
+                      required
+                    />
+                  </div>
 
-            <div className="flex gap-8">
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  value={formData.categoryId.toString()}
-                  onValueChange={(value) => {
-                    const newCategoryId = parseInt(value);
-                    setFormData({ ...formData, categoryId: newCategoryId, subcategoryId: 0 });
-                    fetchSubcategories(newCategoryId);
-                  }}
-                >
-                  <SelectTrigger id="category">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category.id} value={category.id.toString()}>
-                        {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="promptNumber">Prompt Number</Label>
+                    <InputWithCopy
+                      id="promptNumber"
+                      value={
+                        generatePromptNumber(formData.categoryId || null, formData.subcategoryId || null, promptId) || getArticleNumberPlaceholder()
+                      }
+                      placeholder={getArticleNumberPlaceholder()}
+                      className="[&_input]:bg-muted"
+                    />
+                  </div>
 
-              {formData.categoryId > 0 && subcategories.length > 0 && (
-                <div className="space-y-2">
-                  <Label htmlFor="subcategory">Subcategory (optional)</Label>
-                  <Select
-                    value={formData.subcategoryId.toString()}
-                    onValueChange={(value) => setFormData({ ...formData, subcategoryId: parseInt(value) })}
-                  >
-                    <SelectTrigger id="subcategory">
-                      <SelectValue placeholder="Select a subcategory (optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="0">No subcategory</SelectItem>
-                      {subcategories.map((subcategory) => (
-                        <SelectItem key={subcategory.id} value={subcategory.id.toString()}>
-                          {subcategory.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
+                  <div className="flex gap-8">
+                    <div className="space-y-2">
+                      <Label htmlFor="category">Category</Label>
+                      <Select
+                        value={formData.categoryId.toString()}
+                        onValueChange={(value) => {
+                          const newCategoryId = parseInt(value);
+                          setFormData({ ...formData, categoryId: newCategoryId, subcategoryId: 0 });
+                          fetchSubcategories(newCategoryId);
+                        }}
+                      >
+                        <SelectTrigger id="category">
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categories.map((category) => (
+                            <SelectItem key={category.id} value={category.id.toString()}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="promptText">Prompt Style (optional)</Label>
-              <Textarea
-                id="promptText"
-                value={formData.promptText}
-                onChange={(e) => setFormData({ ...formData, promptText: e.target.value })}
-                placeholder="Enter the prompt text content..."
-                rows={4}
-              />
-            </div>
+                    {formData.categoryId > 0 && subcategories.length > 0 && (
+                      <div className="space-y-2">
+                        <Label htmlFor="subcategory">Subcategory (optional)</Label>
+                        <Select
+                          value={formData.subcategoryId.toString()}
+                          onValueChange={(value) => setFormData({ ...formData, subcategoryId: parseInt(value) })}
+                        >
+                          <SelectTrigger id="subcategory">
+                            <SelectValue placeholder="Select a subcategory (optional)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="0">No subcategory</SelectItem>
+                            {subcategories.map((subcategory) => (
+                              <SelectItem key={subcategory.id} value={subcategory.id.toString()}>
+                                {subcategory.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
+                  </div>
 
-            <div className="space-y-2">
-              <SlotTypeSelector selectedSlotIds={selectedSlotIds} onSelectionChange={setSelectedSlotIds} />
-            </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="promptText">Prompt Style (optional)</Label>
+                    <Textarea
+                      id="promptText"
+                      value={formData.promptText}
+                      onChange={(e) => setFormData({ ...formData, promptText: e.target.value })}
+                      placeholder="Enter the prompt text content..."
+                      rows={4}
+                    />
+                  </div>
 
-            <div className="space-y-2">
-              <Label>Example Image (optional)</Label>
-              <div className="space-y-3">
-                {exampleImageUrl ? (
-                  <div className="relative w-full max-w-md">
-                    <img src={exampleImageUrl} alt="Prompt example" className="w-full rounded-lg border border-gray-200 object-contain" />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="absolute top-2 right-2 bg-white shadow-sm"
-                      onClick={handleRemoveImage}
-                    >
-                      <X className="h-4 w-4" />
+                  <div className="space-y-2">
+                    <SlotTypeSelector selectedSlotIds={selectedSlotIds} onSelectionChange={setSelectedSlotIds} />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Example Image (optional)</Label>
+                    <div className="space-y-3">
+                      {exampleImageUrl ? (
+                        <div className="relative w-full max-w-md">
+                          <img src={exampleImageUrl} alt="Prompt example" className="w-full rounded-lg border border-gray-200 object-contain" />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="absolute top-2 right-2 bg-white shadow-sm"
+                            onClick={handleRemoveImage}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                            <Upload className="mr-2 h-4 w-4" />
+                            Upload Image
+                          </Button>
+                          <p className="text-sm text-gray-500">PNG, JPG, GIF, or WEBP (automatically converted to WebP)</p>
+                        </div>
+                      )}
+                      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="active">Status</Label>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="active"
+                        checked={formData.active}
+                        onCheckedChange={(checked) => setFormData({ ...formData, active: checked as boolean })}
+                      />
+                      <Label htmlFor="active" className="font-normal">
+                        Make this prompt available for use
+                      </Label>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-4">
+                    <Button type="submit" disabled={loading}>
+                      {loading ? 'Saving...' : isEditing ? 'Update Prompt' : 'Create Prompt'}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={handleCancel}>
+                      Cancel
                     </Button>
                   </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
-                      <Upload className="mr-2 h-4 w-4" />
-                      Upload Image
-                    </Button>
-                    <p className="text-sm text-gray-500">PNG, JPG, GIF, or WEBP (automatically converted to WebP)</p>
-                  </div>
-                )}
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-              </div>
-            </div>
+                </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            <div className="space-y-2">
-              <Label htmlFor="active">Status</Label>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="active"
-                  checked={formData.active}
-                  onCheckedChange={(checked) => setFormData({ ...formData, active: checked as boolean })}
-                />
-                <Label htmlFor="active" className="font-normal">
-                  Make this prompt available for use
-                </Label>
-              </div>
-            </div>
-
-            <div className="flex gap-4">
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : isEditing ? 'Update Prompt' : 'Create Prompt'}
-              </Button>
-              <Button type="button" variant="outline" onClick={handleCancel}>
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+          <TabsContent value="cost-calculation">
+            <PriceCalculationTab />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }
