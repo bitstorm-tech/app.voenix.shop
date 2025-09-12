@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: dev run build fmt vet lint check help test
+.PHONY: dev
 
 dev: ## Run server with hot reload via Air
 	@if ! command -v air >/dev/null 2>&1; then \
@@ -33,6 +33,3 @@ lint: ## Run golangci-lint (aggregated linters)
 
 test: ## Run Go tests
 	go test ./...
-
-help: ## Show this help
-	@grep -E '^[a-zA-Z_-]+:.*?## ' Makefile | sed -E 's/:.*?## /\t- /'
