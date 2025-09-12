@@ -40,6 +40,7 @@ If any of these commands return errors, fix them immediately before considering 
 ## Commit & Pull Request Guidelines
 - Commits: short, imperative summaries (e.g., “Fix detekt findings”, “Refactor auth module”). Group related changes.
 - PRs: clear description, linked issues, screenshots for UI changes, and steps to verify. Ensure CI passes and format/lint checks are clean.
+- Renames: use `git mv` instead of `mv` to preserve history and avoid stale paths.
 
 ## Security & Configuration Tips
 - Backend reads `.env` via spring-dotenv; configure DB (`voenix_java`) and API keys there.
