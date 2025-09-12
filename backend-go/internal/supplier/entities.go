@@ -6,7 +6,6 @@ import (
 	country "voenix/backend-go/internal/country"
 )
 
-// Supplier mirrors the Python SQLModel Supplier table.
 type Supplier struct {
 	ID           int              `gorm:"primaryKey" json:"id"`
 	Name         *string          `gorm:"size:255" json:"name"`
@@ -29,23 +28,3 @@ type Supplier struct {
 }
 
 func (Supplier) TableName() string { return "suppliers" }
-
-// Create/Update payloads (pointer fields allow nulls)
-type SupplierCreate struct {
-	Name         *string `json:"name"`
-	Title        *string `json:"title"`
-	FirstName    *string `json:"firstName"`
-	LastName     *string `json:"lastName"`
-	Street       *string `json:"street"`
-	HouseNumber  *string `json:"houseNumber"`
-	City         *string `json:"city"`
-	PostalCode   *int    `json:"postalCode"`
-	CountryID    *int    `json:"countryId"`
-	PhoneNumber1 *string `json:"phoneNumber1"`
-	PhoneNumber2 *string `json:"phoneNumber2"`
-	PhoneNumber3 *string `json:"phoneNumber3"`
-	Email        *string `json:"email"`
-	Website      *string `json:"website"`
-}
-
-type SupplierUpdate = SupplierCreate
