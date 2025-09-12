@@ -177,7 +177,9 @@ type CostCalculation struct {
 	UpdatedAt                time.Time `json:"updatedAt"`
 }
 
-func (CostCalculation) TableName() string { return "article_price_calculation" }
+// TableName overrides the default to match the renamed DB table.
+// The underlying domain type remains CostCalculation for API compatibility.
+func (CostCalculation) TableName() string { return "prices" }
 
 // Preload helpers
 // no-op placeholder removed: relations are loaded ad-hoc per handler
