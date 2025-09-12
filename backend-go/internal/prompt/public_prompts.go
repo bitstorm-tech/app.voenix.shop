@@ -10,7 +10,7 @@ import (
 func registerPublicPromptRoutes(r *gin.Engine, db *gorm.DB) {
 	grp := r.Group("/api/prompts")
 
-	grp.GET("/", func(c *gin.Context) {
+	grp.GET("", func(c *gin.Context) {
 		// Active prompts only
 		var rows []Prompt
 		if err := db.Where("active = ?", true).

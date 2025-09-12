@@ -24,7 +24,7 @@ func registerAdminSlotTypeRoutes(r *gin.Engine, db *gorm.DB) {
 	grp := r.Group("/api/admin/prompts/prompt-slot-types")
 	grp.Use(auth.RequireAdmin(db))
 
-	grp.GET("/", func(c *gin.Context) {
+	grp.GET("", func(c *gin.Context) {
 		var rows []PromptSlotType
 		if err := db.Order("id desc").Find(&rows).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch slot types"})
@@ -50,7 +50,7 @@ func registerAdminSlotTypeRoutes(r *gin.Engine, db *gorm.DB) {
 		c.JSON(http.StatusOK, toSlotTypeRead(&row))
 	})
 
-	grp.POST("/", func(c *gin.Context) {
+	grp.POST("", func(c *gin.Context) {
 		var payload slotTypeCreate
 		if err := c.ShouldBindJSON(&payload); err != nil || strings.TrimSpace(payload.Name) == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})

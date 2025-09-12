@@ -27,7 +27,7 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 	grp := r.Group("/api/admin/prompts/subcategories")
 	grp.Use(auth.RequireAdmin(db))
 
-	grp.GET("/", func(c *gin.Context) {
+	grp.GET("", func(c *gin.Context) {
 		var rows []PromptSubCategory
 		if err := db.Order("id desc").Find(&rows).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch subcategories"})
@@ -56,7 +56,7 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 		c.JSON(http.StatusOK, out)
 	})
 
-	grp.POST("/", func(c *gin.Context) {
+	grp.POST("", func(c *gin.Context) {
 		var payload subcatCreate
 		if err := c.ShouldBindJSON(&payload); err != nil || payload.PromptCategoryID <= 0 || strings.TrimSpace(payload.Name) == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})

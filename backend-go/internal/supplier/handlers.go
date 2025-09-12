@@ -16,7 +16,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	grp.Use(auth.RequireAdmin(db))
 
 	// GET /api/admin/suppliers -> list all
-	grp.GET("/", func(c *gin.Context) {
+	grp.GET("", func(c *gin.Context) {
 		var rows []Supplier
 		if err := db.Preload("Country").Find(&rows).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch suppliers"})
@@ -40,7 +40,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	})
 
 	// POST /api/admin/suppliers -> create
-	grp.POST("/", func(c *gin.Context) {
+	grp.POST("", func(c *gin.Context) {
 		var payload SupplierCreate
 		if err := c.ShouldBindJSON(&payload); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})

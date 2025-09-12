@@ -117,7 +117,7 @@ func registerAdminArticleRoutes(r *gin.Engine, db *gorm.DB) {
 	grp.Use(auth.RequireAdmin(db))
 
 	// List with pagination and optional filters
-	grp.GET("/", func(c *gin.Context) {
+	grp.GET("", func(c *gin.Context) {
 		page, _ := strconv.Atoi(c.DefaultQuery("page", "0"))
 		size, _ := strconv.Atoi(c.DefaultQuery("size", "50"))
 		if size <= 0 {
@@ -219,7 +219,7 @@ func registerAdminArticleRoutes(r *gin.Engine, db *gorm.DB) {
 	})
 
 	// Create
-	grp.POST("/", func(c *gin.Context) {
+	grp.POST("", func(c *gin.Context) {
 		var payload createArticleRequest
 		if err := c.ShouldBindJSON(&payload); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})

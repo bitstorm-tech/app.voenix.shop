@@ -10,7 +10,7 @@ import (
 func registerPublicMugRoutes(r *gin.Engine, db *gorm.DB) {
 	grp := r.Group("/api/mugs")
 
-	grp.GET("/", func(c *gin.Context) {
+	grp.GET("", func(c *gin.Context) {
 		var mugs []Article
 		if err := db.Where("article_type = ? AND active = ?", ArticleTypeMug, true).Order("id desc").Find(&mugs).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch mugs"})

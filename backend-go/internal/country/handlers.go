@@ -12,7 +12,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	grp := r.Group("/api/public/countries")
 
 	// GET /api/public/countries -> list all countries (public)
-	grp.GET("/", func(c *gin.Context) {
+	grp.GET("", func(c *gin.Context) {
 		var rows []Country
 		if err := db.Find(&rows).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch countries"})

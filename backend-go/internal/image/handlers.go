@@ -20,7 +20,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	admin := r.Group("/api/admin/images")
 	admin.Use(auth.RequireAdmin(db))
 
-	admin.POST("/", func(c *gin.Context) {
+	admin.POST("", func(c *gin.Context) {
 		// Parse multipart form
 		fileHeader, err := c.FormFile("file")
 		if err != nil || fileHeader == nil {
@@ -184,7 +184,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 		c.Data(http.StatusOK, ctype, data)
 	})
 
-	user.GET("/", func(c *gin.Context) {
+	user.GET("", func(c *gin.Context) {
 		uVal, _ := c.Get("currentUser")
 		u, _ := uVal.(*auth.User)
 		if u == nil {

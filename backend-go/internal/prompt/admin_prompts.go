@@ -39,7 +39,7 @@ func registerAdminPromptRoutes(r *gin.Engine, db *gorm.DB) {
 	grp := r.Group("/api/admin/prompts")
 	grp.Use(auth.RequireAdmin(db))
 
-	grp.GET("/", func(c *gin.Context) {
+	grp.GET("", func(c *gin.Context) {
 		rows, err := allPromptsWithRelations(db)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch prompts"})
@@ -66,7 +66,7 @@ func registerAdminPromptRoutes(r *gin.Engine, db *gorm.DB) {
 		c.JSON(http.StatusOK, toPromptRead(db, row))
 	})
 
-	grp.POST("/", func(c *gin.Context) {
+	grp.POST("", func(c *gin.Context) {
 		var payload promptCreate
 		if err := c.ShouldBindJSON(&payload); err != nil || strings.TrimSpace(payload.Title) == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})

@@ -30,7 +30,7 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB) {
 	grp := r.Group("/api/admin/prompts/slot-variants")
 	grp.Use(auth.RequireAdmin(db))
 
-	grp.GET("/", func(c *gin.Context) {
+	grp.GET("", func(c *gin.Context) {
 		var rows []PromptSlotVariant
 		if err := db.Preload("PromptSlotType").Order("id desc").Find(&rows).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch slot variants"})
@@ -56,7 +56,7 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB) {
 		c.JSON(http.StatusOK, toSlotVariantRead(&row))
 	})
 
-	grp.POST("/", func(c *gin.Context) {
+	grp.POST("", func(c *gin.Context) {
 		var payload slotVariantCreate
 		if err := c.ShouldBindJSON(&payload); err != nil || strings.TrimSpace(payload.Name) == "" || payload.PromptSlotTypeID <= 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})

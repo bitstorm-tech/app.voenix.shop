@@ -25,7 +25,7 @@ func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 	grp := r.Group("/api/admin/articles/categories")
 	grp.Use(auth.RequireAdmin(db))
 
-	grp.GET("/", func(c *gin.Context) {
+	grp.GET("", func(c *gin.Context) {
 		var rows []ArticleCategory
 		if err := db.Order("id desc").Find(&rows).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch categories"})
@@ -74,7 +74,7 @@ func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 		})
 	})
 
-	grp.POST("/", func(c *gin.Context) {
+	grp.POST("", func(c *gin.Context) {
 		var payload articleCategoryCreate
 		if err := c.ShouldBindJSON(&payload); err != nil || strings.TrimSpace(payload.Name) == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
