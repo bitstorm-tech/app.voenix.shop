@@ -3,7 +3,7 @@ package vat
 import (
 	"errors"
 	"net/http"
-	"strings"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -13,13 +13,14 @@ import (
 
 // RegisterRoutes mounts VAT admin routes under /api/admin/vat, guarded by RequireAdmin.
 func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
-	grp := r.Group("/api/admin/vat")
-	grp.Use(auth.RequireAdmin(db))
+	group := r.Group("/api/admin/vat")
+	group.Use(auth.RequireAdmin(db))
+	vatService := NewVATService(db)
 
 	// GET /api/admin/vat/ -> list all
-	grp.GET("", func(c *gin.Context) {
-		var rows []ValueAddedTax
-		if err := db.Find(&rows).Error; err != nil {
+	group.GET("", func(c *gin.Context) {
+		rows, err := vatService.List(c.Request.Context())
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch VATs"})
 			return
 		}
@@ -27,10 +28,15 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	})
 
 	// GET /api/admin/vat/:id -> single by id
-	grp.GET("/:id", func(c *gin.Context) {
-		var row ValueAddedTax
-		if err := db.First(&row, "id = ?", c.Param("id")).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
+	group.GET("/:id", func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
+			return
+		}
+		row, err := vatService.Get(c.Request.Context(), id)
+		if err != nil {
+			if errors.Is(err, ErrNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "VAT not found"})
 				return
 			}
@@ -41,33 +47,15 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	})
 
 	// POST /api/admin/vat/ -> create
-	grp.POST("", func(c *gin.Context) {
+	group.POST("", func(c *gin.Context) {
 		var payload ValueAddedTaxCreate
 		if err := c.ShouldBindJSON(&payload); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-
-		var created ValueAddedTax
-		if err := db.Transaction(func(tx *gorm.DB) error {
-			if payload.IsDefault {
-				if err := tx.Model(&ValueAddedTax{}).Where("is_default = ?", true).Update("is_default", false).Error; err != nil {
-					return err
-				}
-			}
-			created = ValueAddedTax{
-				Name:        payload.Name,
-				Percent:     payload.Percent,
-				Description: payload.Description,
-				IsDefault:   payload.IsDefault,
-			}
-			if err := tx.Create(&created).Error; err != nil {
-				return err
-			}
-			return nil
-		}); err != nil {
-			// Map unique constraint violations to 409
-			if isUniqueViolation(err) {
+		created, err := vatService.Create(c.Request.Context(), payload)
+		if err != nil {
+			if errors.Is(err, ErrConflict) {
 				c.JSON(http.StatusConflict, gin.H{"detail": "A VAT with this name already exists."})
 				return
 			}
@@ -78,67 +66,44 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	})
 
 	// PUT /api/admin/vat/:id -> update
-	grp.PUT("/:id", func(c *gin.Context) {
-		id := c.Param("id")
+	group.PUT("/:id", func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
+			return
+		}
 		var payload ValueAddedTaxUpdate
 		if err := c.ShouldBindJSON(&payload); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-
-		// Ensure exists
-		var existing ValueAddedTax
-		if err := db.First(&existing, "id = ?", id).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
+		updated, err := vatService.Update(c.Request.Context(), id, payload)
+		if err != nil {
+			if errors.Is(err, ErrNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "VAT not found"})
 				return
 			}
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch VAT"})
-			return
-		}
-
-		if err := db.Transaction(func(tx *gorm.DB) error {
-			if payload.IsDefault {
-				if err := tx.Model(&ValueAddedTax{}).Where("is_default = ?", true).Update("is_default", false).Error; err != nil {
-					return err
-				}
-			}
-			existing.Name = payload.Name
-			existing.Percent = payload.Percent
-			existing.Description = payload.Description
-			existing.IsDefault = payload.IsDefault
-			if err := tx.Save(&existing).Error; err != nil {
-				return err
-			}
-			return nil
-		}); err != nil {
-			if isUniqueViolation(err) {
+			if errors.Is(err, ErrConflict) {
 				c.JSON(http.StatusConflict, gin.H{"detail": "A VAT with this name already exists."})
 				return
 			}
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update VAT"})
 			return
 		}
-		c.JSON(http.StatusOK, existing)
+		c.JSON(http.StatusOK, updated)
 	})
 
 	// DELETE /api/admin/vat/:id -> delete
-	grp.DELETE("/:id", func(c *gin.Context) {
-		id := c.Param("id")
-		// Use Unscoped() only if we want hard delete; default is hard delete anyway when no DeletedAt
-		if err := db.Delete(&ValueAddedTax{}, "id = ?", id).Error; err != nil {
+	group.DELETE("/:id", func(c *gin.Context) {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
+			return
+		}
+		if err := vatService.Delete(c.Request.Context(), id); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete VAT"})
 			return
 		}
 		c.Status(http.StatusNoContent)
 	})
-}
-
-func isUniqueViolation(err error) bool {
-	if err == nil {
-		return false
-	}
-	// SQLite and Postgres error messages contain these substrings for unique violations
-	s := strings.ToLower(err.Error())
-	return strings.Contains(s, "unique constraint") || strings.Contains(s, "duplicate key value") || strings.Contains(s, "unique failed")
 }
