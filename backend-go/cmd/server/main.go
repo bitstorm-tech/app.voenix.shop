@@ -1,16 +1,13 @@
 package main
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
-
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 
 	"voenix/backend-go/internal/ai"
 	"voenix/backend-go/internal/article"
@@ -23,16 +20,17 @@ import (
 	"voenix/backend-go/internal/prompt"
 	"voenix/backend-go/internal/supplier"
 	"voenix/backend-go/internal/vat"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
-	// Load environment variables from .env files if present
-	// Tries current working directory and repo-local path when invoked from root.
-	if fp := os.Getenv("ENV_FILE"); fp != "" {
-		_ = godotenv.Load(fp)
-	}
-	_ = godotenv.Load(".env")
-	_ = godotenv.Load("backend-go/.env")
+	doMigrations()
 
 	db, err := database.Open()
 	if err != nil {
@@ -139,4 +137,19 @@ func contains(arr []string, v string) bool {
 		}
 	}
 	return false
+}
+
+func doMigrations() {
+	dbUrl := os.Getenv("DATABASE_URL")
+
+	m, err := migrate.New(
+		"file://internal/database/migrations",
+		dbUrl,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		log.Fatal(err)
+	}
 }
