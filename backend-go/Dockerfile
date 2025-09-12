@@ -27,13 +27,17 @@ RUN apk add --no-cache ca-certificates
 
 # Create non-root user and storage directory
 RUN addgroup -S appuser && adduser -S -u 10001 -G appuser appuser \
+    && mkdir -p /app/storage \
     && chown -R appuser:appuser /app
 
-# Copy compiled binary
+# Copy compiled binary and migrations directory
 COPY --from=builder /out/server /usr/local/bin/server
+COPY --from=builder /app/internal/database/migrations /app/internal/database/migrations
 
 # Defaults (override at runtime as needed)
-ENV ADDR=:8081
+ENV ADDR=:8081 \
+    STORAGE_ROOT=/app/storage \
+    MIGRATIONS_URL=file:///app/internal/database/migrations
 
 EXPOSE 8081
 

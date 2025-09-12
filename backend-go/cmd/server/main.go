@@ -140,16 +140,33 @@ func contains(arr []string, v string) bool {
 }
 
 func doMigrations() {
-	dbUrl := os.Getenv("DATABASE_URL")
+    dbUrl := os.Getenv("DATABASE_URL")
+    // Determine migrations source URL. Prefer env override; otherwise probe common paths.
+    srcURL := os.Getenv("MIGRATIONS_URL")
+    if srcURL == "" {
+        // Try relative to current working directory (native runtime)
+        if _, err := os.Stat("internal/database/migrations"); err == nil {
+            srcURL = "file://internal/database/migrations"
+        } else if _, err := os.Stat("backend-go/internal/database/migrations"); err == nil {
+            // In case the working dir is repo root on Render
+            srcURL = "file://backend-go/internal/database/migrations"
+        } else if _, err := os.Stat("/app/internal/database/migrations"); err == nil {
+            // Docker image default WORKDIR
+            srcURL = "file:///app/internal/database/migrations"
+        } else if _, err := os.Stat("db/migrations"); err == nil {
+            // Fallback to monorepo baseline if present
+            srcURL = "file://db/migrations"
+        } else {
+            log.Fatal("no migrations directory found; set MIGRATIONS_URL to file://... or use embedded iofs")
+        }
+    }
 
-	m, err := migrate.New(
-		"file://internal/database/migrations",
-		dbUrl,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		log.Fatal(err)
-	}
+    log.Printf("running migrations from %s", srcURL)
+    m, err := migrate.New(srcURL, dbUrl)
+    if err != nil {
+        log.Fatal(err)
+    }
+    if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+        log.Fatal(err)
+    }
 }
