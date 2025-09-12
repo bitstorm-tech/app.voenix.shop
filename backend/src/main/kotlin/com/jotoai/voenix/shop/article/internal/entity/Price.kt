@@ -1,6 +1,6 @@
 package com.jotoai.voenix.shop.article.internal.entity
 
-import com.jotoai.voenix.shop.article.internal.dto.CostCalculationDto
+import com.jotoai.voenix.shop.article.internal.dto.PriceDto
 import com.jotoai.voenix.shop.article.internal.enum.CalculationMode
 import com.jotoai.voenix.shop.article.internal.enum.PurchaseActiveRow
 import com.jotoai.voenix.shop.article.internal.enum.SalesActiveRow
@@ -21,9 +21,9 @@ import java.math.BigDecimal
 import java.time.OffsetDateTime
 
 @Entity
-@Table(name = "article_price_calculation")
+@Table(name = "prices")
 @Suppress("LongParameterList")
-class CostCalculation(
+class Price(
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long? = null,
@@ -105,8 +105,8 @@ class CostCalculation(
     var updatedAt: OffsetDateTime? = null,
 ) {
     fun toDto() =
-        CostCalculationDto(
-            id = requireNotNull(this.id) { "CostCalculation ID cannot be null when converting to DTO" },
+        PriceDto(
+            id = requireNotNull(this.id) { "Price ID cannot be null when converting to DTO" },
             articleId = requireNotNull(this.article.id) { "Article ID cannot be null when converting to DTO" },
             purchasePriceNet = this.purchasePriceNet,
             purchasePriceTax = this.purchasePriceTax,
@@ -143,7 +143,7 @@ class CostCalculation(
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (other !is CostCalculation) return false
+        if (other !is Price) return false
         return id != null && id == other.id
     }
 

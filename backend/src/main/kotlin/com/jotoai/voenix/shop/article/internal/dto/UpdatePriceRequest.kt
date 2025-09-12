@@ -11,108 +11,108 @@ import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotNull
 import java.math.BigDecimal
 
-data class CreateCostCalculationRequest(
+data class UpdatePriceRequest(
     // Purchase section fields
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
-    val purchasePriceNet: Int = 0,
+    val purchasePriceNet: Int,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
-    val purchasePriceTax: Int = 0,
+    val purchasePriceTax: Int,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
-    val purchasePriceGross: Int = 0,
+    val purchasePriceGross: Int,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
-    val purchaseCostNet: Int = 0,
+    val purchaseCostNet: Int,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
-    val purchaseCostTax: Int = 0,
+    val purchaseCostTax: Int,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
-    val purchaseCostGross: Int = 0,
+    val purchaseCostGross: Int,
     @field:NotNull
     @field:DecimalMin(MIN_PERCENTAGE_VALUE)
     @field:DecimalMax(MAX_PERCENTAGE_VALUE)
-    val purchaseCostPercent: BigDecimal = BigDecimal.ZERO,
+    val purchaseCostPercent: BigDecimal,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
-    val purchaseTotalNet: Int = 0,
+    val purchaseTotalNet: Int,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
-    val purchaseTotalTax: Int = 0,
+    val purchaseTotalTax: Int,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
-    val purchaseTotalGross: Int = 0,
+    val purchaseTotalGross: Int,
     @field:NotNull
-    val purchasePriceUnit: String = "PER_PIECE",
-    val purchaseVatRateId: Long? = null,
+    val purchasePriceUnit: String,
+    val purchaseVatRateId: Long?,
     @field:NotNull
     @field:DecimalMin(MIN_PERCENTAGE_VALUE)
     @field:DecimalMax(MAX_PERCENTAGE_VALUE)
-    val purchaseVatRatePercent: BigDecimal = BigDecimal("19"),
+    val purchaseVatRatePercent: BigDecimal,
     @field:NotNull
-    val purchaseCalculationMode: CalculationMode = CalculationMode.NET,
+    val purchaseCalculationMode: CalculationMode,
     // Sales section fields
-    val salesVatRateId: Long? = null,
+    val salesVatRateId: Long?,
     @field:NotNull
     @field:DecimalMin(MIN_PERCENTAGE_VALUE)
     @field:DecimalMax(MAX_PERCENTAGE_VALUE)
-    val salesVatRatePercent: BigDecimal = BigDecimal("19"),
+    val salesVatRatePercent: BigDecimal,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
     @JsonAlias("marginNet")
-    val salesMarginNet: Int = 0,
+    val salesMarginNet: Int,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
     @JsonAlias("marginTax")
-    val salesMarginTax: Int = 0,
+    val salesMarginTax: Int,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
     @JsonAlias("marginGross")
-    val salesMarginGross: Int = 0,
+    val salesMarginGross: Int,
     @field:NotNull
     @field:DecimalMin(MIN_PERCENTAGE_VALUE)
     @field:DecimalMax(MAX_PERCENTAGE_VALUE)
     @JsonAlias("marginPercent")
-    val salesMarginPercent: BigDecimal = BigDecimal.ZERO,
+    val salesMarginPercent: BigDecimal,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
-    val salesTotalNet: Int = 0,
+    val salesTotalNet: Int,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
-    val salesTotalTax: Int = 0,
+    val salesTotalTax: Int,
     @field:NotNull
     @field:Min(MIN_MONETARY_VALUE_CENTS)
     @field:Max(MAX_MONETARY_VALUE_CENTS)
-    val salesTotalGross: Int = 0,
+    val salesTotalGross: Int,
     @field:NotNull
-    val salesPriceUnit: String = "PER_PIECE",
+    val salesPriceUnit: String,
     @field:NotNull
-    val salesCalculationMode: CalculationMode = CalculationMode.NET,
+    val salesCalculationMode: CalculationMode,
     // UI state fields
     @field:NotNull
-    val purchasePriceCorresponds: Any = CalculationMode.NET, // Can be Boolean or CalculationMode
+    val purchasePriceCorresponds: Any, // Can be Boolean or CalculationMode
     @field:NotNull
-    val salesPriceCorresponds: Any = CalculationMode.NET, // Can be Boolean or CalculationMode
+    val salesPriceCorresponds: Any, // Can be Boolean or CalculationMode
     @field:NotNull
-    val purchaseActiveRow: PurchaseActiveRow = PurchaseActiveRow.COST,
+    val purchaseActiveRow: PurchaseActiveRow,
     @field:NotNull
-    val salesActiveRow: SalesActiveRow = SalesActiveRow.MARGIN,
+    val salesActiveRow: SalesActiveRow,
 ) {
     companion object {
         /** Minimum monetary value in cents (0 cents) */

@@ -6,7 +6,7 @@ import com.jotoai.voenix.shop.article.internal.enum.SalesActiveRow
 import java.math.BigDecimal
 import java.time.OffsetDateTime
 
-data class CostCalculationDto(
+data class PriceDto(
     val id: Long,
     val articleId: Long,
     // Purchase section fields

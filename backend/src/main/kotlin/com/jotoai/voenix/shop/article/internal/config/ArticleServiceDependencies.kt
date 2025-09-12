@@ -6,8 +6,8 @@ import com.jotoai.voenix.shop.article.internal.assembler.ShirtArticleVariantAsse
 import com.jotoai.voenix.shop.article.internal.repository.ArticleCategoryRepository
 import com.jotoai.voenix.shop.article.internal.repository.ArticleRepository
 import com.jotoai.voenix.shop.article.internal.repository.ArticleSubCategoryRepository
-import com.jotoai.voenix.shop.article.internal.repository.CostCalculationRepository
 import com.jotoai.voenix.shop.article.internal.repository.MugArticleVariantRepository
+import com.jotoai.voenix.shop.article.internal.repository.PriceRepository
 import com.jotoai.voenix.shop.article.internal.repository.ShirtArticleVariantRepository
 import com.jotoai.voenix.shop.article.internal.service.MugDetailsService
 import com.jotoai.voenix.shop.article.internal.service.ShirtDetailsService
@@ -24,7 +24,7 @@ data class ArticleServiceDependencies(
     val articleShirtVariantRepository: ShirtArticleVariantRepository,
     val articleCategoryRepository: ArticleCategoryRepository,
     val articleSubCategoryRepository: ArticleSubCategoryRepository,
-    val costCalculationRepository: CostCalculationRepository,
+    val priceRepository: PriceRepository,
     // Service dependencies
     val supplierService: SupplierService,
     val vatService: VatService,

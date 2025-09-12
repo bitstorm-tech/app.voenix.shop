@@ -78,7 +78,7 @@ interface ArticleRepository : JpaRepository<Article, Long> {
         """
         SELECT DISTINCT a FROM Article a 
         LEFT JOIN FETCH a.mugVariants 
-        LEFT JOIN FETCH a.costCalculation 
+        LEFT JOIN FETCH a.price 
         WHERE a.articleType = :articleType 
         AND a.active = true 
         ORDER BY a.id DESC

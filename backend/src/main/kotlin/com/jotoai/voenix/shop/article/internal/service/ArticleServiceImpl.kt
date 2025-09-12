@@ -9,17 +9,17 @@ import com.jotoai.voenix.shop.article.internal.config.ArticleServiceDependencies
 import com.jotoai.voenix.shop.article.internal.dto.ArticlePaginatedResponse
 import com.jotoai.voenix.shop.article.internal.dto.ArticleWithDetailsDto
 import com.jotoai.voenix.shop.article.internal.dto.CreateArticleRequest
-import com.jotoai.voenix.shop.article.internal.dto.CreateCostCalculationRequest
 import com.jotoai.voenix.shop.article.internal.dto.CreateMugArticleVariantRequest
+import com.jotoai.voenix.shop.article.internal.dto.CreatePriceRequest
 import com.jotoai.voenix.shop.article.internal.dto.CreateShirtArticleVariantRequest
 import com.jotoai.voenix.shop.article.internal.dto.FindArticlesQuery
 import com.jotoai.voenix.shop.article.internal.dto.PublicMugDto
 import com.jotoai.voenix.shop.article.internal.dto.PublicMugVariantDto
 import com.jotoai.voenix.shop.article.internal.dto.UpdateArticleRequest
-import com.jotoai.voenix.shop.article.internal.dto.UpdateCostCalculationRequest
+import com.jotoai.voenix.shop.article.internal.dto.UpdatePriceRequest
 import com.jotoai.voenix.shop.article.internal.entity.Article
-import com.jotoai.voenix.shop.article.internal.entity.CostCalculation
 import com.jotoai.voenix.shop.article.internal.entity.MugArticleVariant
+import com.jotoai.voenix.shop.article.internal.entity.Price
 import com.jotoai.voenix.shop.article.internal.entity.ShirtArticleVariant
 import com.jotoai.voenix.shop.article.internal.exception.ArticleNotFoundException
 import com.jotoai.voenix.shop.image.ImageType
@@ -140,8 +140,8 @@ class ArticleServiceImpl(
         }
 
         // Create cost calculation if provided
-        request.costCalculation?.let { costCalcRequest ->
-            createCostCalculation(savedArticle, costCalcRequest)
+        request.price?.let { priceRequest ->
+            createPrice(savedArticle, priceRequest)
         }
 
         return findById(savedArticle.id!!)
@@ -206,8 +206,8 @@ class ArticleServiceImpl(
         }
 
         // Update cost calculation if provided
-        request.costCalculation?.let { costCalcRequest ->
-            updateCostCalculation(updatedArticle, costCalcRequest)
+        request.price?.let { priceRequest ->
+            updatePrice(updatedArticle, priceRequest)
         }
 
         return findById(updatedArticle.id!!)
@@ -315,15 +315,15 @@ class ArticleServiceImpl(
                 },
             mugDetails = mugDetails,
             shirtDetails = shirtDetails,
-            costCalculation = article.costCalculation?.toDto(),
+            price = article.price?.toDto(),
             createdAt = article.createdAt,
             updatedAt = article.updatedAt,
         )
     }
 
-    private fun createCostCalculation(
+    private fun createPrice(
         article: Article,
-        request: CreateCostCalculationRequest,
+        request: CreatePriceRequest,
     ) {
         // Validate VAT rates exist if provided
         request.purchaseVatRateId?.let {
@@ -338,8 +338,8 @@ class ArticleServiceImpl(
             }
         }
 
-        val costCalculation =
-            CostCalculation(
+        val price =
+            Price(
                 article = article,
                 purchasePriceNet = request.purchasePriceNet,
                 purchasePriceTax = request.purchasePriceTax,
@@ -372,28 +372,28 @@ class ArticleServiceImpl(
                 salesActiveRow = request.salesActiveRow,
             )
 
-        dependencies.costCalculationRepository.save(costCalculation)
+        dependencies.priceRepository.save(price)
     }
 
-    private fun updateCostCalculation(
+    private fun updatePrice(
         article: Article,
-        request: UpdateCostCalculationRequest,
+        request: UpdatePriceRequest,
     ) {
-        val costCalculation =
-            dependencies.costCalculationRepository
+        val price =
+            dependencies.priceRepository
                 .findByArticleId(article.id!!)
                 .orElse(null)
 
-        if (costCalculation != null) {
-            validateVatRatesForCostCalculation(request)
-            updateCostCalculationProperties(costCalculation, request)
-            dependencies.costCalculationRepository.save(costCalculation)
+        if (price != null) {
+            validateVatRatesForPrice(request)
+            updatePriceProperties(price, request)
+            dependencies.priceRepository.save(price)
         } else {
-            createCostCalculationFromUpdateRequest(article, request)
+            createPriceFromUpdateRequest(article, request)
         }
     }
 
-    private fun validateVatRatesForCostCalculation(request: UpdateCostCalculationRequest) {
+    private fun validateVatRatesForPrice(request: UpdatePriceRequest) {
         request.purchaseVatRateId?.let {
             if (!dependencies.vatService.existsById(it)) {
                 throw ArticleNotFoundException("Purchase VAT rate not found with id: $it")
@@ -407,48 +407,48 @@ class ArticleServiceImpl(
         }
     }
 
-    private fun updateCostCalculationProperties(
-        costCalculation: CostCalculation,
-        request: UpdateCostCalculationRequest,
+    private fun updatePriceProperties(
+        price: Price,
+        request: UpdatePriceRequest,
     ) {
-        costCalculation.purchasePriceNet = request.purchasePriceNet
-        costCalculation.purchasePriceTax = request.purchasePriceTax
-        costCalculation.purchasePriceGross = request.purchasePriceGross
-        costCalculation.purchaseCostNet = request.purchaseCostNet
-        costCalculation.purchaseCostTax = request.purchaseCostTax
-        costCalculation.purchaseCostGross = request.purchaseCostGross
-        costCalculation.purchaseCostPercent = request.purchaseCostPercent
-        costCalculation.purchaseTotalNet = request.purchaseTotalNet
-        costCalculation.purchaseTotalTax = request.purchaseTotalTax
-        costCalculation.purchaseTotalGross = request.purchaseTotalGross
-        costCalculation.purchasePriceUnit = request.purchasePriceUnit
-        costCalculation.purchaseVatRateId = request.purchaseVatRateId
-        costCalculation.purchaseVatRatePercent = request.purchaseVatRatePercent
-        costCalculation.purchaseCalculationMode = request.purchaseCalculationMode
-        costCalculation.salesVatRateId = request.salesVatRateId
-        costCalculation.salesVatRatePercent = request.salesVatRatePercent
-        costCalculation.salesMarginNet = request.salesMarginNet
-        costCalculation.salesMarginTax = request.salesMarginTax
-        costCalculation.salesMarginGross = request.salesMarginGross
-        costCalculation.salesMarginPercent = request.salesMarginPercent
-        costCalculation.salesTotalNet = request.salesTotalNet
-        costCalculation.salesTotalTax = request.salesTotalTax
-        costCalculation.salesTotalGross = request.salesTotalGross
-        costCalculation.salesPriceUnit = request.salesPriceUnit
-        costCalculation.salesCalculationMode = request.salesCalculationMode
-        costCalculation.purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum()
-        costCalculation.salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum()
-        costCalculation.purchaseActiveRow = request.purchaseActiveRow
-        costCalculation.salesActiveRow = request.salesActiveRow
+        price.purchasePriceNet = request.purchasePriceNet
+        price.purchasePriceTax = request.purchasePriceTax
+        price.purchasePriceGross = request.purchasePriceGross
+        price.purchaseCostNet = request.purchaseCostNet
+        price.purchaseCostTax = request.purchaseCostTax
+        price.purchaseCostGross = request.purchaseCostGross
+        price.purchaseCostPercent = request.purchaseCostPercent
+        price.purchaseTotalNet = request.purchaseTotalNet
+        price.purchaseTotalTax = request.purchaseTotalTax
+        price.purchaseTotalGross = request.purchaseTotalGross
+        price.purchasePriceUnit = request.purchasePriceUnit
+        price.purchaseVatRateId = request.purchaseVatRateId
+        price.purchaseVatRatePercent = request.purchaseVatRatePercent
+        price.purchaseCalculationMode = request.purchaseCalculationMode
+        price.salesVatRateId = request.salesVatRateId
+        price.salesVatRatePercent = request.salesVatRatePercent
+        price.salesMarginNet = request.salesMarginNet
+        price.salesMarginTax = request.salesMarginTax
+        price.salesMarginGross = request.salesMarginGross
+        price.salesMarginPercent = request.salesMarginPercent
+        price.salesTotalNet = request.salesTotalNet
+        price.salesTotalTax = request.salesTotalTax
+        price.salesTotalGross = request.salesTotalGross
+        price.salesPriceUnit = request.salesPriceUnit
+        price.salesCalculationMode = request.salesCalculationMode
+        price.purchasePriceCorresponds = request.getPurchasePriceCorrespondsAsEnum()
+        price.salesPriceCorresponds = request.getSalesPriceCorrespondsAsEnum()
+        price.purchaseActiveRow = request.purchaseActiveRow
+        price.salesActiveRow = request.salesActiveRow
     }
 
-    private fun createCostCalculationFromUpdateRequest(
+    private fun createPriceFromUpdateRequest(
         article: Article,
-        request: UpdateCostCalculationRequest,
+        request: UpdatePriceRequest,
     ) {
-        createCostCalculation(
+        createPrice(
             article,
-            CreateCostCalculationRequest(
+            CreatePriceRequest(
                 purchasePriceNet = request.purchasePriceNet,
                 purchasePriceTax = request.purchasePriceTax,
                 purchasePriceGross = request.purchasePriceGross,
@@ -499,7 +499,7 @@ class ArticleServiceImpl(
 
             // Convert price from cents to euros (assuming salesTotalGross is in cents)
             val price =
-                article.costCalculation
+                article.price
                     ?.salesTotalGross
                     ?.toDouble()
                     ?.div(CENTS_TO_EUROS) ?: 0.0
@@ -588,8 +588,8 @@ class ArticleServiceImpl(
     }
 
     override fun getCurrentGrossPrice(articleId: Long): Long {
-        val cost = dependencies.costCalculationRepository.findByArticleId(articleId).orElse(null)
-        return cost?.salesTotalGross?.toLong() ?: 0L
+        val price = dependencies.priceRepository.findByArticleId(articleId).orElse(null)
+        return price?.salesTotalGross?.toLong() ?: 0L
     }
 
     override fun validateVariantBelongsToArticle(

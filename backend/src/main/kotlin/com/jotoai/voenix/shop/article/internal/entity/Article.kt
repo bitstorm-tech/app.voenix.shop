@@ -57,7 +57,7 @@ class Article(
     @BatchSize(size = 10)
     var shirtVariants: MutableList<ShirtArticleVariant> = mutableListOf(),
     @OneToOne(mappedBy = "article", cascade = [CascadeType.ALL], orphanRemoval = true, fetch = FetchType.LAZY)
-    var costCalculation: CostCalculation? = null,
+    var price: Price? = null,
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false, columnDefinition = "timestamptz")
     val createdAt: OffsetDateTime? = null,

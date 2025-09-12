@@ -23,8 +23,8 @@ data class UpdateArticleRequest(
     val mugDetails: UpdateMugDetailsRequest? = null,
     // Shirt-specific details
     val shirtDetails: UpdateShirtDetailsRequest? = null,
-    // Cost calculation
-    val costCalculation: UpdateCostCalculationRequest? = null,
+    // Price
+    val price: UpdatePriceRequest? = null,
 )
 
 data class UpdateMugDetailsRequest(

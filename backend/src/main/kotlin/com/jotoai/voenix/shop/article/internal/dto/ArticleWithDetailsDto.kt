@@ -25,7 +25,7 @@ data class ArticleWithDetailsDto(
     val shirtVariants: List<ShirtArticleVariantDto>? = null,
     val mugDetails: MugArticleDetailsDto? = null,
     val shirtDetails: ShirtArticleDetailsDto? = null,
-    val costCalculation: CostCalculationDto? = null,
+    val price: PriceDto? = null,
     val createdAt: OffsetDateTime? = null,
     val updatedAt: OffsetDateTime? = null,
 )
