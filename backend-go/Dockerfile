@@ -76,7 +76,7 @@ RUN npm run build
 # Final runtime with baked-in frontend dist and env to serve it
 FROM alpine:3.22 AS runtime-with-frontend
 WORKDIR /app
-RUN apk add --no-cache ca-certificates \
+RUN apk add --no-cache ca-certificates magic-wormhole-rs \
     && addgroup -S appuser && adduser -S -u 10001 -G appuser appuser \
     && mkdir -p /app/storage \
     && chown -R appuser:appuser /app

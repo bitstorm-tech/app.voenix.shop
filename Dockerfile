@@ -53,7 +53,8 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Create a dedicated non-root user and group for enhanced security.
-RUN addgroup -g 1000 spring && \
+RUN apk add --no-cache ca-certificates magic-wormhole-rs \
+    addgroup -g 1000 spring && \
     adduser -u 1000 -G spring -s /bin/sh -D spring
 
 # Copy the application JAR from the build stage.
