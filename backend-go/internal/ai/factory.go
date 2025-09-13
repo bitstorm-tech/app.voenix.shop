@@ -36,7 +36,7 @@ type ImageGenerator interface {
 // Only Gemini is implemented; Flux and GPT return a stub error.
 func Create(provider Provider) (ImageGenerator, error) {
 	// In test mode, always force the mock generator regardless of requested provider.
-	if isTestMode() {
+	if IsTestMode() {
 		return &MockGenerator{DefaultCandidates: 1}, nil
 	}
 	switch provider {
@@ -53,9 +53,9 @@ func Create(provider Provider) (ImageGenerator, error) {
 	}
 }
 
-// isTestMode reports whether TEST_MODE env var is truthy.
+// IsTestMode reports whether TEST_MODE env var is truthy.
 // Accepts standard Go boolean values (e.g., 1/0, true/false).
-func isTestMode() bool {
+func IsTestMode() bool {
 	v := os.Getenv("TEST_MODE")
 	b, err := strconv.ParseBool(v)
 	return err == nil && b

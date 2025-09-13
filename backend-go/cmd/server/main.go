@@ -127,9 +127,11 @@ func main() {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 	log.Printf("Go backend listening on %s", addr)
-	if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	checkIfTestMode()
+	if err := s.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatalf("server error: %v", err)
 	}
+
 }
 
 func serveFrontend(r *gin.Engine) {
@@ -218,5 +220,13 @@ func doMigrations() {
 	}
 	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		log.Fatal(err)
+	}
+}
+
+func checkIfTestMode() {
+	if ai.IsTestMode() {
+		log.Printf("️===========================")
+		log.Printf("⚠️ RUNNING IN TEST MODE ⚠️")
+		log.Printf("️===========================")
 	}
 }

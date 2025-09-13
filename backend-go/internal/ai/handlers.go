@@ -22,7 +22,7 @@ import (
 // Accepts: OPENAI|GOOGLE|FLUX (case-insensitive). Defaults to GOOGLE=>Gemini for broader coverage.
 func providerFromParam(p string) (Provider, bool) {
 	// In test mode, always use the mock provider regardless of input.
-	if isTestMode() {
+	if IsTestMode() {
 		return ProviderMock, true
 	}
 	switch strings.ToUpper(strings.TrimSpace(p)) {
