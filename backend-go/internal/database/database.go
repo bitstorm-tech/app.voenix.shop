@@ -1,7 +1,9 @@
 package database
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,6 +13,11 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 // ResolveDSN interprets a DATABASE_URL similar to the Python service.
@@ -66,14 +73,6 @@ func Open() (*gorm.DB, error) {
 	}
 }
 
-// AutoMigrateIfEnabled runs AutoMigrate when AUTO_MIGRATE=true.
-func AutoMigrateIfEnabled(db *gorm.DB, models ...any) error {
-	if strings.EqualFold(os.Getenv("AUTO_MIGRATE"), "true") {
-		return db.AutoMigrate(models...)
-	}
-	return nil
-}
-
 // SessionTTL returns TTL seconds for sessions; default 7 days.
 func SessionTTL() time.Duration {
 	const def = 7 * 24 * time.Hour
@@ -86,4 +85,32 @@ func SessionTTL() time.Duration {
 		}
 	}
 	return def
+}
+
+func DoMigrations() {
+	dbUrl := os.Getenv("DATABASE_URL")
+	// Allow overriding the migrations' location; probe common defaults.
+	srcURL := os.Getenv("MIGRATIONS_URL")
+	if srcURL == "" {
+		if _, err := os.Stat("internal/database/migrations"); err == nil {
+			srcURL = "file://internal/database/migrations"
+		} else if _, err := os.Stat("backend-go/internal/database/migrations"); err == nil {
+			srcURL = "file://backend-go/internal/database/migrations"
+		} else if _, err := os.Stat("/app/internal/database/migrations"); err == nil {
+			srcURL = "file:///app/internal/database/migrations"
+		} else if _, err := os.Stat("db/migrations"); err == nil {
+			srcURL = "file://db/migrations"
+		} else {
+			log.Fatal("no migrations directory found; set MIGRATIONS_URL to file://...")
+		}
+	}
+
+	log.Printf("running migrations from %s", srcURL)
+	m, err := migrate.New(srcURL, dbUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		log.Fatal(err)
+	}
 }

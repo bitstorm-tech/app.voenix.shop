@@ -23,35 +23,16 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
-	doMigrations()
-
 	db, err := database.Open()
 	if err != nil {
 		log.Fatalf("failed to open DB: %v", err)
 	}
 
-	// Optional migration for auth and domain tables
-	if err := database.AutoMigrateIfEnabled(
-		db,
-		&auth.User{}, &auth.Role{}, &auth.Session{},
-		&vat.ValueAddedTax{}, &country.Country{}, &supplier.Supplier{},
-		&prompt.PromptCategory{}, &prompt.PromptSubCategory{}, &prompt.PromptSlotType{}, &prompt.PromptSlotVariant{}, &prompt.Prompt{}, &prompt.PromptSlotVariantMapping{},
-		// Article module
-		&article.ArticleCategory{}, &article.ArticleSubCategory{}, &article.Article{}, &article.MugVariant{}, &article.ShirtVariant{}, &article.MugDetails{}, &article.ShirtDetails{}, &article.CostCalculation{},
-		// Cart module
-		&cart.Cart{}, &cart.CartItem{},
-		// Order module
-		&order.Order{}, &order.OrderItem{},
-	); err != nil {
-		log.Fatalf("auto-migrate failed: %v", err)
-	}
+	database.DoMigrations()
 
 	r := gin.Default()
 
@@ -73,7 +54,7 @@ func main() {
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}
-	// If wildcard present, allow all origins by echoing request origin.
+	// If wildcard present, allow all origins by echoing the request origin.
 	if contains(allowed, "*") {
 		cfg.AllowOriginFunc = func(origin string) bool { return true }
 	} else {
@@ -151,7 +132,14 @@ func serveFrontend(r *gin.Engine) {
 				r.StaticFS("/assets", gin.Dir(assetsDir, false))
 			}
 			// Serve common root static files if present
-			for _, name := range []string{"favicon.ico", "favicon.svg", "robots.txt", "manifest.webmanifest", "icon.svg", "apple-touch-icon.png"} {
+			for _, name := range []string{
+				"favicon.ico",
+				"favicon.svg",
+				"robots.txt",
+				"manifest.webmanifest",
+				"icon.svg",
+				"apple-touch-icon.png",
+			} {
 				p := filepath.Join(dist, name)
 				if st, err := os.Stat(p); err == nil && !st.IsDir() {
 					r.StaticFile("/"+name, p)
@@ -188,39 +176,6 @@ func contains(arr []string, v string) bool {
 		}
 	}
 	return false
-}
-
-func doMigrations() {
-	dbUrl := os.Getenv("DATABASE_URL")
-
-	// Determine migrations source URL. Prefer env override; otherwise probe common paths.
-	srcURL := os.Getenv("MIGRATIONS_URL")
-	if srcURL == "" {
-		// Try relative to current working directory (native runtime)
-		if _, err := os.Stat("internal/database/migrations"); err == nil {
-			srcURL = "file://internal/database/migrations"
-		} else if _, err := os.Stat("backend-go/internal/database/migrations"); err == nil {
-			// In case the working dir is repo root on Render
-			srcURL = "file://backend-go/internal/database/migrations"
-		} else if _, err := os.Stat("/app/internal/database/migrations"); err == nil {
-			// Docker image default WORKDIR
-			srcURL = "file:///app/internal/database/migrations"
-		} else if _, err := os.Stat("db/migrations"); err == nil {
-			// Fallback to monorepo baseline if present
-			srcURL = "file://db/migrations"
-		} else {
-			log.Fatal("no migrations directory found; set MIGRATIONS_URL to file://... or use embedded iofs")
-		}
-	}
-
-	log.Printf("running migrations from %s", srcURL)
-	m, err := migrate.New(srcURL, dbUrl)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		log.Fatal(err)
-	}
 }
 
 func checkIfTestMode() {
