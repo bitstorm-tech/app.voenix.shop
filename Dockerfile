@@ -54,8 +54,8 @@ WORKDIR /app
 
 # Create a dedicated non-root user and group for enhanced security.
 RUN apk add --no-cache ca-certificates magic-wormhole-rs \
-    addgroup -g 1000 spring && \
-    adduser -u 1000 -G spring -s /bin/sh -D spring
+    && addgroup -g 1000 spring \
+    && adduser -u 1000 -G spring -s /bin/sh -D spring
 
 # Copy the application JAR from the build stage.
 # Using a wildcard is less safe. For a more robust build, replace with the exact JAR name.
