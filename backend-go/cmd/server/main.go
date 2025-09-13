@@ -94,6 +94,8 @@ func main() {
 		log.Printf("Serving static files at /public from %s", publicDir)
 	}
 
+	serveFrontend(r)
+
 	// Auth routes
 	auth.RegisterRoutes(r, db)
 	// VAT admin routes
@@ -130,6 +132,53 @@ func main() {
 	}
 }
 
+func serveFrontend(r *gin.Engine) {
+	// Optional: Serve built frontend (Vite) when FRONTEND_DIST is set
+	// - Expects a directory containing index.html and an assets/ subfolder
+	// - Serves /assets/* statics and SPA fallback for non-/api,/public routes
+	if dist := os.Getenv("FRONTEND_DIST"); strings.TrimSpace(dist) != "" {
+		// Validate directory and presence of index.html
+		if fi, err := os.Stat(dist); err != nil || !fi.IsDir() {
+			log.Printf("warning: FRONTEND_DIST not a directory or unreadable: %s", dist)
+		} else if _, err := os.Stat(filepath.Join(dist, "index.html")); err != nil {
+			log.Printf("warning: FRONTEND_DIST missing index.html: %s", dist)
+		} else {
+			// Serve hashed asset files (JS/CSS/images)
+			assetsDir := filepath.Join(dist, "assets")
+			if st, err := os.Stat(assetsDir); err == nil && st.IsDir() {
+				r.StaticFS("/assets", gin.Dir(assetsDir, false))
+			}
+			// Serve common root static files if present
+			for _, name := range []string{"favicon.ico", "favicon.svg", "robots.txt", "manifest.webmanifest", "icon.svg", "apple-touch-icon.png"} {
+				p := filepath.Join(dist, name)
+				if st, err := os.Stat(p); err == nil && !st.IsDir() {
+					r.StaticFile("/"+name, p)
+				}
+			}
+			// Index at root
+			r.GET("/", func(c *gin.Context) {
+				c.File(filepath.Join(dist, "index.html"))
+			})
+			// SPA fallback for client-routed paths
+			r.NoRoute(func(c *gin.Context) {
+				p := c.Request.URL.Path
+				// Preserve API and storage namespaces
+				if strings.HasPrefix(p, "/api/") || strings.HasPrefix(p, "/public/") {
+					c.JSON(http.StatusNotFound, gin.H{"detail": "not found"})
+					return
+				}
+				// Only serve index for HTML navigations
+				if strings.Contains(c.GetHeader("Accept"), "text/html") {
+					c.File(filepath.Join(dist, "index.html"))
+					return
+				}
+				c.Status(http.StatusNotFound)
+			})
+			log.Printf("Serving frontend from %s (index + /assets, SPA fallback)", dist)
+		}
+	}
+}
+
 func contains(arr []string, v string) bool {
 	for _, a := range arr {
 		if strings.TrimSpace(a) == v {
@@ -140,33 +189,34 @@ func contains(arr []string, v string) bool {
 }
 
 func doMigrations() {
-    dbUrl := os.Getenv("DATABASE_URL")
-    // Determine migrations source URL. Prefer env override; otherwise probe common paths.
-    srcURL := os.Getenv("MIGRATIONS_URL")
-    if srcURL == "" {
-        // Try relative to current working directory (native runtime)
-        if _, err := os.Stat("internal/database/migrations"); err == nil {
-            srcURL = "file://internal/database/migrations"
-        } else if _, err := os.Stat("backend-go/internal/database/migrations"); err == nil {
-            // In case the working dir is repo root on Render
-            srcURL = "file://backend-go/internal/database/migrations"
-        } else if _, err := os.Stat("/app/internal/database/migrations"); err == nil {
-            // Docker image default WORKDIR
-            srcURL = "file:///app/internal/database/migrations"
-        } else if _, err := os.Stat("db/migrations"); err == nil {
-            // Fallback to monorepo baseline if present
-            srcURL = "file://db/migrations"
-        } else {
-            log.Fatal("no migrations directory found; set MIGRATIONS_URL to file://... or use embedded iofs")
-        }
-    }
+	dbUrl := os.Getenv("DATABASE_URL")
 
-    log.Printf("running migrations from %s", srcURL)
-    m, err := migrate.New(srcURL, dbUrl)
-    if err != nil {
-        log.Fatal(err)
-    }
-    if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-        log.Fatal(err)
-    }
+	// Determine migrations source URL. Prefer env override; otherwise probe common paths.
+	srcURL := os.Getenv("MIGRATIONS_URL")
+	if srcURL == "" {
+		// Try relative to current working directory (native runtime)
+		if _, err := os.Stat("internal/database/migrations"); err == nil {
+			srcURL = "file://internal/database/migrations"
+		} else if _, err := os.Stat("backend-go/internal/database/migrations"); err == nil {
+			// In case the working dir is repo root on Render
+			srcURL = "file://backend-go/internal/database/migrations"
+		} else if _, err := os.Stat("/app/internal/database/migrations"); err == nil {
+			// Docker image default WORKDIR
+			srcURL = "file:///app/internal/database/migrations"
+		} else if _, err := os.Stat("db/migrations"); err == nil {
+			// Fallback to monorepo baseline if present
+			srcURL = "file://db/migrations"
+		} else {
+			log.Fatal("no migrations directory found; set MIGRATIONS_URL to file://... or use embedded iofs")
+		}
+	}
+
+	log.Printf("running migrations from %s", srcURL)
+	m, err := migrate.New(srcURL, dbUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		log.Fatal(err)
+	}
 }

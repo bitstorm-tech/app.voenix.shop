@@ -99,5 +99,6 @@
         ]
       }
     ]
-  }
+  },
+  "spinnerTipsEnabled": false
 }

@@ -1,3 +1,8 @@
+# Default final image: runtime-with-frontend (serves SPA)
+# - Build from the repository root so the Docker context includes both
+#   backend-go/ and frontend/ directories.
+# - To build API-only image from backend-go/ directory, pass --target runtime.
+
 # --- Builder stage ---
 FROM golang:1.25-alpine AS builder
 
@@ -43,4 +48,48 @@ EXPOSE 8081
 
 USER appuser
 
+ENTRYPOINT ["/usr/local/bin/server"]
+
+
+# --- Optional: Build from repo root and include frontend dist ---
+# Usage (from repo root):
+#   docker build -f backend-go/Dockerfile --target runtime-with-frontend -t voenix/backend-go:full .
+
+# Build Go server when build context is the repository root (copies backend-go subdir)
+FROM golang:1.25-alpine AS backend-builder
+WORKDIR /app
+RUN apk add --no-cache build-base ca-certificates
+COPY backend-go/go.mod backend-go/go.sum ./
+RUN go mod download
+COPY backend-go/ .
+RUN CGO_ENABLED=1 go build -o /out/server ./cmd/server
+
+# Build frontend (Vite) from repo root
+FROM node:20-alpine AS frontend-builder
+WORKDIR /frontend
+# Install deps with lockfile when present
+COPY frontend/package.json frontend/package-lock.json* ./
+RUN if [ -f package-lock.json ]; then npm ci --no-audit --no-fund; else npm install --no-audit --no-fund; fi
+COPY frontend/ .
+RUN npm run build
+
+# Final runtime with baked-in frontend dist and env to serve it
+FROM alpine:3.22 AS runtime-with-frontend
+WORKDIR /app
+RUN apk add --no-cache ca-certificates \
+    && addgroup -S appuser && adduser -S -u 10001 -G appuser appuser \
+    && mkdir -p /app/storage \
+    && chown -R appuser:appuser /app
+
+COPY --from=backend-builder /out/server /usr/local/bin/server
+COPY --from=backend-builder /app/internal/database/migrations /app/internal/database/migrations
+COPY --from=frontend-builder /frontend/dist /app/web
+
+ENV ADDR=:8081 \
+    STORAGE_ROOT=/app/storage \
+    MIGRATIONS_URL=file:///app/internal/database/migrations \
+    FRONTEND_DIST=/app/web
+
+EXPOSE 8081
+USER appuser
 ENTRYPOINT ["/usr/local/bin/server"]

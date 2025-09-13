@@ -28,9 +28,10 @@ Configuration
    - `${STORAGE_ROOT}/public/images`
    - `${STORAGE_ROOT}/private/images`
   - Static files under `${STORAGE_ROOT}/public` are served at `/public/*`.
- - `GOOGLE_API_KEY` – required for `/api/ai/images` Gemini integration.
- - `GEMINI_IMAGE_MODEL` – optional Gemini image model (default `gemini-2.5-flash-image-preview`).
- - `TEST_MODE` – when `true`, forces the internal mock AI generator and bypasses all external AI calls (useful for tests/offline dev).
+- `FRONTEND_DIST` – optional path to a built React app (`frontend/dist`). When set, backend-go serves the SPA at `/` with `/assets/*` statics and an SPA fallback for non-`/api` and non-`/public` routes.
+- `GOOGLE_API_KEY` – required for `/api/ai/images` Gemini integration.
+- `GEMINI_IMAGE_MODEL` – optional Gemini image model (default `gemini-2.5-flash-image-preview`).
+- `TEST_MODE` – when `true`, forces the internal mock AI generator and bypasses all external AI calls (useful for tests/offline dev).
 
 .env support
 - The server loads environment variables from `.env` automatically if present.
@@ -43,6 +44,33 @@ Running
 2) Copy `.env.example` to `.env` and adjust as needed (or export vars)
 3) Install modules once: `go get` (will fetch dependencies)
 4) `go run ./cmd/server` (or `make run`)
+
+Serve the frontend from backend-go
+- Build the UI: `cd frontend && npm run build` (outputs `frontend/dist`).
+- Set `FRONTEND_DIST` to that directory. From repo root, a typical value is `./frontend/dist`.
+- Start backend-go. It will:
+  - Serve `/assets/*` from the dist folder
+  - Serve `/` and unknown non-`/api`/`/public` routes via `index.html` (SPA fallback)
+  - Keep `/api/*` and `/public/*` endpoints unchanged
+
+Docker images
+- Default (full image with frontend baked in):
+  - Build from repo root (Dockerfile expects both backend-go/ and frontend/ in context):
+    - `docker build -f backend-go/Dockerfile -t voenix/backend-go:latest .`
+  - What this does:
+    - Builds Go server from `backend-go/`
+    - Builds React app from `frontend/` into `/app/web`
+    - Sets `FRONTEND_DIST=/app/web` so the server serves the SPA at `/`
+  - Run: `docker run --rm -p 8081:8081 voenix/backend-go:latest`
+
+- API‑only image (no UI baked in):
+  - From `backend-go/` directory: `docker build --target runtime -t voenix/backend-go:api .`
+  - Or from repo root: `docker build -f backend-go/Dockerfile --target runtime -t voenix/backend-go:api .`
+  - Run with external UI or set `FRONTEND_DIST` via a bind mount.
+
+Mount a prebuilt dist into the API‑only image
+- `docker run --rm -p 8081:8081 -v $(pwd)/frontend/dist:/app/web -e FRONTEND_DIST=/app/web voenix/backend-go:api`
+
 
 Hot reload (Air)
 - Install Air once: `go install github.com/air-verse/air@latest`
