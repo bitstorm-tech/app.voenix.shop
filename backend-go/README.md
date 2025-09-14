@@ -83,6 +83,12 @@ Makefile shortcuts
 - `make dev` – run with Air (hot reload)
 - `make run` – run without hot reload
 
+Password hash helper
+- Generate hashes compatible with the Go backend's `VerifyPassword`:
+  - `go run ./cmd/hashpass --password 'YourPassword' --iterations 200000`
+  - Or via stdin: `echo -n 'YourPassword' | go run ./cmd/hashpass`
+  - Output format: `pbkdf2_sha256$<iterations>$<salt_b64>$<hash_b64>` (32‑byte key)
+
 Notes
 - Cookie is set with `HttpOnly`, `SameSite=Lax`, `Secure=false` by default (match dev behavior of Python app). Adjust in `auth/handlers.go` if needed.
 - Password verification supports `pbkdf2_sha256$<iterations>$<salt_b64>$<hash_b64>` and a legacy plain-text fallback.
