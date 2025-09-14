@@ -1,18 +1,18 @@
 package ai
 
 import (
-    "bytes"
-    "context"
-    "encoding/base64"
-    "encoding/json"
-    "errors"
-    "fmt"
-    "io"
-    "mime/multipart"
-    "net/http"
-    "net/textproto"
-    "os"
-    "strconv"
+	"bytes"
+	"context"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"net/http"
+	"net/textproto"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -60,7 +60,7 @@ func NewGPTImageGeneratorFromEnv() *GPTImageGenerator {
 }
 
 // Edit sends an image + prompt to OpenAI Images Edits and returns generated images as bytes.
-func (g *GPTImageGenerator) Edit(ctx context.Context, image []byte, prompt string, opts Options) ([][]byte, error) {
+func (g *GPTImageGenerator) Edit(ctx context.Context, image []byte, prompt string, n int) ([][]byte, error) {
 	if strings.TrimSpace(g.APIKey) == "" {
 		return nil, errors.New("OPENAI_API_KEY is not configured")
 	}
@@ -74,7 +74,6 @@ func (g *GPTImageGenerator) Edit(ctx context.Context, image []byte, prompt strin
 	}
 
 	// Candidate count (n)
-	n := opts.CandidateCount
 	if n <= 0 {
 		n = g.DefaultCandidates
 		if n <= 0 {
@@ -86,14 +85,11 @@ func (g *GPTImageGenerator) Edit(ctx context.Context, image []byte, prompt strin
 	}
 
 	// MIME type used for file part; OpenAI accepts PNG/JPG
-	mimeType := strings.TrimSpace(opts.MimeType)
-	if mimeType == "" {
-		mimeType = "image/png"
-	}
+	mimeType := "image/png"
 
-    // Build multipart/form-data body per OpenAI Images Edits API
-    var buf bytes.Buffer
-    mw := multipart.NewWriter(&buf)
+	// Build multipart/form-data body per OpenAI Images Edits API
+	var buf bytes.Buffer
+	mw := multipart.NewWriter(&buf)
 
 	// model
 	_ = mw.WriteField("model", model)
@@ -101,8 +97,8 @@ func (g *GPTImageGenerator) Edit(ctx context.Context, image []byte, prompt strin
 	_ = mw.WriteField("prompt", prompt)
 	// n (string)
 	_ = mw.WriteField("n", strconv.Itoa(n))
-    // Do NOT send response_format: some gpt-image-1 deployments reject it.
-    // We'll handle either b64_json or url in the response.
+	// Do NOT send response_format: some gpt-image-1 deployments reject it.
+	// We'll handle either b64_json or url in the response.
 
 	// image file part
 	fh := make(textproto.MIMEHeader)
@@ -125,13 +121,10 @@ func (g *GPTImageGenerator) Edit(ctx context.Context, image []byte, prompt strin
 	if client == nil {
 		client = &http.Client{}
 	}
-	timeout := g.DefaultTimeout
-	if opts.Timeout > 0 {
-		timeout = opts.Timeout
-	}
-	if timeout > 0 {
+	// If caller hasn't provided a deadline, apply generator default timeout
+	if _, hasDeadline := ctx.Deadline(); !hasDeadline && g.DefaultTimeout > 0 {
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, timeout)
+		ctx, cancel = context.WithTimeout(ctx, g.DefaultTimeout)
 		defer cancel()
 	}
 
@@ -161,42 +154,42 @@ func (g *GPTImageGenerator) Edit(ctx context.Context, image []byte, prompt strin
 	}
 
 	// Parse data[].b64_json
-    var out [][]byte
-    if arr, ok := respJSON["data"].([]any); ok {
-        for _, item := range arr {
-            m, _ := item.(map[string]any)
-            if b64, _ := m["b64_json"].(string); b64 != "" {
-                b, err := base64.StdEncoding.DecodeString(b64)
-                if err != nil {
-                    return nil, fmt.Errorf("failed to decode image data: %w", err)
-                }
-                out = append(out, b)
-                continue
-            }
-            if u, _ := m["url"].(string); u != "" {
-                // Download the image bytes from the ephemeral URL
-                imgReq, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
-                if err != nil {
-                    return nil, err
-                }
-                // use same client
-                imgResp, err := client.Do(imgReq)
-                if err != nil {
-                    return nil, err
-                }
-                func() { defer func() { _ = imgResp.Body.Close() }() }()
-                if imgResp.StatusCode < 200 || imgResp.StatusCode >= 300 {
-                    return nil, fmt.Errorf("openai image download failed: %s", imgResp.Status)
-                }
-                b, err := io.ReadAll(imgResp.Body)
-                if err != nil {
-                    return nil, err
-                }
-                out = append(out, b)
-                continue
-            }
-        }
-    }
+	var out [][]byte
+	if arr, ok := respJSON["data"].([]any); ok {
+		for _, item := range arr {
+			m, _ := item.(map[string]any)
+			if b64, _ := m["b64_json"].(string); b64 != "" {
+				b, err := base64.StdEncoding.DecodeString(b64)
+				if err != nil {
+					return nil, fmt.Errorf("failed to decode image data: %w", err)
+				}
+				out = append(out, b)
+				continue
+			}
+			if u, _ := m["url"].(string); u != "" {
+				// Download the image bytes from the ephemeral URL
+				imgReq, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+				if err != nil {
+					return nil, err
+				}
+				// use same client
+				imgResp, err := client.Do(imgReq)
+				if err != nil {
+					return nil, err
+				}
+				defer func() { _ = imgResp.Body.Close() }()
+				if imgResp.StatusCode < 200 || imgResp.StatusCode >= 300 {
+					return nil, fmt.Errorf("openai image download failed: %s", imgResp.Status)
+				}
+				b, err := io.ReadAll(imgResp.Body)
+				if err != nil {
+					return nil, err
+				}
+				out = append(out, b)
+				continue
+			}
+		}
+	}
 	if len(out) == 0 {
 		return nil, errors.New("openai response contained no image data")
 	}

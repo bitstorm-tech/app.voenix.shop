@@ -48,7 +48,7 @@ func NewGeminiGeneratorFromEnv() *GeminiGenerator {
 }
 
 // Edit sends an image + prompt to Gemini and returns generated images as bytes.
-func (g *GeminiGenerator) Edit(ctx context.Context, image []byte, prompt string, opts Options) ([][]byte, error) {
+func (g *GeminiGenerator) Edit(ctx context.Context, image []byte, prompt string, n int) ([][]byte, error) {
 	if strings.TrimSpace(g.APIKey) == "" {
 		return nil, errors.New("GOOGLE_API_KEY is not configured")
 	}
@@ -58,11 +58,8 @@ func (g *GeminiGenerator) Edit(ctx context.Context, image []byte, prompt string,
 	}
 
 	// Prepare payload
-	mime := opts.MimeType
-	if strings.TrimSpace(mime) == "" {
-		mime = "image/png"
-	}
-	cand := opts.CandidateCount
+	mime := "image/png"
+	cand := n
 	if cand <= 0 {
 		cand = g.DefaultCandidates
 		if cand <= 0 {
@@ -94,14 +91,10 @@ func (g *GeminiGenerator) Edit(ctx context.Context, image []byte, prompt string,
 		cfg = map[string]any{}
 		body["generationConfig"] = cfg
 	}
-	if opts.MaxOutputTokens != nil {
-		cfg["maxOutputTokens"] = *opts.MaxOutputTokens
-	} else if g.DefaultMaxTokens != nil {
+	if g.DefaultMaxTokens != nil {
 		cfg["maxOutputTokens"] = *g.DefaultMaxTokens
 	}
-	if opts.Temperature != nil {
-		cfg["temperature"] = *opts.Temperature
-	} else if g.DefaultTemperature != nil {
+	if g.DefaultTemperature != nil {
 		cfg["temperature"] = *g.DefaultTemperature
 	}
 
@@ -117,13 +110,10 @@ func (g *GeminiGenerator) Edit(ctx context.Context, image []byte, prompt string,
 	if client == nil {
 		client = &http.Client{}
 	}
-	timeout := g.DefaultTimeout
-	if opts.Timeout > 0 {
-		timeout = opts.Timeout
-	}
-	if timeout > 0 {
+	// If caller hasn't provided a deadline, apply generator default timeout
+	if _, hasDeadline := ctx.Deadline(); !hasDeadline && g.DefaultTimeout > 0 {
 		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, timeout)
+		ctx, cancel = context.WithTimeout(ctx, g.DefaultTimeout)
 		defer cancel()
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(b))

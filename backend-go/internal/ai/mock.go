@@ -11,8 +11,7 @@ type MockGenerator struct {
 }
 
 // Edit implements ImageGenerator by returning copies of the input image.
-func (m *MockGenerator) Edit(_ context.Context, image []byte, _ string, opts Options) ([][]byte, error) {
-	n := opts.CandidateCount
+func (m *MockGenerator) Edit(_ context.Context, image []byte, _ string, n int) ([][]byte, error) {
 	if n <= 0 {
 		n = m.DefaultCandidates
 		if n <= 0 {

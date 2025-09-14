@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -130,8 +131,9 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 			return
 		}
 
-		mimeType := fileHeader.Header.Get("Content-Type")
-		images, err := gen.Edit(c.Request.Context(), data, finalPrompt, Options{CandidateCount: 1, MimeType: mimeType, Timeout: 60 * time.Second})
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 60*time.Second)
+		defer cancel()
+		images, err := gen.Edit(ctx, data, finalPrompt, 1)
 		if err != nil || len(images) == 0 {
 			c.JSON(http.StatusBadGateway, gin.H{"message": "Image generation failed", "detail": err.Error()})
 			return
@@ -156,8 +158,12 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 		imageURL := "/api/admin/images/prompt-test/" + filename
 
 		// Include request params for UI insight
+		modelName := "gemini-2.5-flash-image-preview"
+		if prov == ProviderGPT {
+			modelName = "gpt-image-1"
+		}
 		reqParams := map[string]any{
-			"model":          "gemini-2.5-flash-image-preview",
+			"model":          modelName,
 			"size":           size,
 			"n":              1,
 			"responseFormat": "b64_json",
@@ -251,8 +257,9 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 			return
 		}
-		mimeType := fileHeader.Header.Get("Content-Type")
-		images, err := gen.Edit(c.Request.Context(), data, req.Prompt, Options{CandidateCount: req.N, MimeType: mimeType, Timeout: 60 * time.Second})
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 60*time.Second)
+		defer cancel()
+		images, err := gen.Edit(ctx, data, req.Prompt, req.N)
 		if err != nil || len(images) == 0 {
 			c.JSON(http.StatusBadGateway, gin.H{"message": "Image edit failed", "detail": err.Error()})
 			return
@@ -413,10 +420,11 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 			return
 		}
-		mimeType := fileHeader.Header.Get("Content-Type")
 		// Use the same (cropped) data as source for edits
 		n := 4
-		images, err := gen.Edit(c.Request.Context(), data, promptText, Options{CandidateCount: n, MimeType: mimeType, Timeout: 60 * time.Second})
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 60*time.Second)
+		defer cancel()
+		images, err := gen.Edit(ctx, data, promptText, n)
 		if err != nil || len(images) == 0 {
 			c.JSON(http.StatusBadGateway, gin.H{"message": "Image generation failed", "detail": safeErr(err)})
 			return

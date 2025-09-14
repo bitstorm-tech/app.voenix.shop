@@ -5,7 +5,6 @@ import (
 	"errors"
 	"os"
 	"strconv"
-	"time"
 )
 
 // Provider identifies the backing AI image generator implementation.
@@ -18,18 +17,12 @@ const (
 	ProviderMock   Provider = "mock"
 )
 
-// Options configures an image edit request.
-type Options struct {
-	CandidateCount  int
-	MimeType        string
-	MaxOutputTokens *int
-	Temperature     *float64
-	Timeout         time.Duration
-}
-
 // ImageGenerator edits/manipulates an input image according to a prompt and returns images.
 type ImageGenerator interface {
-	Edit(ctx context.Context, image []byte, prompt string, opts Options) ([][]byte, error)
+	// Edit generates up to n images for the prompt using the input image as source.
+	// Implementations should honor the request context for timeouts/cancellation and
+	// use their own defaults for provider-specific tuning.
+	Edit(ctx context.Context, image []byte, prompt string, n int) ([][]byte, error)
 }
 
 // Create returns an ImageGenerator implementation for the provider.
