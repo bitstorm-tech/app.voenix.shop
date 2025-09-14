@@ -4,6 +4,7 @@ import { immer } from 'zustand/middleware/immer';
 
 interface PromptPriceState {
   costCalculation: CostCalculation;
+  setCostCalculation: (data: Partial<CostCalculation>) => void;
 
   // Field updates
   updateCostField: <K extends keyof CostCalculation>(field: K, value: CostCalculation[K]) => void;
@@ -65,6 +66,11 @@ const initialCostCalculation: CostCalculation = {
 export const usePromptPriceStore = create<PromptPriceState>()(
   immer((set) => ({
     costCalculation: { ...initialCostCalculation },
+    setCostCalculation: (data) => {
+      set((state) => {
+        state.costCalculation = { ...initialCostCalculation, ...data } as CostCalculation;
+      });
+    },
 
     updateCostField: (field, value) => {
       set((state) => {

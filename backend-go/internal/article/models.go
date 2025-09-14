@@ -139,7 +139,7 @@ const (
 
 type CostCalculation struct {
 	ID        int      `gorm:"primaryKey" json:"id"`
-	ArticleID int      `gorm:"uniqueIndex;column:article_id;not null" json:"articleId"`
+	ArticleID *int     `gorm:"uniqueIndex;column:article_id" json:"articleId"`
 	Article   *Article `gorm:"foreignKey:ArticleID;references:ID" json:"-"`
 	// Purchase section
 	PurchasePriceNet        int     `gorm:"not null;column:purchase_price_net" json:"purchasePriceNet"`

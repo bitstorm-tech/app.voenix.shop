@@ -146,7 +146,7 @@ func upsertCostCalculation(db *gorm.DB, articleID int, req *costCalculationReque
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
-		row = CostCalculation{ArticleID: articleID}
+		row = CostCalculation{ArticleID: &articleID}
 	}
 	// map fields
 	row.PurchasePriceNet = req.PurchasePriceNet

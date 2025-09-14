@@ -18,22 +18,26 @@ type promptSlotRef struct {
 }
 
 type promptCreate struct {
-	Title                string          `json:"title"`
-	PromptText           *string         `json:"promptText"`
-	CategoryID           *int            `json:"categoryId"`
-	SubcategoryID        *int            `json:"subcategoryId"`
-	ExampleImageFilename *string         `json:"exampleImageFilename"`
-	Slots                []promptSlotRef `json:"slots"`
+	Title                string                  `json:"title"`
+	PromptText           *string                 `json:"promptText"`
+	CategoryID           *int                    `json:"categoryId"`
+	SubcategoryID        *int                    `json:"subcategoryId"`
+	PriceID              *int                    `json:"priceId"`
+	ExampleImageFilename *string                 `json:"exampleImageFilename"`
+	Slots                []promptSlotRef         `json:"slots"`
+	CostCalculation      *costCalculationRequest `json:"costCalculation"`
 }
 
 type promptUpdate struct {
-	Title                *string          `json:"title"`
-	PromptText           *string          `json:"promptText"`
-	CategoryID           *int             `json:"categoryId"`
-	SubcategoryID        *int             `json:"subcategoryId"`
-	Active               *bool            `json:"active"`
-	ExampleImageFilename *string          `json:"exampleImageFilename"`
-	Slots                *[]promptSlotRef `json:"slots"`
+	Title                *string                 `json:"title"`
+	PromptText           *string                 `json:"promptText"`
+	CategoryID           *int                    `json:"categoryId"`
+	SubcategoryID        *int                    `json:"subcategoryId"`
+	Active               *bool                   `json:"active"`
+	PriceID              *int                    `json:"priceId"`
+	ExampleImageFilename *string                 `json:"exampleImageFilename"`
+	Slots                *[]promptSlotRef        `json:"slots"`
+	CostCalculation      *costCalculationRequest `json:"costCalculation"`
 }
 
 func registerAdminPromptRoutes(r *gin.Engine, db *gorm.DB, svc *service) {

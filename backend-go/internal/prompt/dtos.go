@@ -51,6 +51,8 @@ type PromptRead struct {
 	Category        *PromptCategoryRead     `json:"category"`
 	SubcategoryID   *int                    `json:"subcategoryId"`
 	Subcategory     *PromptSubCategoryRead  `json:"subcategory"`
+	PriceID         *int                    `json:"priceId"`
+	CostCalculation *costCalculationRequest `json:"costCalculation"`
 	Active          bool                    `json:"active"`
 	Slots           []PromptSlotVariantRead `json:"slots"`
 	ExampleImageURL *string                 `json:"exampleImageUrl"`

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Textarea } from '@/components/ui/Textarea';
-import type { CreatePromptRequest, PromptSlotUpdate, UpdatePromptRequest } from '@/lib/api';
+import type { CreatePromptRequest, CreatePromptPayload, PromptSlotUpdate, UpdatePromptPayload, UpdatePromptRequest } from '@/lib/api';
 import { imagesApi, promptCategoriesApi, promptsApi, promptSubCategoriesApi } from '@/lib/api';
 import { generatePromptNumber, getArticleNumberPlaceholder } from '@/lib/articleNumberUtils';
 import type { PromptCategory, PromptSubCategory } from '@/types/prompt';
@@ -16,6 +16,9 @@ import { Calculator, FileText, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PriceCalculationTab from './prompts/components/PriceCalculationTab';
+import { usePromptPriceStore } from '@/stores/admin/prompts/usePromptPriceStore';
+import { convertCostCalculationToCents, convertCostCalculationToEuros } from '@/lib/currency';
+// no extra API needed; prompt includes costCalculation
 
 export default function NewOrEditPrompt() {
   const navigate = useNavigate();
@@ -30,6 +33,7 @@ export default function NewOrEditPrompt() {
     active: true,
   });
   const [promptId, setPromptId] = useState<number | null>(null);
+  const [priceId, setPriceId] = useState<number | null>(null);
   const [selectedSlotIds, setSelectedSlotIds] = useState<number[]>([]);
   const [categories, setCategories] = useState<PromptCategory[]>([]);
   const [subcategories, setSubcategories] = useState<PromptSubCategory[]>([]);
@@ -41,6 +45,7 @@ export default function NewOrEditPrompt() {
   const [exampleImageFile, setExampleImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<'prompt' | 'cost-calculation'>('prompt');
+  const priceStore = usePromptPriceStore();
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -59,6 +64,9 @@ export default function NewOrEditPrompt() {
       setInitialLoading(true);
       const prompt = await promptsApi.getById(parseInt(id));
       setPromptId(prompt.id);
+      if (typeof prompt.priceId === 'number') {
+        setPriceId(prompt.priceId);
+      }
       setFormData({
         title: prompt.title || '',
         promptText: prompt.promptText || '',
@@ -83,6 +91,14 @@ export default function NewOrEditPrompt() {
       // Fetch subcategories for the prompt's category
       if (prompt.categoryId) {
         await fetchSubcategories(prompt.categoryId);
+      }
+
+      // If prompt has a priceId, fetch and initialize the price store
+      if (prompt.costCalculation) {
+        const converted = convertCostCalculationToEuros(prompt.costCalculation as any);
+        if (converted) {
+          priceStore.setCostCalculation(converted);
+        }
       }
     } catch (error) {
       console.error('Error fetching prompt:', error);
@@ -163,8 +179,12 @@ export default function NewOrEditPrompt() {
         slotId: slotId,
       }));
 
+      // Gather price calculation from store and convert to cents for API
+      const { costCalculation } = usePromptPriceStore.getState();
+      const costCalcCents = convertCostCalculationToCents(costCalculation);
+
       if (isEditing) {
-        const updateData: UpdatePromptRequest = {
+        const promptPart: UpdatePromptRequest = {
           title: formData.title,
           promptText: formData.promptText || undefined,
           categoryId: formData.categoryId,
@@ -172,10 +192,12 @@ export default function NewOrEditPrompt() {
           active: formData.active,
           slots,
           exampleImageFilename: imageFilename || undefined,
+          priceId: priceId ?? undefined,
+          costCalculation: costCalcCents || undefined,
         };
-        await promptsApi.update(parseInt(id), updateData);
+        await promptsApi.update(parseInt(id), promptPart);
       } else {
-        const createData: CreatePromptRequest = {
+        const promptPart: CreatePromptRequest = {
           title: formData.title,
           promptText: formData.promptText || undefined,
           categoryId: formData.categoryId,
@@ -183,8 +205,9 @@ export default function NewOrEditPrompt() {
           active: formData.active,
           slots,
           exampleImageFilename: imageFilename || undefined,
+          costCalculation: costCalcCents || undefined,
         };
-        await promptsApi.create(createData);
+        await promptsApi.create(promptPart);
       }
 
       navigate('/admin/prompts');

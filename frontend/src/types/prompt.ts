@@ -1,4 +1,5 @@
 import type { PromptSlotVariant } from './promptSlotVariant';
+import type { CostCalculation } from './article';
 
 export interface PromptCategory {
   id: number;
@@ -30,6 +31,8 @@ export interface Prompt {
   category?: PromptCategory;
   subcategoryId?: number;
   subcategory?: PromptSubCategory;
+  priceId?: number;
+  costCalculation?: CostCalculation; // reuse article type shape
   active?: boolean;
   slots?: PromptSlot[];
   exampleImageUrl?: string;

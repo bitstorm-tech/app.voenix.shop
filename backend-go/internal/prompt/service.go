@@ -5,6 +5,9 @@ import (
 	"errors"
 
 	"gorm.io/gorm"
+
+	"voenix/backend-go/internal/article"
+	"voenix/backend-go/internal/vat"
 )
 
 // service centralizes all DB access and business logic for prompts.
@@ -397,6 +400,24 @@ func (s *service) createPrompt(ctx context.Context, payload promptCreate) (*Prom
 		Active:               true,
 		ExampleImageFilename: payload.ExampleImageFilename,
 	}
+	// Handle cost calculation: create or update price row when provided
+	if payload.CostCalculation != nil {
+		priceID, err := s.createOrUpdatePrice(ctx, nil, payload.CostCalculation)
+		if err != nil {
+			return nil, err
+		}
+		row.PriceID = &priceID
+	} else if payload.PriceID != nil && *payload.PriceID > 0 {
+		// Validate referenced price if provided without calculation
+		var pr article.CostCalculation
+		if err := s.db.WithContext(ctx).First(&pr, "id = ?", *payload.PriceID).Error; err != nil {
+			return nil, err
+		}
+		if pr.ArticleID != nil {
+			return nil, conflictError{Detail: "price is already linked to an article"}
+		}
+		row.PriceID = payload.PriceID
+	}
 	if err := s.db.WithContext(ctx).Create(&row).Error; err != nil {
 		return nil, err
 	}
@@ -442,6 +463,31 @@ func (s *service) updatePrompt(ctx context.Context, id int, payload promptUpdate
 	if payload.Active != nil {
 		existing.Active = *payload.Active
 	}
+	// Price linkage and upsert: always accept a price object on updates (client sends it regardless of changes)
+	if payload.CostCalculation != nil {
+		// Require a priceId to target for updates; if missing, create a new price row
+		var target *int
+		if payload.PriceID != nil && *payload.PriceID > 0 {
+			target = payload.PriceID
+		} else if existing.PriceID != nil && *existing.PriceID > 0 {
+			target = existing.PriceID
+		}
+		priceID, err := s.createOrUpdatePrice(ctx, target, payload.CostCalculation)
+		if err != nil {
+			return nil, err
+		}
+		existing.PriceID = &priceID
+	} else if payload.PriceID != nil && *payload.PriceID > 0 {
+		// Just relink to a provided price id without content changes
+		var pr article.CostCalculation
+		if err := s.db.WithContext(ctx).First(&pr, "id = ?", *payload.PriceID).Error; err != nil {
+			return nil, err
+		}
+		if pr.ArticleID != nil {
+			return nil, conflictError{Detail: "price is already linked to an article"}
+		}
+		existing.PriceID = payload.PriceID
+	}
 	if payload.ExampleImageFilename != nil {
 		old := existing.ExampleImageFilename
 		if old != nil && (payload.ExampleImageFilename == nil || *old != *payload.ExampleImageFilename) {
@@ -474,6 +520,94 @@ func (s *service) updatePrompt(ctx context.Context, id int, payload promptUpdate
 	reloaded, _ := loadPromptWithRelations(s.db.WithContext(ctx), existing.ID)
 	v := toPromptRead(s.db, reloaded)
 	return &v, nil
+}
+
+// createOrUpdatePrice creates a new prices row (when priceID is nil) or updates the given priceID
+// using the provided costCalculation request. Returns the price id.
+func (s *service) createOrUpdatePrice(ctx context.Context, priceID *int, req *costCalculationRequest) (int, error) {
+	if req == nil {
+		return 0, errors.New("missing costCalculation")
+	}
+	// Optional VAT validation
+	if req.PurchaseVatRateId != nil && !existsByID[vat.ValueAddedTax](s.db.WithContext(ctx), *req.PurchaseVatRateId) {
+		return 0, gorm.ErrRecordNotFound
+	}
+	if req.SalesVatRateId != nil && !existsByID[vat.ValueAddedTax](s.db.WithContext(ctx), *req.SalesVatRateId) {
+		return 0, gorm.ErrRecordNotFound
+	}
+
+	if priceID == nil {
+		row := article.CostCalculation{}
+		// ArticleID left nil for prompt-linked prices
+		s.applyCostCalculation(&row, req)
+		if err := s.db.WithContext(ctx).Create(&row).Error; err != nil {
+			return 0, err
+		}
+		return row.ID, nil
+	}
+
+	var row article.CostCalculation
+	if err := s.db.WithContext(ctx).First(&row, "id = ?", *priceID).Error; err != nil {
+		return 0, err
+	}
+	if row.ArticleID != nil {
+		return 0, conflictError{Detail: "price is already linked to an article"}
+	}
+	s.applyCostCalculation(&row, req)
+	if err := s.db.WithContext(ctx).Save(&row).Error; err != nil {
+		return 0, err
+	}
+	return row.ID, nil
+}
+
+func (s *service) applyCostCalculation(row *article.CostCalculation, req *costCalculationRequest) {
+	row.PurchasePriceNet = req.PurchasePriceNet
+	row.PurchasePriceTax = req.PurchasePriceTax
+	row.PurchasePriceGross = req.PurchasePriceGross
+	row.PurchaseCostNet = req.PurchaseCostNet
+	row.PurchaseCostTax = req.PurchaseCostTax
+	row.PurchaseCostGross = req.PurchaseCostGross
+	row.PurchaseCostPercent = req.PurchaseCostPercent
+	row.PurchaseTotalNet = req.PurchaseTotalNet
+	row.PurchaseTotalTax = req.PurchaseTotalTax
+	row.PurchaseTotalGross = req.PurchaseTotalGross
+	row.PurchasePriceUnit = req.PurchasePriceUnit
+	row.PurchaseVatRateID = req.PurchaseVatRateId
+	row.PurchaseVatRatePercent = req.PurchaseVatRatePercent
+	row.PurchaseCalculationMode = req.PurchaseCalculationMode
+	row.SalesVatRateID = req.SalesVatRateId
+	row.SalesVatRatePercent = req.SalesVatRatePercent
+	row.SalesMarginNet = req.SalesMarginNet
+	row.SalesMarginTax = req.SalesMarginTax
+	row.SalesMarginGross = req.SalesMarginGross
+	row.SalesMarginPercent = req.SalesMarginPercent
+	row.SalesTotalNet = req.SalesTotalNet
+	row.SalesTotalTax = req.SalesTotalTax
+	row.SalesTotalGross = req.SalesTotalGross
+	row.SalesPriceUnit = req.SalesPriceUnit
+	row.SalesCalculationMode = req.SalesCalculationMode
+    // Map checkbox booleans to DB enum strings (NET/GROSS)
+    // Fallback to existing value or NET when creating
+    if req.PurchasePriceCorresponds != nil {
+        if *req.PurchasePriceCorresponds {
+            row.PurchasePriceCorresponds = "NET"
+        } else {
+            row.PurchasePriceCorresponds = "GROSS"
+        }
+    } else if row.PurchasePriceCorresponds == "" {
+        row.PurchasePriceCorresponds = "NET"
+    }
+    if req.SalesPriceCorresponds != nil {
+        if *req.SalesPriceCorresponds {
+            row.SalesPriceCorresponds = "NET"
+        } else {
+            row.SalesPriceCorresponds = "GROSS"
+        }
+    } else if row.SalesPriceCorresponds == "" {
+        row.SalesPriceCorresponds = "NET"
+    }
+	row.PurchaseActiveRow = req.PurchaseActiveRow
+	row.SalesActiveRow = req.SalesActiveRow
 }
 
 func (s *service) deletePrompt(ctx context.Context, id int) error {

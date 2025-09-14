@@ -15,6 +15,7 @@ import type { MugWithVariantsSummary } from '@/types/copyVariants';
 import type { Country } from '@/types/country';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
+import type { CreateCostCalculationRequest } from '@/types/article';
 import type { PromptSlotType, PromptSlotVariant } from '@/types/promptSlotVariant';
 import type { CreateSupplierRequest, Supplier, UpdateSupplierRequest } from '@/types/supplier';
 import type { CreateValueAddedTaxRequest, UpdateValueAddedTaxRequest, ValueAddedTax } from '@/types/vat';
@@ -160,6 +161,8 @@ export interface CreatePromptRequest {
   active: boolean;
   slots?: PromptSlotUpdate[];
   exampleImageFilename?: string;
+  priceId?: number;
+  costCalculation?: CreateCostCalculationRequest;
 }
 
 export interface UpdatePromptRequest {
@@ -170,6 +173,8 @@ export interface UpdatePromptRequest {
   active?: boolean;
   slots?: PromptSlotUpdate[];
   exampleImageFilename?: string;
+  priceId?: number;
+  costCalculation?: CreateCostCalculationRequest;
 }
 
 export interface CreatePromptCategoryRequest {
@@ -585,6 +590,11 @@ export const supplierApi = {
 // Country API
 export const countryApi = {
   getAll: () => api.get<Country[]>('/public/countries'),
+};
+
+// Prices API (admin)
+export const pricesApi = {
+  getById: (id: number) => api.get<CostCalculation>(`/admin/prices/${id}`),
 };
 
 // Public API endpoints (no authentication required)

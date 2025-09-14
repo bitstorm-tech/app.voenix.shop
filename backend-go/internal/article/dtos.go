@@ -1,6 +1,7 @@
 package article
 
 import (
+	"cmp"
 	"path/filepath"
 	"strings"
 	"time"
@@ -257,7 +258,7 @@ func toCostRead(c *CostCalculation) *CostCalculationRead {
 	}
 	return &CostCalculationRead{
 		ID:                       c.ID,
-		ArticleID:                c.ArticleID,
+		ArticleID:                cmp.Or(*c.ArticleID, 0),
 		PurchasePriceNet:         c.PurchasePriceNet,
 		PurchasePriceTax:         c.PurchasePriceTax,
 		PurchasePriceGross:       c.PurchasePriceGross,

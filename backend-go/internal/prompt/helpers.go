@@ -10,6 +10,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"voenix/backend-go/internal/article"
 	img "voenix/backend-go/internal/image"
 )
 
@@ -71,6 +72,78 @@ func toPromptRead(db *gorm.DB, p *Prompt) PromptRead {
 			slots = append(slots, toSlotVariantRead(m.PromptSlotVariant))
 		}
 	}
+	// Load price if linked
+	var price *costCalculationRequest
+	if p.Price != nil {
+		pr := p.Price
+        price = &costCalculationRequest{
+			PurchasePriceNet:         pr.PurchasePriceNet,
+			PurchasePriceTax:         pr.PurchasePriceTax,
+			PurchasePriceGross:       pr.PurchasePriceGross,
+			PurchaseCostNet:          pr.PurchaseCostNet,
+			PurchaseCostTax:          pr.PurchaseCostTax,
+			PurchaseCostGross:        pr.PurchaseCostGross,
+			PurchaseCostPercent:      pr.PurchaseCostPercent,
+			PurchaseTotalNet:         pr.PurchaseTotalNet,
+			PurchaseTotalTax:         pr.PurchaseTotalTax,
+			PurchaseTotalGross:       pr.PurchaseTotalGross,
+			PurchasePriceUnit:        pr.PurchasePriceUnit,
+			PurchaseVatRateId:        pr.PurchaseVatRateID,
+			PurchaseVatRatePercent:   pr.PurchaseVatRatePercent,
+			PurchaseCalculationMode:  pr.PurchaseCalculationMode,
+			SalesVatRateId:           pr.SalesVatRateID,
+			SalesVatRatePercent:      pr.SalesVatRatePercent,
+			SalesMarginNet:           pr.SalesMarginNet,
+			SalesMarginTax:           pr.SalesMarginTax,
+			SalesMarginGross:         pr.SalesMarginGross,
+			SalesMarginPercent:       pr.SalesMarginPercent,
+			SalesTotalNet:            pr.SalesTotalNet,
+			SalesTotalTax:            pr.SalesTotalTax,
+			SalesTotalGross:          pr.SalesTotalGross,
+			SalesPriceUnit:           pr.SalesPriceUnit,
+			SalesCalculationMode:     pr.SalesCalculationMode,
+                PurchasePriceCorresponds: strToBoolPtr(pr.PurchasePriceCorresponds),
+                SalesPriceCorresponds:    strToBoolPtr(pr.SalesPriceCorresponds),
+                PurchaseActiveRow:        pr.PurchaseActiveRow,
+                SalesActiveRow:           pr.SalesActiveRow,
+        }
+	} else if p.PriceID != nil {
+		var pr article.CostCalculation
+		if err := db.First(&pr, "id = ?", *p.PriceID).Error; err == nil {
+            price = &costCalculationRequest{
+				PurchasePriceNet:         pr.PurchasePriceNet,
+				PurchasePriceTax:         pr.PurchasePriceTax,
+				PurchasePriceGross:       pr.PurchasePriceGross,
+				PurchaseCostNet:          pr.PurchaseCostNet,
+				PurchaseCostTax:          pr.PurchaseCostTax,
+				PurchaseCostGross:        pr.PurchaseCostGross,
+				PurchaseCostPercent:      pr.PurchaseCostPercent,
+				PurchaseTotalNet:         pr.PurchaseTotalNet,
+				PurchaseTotalTax:         pr.PurchaseTotalTax,
+				PurchaseTotalGross:       pr.PurchaseTotalGross,
+				PurchasePriceUnit:        pr.PurchasePriceUnit,
+				PurchaseVatRateId:        pr.PurchaseVatRateID,
+				PurchaseVatRatePercent:   pr.PurchaseVatRatePercent,
+				PurchaseCalculationMode:  pr.PurchaseCalculationMode,
+				SalesVatRateId:           pr.SalesVatRateID,
+				SalesVatRatePercent:      pr.SalesVatRatePercent,
+				SalesMarginNet:           pr.SalesMarginNet,
+				SalesMarginTax:           pr.SalesMarginTax,
+				SalesMarginGross:         pr.SalesMarginGross,
+				SalesMarginPercent:       pr.SalesMarginPercent,
+				SalesTotalNet:            pr.SalesTotalNet,
+				SalesTotalTax:            pr.SalesTotalTax,
+				SalesTotalGross:          pr.SalesTotalGross,
+				SalesPriceUnit:           pr.SalesPriceUnit,
+				SalesCalculationMode:     pr.SalesCalculationMode,
+                PurchasePriceCorresponds: strToBoolPtr(pr.PurchasePriceCorresponds),
+                SalesPriceCorresponds:    strToBoolPtr(pr.SalesPriceCorresponds),
+                PurchaseActiveRow:        pr.PurchaseActiveRow,
+                SalesActiveRow:           pr.SalesActiveRow,
+            }
+        }
+    }
+
 	return PromptRead{
 		ID:              p.ID,
 		Title:           p.Title,
@@ -79,6 +152,8 @@ func toPromptRead(db *gorm.DB, p *Prompt) PromptRead {
 		Category:        cat,
 		SubcategoryID:   p.SubcategoryID,
 		Subcategory:     subcat,
+		PriceID:         p.PriceID,
+		CostCalculation: price,
 		Active:          p.Active,
 		Slots:           slots,
 		ExampleImageURL: strPtrOrNil(publicPromptExampleURL(p.ExampleImageFilename)),
@@ -130,6 +205,7 @@ func loadPromptWithRelations(db *gorm.DB, id int) (*Prompt, error) {
 	err := db.Where("id = ?", id).
 		Preload("Category").
 		Preload("Subcategory").
+		Preload("Price").
 		Preload("PromptSlotVariantMappings").
 		Preload("PromptSlotVariantMappings.PromptSlotVariant").
 		Preload("PromptSlotVariantMappings.PromptSlotVariant.PromptSlotType").
@@ -148,6 +224,7 @@ func allPromptsWithRelations(db *gorm.DB) ([]Prompt, error) {
 	err := db.
 		Preload("Category").
 		Preload("Subcategory").
+		Preload("Price").
 		Preload("PromptSlotVariantMappings").
 		Preload("PromptSlotVariantMappings.PromptSlotVariant").
 		Preload("PromptSlotVariantMappings.PromptSlotVariant.PromptSlotType").
@@ -258,11 +335,25 @@ func safeDeletePublicImage(filename, kind string) {
 
 func timePtr(t time.Time) *time.Time { return &t }
 func strPtrOrNil(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
+    if s == "" {
+        return nil
+    }
+    return &s
 }
 
 // tiny wrappers to avoid importing strconv in many files
 func strconvAtoi(s string) (int, error) { return strconv.Atoi(s) }
+
+// util: DB stores "NET"/"GROSS" but UI sends booleans
+func strToBoolPtr(s string) *bool {
+    var b bool
+    switch strings.ToUpper(strings.TrimSpace(s)) {
+    case "NET":
+        b = true
+    case "GROSS":
+        b = false
+    default:
+        return nil
+    }
+    return &b
+}

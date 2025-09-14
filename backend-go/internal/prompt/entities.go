@@ -1,6 +1,9 @@
 package prompt
 
-import "time"
+import (
+	"time"
+	"voenix/backend-go/internal/article"
+)
 
 // GORM models mirroring Kotlin/Python prompt entities.
 
@@ -61,15 +64,17 @@ type PromptSlotVariantMapping struct {
 func (PromptSlotVariantMapping) TableName() string { return "prompt_slot_variant_mappings" }
 
 type Prompt struct {
-	ID                   int                `gorm:"primaryKey" json:"id"`
-	Title                string             `gorm:"size:500;not null" json:"title"`
-	PromptText           *string            `gorm:"type:text" json:"promptText"`
-	CategoryID           *int               `gorm:"column:category_id" json:"categoryId"`
-	Category             *PromptCategory    `gorm:"foreignKey:CategoryID;references:ID" json:"category,omitempty"`
-	SubcategoryID        *int               `gorm:"column:subcategory_id" json:"subcategoryId"`
-	Subcategory          *PromptSubCategory `gorm:"foreignKey:SubcategoryID;references:ID" json:"subcategory,omitempty"`
-	Active               bool               `gorm:"not null;default:true" json:"active"`
-	ExampleImageFilename *string            `gorm:"size:500" json:"exampleImageFilename"`
+	ID                   int                      `gorm:"primaryKey" json:"id"`
+	Title                string                   `gorm:"size:500;not null" json:"title"`
+	PromptText           *string                  `gorm:"type:text" json:"promptText"`
+	CategoryID           *int                     `gorm:"column:category_id" json:"categoryId"`
+	Category             *PromptCategory          `gorm:"foreignKey:CategoryID;references:ID" json:"category,omitempty"`
+	SubcategoryID        *int                     `gorm:"column:subcategory_id" json:"subcategoryId"`
+	Subcategory          *PromptSubCategory       `gorm:"foreignKey:SubcategoryID;references:ID" json:"subcategory,omitempty"`
+	PriceID              *int                     `gorm:"column:price_id" json:"priceId"`
+	Price                *article.CostCalculation `gorm:"foreignKey:PriceID;references:ID" json:"-"`
+	Active               bool                     `gorm:"not null;default:true" json:"active"`
+	ExampleImageFilename *string                  `gorm:"size:500" json:"exampleImageFilename"`
 	// mappings relation (manually loaded)
 	PromptSlotVariantMappings []PromptSlotVariantMapping `gorm:"foreignKey:PromptID;references:ID" json:"promptSlotVariantMappings,omitempty"`
 	CreatedAt                 time.Time                  `json:"createdAt"`
