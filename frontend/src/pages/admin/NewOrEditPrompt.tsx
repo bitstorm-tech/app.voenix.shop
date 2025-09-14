@@ -8,16 +8,16 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Textarea } from '@/components/ui/Textarea';
-import type { CreatePromptRequest, CreatePromptPayload, PromptSlotUpdate, UpdatePromptPayload, UpdatePromptRequest } from '@/lib/api';
+import type { CreatePromptRequest, PromptSlotUpdate, UpdatePromptRequest } from '@/lib/api';
 import { imagesApi, promptCategoriesApi, promptsApi, promptSubCategoriesApi } from '@/lib/api';
 import { generatePromptNumber, getArticleNumberPlaceholder } from '@/lib/articleNumberUtils';
+import { convertCostCalculationToCents, convertCostCalculationToEuros } from '@/lib/currency';
+import { usePromptPriceStore } from '@/stores/admin/prompts/usePromptPriceStore';
 import type { PromptCategory, PromptSubCategory } from '@/types/prompt';
 import { Calculator, FileText, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import PriceCalculationTab from './prompts/components/PriceCalculationTab';
-import { usePromptPriceStore } from '@/stores/admin/prompts/usePromptPriceStore';
-import { convertCostCalculationToCents, convertCostCalculationToEuros } from '@/lib/currency';
 // no extra API needed; prompt includes costCalculation
 
 export default function NewOrEditPrompt() {
@@ -147,11 +147,13 @@ export default function NewOrEditPrompt() {
 
     if (!formData.title.trim()) {
       setError('Title is required');
+      setActiveTab('prompt');
       return;
     }
 
     if (!formData.categoryId) {
       setError('Category is required');
+      setActiveTab('prompt');
       return;
     }
 
@@ -289,14 +291,14 @@ export default function NewOrEditPrompt() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="prompt">
+          <TabsContent value="prompt" forceMount>
             <Card>
               <CardHeader>
                 <CardTitle>{isEditing ? 'Edit Prompt' : 'New Prompt'}</CardTitle>
                 <CardDescription>{isEditing ? 'Update the prompt details below' : 'Create a new prompt with the form below'}</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form id="prompt-form" onSubmit={handleSubmit} className="space-y-6">
                   {error && <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
 
                   <div className="space-y-2">
@@ -426,15 +428,6 @@ export default function NewOrEditPrompt() {
                       </Label>
                     </div>
                   </div>
-
-                  <div className="flex gap-4">
-                    <Button type="submit" disabled={loading}>
-                      {loading ? 'Saving...' : isEditing ? 'Update Prompt' : 'Create Prompt'}
-                    </Button>
-                    <Button type="button" variant="outline" onClick={handleCancel}>
-                      Cancel
-                    </Button>
-                  </div>
                 </form>
               </CardContent>
             </Card>
@@ -444,6 +437,16 @@ export default function NewOrEditPrompt() {
             <PriceCalculationTab />
           </TabsContent>
         </Tabs>
+
+        {/* Global action bar visible for both tabs */}
+        <div className="mt-6 flex gap-4">
+          <Button type="submit" form="prompt-form" disabled={loading}>
+            {loading ? 'Saving...' : isEditing ? 'Update Prompt' : 'Create Prompt'}
+          </Button>
+          <Button type="button" variant="outline" onClick={handleCancel}>
+            Cancel
+          </Button>
+        </div>
       </div>
     </div>
   );

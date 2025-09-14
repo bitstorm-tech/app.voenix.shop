@@ -3,9 +3,11 @@ import type {
   Article,
   ArticleMugVariant,
   ArticleShirtVariant,
+  CostCalculation,
   CreateArticleMugVariantRequest,
   CreateArticleRequest,
   CreateArticleShirtVariantRequest,
+  CreateCostCalculationRequest,
   PaginatedResponse,
   UpdateArticleRequest,
 } from '@/types/article';
@@ -15,7 +17,6 @@ import type { MugWithVariantsSummary } from '@/types/copyVariants';
 import type { Country } from '@/types/country';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
-import type { CreateCostCalculationRequest } from '@/types/article';
 import type { PromptSlotType, PromptSlotVariant } from '@/types/promptSlotVariant';
 import type { CreateSupplierRequest, Supplier, UpdateSupplierRequest } from '@/types/supplier';
 import type { CreateValueAddedTaxRequest, UpdateValueAddedTaxRequest, ValueAddedTax } from '@/types/vat';

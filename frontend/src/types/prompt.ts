@@ -1,5 +1,5 @@
-import type { PromptSlotVariant } from './promptSlotVariant';
 import type { CostCalculation } from './article';
+import type { PromptSlotVariant } from './promptSlotVariant';
 
 export interface PromptCategory {
   id: number;
