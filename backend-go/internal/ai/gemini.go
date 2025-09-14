@@ -1,17 +1,17 @@
 package ai
 
 import (
-    "bytes"
-    "context"
-    "encoding/base64"
-    "encoding/json"
-    "errors"
-    "fmt"
-    "log"
-    "net/http"
-    "os"
-    "strings"
-    "time"
+	"bytes"
+	"context"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"strings"
+	"time"
 )
 
 const (
@@ -58,11 +58,11 @@ func (g *GeminiGenerator) Edit(ctx context.Context, image []byte, prompt string,
 		return nil, errors.New("model is not configured")
 	}
 
-    // Prepare payload
-    mime := "image/png"
-    if mt := http.DetectContentType(image); strings.HasPrefix(mt, "image/") {
-        mime = mt
-    }
+	// Prepare payload
+	mime := "image/png"
+	if mt := http.DetectContentType(image); strings.HasPrefix(mt, "image/") {
+		mime = mt
+	}
 	cand := n
 	if cand <= 0 {
 		cand = g.DefaultCandidates
@@ -126,50 +126,50 @@ func (g *GeminiGenerator) Edit(ctx context.Context, image []byte, prompt string,
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-    resp, err := client.Do(req)
-    if err != nil {
-        return nil, err
-    }
-    defer func() { _ = resp.Body.Close() }()
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
 
 	var respJSON map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&respJSON); err != nil {
 		return nil, err
 	}
-    if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-        // Surface HTTP error with any error payload and log a snippet for diagnostics
-        if e, ok := respJSON["error"].(map[string]any); ok {
-            log.Printf("Gemini API error: http=%s code=%v status=%v message=%v", resp.Status, e["code"], e["status"], e["message"])
-            return nil, fmt.Errorf("gemini API error: code=%v status=%v message=%v", e["code"], e["status"], e["message"])
-        }
-        b, _ := json.Marshal(respJSON)
-        if len(b) > 1024 {
-            b = b[:1024]
-        }
-        log.Printf("Gemini HTTP error: %s body=%s", resp.Status, string(b))
-        return nil, fmt.Errorf("gemini HTTP error: %s", resp.Status)
-    }
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		// Surface HTTP error with any error payload and log a snippet for diagnostics
+		if e, ok := respJSON["error"].(map[string]any); ok {
+			log.Printf("Gemini API error: http=%s code=%v status=%v message=%v", resp.Status, e["code"], e["status"], e["message"])
+			return nil, fmt.Errorf("gemini API error: code=%v status=%v message=%v", e["code"], e["status"], e["message"])
+		}
+		b, _ := json.Marshal(respJSON)
+		if len(b) > 1024 {
+			b = b[:1024]
+		}
+		log.Printf("Gemini HTTP error: %s body=%s", resp.Status, string(b))
+		return nil, fmt.Errorf("gemini HTTP error: %s", resp.Status)
+	}
 
-    // Extract images from candidates[].content.parts[].inlineData
-    images := make([][]byte, 0, cand)
-    var finishReasons []string
-    if e, ok := respJSON["error"]; ok && e != nil {
-        if em, ok := e.(map[string]any); ok {
-            return nil, fmt.Errorf("gemini API error: code=%v status=%v message=%v", em["code"], em["status"], em["message"])
-        }
-        return nil, fmt.Errorf("gemini API error: %v", e)
-    }
-    if cands, ok := respJSON["candidates"].([]any); ok {
-        for _, c := range cands {
-            cm, _ := c.(map[string]any)
-            if fr, _ := cm["finishReason"].(string); fr != "" {
-                finishReasons = append(finishReasons, fr)
-            }
-            content, _ := cm["content"].(map[string]any)
-            parts, _ := content["parts"].([]any)
-            for _, p := range parts {
-                pm, _ := p.(map[string]any)
-                inline, _ := pm["inlineData"].(map[string]any)
+	// Extract images from candidates[].content.parts[].inlineData
+	images := make([][]byte, 0, cand)
+	var finishReasons []string
+	if e, ok := respJSON["error"]; ok && e != nil {
+		if em, ok := e.(map[string]any); ok {
+			return nil, fmt.Errorf("gemini API error: code=%v status=%v message=%v", em["code"], em["status"], em["message"])
+		}
+		return nil, fmt.Errorf("gemini API error: %v", e)
+	}
+	if cands, ok := respJSON["candidates"].([]any); ok {
+		for _, c := range cands {
+			cm, _ := c.(map[string]any)
+			if fr, _ := cm["finishReason"].(string); fr != "" {
+				finishReasons = append(finishReasons, fr)
+			}
+			content, _ := cm["content"].(map[string]any)
+			parts, _ := content["parts"].([]any)
+			for _, p := range parts {
+				pm, _ := p.(map[string]any)
+				inline, _ := pm["inlineData"].(map[string]any)
 				if inline == nil {
 					inline, _ = pm["inline_data"].(map[string]any)
 				}
@@ -196,20 +196,20 @@ func (g *GeminiGenerator) Edit(ctx context.Context, image []byte, prompt string,
 			}
 		}
 	}
-    if len(images) == 0 {
-        // Map known safety finishes to a typed error for better UX
-        for _, fr := range finishReasons {
-            if strings.EqualFold(fr, "PROHIBITED_CONTENT") || strings.EqualFold(fr, "SAFETY") {
-                return nil, &SafetyBlockedError{Provider: ProviderGemini, Reason: fr}
-            }
-        }
-        // Log diagnostic snippet of response when no images were returned
-        b, _ := json.Marshal(respJSON)
-        if len(b) > 2048 {
-            b = b[:2048]
-        }
-        log.Printf("Gemini response had no image inlineData; model=%s candidateCount=%d respSnippet=%s", model, cand, string(b))
-        return nil, errors.New("gemini response contained no image inlineData")
-    }
+	if len(images) == 0 {
+		// Map known safety finishes to a typed error for better UX
+		for _, fr := range finishReasons {
+			if strings.EqualFold(fr, "PROHIBITED_CONTENT") || strings.EqualFold(fr, "SAFETY") {
+				return nil, &SafetyBlockedError{Provider: ProviderGemini, Reason: fr}
+			}
+		}
+		// Log diagnostic snippet of response when no images were returned
+		b, _ := json.Marshal(respJSON)
+		if len(b) > 2048 {
+			b = b[:2048]
+		}
+		log.Printf("Gemini response had no image inlineData; model=%s candidateCount=%d respSnippet=%s", model, cand, string(b))
+		return nil, errors.New("gemini response contained no image inlineData")
+	}
 	return images, nil
 }

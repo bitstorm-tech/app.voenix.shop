@@ -1,13 +1,13 @@
 package ai
 
 import (
-    "context"
-    "errors"
-    "encoding/json"
-    "io"
-    "net/http"
-    "path/filepath"
-    "strconv"
+	"context"
+	"encoding/json"
+	"errors"
+	"io"
+	"net/http"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -134,16 +134,16 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 60*time.Second)
 		defer cancel()
-        images, err := gen.Edit(ctx, data, finalPrompt, 1)
-        if err != nil || len(images) == 0 {
-            var sb *SafetyBlockedError
-            if errors.As(err, &sb) {
-                c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Request blocked by AI safety filters", "detail": sb.Reason})
-                return
-            }
-            c.JSON(http.StatusBadGateway, gin.H{"message": "Image generation failed", "detail": safeErr(err)})
-            return
-        }
+		images, err := gen.Edit(ctx, data, finalPrompt, 1)
+		if err != nil || len(images) == 0 {
+			var sb *SafetyBlockedError
+			if errors.As(err, &sb) {
+				c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Request blocked by AI safety filters", "detail": sb.Reason})
+				return
+			}
+			c.JSON(http.StatusBadGateway, gin.H{"message": "Image generation failed", "detail": safeErr(err)})
+			return
+		}
 
 		// Store as PNG under prompt-test directory
 		loc, err := imgsvc.NewStorageLocations()
@@ -265,16 +265,16 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 		}
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 60*time.Second)
 		defer cancel()
-        images, err := gen.Edit(ctx, data, req.Prompt, req.N)
-        if err != nil || len(images) == 0 {
-            var sb *SafetyBlockedError
-            if errors.As(err, &sb) {
-                c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Request blocked by AI safety filters", "detail": sb.Reason})
-                return
-            }
-            c.JSON(http.StatusBadGateway, gin.H{"message": "Image edit failed", "detail": safeErr(err)})
-            return
-        }
+		images, err := gen.Edit(ctx, data, req.Prompt, req.N)
+		if err != nil || len(images) == 0 {
+			var sb *SafetyBlockedError
+			if errors.As(err, &sb) {
+				c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Request blocked by AI safety filters", "detail": sb.Reason})
+				return
+			}
+			c.JSON(http.StatusBadGateway, gin.H{"message": "Image edit failed", "detail": safeErr(err)})
+			return
+		}
 
 		// Store as PNG under prompt-test directory (admin accessible)
 		loc, err := imgsvc.NewStorageLocations()
@@ -435,16 +435,16 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 		n := 4
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 60*time.Second)
 		defer cancel()
-        images, err := gen.Edit(ctx, data, promptText, n)
-        if err != nil || len(images) == 0 {
-            var sb *SafetyBlockedError
-            if errors.As(err, &sb) {
-                c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Request blocked by AI safety filters", "detail": sb.Reason})
-                return
-            }
-            c.JSON(http.StatusBadGateway, gin.H{"message": "Image generation failed", "detail": safeErr(err)})
-            return
-        }
+		images, err := gen.Edit(ctx, data, promptText, n)
+		if err != nil || len(images) == 0 {
+			var sb *SafetyBlockedError
+			if errors.As(err, &sb) {
+				c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Request blocked by AI safety filters", "detail": sb.Reason})
+				return
+			}
+			c.JSON(http.StatusBadGateway, gin.H{"message": "Image generation failed", "detail": safeErr(err)})
+			return
+		}
 
 		// Store generated images under the user directory and build URLs/IDs
 		urls := make([]string, 0, len(images))
