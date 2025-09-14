@@ -84,8 +84,11 @@ func (g *GPTImageGenerator) Edit(ctx context.Context, image []byte, prompt strin
 		n = 10
 	}
 
-	// MIME type used for file part; OpenAI accepts PNG/JPG
-	mimeType := "image/png"
+    // MIME type used for file part; OpenAI accepts PNG/JPG
+    mimeType := "image/png"
+    if mt := http.DetectContentType(image); strings.HasPrefix(mt, "image/") {
+        mimeType = mt
+    }
 
 	// Build multipart/form-data body per OpenAI Images Edits API
 	var buf bytes.Buffer
