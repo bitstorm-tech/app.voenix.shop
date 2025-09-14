@@ -45,7 +45,7 @@ func Create(provider Provider) (ImageGenerator, error) {
 	case ProviderFlux:
 		return nil, errors.New("Flux image generator is not implemented yet")
 	case ProviderGPT:
-		return nil, errors.New("GPT image generator is not implemented yet")
+		return NewGPTImageGeneratorFromEnv(), nil
 	case ProviderMock:
 		return &MockGenerator{DefaultCandidates: 1}, nil
 	default:

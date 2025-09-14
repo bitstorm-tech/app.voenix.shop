@@ -31,7 +31,7 @@ func providerFromParam(p string) (Provider, bool) {
 	case "FLUX", string(ProviderFlux):
 		return ProviderFlux, false // not implemented
 	case "OPENAI", "GPT", string(ProviderGPT):
-		return ProviderGPT, false // not implemented
+		return ProviderGPT, true
 	case "MOCK", "TEST", string(ProviderMock):
 		return ProviderMock, true
 	default:
