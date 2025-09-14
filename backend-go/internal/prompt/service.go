@@ -586,26 +586,26 @@ func (s *service) applyCostCalculation(row *article.CostCalculation, req *costCa
 	row.SalesTotalGross = req.SalesTotalGross
 	row.SalesPriceUnit = req.SalesPriceUnit
 	row.SalesCalculationMode = req.SalesCalculationMode
-    // Map checkbox booleans to DB enum strings (NET/GROSS)
-    // Fallback to existing value or NET when creating
-    if req.PurchasePriceCorresponds != nil {
-        if *req.PurchasePriceCorresponds {
-            row.PurchasePriceCorresponds = "NET"
-        } else {
-            row.PurchasePriceCorresponds = "GROSS"
-        }
-    } else if row.PurchasePriceCorresponds == "" {
-        row.PurchasePriceCorresponds = "NET"
-    }
-    if req.SalesPriceCorresponds != nil {
-        if *req.SalesPriceCorresponds {
-            row.SalesPriceCorresponds = "NET"
-        } else {
-            row.SalesPriceCorresponds = "GROSS"
-        }
-    } else if row.SalesPriceCorresponds == "" {
-        row.SalesPriceCorresponds = "NET"
-    }
+	// Map checkbox booleans to DB enum strings (NET/GROSS)
+	// Fallback to existing value or NET when creating
+	if req.PurchasePriceCorresponds != nil {
+		if *req.PurchasePriceCorresponds {
+			row.PurchasePriceCorresponds = "NET"
+		} else {
+			row.PurchasePriceCorresponds = "GROSS"
+		}
+	} else if row.PurchasePriceCorresponds == "" {
+		row.PurchasePriceCorresponds = "NET"
+	}
+	if req.SalesPriceCorresponds != nil {
+		if *req.SalesPriceCorresponds {
+			row.SalesPriceCorresponds = "NET"
+		} else {
+			row.SalesPriceCorresponds = "GROSS"
+		}
+	} else if row.SalesPriceCorresponds == "" {
+		row.SalesPriceCorresponds = "NET"
+	}
 	row.PurchaseActiveRow = req.PurchaseActiveRow
 	row.SalesActiveRow = req.SalesActiveRow
 }
@@ -631,6 +631,7 @@ func (s *service) listPublicPrompts(ctx context.Context) ([]PublicPromptRead, er
 	if err := s.db.WithContext(ctx).Where("active = ?", true).
 		Preload("Category").
 		Preload("Subcategory").
+		Preload("Price").
 		Preload("PromptSlotVariantMappings").
 		Preload("PromptSlotVariantMappings.PromptSlotVariant").
 		Preload("PromptSlotVariantMappings.PromptSlotVariant.PromptSlotType").

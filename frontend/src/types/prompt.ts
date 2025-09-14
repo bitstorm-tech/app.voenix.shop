@@ -33,6 +33,8 @@ export interface Prompt {
   subcategory?: PromptSubCategory;
   priceId?: number;
   costCalculation?: CostCalculation; // reuse article type shape
+  // Price in cents for public prompts (from prices.sales_total_gross)
+  price?: number;
   active?: boolean;
   slots?: PromptSlot[];
   exampleImageUrl?: string;

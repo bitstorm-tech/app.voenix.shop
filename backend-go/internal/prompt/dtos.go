@@ -93,6 +93,7 @@ type PublicPromptRead struct {
 	Category        *PublicPromptCategoryRead    `json:"category"`
 	Subcategory     *PublicPromptSubCategoryRead `json:"subcategory"`
 	Slots           []PublicPromptSlotRead       `json:"slots"`
+	Price           *int                         `json:"price,omitempty"`
 }
 
 type PromptSummaryRead struct {

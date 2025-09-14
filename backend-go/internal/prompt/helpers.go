@@ -76,7 +76,7 @@ func toPromptRead(db *gorm.DB, p *Prompt) PromptRead {
 	var price *costCalculationRequest
 	if p.Price != nil {
 		pr := p.Price
-        price = &costCalculationRequest{
+		price = &costCalculationRequest{
 			PurchasePriceNet:         pr.PurchasePriceNet,
 			PurchasePriceTax:         pr.PurchasePriceTax,
 			PurchasePriceGross:       pr.PurchasePriceGross,
@@ -102,15 +102,15 @@ func toPromptRead(db *gorm.DB, p *Prompt) PromptRead {
 			SalesTotalGross:          pr.SalesTotalGross,
 			SalesPriceUnit:           pr.SalesPriceUnit,
 			SalesCalculationMode:     pr.SalesCalculationMode,
-                PurchasePriceCorresponds: strToBoolPtr(pr.PurchasePriceCorresponds),
-                SalesPriceCorresponds:    strToBoolPtr(pr.SalesPriceCorresponds),
-                PurchaseActiveRow:        pr.PurchaseActiveRow,
-                SalesActiveRow:           pr.SalesActiveRow,
-        }
+			PurchasePriceCorresponds: strToBoolPtr(pr.PurchasePriceCorresponds),
+			SalesPriceCorresponds:    strToBoolPtr(pr.SalesPriceCorresponds),
+			PurchaseActiveRow:        pr.PurchaseActiveRow,
+			SalesActiveRow:           pr.SalesActiveRow,
+		}
 	} else if p.PriceID != nil {
 		var pr article.CostCalculation
 		if err := db.First(&pr, "id = ?", *p.PriceID).Error; err == nil {
-            price = &costCalculationRequest{
+			price = &costCalculationRequest{
 				PurchasePriceNet:         pr.PurchasePriceNet,
 				PurchasePriceTax:         pr.PurchasePriceTax,
 				PurchasePriceGross:       pr.PurchasePriceGross,
@@ -136,13 +136,13 @@ func toPromptRead(db *gorm.DB, p *Prompt) PromptRead {
 				SalesTotalGross:          pr.SalesTotalGross,
 				SalesPriceUnit:           pr.SalesPriceUnit,
 				SalesCalculationMode:     pr.SalesCalculationMode,
-                PurchasePriceCorresponds: strToBoolPtr(pr.PurchasePriceCorresponds),
-                SalesPriceCorresponds:    strToBoolPtr(pr.SalesPriceCorresponds),
-                PurchaseActiveRow:        pr.PurchaseActiveRow,
-                SalesActiveRow:           pr.SalesActiveRow,
-            }
-        }
-    }
+				PurchasePriceCorresponds: strToBoolPtr(pr.PurchasePriceCorresponds),
+				SalesPriceCorresponds:    strToBoolPtr(pr.SalesPriceCorresponds),
+				PurchaseActiveRow:        pr.PurchaseActiveRow,
+				SalesActiveRow:           pr.SalesActiveRow,
+			}
+		}
+	}
 
 	return PromptRead{
 		ID:              p.ID,
@@ -190,6 +190,11 @@ func toPublicPromptRead(p *Prompt) PublicPromptRead {
 			SlotType:        st,
 		})
 	}
+	var pricePtr *int
+	if p.Price != nil {
+		v := p.Price.SalesTotalGross
+		pricePtr = &v
+	}
 	return PublicPromptRead{
 		ID:              p.ID,
 		Title:           p.Title,
@@ -197,6 +202,7 @@ func toPublicPromptRead(p *Prompt) PublicPromptRead {
 		Category:        cat,
 		Subcategory:     subcat,
 		Slots:           slots,
+		Price:           pricePtr,
 	}
 }
 
@@ -335,10 +341,10 @@ func safeDeletePublicImage(filename, kind string) {
 
 func timePtr(t time.Time) *time.Time { return &t }
 func strPtrOrNil(s string) *string {
-    if s == "" {
-        return nil
-    }
-    return &s
+	if s == "" {
+		return nil
+	}
+	return &s
 }
 
 // tiny wrappers to avoid importing strconv in many files
@@ -346,14 +352,14 @@ func strconvAtoi(s string) (int, error) { return strconv.Atoi(s) }
 
 // util: DB stores "NET"/"GROSS" but UI sends booleans
 func strToBoolPtr(s string) *bool {
-    var b bool
-    switch strings.ToUpper(strings.TrimSpace(s)) {
-    case "NET":
-        b = true
-    case "GROSS":
-        b = false
-    default:
-        return nil
-    }
-    return &b
+	var b bool
+	switch strings.ToUpper(strings.TrimSpace(s)) {
+	case "NET":
+		b = true
+	case "GROSS":
+		b = false
+	default:
+		return nil
+	}
+	return &b
 }

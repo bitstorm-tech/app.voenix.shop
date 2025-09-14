@@ -28,8 +28,8 @@ type costCalculationRequest struct {
 	SalesTotalGross          int     `json:"salesTotalGross"`
 	SalesPriceUnit           string  `json:"salesPriceUnit"`
 	SalesCalculationMode     string  `json:"salesCalculationMode"`
-    PurchasePriceCorresponds *bool   `json:"purchasePriceCorresponds"`
-    SalesPriceCorresponds    *bool   `json:"salesPriceCorresponds"`
+	PurchasePriceCorresponds *bool   `json:"purchasePriceCorresponds"`
+	SalesPriceCorresponds    *bool   `json:"salesPriceCorresponds"`
 	PurchaseActiveRow        string  `json:"purchaseActiveRow"`
 	SalesActiveRow           string  `json:"salesActiveRow"`
 }

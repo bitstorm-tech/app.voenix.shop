@@ -49,6 +49,13 @@ export default function PromptSelectionStep() {
                     className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-110"
                     loading="lazy"
                   />
+                  {typeof prompt.price === 'number' && prompt.price > 0 && (
+                    <div className="absolute left-2 top-2 z-10">
+                      <span className="bg-primary/90 text-primary-foreground rounded-full px-2 py-1 text-xs font-semibold shadow">
+                        ${ (prompt.price / 100).toFixed(2) }
+                      </span>
+                    </div>
+                  )}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-3 transition-all duration-300 group-hover:from-black/80">
                     <h4 className="font-medium text-white">{prompt.title}</h4>
                   </div>
@@ -59,6 +66,13 @@ export default function PromptSelectionStep() {
                   <div className="text-center">
                     <h4 className="mb-2 font-medium">{prompt.title}</h4>
                     <p className="text-xs text-gray-500">No preview available</p>
+                    {typeof prompt.price === 'number' && prompt.price > 0 && (
+                      <div className="mt-2">
+                        <span className="bg-primary/10 text-primary rounded-full px-2 py-1 text-xs font-semibold">
+                          ${ (prompt.price / 100).toFixed(2) }
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
