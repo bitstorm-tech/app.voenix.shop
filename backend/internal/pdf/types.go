@@ -7,7 +7,6 @@ import (
 // MMToPoints is the conversion factor from millimeters to PDF points.
 const MMToPoints = 2.8346457
 
-// Config mirrors the Kotlin PdfConfig with reasonable defaults.
 type Config struct {
 	Size struct {
 		WidthMM  float64
@@ -36,7 +35,6 @@ func DefaultConfig() Config {
 	return c
 }
 
-// OrderPdfData replicates the Kotlin DTOs used by the PDF module.
 type OrderPdfData struct {
 	ID          string
 	OrderNumber *string
@@ -79,7 +77,6 @@ type MugDetailsPdfData struct {
 	DocumentFormatMarginBottomMM *int
 }
 
-// FilenameFromOrderNumber generates a deterministic filename similar to Kotlin (timestamped)
 func FilenameFromOrderNumber(orderNumber string) string {
 	if orderNumber == "" {
 		orderNumber = "ORDER"

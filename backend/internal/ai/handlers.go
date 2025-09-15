@@ -20,7 +20,6 @@ import (
 	"voenix/backend/internal/prompt"
 )
 
-// providerFromParam maps high-level provider names used by Kotlin/FE to internal providers.
 // Accepts: OPENAI|GOOGLE|FLUX (case-insensitive). Defaults to GOOGLE=>Gemini for broader coverage.
 func providerFromParam(p string) (Provider, bool) {
 	// In test mode, always use the mock provider regardless of input.
@@ -53,10 +52,9 @@ type imageEditResponse struct {
 	ImageFilenames []string `json:"imageFilenames"`
 }
 
-// createImageEditRequest is a minimal mirror of Kotlin CreateImageEditRequest for parsing.
 // Only fields we may consume are included; others are ignored for now.
 type createImageEditRequest struct {
-	Prompt     string `json:"prompt"` // non-Kotlin, but allow FE overrides
+	Prompt     string `json:"prompt"`
 	PromptID   int64  `json:"promptId"`
 	Background string `json:"background"`
 	Quality    string `json:"quality"`
@@ -64,11 +62,6 @@ type createImageEditRequest struct {
 	N          int    `json:"n"`
 }
 
-// RegisterRoutes mounts AI routes aligned with Kotlin controllers:
-//   - Admin:   POST /api/admin/ai/image-edit
-//     POST /api/admin/ai/test-prompt
-//   - User:    POST /api/user/ai/images/generate (stub)
-//   - Public:  POST /api/public/ai/images/generate (stub)
 func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	// Admin AI routes
 	admin := r.Group("/api/admin/ai")
@@ -183,11 +176,6 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 		c.JSON(http.StatusOK, testPromptResponse{ImageURL: imageURL, Filename: filename, FinalPrompt: finalPrompt, RequestParams: reqParams})
 	})
 
-	// POST /api/admin/ai/image-edit
-	// Multipart form with parts:
-	// - image: file (required)
-	// - request: JSON (Kotlin CreateImageEditRequest); we accept also {prompt, n}
-	// - provider: OPENAI|GOOGLE|FLUX (query or form), default GOOGLE(Gemini)
 	admin.POST("/image-edit", func(c *gin.Context) {
 		fileHeader, err := c.FormFile("image")
 		if err != nil || fileHeader == nil {
@@ -398,7 +386,6 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 		}
 		_ = loc // keep loc referenced for potential future use
 
-		// Use UUID as filename base to match Kotlin and ensure consistency
 		uploadedUUID := uuid.NewString()
 		// Store original (cropped) image with UUID-based name and persist to DB (uploaded_images)
 		origNameBase := uploadedUUID + "_original"

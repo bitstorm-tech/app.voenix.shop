@@ -12,7 +12,6 @@ type UploadRequest struct {
 	CropArea  *CropArea `json:"cropArea,omitempty"`
 }
 
-// UserImageItem mirrors the Python structure for frontend compatibility.
 type UserImageItem struct {
 	ID               int     `json:"id"`
 	UUID             string  `json:"uuid"`

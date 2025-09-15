@@ -5,8 +5,6 @@ import (
 	"voenix/backend/internal/article"
 )
 
-// GORM models mirroring Kotlin/Python prompt entities.
-
 type PromptCategory struct {
 	ID        int       `gorm:"primaryKey" json:"id"`
 	Name      string    `gorm:"size:255;uniqueIndex;not null" json:"name"`

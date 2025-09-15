@@ -1,1 +1,0 @@
-Check the @backend/build/reports/detekt/detekt.md and fix the $ARGUMENTS findings. Don't use annotations to suppress the findings but fix the root cause! Read the detekt documentation with context7 to find examples of how to fix the findings.

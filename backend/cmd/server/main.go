@@ -81,7 +81,7 @@ func main() {
 	auth.RegisterRoutes(r, db)
 	// VAT admin routes
 	vat.RegisterRoutes(r, db)
-	// Country public routes (mirrors Kotlin public endpoint)
+	// Country public routes
 	country.RegisterRoutes(r, db)
 	// Supplier admin routes
 	supplier.RegisterRoutes(r, db)
@@ -100,7 +100,7 @@ func main() {
 
 	addr := os.Getenv("ADDR")
 	if addr == "" {
-		addr = ":8081" // keep separate from Kotlin :8080
+		addr = ":8080"
 	}
 	s := &http.Server{
 		Addr:              addr,

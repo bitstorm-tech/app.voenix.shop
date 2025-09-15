@@ -2,7 +2,6 @@ package cart
 
 import "time"
 
-// CartStatus mirrors Kotlin values but kept simple as string.
 // Typical values: "active", "abandoned", "converted".
 type CartStatus string
 

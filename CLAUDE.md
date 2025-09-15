@@ -4,148 +4,216 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Voenix Shop is a full-stack e-commerce application for creating custom mugs with AI-generated images. The codebase is split into two main applications:
-
-- **Backend**: Kotlin Spring Boot REST API with Spring Modulith architecture (`/backend`) - See `backend/CLAUDE.md` for backend-specific guidance
-- **Frontend**: React TypeScript SPA with Vite (`/frontend`) - See `frontend/CLAUDE.md` for frontend-specific guidance
-
-### Architecture Migration Status
-The backend is currently undergoing a migration to Spring Modulith architecture, transitioning from a traditional layered architecture to a modular monolith. This enables better separation of concerns, clearer boundaries between business modules, and prepares the codebase for potential future microservices extraction. For detailed information about the module structure and migration approach, see `backend/CLAUDE.md`.
+Voenix Shop is an e-commerce platform for creating custom mugs with AI-generated images. The application consists of:
+- **Backend**: Go (Gin + GORM) API server with PostgreSQL/SQLite database
+- **Frontend**: React/TypeScript SPA (Vite) with multi-step wizard for mug customization
+- **Frontend-NextJS**: Experimental Next.js frontend (keep shared types in sync before promoting features)
 
 ## Common Development Commands
 
-The test credentials to login into the admin site are `a@a.com` / `test`.
+### Backend (Go)
+```bash
+cd backend
+make dev        # Run with hot reload via Air
+make run        # Run server normally
+make build      # Build server binary
+make check      # Run fmt, vet, lint, test, build
+make test       # Run tests only
+make fmt        # Format code
+make lint       # Run golangci-lint
 
-**Note**: For development tasks that involve both frontend and backend changes, consider using specialized subagents (backend-expert and frontend-expert) to work in parallel for maximum efficiency.
-
-## Subagent Usage Guidelines
-
-### When to Use Specialized Subagents
-
-**ALWAYS** consider using specialized subagents for domain-specific tasks:
-
-1. **backend-expert**: Use for all backend-only tasks
-   - Creating/modifying Kotlin entities, DTOs, services, controllers
-   - Database migrations and repository changes
-   - Spring Boot configuration and security updates
-   - Backend testing and API endpoint implementation
-   - Spring Modulith module creation and migration
-   - Inter-module communication and module boundaries
-
-2. **frontend-expert**: Use for all frontend-only tasks
-   - React component creation and updates
-   - TypeScript type definitions
-   - State management (Zustand stores)
-   - UI/UX implementations with Tailwind CSS
-   - Frontend routing and form handling
-
-3. **general-purpose**: Use for complex searches and analysis
-   - Multi-file searches across the codebase
-   - Understanding code relationships and dependencies
-   - Investigating bugs that span multiple files
-
-4. **requirements-engineer**: Use for planning and requirements
-   - Breaking down complex features into tasks
-   - Identifying edge cases and considerations
-   - Creating comprehensive requirement documents
-
-### Parallel Execution Examples
-
-**Full-stack feature implementation:**
-```
-// Launch both agents simultaneously:
-Task(description="Backend VAT feature", prompt="...", subagent_type="backend-expert")
-Task(description="Frontend VAT feature", prompt="...", subagent_type="frontend-expert")
+# Individual commands
+go run ./cmd/server      # Run server
+go run ./cmd/migrate     # Run migrations
+go test ./cmd/... ./internal/...  # Run tests
 ```
 
-**Complex refactoring:**
+### Frontend (React/Vite)
+```bash
+cd frontend
+npm install             # Install dependencies
+npm run dev            # Start dev server (port 3000)
+npm run build          # Production build with type checking
+npm run preview        # Preview production build
+npm run type-check     # TypeScript type checking only
+npm run lint           # Run ESLint
+npm run format         # Run Prettier
 ```
-// Use general-purpose for analysis, then specialized agents for implementation:
-Task(description="Find all VAT usages", prompt="...", subagent_type="general-purpose")
-// Then launch specialized agents based on findings
+
+### Frontend-NextJS (Experimental)
+```bash
+cd frontend-nextjs
+npm install
+npm run dev            # Start dev server (port 3000)
+npm run build         # Production build
+npm run lint          # Run linter
 ```
 
-### Key Principles
-- **Think parallel**: Can this task be split between frontend/backend?
-- **Use expertise**: Each agent is optimized for their domain
-- **Avoid sequential work**: Don't switch between frontend/backend yourself
-- **Delegate searches**: Use agents for multi-file searches instead of multiple Grep calls
+## Architecture
 
-### Code Search Guidelines
+### Backend Structure
+```
+backend/
+├── cmd/
+│   ├── server/     # Main server entry point
+│   ├── migrate/    # Database migration tool
+│   └── hashpass/   # Password hash generator
+├── internal/       # Application logic
+│   ├── ai/         # AI image generation (Gemini)
+│   ├── article/    # Product/mug management
+│   ├── auth/       # Authentication & sessions
+│   ├── cart/       # Shopping cart logic
+│   ├── country/    # Country data
+│   ├── database/   # DB connection & migrations
+│   ├── image/      # Image upload/storage
+│   ├── order/      # Order processing
+│   ├── pdf/        # PDF generation
+│   ├── prompt/     # AI prompt management
+│   ├── supplier/   # Supplier management
+│   └── vat/        # VAT/tax handling
+```
 
-**Use ast-grep for structural code searches:**
-- Finding specific function/method calls (e.g., `ast-grep -p 'useState($$$)'`)
-- Matching code patterns and structures (e.g., `ast-grep -p 'class $name extends $base'`)
-- Refactoring operations that need syntax awareness
-- Finding React hooks, Spring annotations, or other framework-specific patterns
-- Locating specific AST nodes like conditionals, loops, or declarations
+### Frontend Structure
+```
+frontend/src/
+├── components/
+│   ├── ui/         # Reusable UI components
+│   └── editor/     # Mug editor components
+│       ├── steps/  # Wizard steps (1-6)
+│       └── shared/ # Shared editor components
+├── pages/          # Route pages
+│   ├── admin/      # Admin panel pages
+│   └── ...         # Public pages
+├── hooks/          # Custom React hooks
+├── stores/         # Zustand state stores
+├── types/          # TypeScript types
+└── api/            # API client utilities
+```
 
-**Use grep for text searches:**
-- Searching in comments, strings, or documentation
-- Simple text patterns across all file types
-- Configuration files, markdown, or non-code files
-- Quick searches when structure doesn't matter
+### Key Backend Services
 
-**Use find for file operations:**
-- Locating files by name or extension
-- Directory structure exploration
-- File metadata searches
+- **Auth**: Session-based authentication with HTTP-only cookies (`session_id`)
+- **Storage**: Files stored under `${STORAGE_ROOT}` (configured via env)
+  - `public/images/`: Public static files served at `/public/*`
+  - `private/images/`: User-specific images with auth check
+- **AI Integration**: Gemini API for image generation/manipulation
+- **Database**: GORM with PostgreSQL/SQLite support, auto-migrations on startup
 
-## Quality Assurance
+### Frontend Wizard Flow
 
-### Common
-- Skeptical mode: question everything, suggest simpler explanations, stay grounded
-- **ALWAYS** use specialized subagents for domain-specific tasks (see Subagent Usage Guidelines above)
-- Use and spawn subagents to run tasks in parallel whenever possible
-- ALWAYS read the latest documentation from context7 mcp server
-- Use the puppeteer mcp server to check if the implementation looks right in the browser
-- Use `git mv` to move files that are under version control
-- Don't write useless, unnecessary or redundant comments -> only use comments to describe complex logic
-- Document WHY decisions were made, not just WHAT the code does
-- Use ast-grep for structural code searches instead of grep when searching for code patterns
+1. **ImageUploadStep**: Upload custom image
+2. **PromptSelectionStep**: Select AI prompt for generation
+3. **MugSelectionStep**: Choose mug type and variant
+4. **UserDataStep**: Enter customer information
+5. **ImageGenerationStep**: Generate AI image
+6. **PreviewStep**: 3D preview with Three.js
 
-## Important Development Notes
+### Admin Panel Routes
 
-1. **Subagent Usage**: ALWAYS use specialized agents for better efficiency:
-   - Full-stack features: Launch backend-expert and frontend-expert in parallel
-   - Backend-only changes: Use backend-expert agent
-   - Frontend-only changes: Use frontend-expert agent
-   - Complex searches: Use general-purpose agent
-2. **Environment**: Use `.env` files for configuration (supported by spring-dotenv)
-3. **API Communication**: Frontend expects backend on http://localhost:8080
+- `/admin/articles/*`: Mug and category management
+- `/admin/prompts/*`: Prompt management and testing
+- `/admin/orders/*`: Order tracking
+- `/admin/logistics/*`: Suppliers and shipping
+- `/admin/users`: User administration
 
-## Security Best Practices
+## Environment Configuration
 
-- Never store sensitive data in localStorage
-- All API calls use authentication headers
-- Input validation on both frontend and backend
-- Error messages don't expose sensitive information
-- Regular security audits and dependency updates
+### Backend (.env)
+```bash
+DATABASE_URL=postgres://user:pass@localhost/dbname  # or sqlite://./app.db
+AUTO_MIGRATE=true                    # Run migrations on startup
+ADDR=:8080                          # Server port
+STORAGE_ROOT=./storage              # File storage root
+FRONTEND_DIST=./frontend/dist      # Optional: serve frontend
+GOOGLE_API_KEY=your-key            # For AI image generation
+GEMINI_IMAGE_MODEL=gemini-2.5-flash-image-preview
+SESSION_TTL_SECONDS=604800         # 7 days
+CORS_ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+TEST_MODE=false                     # Use mock AI when true
+```
 
-## Development Workflow
+### Frontend
+Frontend expects backend API at `http://localhost:8080` (hardcoded in development).
 
-### Setting Up Development Environment
-1. **Database Setup**:
-   - Install PostgreSQL and create database `voenix_java`
-   - Database migrations run automatically on backend startup
+## Quality Standards
 
-2. **Backend Setup**:
-   ```bash
-   cd backend
-   ./gradlew build
-   ./gradlew bootRun   # Runs on http://localhost:8080
-   ```
+### Backend
+- Run `make check` before committing (includes fmt, vet, lint, test, build)
+- Use table-driven tests in `*_test.go` files
+- Follow Go conventions: PascalCase exports, camelCase locals
+- Keep related functionality in feature-scoped files (e.g., `inventory_service.go`)
 
-3. **Frontend Setup**:
-   ```bash
-   cd frontend
-   npm install
-   npm run dev         # Runs on http://localhost:3000
-   ```
+### Frontend
+- Always run at the end of implementation:
+  ```bash
+  npm run type-check
+  npm run lint
+  npm run format
+  ```
+- TypeScript strict mode must pass
+- All components must be responsive (mobile + desktop)
+- Use Tailwind CSS v4 for styling
+- Use Radix UI components for accessibility
+- Validate forms with proper error handling
 
-### Working with Admin Features
-1. **Create Admin User**: Use the admin API or database seed
-2. **Access Admin Panel**: Navigate to `/admin` routes
-3. **Test OpenAI Integration**: 
-   - Configure OpenAI API key in backend `.env`
-   - Use the Prompt Tester at `/admin/prompts/tester`
+## Database Migrations
+
+Migrations are in `backend/internal/database/migrations/`:
+- Format: `NNNNNN_description.up.sql` and `.down.sql`
+- Must work on both PostgreSQL and SQLite
+- Applied automatically on server startup when `AUTO_MIGRATE=true`
+- Manual migration: `go run ./cmd/migrate`
+
+## API Endpoints
+
+Key public endpoints:
+- `POST /api/auth/login`: Login with email/username + password
+- `GET /api/auth/session`: Get current session
+- `POST /api/auth/logout`: Logout
+- `GET /api/public/countries`: List countries
+- `GET /public/*`: Serve static files
+
+Admin endpoints (require authentication):
+- `POST /api/admin/images`: Upload image with cropping
+- `POST /api/ai/images`: Generate AI images
+- CRUD endpoints for articles, prompts, suppliers, VAT, etc.
+
+## Testing
+
+### Backend
+```bash
+cd backend
+make test  # or go test ./...
+```
+
+### Frontend
+```bash
+cd frontend
+npm run type-check
+# Vitest setup pending - manual UI validation required
+```
+
+## Current Development Focus
+
+Active requirement: `requirements/REQ-cart-prompt-pricing.md`
+- Adding prompt pricing to cart items
+- Updating cart totals to include prompt prices
+- Frontend display of price breakdowns
+
+See `TODO.md` for additional planned features.
+
+## Important Notes
+
+1. **Prompt Pricing**: Prompts can have prices via `prompts.price_id -> prices` table
+2. **Cart Logic**: Items track `PriceAtTime` and `OriginalPrice` for price change detection
+3. **Image Storage**: All images stored under `STORAGE_ROOT` with public/private separation
+4. **Session Management**: DB-backed sessions with configurable TTL
+5. **AI Integration**: Gemini for image generation, with TEST_MODE for offline development
+
+## Agents
+
+Custom agents available in `.claude/agents/`:
+- `frontend-architect`: Architectural guidance for React/TypeScript frontend
+- `complexity-eliminator`: Code simplification and complexity reduction
+
+Use these agents for major refactoring or architectural decisions.

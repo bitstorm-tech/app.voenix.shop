@@ -311,7 +311,6 @@ func publicPromptExampleURL(filename *string) string {
 	if filename == nil || *filename == "" {
 		return ""
 	}
-	// Match Python/Kotlin: /public/images/prompt-example-images/{filename}
 	return "/public/images/prompt-example-images/" + filepath.Base(*filename)
 }
 

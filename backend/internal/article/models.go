@@ -10,8 +10,6 @@ const (
 	ArticleTypeShirt = "SHIRT"
 )
 
-// GORM models mirroring Kotlin entities and table names.
-
 type ArticleCategory struct {
 	ID          int       `gorm:"primaryKey" json:"id"`
 	Name        string    `gorm:"size:255;not null" json:"name"`

@@ -4,7 +4,6 @@ import (
 	"time"
 )
 
-// OrderStatus mirrors Kotlin enum values.
 const (
 	StatusPending    = "PENDING"
 	StatusProcessing = "PROCESSING"
@@ -13,7 +12,6 @@ const (
 	StatusCancelled  = "CANCELLED"
 )
 
-// Order GORM model mapped to table "orders" compatible with Kotlin schema.
 // Uses string UUIDs managed by the application for portability (sqlite/postgres).
 type Order struct {
 	ID string `gorm:"primaryKey;column:id;size:36" json:"id"`

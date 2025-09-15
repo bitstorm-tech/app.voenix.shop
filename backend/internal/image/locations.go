@@ -10,7 +10,7 @@ import (
 // StorageLocations centralizes filesystem locations for storing images.
 //
 // Reads STORAGE_ROOT from the environment. Paths are constructed under this root
-// for public and private images, mirroring the Python implementation.
+// for public and private images
 type StorageLocations struct {
 	Root string
 }

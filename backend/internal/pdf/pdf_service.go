@@ -162,8 +162,6 @@ func (service *PDFService) pageSizeForFirst(data OrderPdfData) (float64, float64
 }
 
 func (service *PDFService) pageSizeForItem(item OrderItemPdfData) (float64, float64) {
-	// Mirror Kotlin logic: compute width/height independently,
-	// falling back to configured defaults when a dimension is missing.
 	width := service.config.Size.WidthMM * MMToPoints
 	height := service.config.Size.HeightMM * MMToPoints
 	if mugDetails := item.Article.MugDetails; mugDetails != nil {

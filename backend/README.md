@@ -1,6 +1,6 @@
 Voenix Go Backend (Gin + GORM)
 
-This is a new Go backend targeting a gradual migration from the existing Python/FastAPI service. It currently implements `auth`, `vat`, `supplier` admin CRUD, the public `country` listing endpoint, and image upload/serving endpoints compatible with the Python module.
+This is a Go backend targeting a gradual migration from the legacy service. It currently implements `auth`, `vat`, `supplier` admin CRUD, the public `country` listing endpoint, and image upload/serving endpoints compatible with the existing module.
 
 Endpoints
 - POST `/api/auth/login` – Accepts JSON `{ email|username, password }` or form fields. Creates a DB-backed session and sets `session_id` HttpOnly cookie.
@@ -16,7 +16,7 @@ Endpoints
  - POST `/api/ai/images` – Admin: Upload `image` + `prompt` (+ optional `n`, `provider`). Forwards to Gemini to edit/manipulate, stores PNGs under `STORAGE_ROOT/private/images/0_prompt-test`, returns base64 images.
 
 Models
-- `users`, `roles`, `user_roles` (many-to-many), `sessions` tables are modeled to match the Python SQLModel definitions.
+- `users`, `roles`, `user_roles` (many-to-many), `sessions` tables are modeled to match the legacy SQLModel definitions.
 
 Configuration
 - `DATABASE_URL` – DSN string. If not set, defaults to `sqlite://./app.db` (file-based sqlite relative to the process working directory). Postgres URLs are also supported.
@@ -90,5 +90,5 @@ Password hash helper
   - Output format: `pbkdf2_sha256$<iterations>$<salt_b64>$<hash_b64>` (32‑byte key)
 
 Notes
-- Cookie is set with `HttpOnly`, `SameSite=Lax`, `Secure=false` by default (match dev behavior of Python app). Adjust in `auth/handlers.go` if needed.
+- Cookie is set with `HttpOnly`, `SameSite=Lax`, `Secure=false` by default (match current dev behavior). Adjust in `auth/handlers.go` if needed.
 - Password verification supports `pbkdf2_sha256$<iterations>$<salt_b64>$<hash_b64>` and a legacy plain-text fallback.

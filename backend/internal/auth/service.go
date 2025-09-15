@@ -17,7 +17,6 @@ func randomTokenURLSafe(n int) (string, error) {
 	if _, err := rand.Read(b); err != nil {
 		return "", err
 	}
-	// Base64 URL encoding without padding, similar to Python's token_urlsafe
 	s := base64.RawURLEncoding.EncodeToString(b)
 	return s, nil
 }

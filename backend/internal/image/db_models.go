@@ -3,7 +3,6 @@ package image
 import "time"
 
 // UploadedImage represents a user-uploaded image persisted in the database.
-// Mirrors the Kotlin entity schema (uploaded_images table).
 type UploadedImage struct {
 	ID               int       `gorm:"primaryKey" json:"id"`
 	UUID             string    `gorm:"type:uuid;uniqueIndex;not null" json:"uuid"`
@@ -18,7 +17,6 @@ type UploadedImage struct {
 func (UploadedImage) TableName() string { return "uploaded_images" }
 
 // GeneratedImage represents an AI-generated image persisted in the database.
-// Mirrors the Kotlin entity schema (generated_images table).
 type GeneratedImage struct {
 	ID              int       `gorm:"primaryKey" json:"id"`
 	UUID            string    `gorm:"type:uuid;uniqueIndex;not null" json:"uuid"`

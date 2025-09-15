@@ -20,7 +20,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-// ResolveDSN interprets a DATABASE_URL similar to the Python service.
+// ResolveDSN interprets a DATABASE_URL.
 // - sqlite:///./app.db -> sqlite file ./app.db
 // - sqlite:///<abs>    -> sqlite file <abs>
 // - postgres://...     -> pass-through to the Postgres driver
