@@ -13,12 +13,12 @@ feat: Show prompt prices and correct totals on Cart page
 - Types (current):
   - FE: `frontend/src/types/cart.ts` (`CartDto`, `CartItemDto`) — contains `promptId` but no explicit prompt price fields.
   - FE: `frontend/src/types/prompt.ts` — `Prompt.price?: number` (cents) for public display.
-  - Go backend DTOs: `backend-go/internal/cart/api_types.go` (`CartDto`, `CartItemDto`).
-  - Go backend models: `backend-go/internal/cart/models.go` (`Cart`, `CartItem`).
-  - Go prompt models: `backend-go/internal/prompt/entities.go` (`Prompt` with `PriceID` -> `prices` row).
+  - Go backend DTOs: `backend/internal/cart/api_types.go` (`CartDto`, `CartItemDto`).
+  - Go backend models: `backend/internal/cart/models.go` (`Cart`, `CartItem`).
+  - Go prompt models: `backend/internal/prompt/entities.go` (`Prompt` with `PriceID` -> `prices` row).
 - Go backend pricing today:
-  - `CartItem.PriceAtTime` is set from article cost calculation: `currentGrossPrice(db, articleID)` in `backend-go/internal/cart/store.go`.
-  - Totals are computed in `backend-go/internal/cart/mapper.go` as `sum(item.PriceAtTime * item.Quantity)` and ignore any prompt price.
+  - `CartItem.PriceAtTime` is set from article cost calculation: `currentGrossPrice(db, articleID)` in `backend/internal/cart/store.go`.
+  - Totals are computed in `backend/internal/cart/mapper.go` as `sum(item.PriceAtTime * item.Quantity)` and ignore any prompt price.
   - Prompts can have a price via `prompts.price_id` -> `prices` (`SalesTotalGross`) per migration `000002_prompts_price_fk.up.sql`, but cart logic does not capture or total it.
 
 ## Constraints & Non-Goals
@@ -67,7 +67,7 @@ feat: Show prompt prices and correct totals on Cart page
 
 ## Inputs & Interfaces
 - Request/Response shapes (Go)
-  - Extend `backend-go/internal/cart/api_types.go` `CartItemDto` to include a breakdown:
+  - Extend `backend/internal/cart/api_types.go` `CartItemDto` to include a breakdown:
     - `ArticlePriceAtTime int    json:"articlePriceAtTime"` (cents; maps to existing `PriceAtTime` for backward compatibility if needed)
     - `PromptPriceAtTime  int    json:"promptPriceAtTime"` (cents; default 0)
     - `ArticleOriginalPrice int  json:"articleOriginalPrice"` (cents; maps to existing `OriginalPrice`)
@@ -78,36 +78,36 @@ feat: Show prompt prices and correct totals on Cart page
   - Keep `CartDto.TotalPrice = sum(item.TotalPrice)`.
 
 - DB schema deltas (Go migrations)
-  - Add a migration pair under `backend-go/internal/database/migrations/` (e.g., `000003_cart_prompt_prices.up.sql`/`.down.sql`) that:
+  - Add a migration pair under `backend/internal/database/migrations/` (e.g., `000003_cart_prompt_prices.up.sql`/`.down.sql`) that:
     - Alters `cart_items` to add:
       - `prompt_price_at_time integer not null default 0`
       - `prompt_original_price integer not null default 0`
     - Works on both SQLite and Postgres (plain `integer` with defaults is portable; use `if exists` guards as in prior migrations).
 
 - Services/Assemblers (Go)
-  - `backend-go/internal/cart/models.go`: add GORM fields on `CartItem` with tags:
+  - `backend/internal/cart/models.go`: add GORM fields on `CartItem` with tags:
     - `PromptPriceAtTime int    gorm:"column:prompt_price_at_time;not null;default:0"`
     - `PromptOriginalPrice int  gorm:"column:prompt_original_price;not null;default:0"`
-  - `backend-go/internal/cart/api_types.go`: add the new DTO fields listed above.
-  - `backend-go/internal/cart/mapper.go`:
+  - `backend/internal/cart/api_types.go`: add the new DTO fields listed above.
+  - `backend/internal/cart/mapper.go`:
     - Populate DTO fields from model.
     - Compute `TotalPrice` as `(PriceAtTime + PromptPriceAtTime) * Quantity` or switch to using `ArticlePriceAtTime` naming for clarity in the DTO and keep model’s existing fields.
     - Set `HasPriceChanged = (PriceAtTime != OriginalPrice) || (PromptPriceAtTime != PromptOriginalPrice)`.
-  - `backend-go/internal/cart/handlers_items.go` (`addItemHandler`):
+  - `backend/internal/cart/handlers_items.go` (`addItemHandler`):
     - When `req.PromptID != nil`, fetch current prompt gross price via helper `promptCurrentGrossPrice(db, *req.PromptID)`; set both `PromptPriceAtTime` and `PromptOriginalPrice` to that value (else 0).
     - Keep `PriceAtTime`/`OriginalPrice` for the article component as today.
-  - `backend-go/internal/cart/handlers_cart.go`:
+  - `backend/internal/cart/handlers_cart.go`:
     - In `getCartSummaryHandler`, compute `total += (it.PriceAtTime + it.PromptPriceAtTime) * it.Quantity`.
     - In `refreshPricesHandler`, update `OriginalPrice` from current article price (as today) and also update `PromptOriginalPrice` from the current prompt price if `PromptID != nil`.
-  - `backend-go/internal/cart/store.go` or `service.go`:
+  - `backend/internal/cart/store.go` or `service.go`:
     - Add `promptCurrentGrossPrice(db *gorm.DB, promptID int) (int, error)` that returns `prompts.price_id -> prices.sales_total_gross` or 0 if missing; implement with simple join or `Preload("Price")`.
 
 ## Env & Tooling
 - Frontend: React + TypeScript (Vite). Commands: `npm run type-check`, `npm run build`, `npm run format`, `npm run lint`.
 - Go backend: Gin + GORM. Commands:
-  - From `backend-go/`: `go build ./...`, `go test ./...`.
+  - From `backend/`: `go build ./...`, `go test ./...`.
   - Run: `go run ./cmd/server` (migrations auto-run via `database.DoMigrations()`).
-  - Migrations live in `backend-go/internal/database/migrations` and are applied on startup or via `go run ./cmd/db` if provided.
+  - Migrations live in `backend/internal/database/migrations` and are applied on startup or via `go run ./cmd/db` if provided.
 - Feature flags: none required; change is safe to roll out universally.
 - External deps/mocks: none.
 
@@ -134,7 +134,7 @@ feat: Show prompt prices and correct totals on Cart page
 ## Run Commands
 ```bash
 # Go backend
-cd backend-go
+cd backend
 go build ./...
 go test ./...
 go run ./cmd/server
