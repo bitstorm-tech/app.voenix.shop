@@ -45,6 +45,15 @@ func addItemHandler(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch price"})
 			return
 		}
+		promptPriceAtTime := 0
+		if req.PromptID != nil {
+			pp, perr := promptCurrentGrossPrice(db, *req.PromptID)
+			if perr != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch prompt price"})
+				return
+			}
+			promptPriceAtTime = pp
+		}
 		cdStr := "{}"
 		if req.CustomData != nil {
 			if b, err := json.Marshal(req.CustomData); err == nil {
@@ -52,15 +61,17 @@ func addItemHandler(db *gorm.DB) gin.HandlerFunc {
 			}
 		}
 		item := CartItem{
-			CartID:           cart.ID,
-			ArticleID:        req.ArticleID,
-			VariantID:        req.VariantID,
-			Quantity:         req.Quantity,
-			PriceAtTime:      price,
-			OriginalPrice:    price,
-			CustomData:       cdStr,
-			GeneratedImageID: req.GeneratedImageID,
-			PromptID:         req.PromptID,
+			CartID:              cart.ID,
+			ArticleID:           req.ArticleID,
+			VariantID:           req.VariantID,
+			Quantity:            req.Quantity,
+			PriceAtTime:         price,
+			OriginalPrice:       price,
+			PromptPriceAtTime:   promptPriceAtTime,
+			PromptOriginalPrice: promptPriceAtTime,
+			CustomData:          cdStr,
+			GeneratedImageID:    req.GeneratedImageID,
+			PromptID:            req.PromptID,
 		}
 		mergeOrAppendItem(cart, item)
 		if err := db.Save(cart).Error; err != nil {

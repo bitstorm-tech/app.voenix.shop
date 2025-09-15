@@ -50,9 +50,9 @@ export default function PromptSelectionStep() {
                     loading="lazy"
                   />
                   {typeof prompt.price === 'number' && prompt.price > 0 && (
-                    <div className="absolute left-2 top-2 z-10">
+                    <div className="absolute top-2 left-2 z-10">
                       <span className="bg-primary/90 text-primary-foreground rounded-full px-2 py-1 text-xs font-semibold shadow">
-                        ${ (prompt.price / 100).toFixed(2) }
+                        ${(prompt.price / 100).toFixed(2)}
                       </span>
                     </div>
                   )}
@@ -69,7 +69,7 @@ export default function PromptSelectionStep() {
                     {typeof prompt.price === 'number' && prompt.price > 0 && (
                       <div className="mt-2">
                         <span className="bg-primary/10 text-primary rounded-full px-2 py-1 text-xs font-semibold">
-                          ${ (prompt.price / 100).toFixed(2) }
+                          ${(prompt.price / 100).toFixed(2)}
                         </span>
                       </div>
                     )}

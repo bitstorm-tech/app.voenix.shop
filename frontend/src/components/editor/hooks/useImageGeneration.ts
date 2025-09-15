@@ -13,12 +13,7 @@ interface GeneratedImageData {
 interface UseImageGenerationReturn {
   isGenerating: boolean;
   error: string | null;
-  generateImages: (
-    file: File,
-    promptId: number,
-    cropData?: CropData,
-    provider?: Provider,
-  ) => Promise<GeneratedImageData | null>;
+  generateImages: (file: File, promptId: number, cropData?: CropData, provider?: Provider) => Promise<GeneratedImageData | null>;
 }
 
 export function useImageGeneration(): UseImageGenerationReturn {

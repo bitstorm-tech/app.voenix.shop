@@ -5,9 +5,6 @@
   - Search the repo for all files named `AGENTS.md`.
   - For each file you plan to touch, determine the applicable `AGENTS.md` by choosing the nearest one in its directory tree (deeper files take precedence over parent/root files).
   - Read all applicable `AGENTS.md` files.
-  - Prior to making any changes, print a single acknowledgement line listing what was read, in this exact form:
-    - `Agents-ack: read <path1>, <path2>, ...` (order from most specific to root). If only the root applies, list just the root.
-- If you later touch files in a different subtree, repeat the AGENTS check and emit a new acknowledgement before those edits.
 - In case of conflicting instructions, follow the most deeply nested `AGENTS.md` for the files being changed. Direct user instructions still take precedence over any `AGENTS.md`.
 
 ## Project Structure & Module Organization

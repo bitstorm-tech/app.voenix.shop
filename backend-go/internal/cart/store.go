@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"voenix/backend-go/internal/article"
+	"voenix/backend-go/internal/prompt"
 )
 
 const defaultCartExpiryDays = 30
@@ -56,6 +57,27 @@ func currentGrossPrice(db *gorm.DB, articleID int) (int, error) {
 		return 0, err
 	}
 	return cc.SalesTotalGross, nil
+}
+
+// promptCurrentGrossPrice returns prompt SalesTotalGross (cents) or 0 when no price linked.
+func promptCurrentGrossPrice(db *gorm.DB, promptID int) (int, error) {
+	var p prompt.Prompt
+	if err := db.Preload("Price").First(&p, "id = ?", promptID).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return 0, nil
+		}
+		return 0, err
+	}
+	if p.Price != nil {
+		return p.Price.SalesTotalGross, nil
+	}
+	if p.PriceID != nil {
+		var cc article.CostCalculation
+		if err := db.First(&cc, "id = ?", *p.PriceID).Error; err == nil {
+			return cc.SalesTotalGross, nil
+		}
+	}
+	return 0, nil
 }
 
 // withItemOrder applies a consistent ordering for preloading items.

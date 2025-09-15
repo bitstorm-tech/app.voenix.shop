@@ -17,8 +17,16 @@ func mergeOrAppendItem(c *Cart, item CartItem) {
 	item.CustomData = canonicalizeJSON(item.CustomData)
 	for i := range c.Items {
 		it := &c.Items[i]
-		if it.ArticleID == item.ArticleID && it.VariantID == item.VariantID &&
-			canonicalizeJSON(it.CustomData) == item.CustomData {
+		samePrompt := false
+		if it.PromptID == nil && item.PromptID == nil {
+			samePrompt = true
+		} else if it.PromptID != nil && item.PromptID != nil && *it.PromptID == *item.PromptID {
+			samePrompt = true
+		}
+		if it.ArticleID == item.ArticleID && it.VariantID == item.VariantID && samePrompt &&
+			canonicalizeJSON(it.CustomData) == item.CustomData &&
+			it.PriceAtTime == item.PriceAtTime &&
+			it.PromptPriceAtTime == item.PromptPriceAtTime {
 			it.Quantity += item.Quantity
 			return
 		}

@@ -44,12 +44,18 @@ type CartItemDto struct {
 	Quantity               int                 `json:"quantity"`
 	PriceAtTime            int                 `json:"priceAtTime"`
 	OriginalPrice          int                 `json:"originalPrice"`
+	ArticlePriceAtTime     int                 `json:"articlePriceAtTime"`
+	PromptPriceAtTime      int                 `json:"promptPriceAtTime"`
+	ArticleOriginalPrice   int                 `json:"articleOriginalPrice"`
+	PromptOriginalPrice    int                 `json:"promptOriginalPrice"`
 	HasPriceChanged        bool                `json:"hasPriceChanged"`
+	HasPromptPriceChanged  bool                `json:"hasPromptPriceChanged"`
 	TotalPrice             int                 `json:"totalPrice"`
 	CustomData             map[string]any      `json:"customData"`
 	GeneratedImageID       *int                `json:"generatedImageId"`
 	GeneratedImageFilename *string             `json:"generatedImageFilename"`
 	PromptID               *int                `json:"promptId"`
+	PromptTitle            *string             `json:"promptTitle,omitempty"`
 	Position               int                 `json:"position"`
 	CreatedAt              time.Time           `json:"createdAt"`
 	UpdatedAt              time.Time           `json:"updatedAt"`

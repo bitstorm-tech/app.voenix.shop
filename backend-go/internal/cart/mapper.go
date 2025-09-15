@@ -38,6 +38,34 @@ func assembleCartDto(db *gorm.DB, c *Cart) (*CartDto, error) {
 			}
 		}
 	}
+	// Preload prompt titles to avoid repeated lookups
+	promptIDToTitle := map[int]string{}
+	{
+		seen := make(map[int]struct{}, len(c.Items))
+		ids := make([]int, 0, len(c.Items))
+		for i := range c.Items {
+			if c.Items[i].PromptID != nil {
+				pid := *c.Items[i].PromptID
+				if _, ok := seen[pid]; ok {
+					continue
+				}
+				seen[pid] = struct{}{}
+				ids = append(ids, pid)
+			}
+		}
+		if len(ids) > 0 {
+			type row struct {
+				ID    int
+				Title string
+			}
+			var rows []row
+			if err := db.Table("prompts").Select("id, title").Where("id IN ?", ids).Scan(&rows).Error; err == nil {
+				for _, r := range rows {
+					promptIDToTitle[r.ID] = r.Title
+				}
+			}
+		}
+	}
 	for i := range c.Items {
 		ci := c.Items[i]
 		art, err := loadArticleRead(db, ci.ArticleID)
@@ -52,19 +80,40 @@ func assembleCartDto(db *gorm.DB, c *Cart) (*CartDto, error) {
 				genFilename = &fn
 			}
 		}
+		articlePriceAtTime := ci.PriceAtTime
+		promptPriceAtTime := ci.PromptPriceAtTime
+		articleOriginalPrice := ci.OriginalPrice
+		promptOriginalPrice := ci.PromptOriginalPrice
+		totalPerItem := (articlePriceAtTime + promptPriceAtTime) * ci.Quantity
+		hasArticlePriceChanged := articlePriceAtTime != articleOriginalPrice
+		hasPromptPriceChanged := promptPriceAtTime != promptOriginalPrice
+		hasPriceChanged := hasArticlePriceChanged || hasPromptPriceChanged
+		var promptTitle *string
+		if ci.PromptID != nil {
+			if title, ok := promptIDToTitle[*ci.PromptID]; ok && title != "" {
+				t := title
+				promptTitle = &t
+			}
+		}
 		item := CartItemDto{
 			ID:                     ci.ID,
 			Article:                art,
 			Variant:                mv,
 			Quantity:               ci.Quantity,
-			PriceAtTime:            ci.PriceAtTime,
-			OriginalPrice:          ci.OriginalPrice,
-			HasPriceChanged:        ci.PriceAtTime != ci.OriginalPrice,
-			TotalPrice:             ci.PriceAtTime * ci.Quantity,
+			PriceAtTime:            articlePriceAtTime,
+			OriginalPrice:          articleOriginalPrice,
+			ArticlePriceAtTime:     articlePriceAtTime,
+			PromptPriceAtTime:      promptPriceAtTime,
+			ArticleOriginalPrice:   articleOriginalPrice,
+			PromptOriginalPrice:    promptOriginalPrice,
+			HasPriceChanged:        hasPriceChanged,
+			HasPromptPriceChanged:  hasPromptPriceChanged,
+			TotalPrice:             totalPerItem,
 			CustomData:             cd,
 			GeneratedImageID:       ci.GeneratedImageID,
 			GeneratedImageFilename: genFilename,
 			PromptID:               ci.PromptID,
+			PromptTitle:            promptTitle,
 			Position:               ci.Position,
 			CreatedAt:              ci.CreatedAt,
 			UpdatedAt:              ci.UpdatedAt,

@@ -46,7 +46,7 @@ func getCartSummaryHandler(db *gorm.DB) gin.HandlerFunc {
 		total := 0
 		for _, it := range cart.Items {
 			itemCount += it.Quantity
-			total += it.PriceAtTime * it.Quantity
+			total += (it.PriceAtTime + it.PromptPriceAtTime) * it.Quantity
 		}
 		c.JSON(http.StatusOK, CartSummaryDto{ItemCount: itemCount, TotalPrice: total, HasItems: itemCount > 0})
 	}
@@ -98,15 +98,32 @@ func refreshPricesHandler(db *gorm.DB) gin.HandlerFunc {
 		}
 		changed := false
 		for i := range cart.Items {
-			cur, err := currentGrossPrice(db, cart.Items[i].ArticleID)
+			articleCurrent, err := currentGrossPrice(db, cart.Items[i].ArticleID)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to refresh prices"})
 				return
 			}
-			if cart.Items[i].OriginalPrice != cur {
-				cart.Items[i].OriginalPrice = cur
-				if err := db.Model(&cart.Items[i]).Update("original_price", cur).Error; err != nil {
+			if cart.Items[i].OriginalPrice != articleCurrent {
+				cart.Items[i].OriginalPrice = articleCurrent
+				if err := db.Model(&cart.Items[i]).Update("original_price", articleCurrent).Error; err != nil {
 					c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update prices"})
+					return
+				}
+				changed = true
+			}
+			promptCurrent := 0
+			if cart.Items[i].PromptID != nil {
+				pc, perr := promptCurrentGrossPrice(db, *cart.Items[i].PromptID)
+				if perr != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to refresh prompt prices"})
+					return
+				}
+				promptCurrent = pc
+			}
+			if cart.Items[i].PromptOriginalPrice != promptCurrent {
+				cart.Items[i].PromptOriginalPrice = promptCurrent
+				if err := db.Model(&cart.Items[i]).Update("prompt_original_price", promptCurrent).Error; err != nil {
+					c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update prompt prices"})
 					return
 				}
 				changed = true

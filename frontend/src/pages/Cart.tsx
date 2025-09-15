@@ -30,7 +30,8 @@ export default function CartPage() {
   // Only show cart for authenticated users
   const items = useMemo(() => cartData?.items || [], [cartData?.items]);
   const totalItems = cartData?.totalItemCount || 0;
-  const totalPrice = (cartData?.totalPrice || 0) / 100; // Convert cents to dollars
+  const totalPriceCents = cartData?.totalPrice || 0;
+  const formatCents = (value: number) => (value / 100).toFixed(2);
 
   // Preload cart images for better performance
   useEffect(() => {
@@ -167,16 +168,21 @@ export default function CartPage() {
                   name: item.article.name,
                   variant: item.variant,
                   quantity: item.quantity,
-                  price: item.priceAtTime / 100, // Convert cents to dollars
-                  hasPriceChanged: item.hasPriceChanged,
-                  originalPrice: item.originalPrice / 100,
                 };
 
                 // Construct image URL from generatedImageFilename
                 const imageUrl = item.generatedImageFilename ? `/api/user/images/${item.generatedImageFilename}` : undefined;
 
-                const itemPrice = displayItem.price;
-                const subtotal = displayItem.price * displayItem.quantity;
+                const articlePriceCents = item.articlePriceAtTime ?? item.priceAtTime;
+                const promptPriceCents = item.promptPriceAtTime ?? 0;
+                const articleOriginalCents = item.articleOriginalPrice ?? item.originalPrice;
+                const promptOriginalCents = item.promptOriginalPrice ?? 0;
+                const combinedUnitPriceCents = articlePriceCents + promptPriceCents;
+                const subtotalCents = combinedUnitPriceCents * item.quantity;
+                const showPromptLine = (item.promptId ?? null) !== null || promptPriceCents > 0 || promptOriginalCents > 0;
+                const promptLineLabel = item.promptTitle ?? 'Prompt';
+                const articlePriceChanged = articleOriginalCents > 0 && articleOriginalCents !== articlePriceCents;
+                const promptPriceChanged = item.hasPromptPriceChanged && promptOriginalCents > 0 && promptOriginalCents !== promptPriceCents;
 
                 return (
                   <div key={itemId} className="rounded-lg bg-white p-6 shadow-sm">
@@ -200,11 +206,15 @@ export default function CartPage() {
                             <h3 className="text-lg font-medium text-gray-900">{displayItem.name}</h3>
                             {displayItem.variant && <p className="mt-1 text-sm text-gray-500">Variant: {displayItem.variant.colorCode}</p>}
                             <div className="mt-1 flex items-center gap-2">
-                              <p className="text-lg font-medium text-gray-900">${itemPrice.toFixed(2)}</p>
-                              {displayItem.hasPriceChanged && (
-                                <span className="text-sm text-orange-600">(was ${displayItem.originalPrice?.toFixed(2)})</span>
-                              )}
+                              <p className="text-lg font-medium text-gray-900">${formatCents(articlePriceCents)}</p>
+                              {articlePriceChanged && <span className="text-sm text-orange-600">(was ${formatCents(articleOriginalCents)})</span>}
                             </div>
+                            {showPromptLine && (
+                              <div className="mt-2 text-sm text-gray-700" aria-live="polite">
+                                <span className="font-medium">{promptLineLabel} price:</span> ${formatCents(promptPriceCents)}
+                                {promptPriceChanged && <span className="ml-2 text-orange-600">(was ${formatCents(promptOriginalCents)})</span>}
+                              </div>
+                            )}
                           </div>
                           <div className="mt-4 sm:mt-0">
                             <button
@@ -232,7 +242,7 @@ export default function CartPage() {
                           >
                             <Plus className="h-4 w-4" />
                           </button>
-                          <span className="ml-6 text-lg font-medium text-gray-900">Subtotal: ${subtotal.toFixed(2)}</span>
+                          <span className="ml-6 text-lg font-medium text-gray-900">Subtotal: ${formatCents(subtotalCents)}</span>
                         </div>
                       </div>
                     </div>
@@ -254,17 +264,17 @@ export default function CartPage() {
               <div className="mt-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Subtotal ({totalItems} items)</span>
-                  <span className="font-medium text-gray-900">${totalPrice.toFixed(2)}</span>
+                  <span className="font-medium text-gray-900">${formatCents(totalPriceCents)}</span>
                 </div>
                 <div className="border-t pt-3">
                   <div className="flex items-center justify-between">
                     <span className="text-lg font-medium text-gray-900">Total</span>
-                    <span className="text-lg font-medium text-gray-900">${totalPrice.toFixed(2)}</span>
+                    <span className="text-lg font-medium text-gray-900">${formatCents(totalPriceCents)}</span>
                   </div>
                 </div>
               </div>
               <Button onClick={handleCheckout} className="mt-6 w-full">
-                Checkout • ${totalPrice.toFixed(2)}
+                Checkout • ${formatCents(totalPriceCents)}
               </Button>
             </div>
           </div>

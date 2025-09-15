@@ -28,19 +28,21 @@ func (Cart) TableName() string { return "carts" }
 
 // CartItem is a line item within a cart.
 type CartItem struct {
-	ID               int       `gorm:"primaryKey" json:"id"`
-	CartID           int       `gorm:"column:cart_id;not null" json:"cartId"`
-	ArticleID        int       `gorm:"column:article_id;not null" json:"articleId"`
-	VariantID        int       `gorm:"column:variant_id;not null" json:"variantId"`
-	Quantity         int       `gorm:"not null" json:"quantity"`
-	PriceAtTime      int       `gorm:"column:price_at_time;not null" json:"priceAtTime"`
-	OriginalPrice    int       `gorm:"column:original_price;not null" json:"originalPrice"`
-	CustomData       string    `gorm:"column:custom_data;type:text;not null" json:"-"`
-	GeneratedImageID *int      `gorm:"column:generated_image_id" json:"generatedImageId"`
-	PromptID         *int      `gorm:"column:prompt_id" json:"promptId"`
-	Position         int       `gorm:"not null;default:0" json:"position"`
-	CreatedAt        time.Time `json:"createdAt"`
-	UpdatedAt        time.Time `json:"updatedAt"`
+	ID                  int       `gorm:"primaryKey" json:"id"`
+	CartID              int       `gorm:"column:cart_id;not null" json:"cartId"`
+	ArticleID           int       `gorm:"column:article_id;not null" json:"articleId"`
+	VariantID           int       `gorm:"column:variant_id;not null" json:"variantId"`
+	Quantity            int       `gorm:"not null" json:"quantity"`
+	PriceAtTime         int       `gorm:"column:price_at_time;not null" json:"priceAtTime"`
+	OriginalPrice       int       `gorm:"column:original_price;not null" json:"originalPrice"`
+	PromptPriceAtTime   int       `gorm:"column:prompt_price_at_time;not null;default:0" json:"promptPriceAtTime"`
+	PromptOriginalPrice int       `gorm:"column:prompt_original_price;not null;default:0" json:"promptOriginalPrice"`
+	CustomData          string    `gorm:"column:custom_data;type:text;not null" json:"-"`
+	GeneratedImageID    *int      `gorm:"column:generated_image_id" json:"generatedImageId"`
+	PromptID            *int      `gorm:"column:prompt_id" json:"promptId"`
+	Position            int       `gorm:"not null;default:0" json:"position"`
+	CreatedAt           time.Time `json:"createdAt"`
+	UpdatedAt           time.Time `json:"updatedAt"`
 }
 
 func (CartItem) TableName() string { return "cart_items" }

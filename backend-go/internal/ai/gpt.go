@@ -54,8 +54,8 @@ func NewGPTImageGeneratorFromEnv() *GPTImageGenerator {
 		Model:             model,
 		BaseURL:           base,
 		DefaultCandidates: 1,
-		DefaultTimeout:    60 * time.Second,
-		HTTPClient:        &http.Client{Timeout: 60 * time.Second},
+		DefaultTimeout:    180 * time.Second,
+		HTTPClient:        &http.Client{Timeout: 160 * time.Second},
 	}
 }
 
