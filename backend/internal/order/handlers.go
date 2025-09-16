@@ -1,7 +1,10 @@
 package order
 
 import (
+	"errors"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -128,6 +131,24 @@ func downloadOrderPDFHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		filename := pdf.FilenameFromOrderNumber(ord.OrderNumber)
+
+		cfg, cfgErr := loadOrderPDFFTPConfig(os.Getenv)
+		if cfgErr != nil {
+			if errors.Is(cfgErr, errOrderPDFFTPConfigMissing) {
+				c.JSON(http.StatusInternalServerError, gin.H{"detail": "FTP configuration missing"})
+				return
+			}
+			log.Printf("order pdf ftp configuration error: %v", cfgErr)
+			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Invalid FTP configuration"})
+			return
+		}
+
+		remotePath := remoteOrderPDFPath(filename)
+		if err := uploadPDFToFTP(pdfBytes, cfg.Server, cfg.User, cfg.Password, cfg.options(remotePath)); err != nil {
+			log.Printf("order pdf ftp upload failed for %s: %v", remotePath, err)
+			c.JSON(http.StatusBadGateway, gin.H{"detail": "Failed to upload order PDF"})
+			return
+		}
 		c.Header("Content-Disposition", "attachment; filename=\""+filename+"\"")
 		c.Data(http.StatusOK, "application/pdf", pdfBytes)
 	}
