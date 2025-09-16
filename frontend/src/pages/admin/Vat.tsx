@@ -5,8 +5,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useDeleteVat, useVats } from '@/hooks/queries/useVat';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 export default function Vat() {
   const navigate = useNavigate();
@@ -139,11 +139,7 @@ export default function Vat() {
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
         title={t('confirmation.title')}
-        description={
-          vatToDelete?.isDefault
-            ? t('confirmation.defaultDescription')
-            : t('confirmation.description')
-        }
+        description={vatToDelete?.isDefault ? t('confirmation.defaultDescription') : t('confirmation.description')}
         confirmText={t('confirmation.confirm')}
         cancelText={t('confirmation.cancel')}
       />

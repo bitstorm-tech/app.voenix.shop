@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/Button';
 import { useLogout, useSession } from '@/hooks/queries/useAuth';
 import { Box, Database, FileText, FlaskConical, LogOut, Palette, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { NavLink } from 'react-router-dom';
 
 interface AdminSidebarProps {
   user?: { name?: string };
@@ -17,9 +17,13 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
   const { data: session } = useSession();
   const user = session?.user;
   const { i18n } = useTranslation();
-
   const resolvedLanguage = (i18n.resolvedLanguage ?? i18n.language ?? 'en').toLowerCase();
   const languageValue = resolvedLanguage.startsWith('de') ? 'de' : 'en';
+
+  const handleLanguageChange = (newLanguage: string) => {
+    if (newLanguage === languageValue) return;
+    i18n.changeLanguage(newLanguage);
+  };
 
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -36,7 +40,7 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
             aria-label="Language"
             className="rounded border px-2 py-1 text-sm"
             value={languageValue}
-            onChange={(event) => i18n.changeLanguage(event.target.value)}
+            onChange={(event) => handleLanguageChange(event.target.value)}
           >
             <option value="en">🇬🇧</option>
             <option value="de">🇩🇪</option>
