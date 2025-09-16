@@ -1,5 +1,4 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Checkbox } from '@/components/ui/Checkbox';
 import { CurrencyInput } from '@/components/ui/CurrencyInput';
 import { FieldLabel } from '@/components/ui/FieldLabel';
 import { Input } from '@/components/ui/Input';
@@ -44,6 +43,24 @@ export default function PriceCalculationTab() {
       }
     },
     [vats, updateSalesVatRate],
+  );
+
+  const handlePurchasePriceCorrespondsChange = useCallback(
+    (value: string) => {
+      if (value === 'NET' || value === 'GROSS') {
+        updateCostField('purchasePriceCorresponds', value);
+      }
+    },
+    [updateCostField],
+  );
+
+  const handleSalesPriceCorrespondsChange = useCallback(
+    (value: string) => {
+      if (value === 'NET' || value === 'GROSS') {
+        updateCostField('salesPriceCorresponds', value);
+      }
+    },
+    [updateCostField],
   );
 
   // Auto-select default VAT when component loads or when VATs change
@@ -210,16 +227,20 @@ export default function PriceCalculationTab() {
             <CurrencyInput value={costCalculation.purchaseTotalGross} onChange={() => {}} disabled />
           </div>
 
-          {/* Price corresponds checkbox */}
-          <div className="flex items-center space-x-2 pt-2">
-            <Checkbox
-              id="purchasePriceCorresponds"
-              checked={costCalculation.purchasePriceCorresponds}
-              onCheckedChange={(checked) => updateCostField('purchasePriceCorresponds', checked === true)}
-            />
+          {/* Price corresponds selection */}
+          <div className="flex flex-wrap items-center gap-2 pt-2">
             <FieldLabel htmlFor="purchasePriceCorresponds" className="text-sm font-normal" optional>
               Price corresponds to
             </FieldLabel>
+            <Select value={costCalculation.purchasePriceCorresponds} onValueChange={handlePurchasePriceCorrespondsChange}>
+              <SelectTrigger id="purchasePriceCorresponds" className="w-32">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="NET">Net</SelectItem>
+                <SelectItem value="GROSS">Gross</SelectItem>
+              </SelectContent>
+            </Select>
             <Input
               type="text"
               value={costCalculation.purchasePriceUnit}
@@ -376,16 +397,20 @@ export default function PriceCalculationTab() {
             />
           </div>
 
-          {/* Price corresponds checkbox */}
-          <div className="flex items-center space-x-2 pt-2">
-            <Checkbox
-              id="salesPriceCorresponds"
-              checked={costCalculation.salesPriceCorresponds}
-              onCheckedChange={(checked) => updateCostField('salesPriceCorresponds', checked === true)}
-            />
+          {/* Price corresponds selection */}
+          <div className="flex flex-wrap items-center gap-2 pt-2">
             <FieldLabel htmlFor="salesPriceCorresponds" className="text-sm font-normal" optional>
               Price corresponds to
             </FieldLabel>
+            <Select value={costCalculation.salesPriceCorresponds} onValueChange={handleSalesPriceCorrespondsChange}>
+              <SelectTrigger id="salesPriceCorresponds" className="w-32">
+                <SelectValue placeholder="Select" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="NET">Net</SelectItem>
+                <SelectItem value="GROSS">Gross</SelectItem>
+              </SelectContent>
+            </Select>
             <Input
               type="text"
               value={costCalculation.salesPriceUnit}

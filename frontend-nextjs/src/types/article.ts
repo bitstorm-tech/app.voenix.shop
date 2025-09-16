@@ -163,8 +163,8 @@ export interface CostCalculation {
   salesCalculationMode: 'NET' | 'GROSS';
 
   // UI state
-  purchasePriceCorresponds: boolean;
-  salesPriceCorresponds: boolean;
+  purchasePriceCorresponds: 'NET' | 'GROSS';
+  salesPriceCorresponds: 'NET' | 'GROSS';
   purchaseActiveRow: 'cost' | 'costPercent';
   salesActiveRow: 'margin' | 'marginPercent' | 'total';
 }

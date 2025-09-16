@@ -138,8 +138,8 @@ const initialCostCalculation: CostCalculation = {
   salesCalculationMode: 'NET',
 
   // UI state
-  purchasePriceCorresponds: false,
-  salesPriceCorresponds: false,
+  purchasePriceCorresponds: 'NET',
+  salesPriceCorresponds: 'NET',
   purchaseActiveRow: 'COST',
   salesActiveRow: 'MARGIN',
 };
