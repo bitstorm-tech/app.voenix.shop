@@ -1,0 +1,30 @@
+{
+  "title": "Umsatzsteuer verwalten",
+  "loading": "Umsatzsteuersätze werden geladen...",
+  "loadError": "Umsatzsteuersätze konnten nicht geladen werden. Bitte erneut versuchen.",
+  "retry": "Erneut versuchen",
+  "add": "Neuen Umsatzsteuersatz hinzufügen",
+  "table": {
+    "name": "Name",
+    "percent": "Prozentsatz",
+    "description": "Beschreibung",
+    "actions": "Aktionen",
+    "empty": "Keine Umsatzsteuersätze gefunden"
+  },
+  "badge": {
+    "default": "Standard"
+  },
+  "percent": "{{value}}%",
+  "language": {
+    "label": "Sprache",
+    "en": "Englisch",
+    "de": "Deutsch"
+  },
+  "confirmation": {
+    "title": "Löschung bestätigen",
+    "description": "Dieser Umsatzsteuersatz wird dauerhaft gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden.",
+    "defaultDescription": "Dies ist der Standard-Umsatzsteuersatz. Nach dem Löschen muss ein neuer Standard festgelegt werden. Dieser Vorgang kann nicht rückgängig gemacht werden.",
+    "confirm": "Löschen",
+    "cancel": "Abbrechen"
+  }
+}

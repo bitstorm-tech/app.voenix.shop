@@ -1,0 +1,30 @@
+{
+  "title": "VAT Management",
+  "loading": "Loading VAT entries...",
+  "loadError": "Failed to load VAT entries. Please try again.",
+  "retry": "Retry",
+  "add": "Add New VAT",
+  "table": {
+    "name": "Name",
+    "percent": "Percent",
+    "description": "Description",
+    "actions": "Actions",
+    "empty": "No VAT entries found"
+  },
+  "badge": {
+    "default": "Default"
+  },
+  "percent": "{{value}}%",
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "de": "German"
+  },
+  "confirmation": {
+    "title": "Confirm Deletion",
+    "description": "This will permanently delete the VAT entry. This action cannot be undone.",
+    "defaultDescription": "This is the default VAT. After deletion, you will need to set a new default VAT. This action cannot be undone.",
+    "confirm": "Delete",
+    "cancel": "Cancel"
+  }
+}
