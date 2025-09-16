@@ -146,11 +146,11 @@ export default function MyImagesPage() {
     return null;
   }
 
-  const handleFilterChange = (key: keyof UserImagesParams, value: any) => {
+  const handleFilterChange = <Key extends keyof UserImagesParams>(key: Key, value: UserImagesParams[Key]) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
-      page: key === 'page' ? value : 0, // Reset page when changing other filters
+      page: key === 'page' ? (value as UserImagesParams['page']) ?? 0 : 0, // Reset page when changing other filters
     }));
   };
 
@@ -209,7 +209,7 @@ export default function MyImagesPage() {
             <label htmlFor="type-filter" className="text-sm font-medium text-gray-700">
               Type:
             </label>
-            <Select value={filters.type} onValueChange={(value) => handleFilterChange('type', value)}>
+            <Select value={filters.type} onValueChange={(value) => handleFilterChange('type', value as UserImagesParams['type'])}>
               <SelectTrigger id="type-filter" className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>
@@ -225,7 +225,7 @@ export default function MyImagesPage() {
             <label htmlFor="sort-filter" className="text-sm font-medium text-gray-700">
               Sort by:
             </label>
-            <Select value={filters.sortBy} onValueChange={(value) => handleFilterChange('sortBy', value)}>
+            <Select value={filters.sortBy} onValueChange={(value) => handleFilterChange('sortBy', value as UserImagesParams['sortBy'])}>
               <SelectTrigger id="sort-filter" className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>
@@ -240,7 +240,7 @@ export default function MyImagesPage() {
             <label htmlFor="order-filter" className="text-sm font-medium text-gray-700">
               Order:
             </label>
-            <Select value={filters.sortDirection} onValueChange={(value) => handleFilterChange('sortDirection', value)}>
+            <Select value={filters.sortDirection} onValueChange={(value) => handleFilterChange('sortDirection', value as UserImagesParams['sortDirection'])}>
               <SelectTrigger id="order-filter" className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>

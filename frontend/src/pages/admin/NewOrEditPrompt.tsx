@@ -45,7 +45,7 @@ export default function NewOrEditPrompt() {
   const [exampleImageFile, setExampleImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<'prompt' | 'cost-calculation'>('prompt');
-  const priceStore = usePromptPriceStore();
+  const setCostCalculation = usePromptPriceStore((state) => state.setCostCalculation);
 
   const fetchCategories = useCallback(async () => {
     try {
@@ -54,6 +54,22 @@ export default function NewOrEditPrompt() {
     } catch (error) {
       console.error('Error fetching categories:', error);
       setError('Failed to load categories');
+    }
+  }, []);
+
+  const fetchSubcategories = useCallback(async (categoryId: number) => {
+    if (!categoryId) {
+      setSubcategories([]);
+      return;
+    }
+
+    try {
+      const data = await promptSubCategoriesApi.getByCategory(categoryId);
+      setSubcategories(data);
+    } catch (error) {
+      console.error('Error fetching subcategories:', error);
+      // Don't show error to user as subcategory is optional
+      setSubcategories([]);
     }
   }, []);
 
@@ -95,9 +111,9 @@ export default function NewOrEditPrompt() {
 
       // If prompt has a priceId, fetch and initialize the price store
       if (prompt.costCalculation) {
-        const converted = convertCostCalculationToEuros(prompt.costCalculation as any);
+        const converted = convertCostCalculationToEuros(prompt.costCalculation);
         if (converted) {
-          priceStore.setCostCalculation(converted);
+          setCostCalculation(converted);
         }
       }
     } catch (error) {
@@ -106,7 +122,7 @@ export default function NewOrEditPrompt() {
     } finally {
       setInitialLoading(false);
     }
-  }, [id]);
+  }, [fetchSubcategories, id, setCostCalculation]);
 
   useEffect(() => {
     fetchCategories();
@@ -125,22 +141,6 @@ export default function NewOrEditPrompt() {
       }
     };
   }, [exampleImageUrl]);
-
-  const fetchSubcategories = async (categoryId: number) => {
-    if (!categoryId) {
-      setSubcategories([]);
-      return;
-    }
-
-    try {
-      const data = await promptSubCategoriesApi.getByCategory(categoryId);
-      setSubcategories(data);
-    } catch (error) {
-      console.error('Error fetching subcategories:', error);
-      // Don't show error to user as subcategory is optional
-      setSubcategories([]);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

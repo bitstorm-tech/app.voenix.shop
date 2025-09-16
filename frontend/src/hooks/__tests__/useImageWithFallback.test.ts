@@ -19,10 +19,21 @@ class MockImage {
   }
 }
 
-// Replace global Image with MockImage (cast to avoid DOM constructor type mismatch in Node/JSDOM)
-(globalThis as any).Image = MockImage;
+const originalImage = globalThis.Image;
 
 describe('useImageWithFallback', () => {
+  beforeAll(() => {
+    globalThis.Image = MockImage as unknown as typeof globalThis.Image;
+  });
+
+  afterAll(() => {
+    if (originalImage) {
+      globalThis.Image = originalImage;
+    } else {
+      delete (globalThis as Record<string, unknown>).Image;
+    }
+  });
+
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
@@ -327,14 +338,17 @@ describe('useImageWithFallback', () => {
     it('should calculate exponential backoff correctly', async () => {
       const delays: number[] = [];
       const originalSetTimeout = globalThis.setTimeout.bind(globalThis);
+      type SetTimeoutParameters = Parameters<typeof setTimeout>;
+      type SetTimeoutRest = SetTimeoutParameters extends [unknown, unknown, ...infer Rest] ? Rest : [];
 
-      // Spy on setTimeout to capture delays (ensure types align across Node/DOM)
-      jest.spyOn(globalThis as any, 'setTimeout').mockImplementation(((fn: any, delay?: number, ...args: any[]) => {
-        if (typeof delay === 'number' && delay > 0) {
-          delays.push(delay);
+      const setTimeoutSpy = jest.spyOn(globalThis, 'setTimeout');
+
+      setTimeoutSpy.mockImplementation(((handler: SetTimeoutParameters[0], timeout?: SetTimeoutParameters[1], ...rest: SetTimeoutRest) => {
+        if (typeof timeout === 'number' && timeout > 0) {
+          delays.push(timeout);
         }
-        return originalSetTimeout(fn as any, delay as any, ...args) as any;
-      }) as any);
+        return originalSetTimeout(handler, timeout ?? 0, ...(rest as unknown[]));
+      }) as typeof setTimeout);
 
       renderHook(() =>
         useImageWithFallback('https://example.com/error.jpg', {
@@ -352,6 +366,7 @@ describe('useImageWithFallback', () => {
       expect(delays).toContain(100); // First retry: 100 * 2^0
       expect(delays).toContain(200); // Second retry: 100 * 2^1
       expect(delays).toContain(400); // Third retry: 100 * 2^2
+      setTimeoutSpy.mockRestore();
     });
   });
 

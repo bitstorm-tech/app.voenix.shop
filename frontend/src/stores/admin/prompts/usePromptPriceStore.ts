@@ -68,13 +68,14 @@ export const usePromptPriceStore = create<PromptPriceState>()(
     costCalculation: { ...initialCostCalculation },
     setCostCalculation: (data) => {
       set((state) => {
-        state.costCalculation = { ...initialCostCalculation, ...data } as CostCalculation;
+        const merged: CostCalculation = { ...initialCostCalculation, ...data };
+        state.costCalculation = merged;
       });
     },
 
     updateCostField: (field, value) => {
       set((state) => {
-        state.costCalculation[field] = value as any;
+        state.costCalculation[field] = value;
       });
     },
 
