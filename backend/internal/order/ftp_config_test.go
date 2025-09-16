@@ -11,6 +11,8 @@ func TestLoadOrderPDFFTPConfigSuccess(t *testing.T) {
 		switch key {
 		case "ORDER_PDF_FTP_SERVER":
 			return "ftp.example.com"
+		case "ORDER_PDF_FTP_FOLDER":
+			return "orders"
 		case "ORDER_PDF_FTP_USER":
 			return "user"
 		case "ORDER_PDF_FTP_PASSWORD":
@@ -24,7 +26,7 @@ func TestLoadOrderPDFFTPConfigSuccess(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
-	if cfg.Server != "ftp.example.com" || cfg.User != "user" || cfg.Password != "pass" {
+	if cfg.Server != "ftp.example.com" || cfg.User != "user" || cfg.Password != "pass" || cfg.Folder != "orders" {
 		t.Fatalf("unexpected config: %+v", cfg)
 	}
 	if cfg.Timeout != 12*time.Second {
@@ -60,10 +62,10 @@ func TestLoadOrderPDFFTPConfigInvalidTimeout(t *testing.T) {
 }
 
 func TestRemoteOrderPDFPath(t *testing.T) {
-	if p := remoteOrderPDFPath("order.pdf"); p != "orders/order.pdf" {
+	if p := remoteOrderPDFPath("orders", "order.pdf"); p != "orders/order.pdf" {
 		t.Fatalf("unexpected path: %s", p)
 	}
-	if p := remoteOrderPDFPath(" "); p != "orders/order.pdf" {
+	if p := remoteOrderPDFPath("orders", " "); p != "orders/order.pdf" {
 		t.Fatalf("expected fallback path, got %s", p)
 	}
 }

@@ -11,8 +11,6 @@ import (
 	"voenix/backend/internal/utility"
 )
 
-const orderPDFRemoteDir = "orders"
-
 var (
 	errOrderPDFFTPConfigMissing = errors.New("order PDF FTP configuration missing")
 	uploadPDFToFTP              = utility.UploadPDFToFTP
@@ -20,6 +18,7 @@ var (
 
 type orderPDFFTPConfig struct {
 	Server   string
+	Folder   string
 	User     string
 	Password string
 	Timeout  time.Duration
@@ -27,6 +26,7 @@ type orderPDFFTPConfig struct {
 
 func loadOrderPDFFTPConfig(getenv func(string) string) (orderPDFFTPConfig, error) {
 	server := strings.TrimSpace(getenv("ORDER_PDF_FTP_SERVER"))
+	folder := strings.TrimSpace(getenv("ORDER_PDF_FTP_FOLDER"))
 	user := strings.TrimSpace(getenv("ORDER_PDF_FTP_USER"))
 	password := strings.TrimSpace(getenv("ORDER_PDF_FTP_PASSWORD"))
 
@@ -36,6 +36,7 @@ func loadOrderPDFFTPConfig(getenv func(string) string) (orderPDFFTPConfig, error
 
 	cfg := orderPDFFTPConfig{
 		Server:   server,
+		Folder:   folder,
 		User:     user,
 		Password: password,
 	}
@@ -61,11 +62,11 @@ func (cfg orderPDFFTPConfig) options(remotePath string) *utility.FTPUploadOption
 	}
 }
 
-func remoteOrderPDFPath(filename string) string {
+func remoteOrderPDFPath(folder string, filename string) string {
 	base := strings.TrimSpace(filename)
 	if base == "" {
 		base = "order.pdf"
 	}
 	// Ensure forward slash separators for FTP regardless of platform.
-	return path.Join(orderPDFRemoteDir, base)
+	return path.Join(folder, base)
 }

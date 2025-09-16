@@ -143,7 +143,7 @@ func downloadOrderPDFHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		remotePath := remoteOrderPDFPath(filename)
+		remotePath := remoteOrderPDFPath(cfg.Folder, filename)
 		if err := uploadPDFToFTP(pdfBytes, cfg.Server, cfg.User, cfg.Password, cfg.options(remotePath)); err != nil {
 			log.Printf("order pdf ftp upload failed for %s: %v", remotePath, err)
 			c.JSON(http.StatusBadGateway, gin.H{"detail": "Failed to upload order PDF"})

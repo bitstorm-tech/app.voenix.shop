@@ -97,6 +97,7 @@ func TestDownloadOrderPDFHandler_UploadsBeforeResponding(t *testing.T) {
 	t.Cleanup(func() { uploadPDFToFTP = uploadPDFToFTPSave })
 
 	t.Setenv("ORDER_PDF_FTP_SERVER", "ftp.example.com")
+	t.Setenv("ORDER_PDF_FTP_FOLDER", "orders")
 	t.Setenv("ORDER_PDF_FTP_USER", "ftp-user")
 	t.Setenv("ORDER_PDF_FTP_PASSWORD", "ftp-pass")
 	t.Setenv("ORDER_PDF_FTP_TIMEOUT", "15")
