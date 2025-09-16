@@ -12,6 +12,7 @@ import { AlertTriangle, CreditCard, Lock, ShoppingBag, Truck } from 'lucide-reac
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 // Pricing configuration
 const CHECKOUT_CONFIG = {
@@ -22,27 +23,27 @@ const CHECKOUT_CONFIG = {
 // Form field configurations
 interface FieldConfig {
   name: string;
-  label: string;
   type?: string;
-  placeholder: string;
   required?: boolean;
   span?: number;
+  labelKey: string;
+  placeholderKey?: string;
 }
 
 const contactFields: FieldConfig[] = [
-  { name: 'email', label: 'Email Address', type: 'email', placeholder: 'john.doe@example.com', required: true, span: 2 },
-  { name: 'firstName', label: 'First Name', placeholder: 'John', required: true },
-  { name: 'lastName', label: 'Last Name', placeholder: 'Doe', required: true },
-  { name: 'phone', label: 'Phone Number (optional)', type: 'tel', placeholder: '+1 (555) 123-4567', span: 2 },
+  { name: 'email', type: 'email', required: true, span: 2, labelKey: 'contact.fields.email.label', placeholderKey: 'contact.fields.email.placeholder' },
+  { name: 'firstName', required: true, labelKey: 'contact.fields.firstName.label', placeholderKey: 'contact.fields.firstName.placeholder' },
+  { name: 'lastName', required: true, labelKey: 'contact.fields.lastName.label', placeholderKey: 'contact.fields.lastName.placeholder' },
+  { name: 'phone', type: 'tel', span: 2, labelKey: 'contact.fields.phone.label', placeholderKey: 'contact.fields.phone.placeholder' },
 ];
 
 const addressFields: FieldConfig[] = [
-  { name: 'streetAddress1', label: 'Street Address', placeholder: '123 Main Street', required: true, span: 2 },
-  { name: 'streetAddress2', label: 'Apartment, suite, etc. (optional)', placeholder: 'Apt 4B', span: 2 },
-  { name: 'city', label: 'City', placeholder: 'New York', required: true },
-  { name: 'state', label: 'State', placeholder: 'NY', required: true },
-  { name: 'postalCode', label: 'ZIP Code', placeholder: '10001', required: true },
-  { name: 'country', label: 'Country', placeholder: 'US', required: true },
+  { name: 'streetAddress1', required: true, span: 2, labelKey: 'shipping.fields.streetAddress1.label', placeholderKey: 'shipping.fields.streetAddress1.placeholder' },
+  { name: 'streetAddress2', span: 2, labelKey: 'shipping.fields.streetAddress2.label', placeholderKey: 'shipping.fields.streetAddress2.placeholder' },
+  { name: 'city', required: true, labelKey: 'shipping.fields.city.label', placeholderKey: 'shipping.fields.city.placeholder' },
+  { name: 'state', required: true, labelKey: 'shipping.fields.state.label', placeholderKey: 'shipping.fields.state.placeholder' },
+  { name: 'postalCode', required: true, labelKey: 'shipping.fields.postalCode.label', placeholderKey: 'shipping.fields.postalCode.placeholder' },
+  { name: 'country', required: true, labelKey: 'shipping.fields.country.label', placeholderKey: 'shipping.fields.country.placeholder' },
 ];
 
 // Reusable state component
@@ -84,6 +85,7 @@ interface FormData {
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation('checkout');
   const { data: session, isLoading: sessionLoading } = useSession();
   const { data: cartData, isLoading: cartLoading, error: cartError } = useCart();
   const createOrderMutation = useCreateOrder();
@@ -118,7 +120,8 @@ export default function CheckoutPage() {
   // Convert cart data for display
   const items = cartData?.items || [];
   const totalItems = cartData?.totalItemCount || 0;
-  const subtotal = (cartData?.totalPrice || 0) / 100; // Convert cents to dollars
+  const subtotal = (cartData?.totalPrice || 0) / 100; // Convert cents to base currency
+  const formatCurrency = (value: number) => t('currency', { value: value.toFixed(2) });
 
   const updateField = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -163,8 +166,8 @@ export default function CheckoutPage() {
       const order = await createOrderMutation.mutateAsync(orderRequest);
       console.log('Order created successfully:', order);
 
-      toast.success('Order placed successfully!', {
-        description: `Order #${order.orderNumber} has been created.`,
+      toast.success(t('toast.orderSuccess.title'), {
+        description: t('toast.orderSuccess.description', { orderNumber: order.orderNumber }),
       });
 
       // Auto-download PDF
@@ -175,12 +178,12 @@ export default function CheckoutPage() {
         });
 
         if (result.success) {
-          toast.success('Receipt downloaded!', {
-            description: 'Your order receipt has been downloaded to your device.',
+          toast.success(t('toast.receiptSuccess.title'), {
+            description: t('toast.receiptSuccess.description'),
           });
         } else {
-          toast.error('PDF download failed', {
-            description: 'You can download your receipt from the order details page.',
+          toast.error(t('toast.receiptError.title'), {
+            description: t('toast.receiptError.description'),
           });
         }
       }, 500);
@@ -189,30 +192,32 @@ export default function CheckoutPage() {
       navigate(`/order-success/${order.id}`);
     } catch (error) {
       console.error('Error creating order:', error);
-      toast.error('Failed to place order', {
-        description: error instanceof Error ? error.message : 'Please try again or contact support.',
+      toast.error(t('toast.orderError.title'), {
+        description: error instanceof Error ? error.message : t('toast.orderError.description'),
       });
     }
   };
 
   // Handle loading and error states
   if (sessionLoading || cartLoading) {
-    return <CheckoutState icon={LoadingSpinner} message={cartLoading ? 'Loading checkout...' : undefined} />;
+    return <CheckoutState icon={LoadingSpinner} message={cartLoading ? t('loading') : undefined} />;
   }
 
   if (!session?.authenticated) return null;
 
   if (cartError) {
     const errorMessage =
-      typeof cartError === 'object' && cartError && 'message' in cartError ? (cartError as Error).message : 'Unable to load your cart';
+      typeof cartError === 'object' && cartError && 'message' in cartError
+        ? (cartError as Error).message
+        : t('error.description');
     return (
       <CheckoutState
         icon={AlertTriangle}
-        title="Error loading cart"
+        title={t('error.heading')}
         message={errorMessage}
         action={
           <Button onClick={() => window.location.reload()} className="mt-6">
-            Try Again
+            {t('actions.tryAgain')}
           </Button>
         }
       />
@@ -223,11 +228,11 @@ export default function CheckoutPage() {
     return (
       <CheckoutState
         icon={ShoppingBag}
-        title="Your cart is empty"
-        message="Add items to your cart before checking out"
+        title={t('empty.heading')}
+        message={t('empty.message')}
         action={
           <Button onClick={() => navigate('/cart')} className="mt-6">
-            View Cart
+            {t('actions.viewCart')}
           </Button>
         }
       />
@@ -243,23 +248,23 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <h1 className="mb-8 text-2xl font-bold text-gray-900 sm:text-3xl">Checkout</h1>
+        <h1 className="mb-8 text-2xl font-bold text-gray-900 sm:text-3xl">{t('title')}</h1>
 
         <form onSubmit={handleSubmit} className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <div className="space-y-6">
               <div className="rounded-lg bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-lg font-semibold">Contact Information</h2>
+                <h2 className="mb-4 text-lg font-semibold">{t('contact.heading')}</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {contactFields.map((field) => (
                     <div key={field.name} className={field.span === 2 ? 'sm:col-span-2' : ''}>
-                      <Label htmlFor={field.name}>{field.label}</Label>
+                      <Label htmlFor={field.name}>{t(field.labelKey)}</Label>
                       <Input
                         id={field.name}
                         type={field.type || 'text'}
                         value={formData[field.name as keyof FormData] as string}
                         onChange={(e) => updateField(field.name, e.target.value)}
-                        placeholder={field.placeholder}
+                        placeholder={field.placeholderKey ? t(field.placeholderKey) : undefined}
                         className="mt-1"
                         required={field.required}
                       />
@@ -271,17 +276,17 @@ export default function CheckoutPage() {
               <div className="rounded-lg bg-white p-6 shadow-sm">
                 <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                   <Truck className="h-5 w-5" />
-                  Shipping Information
+                  {t('shipping.heading')}
                 </h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {addressFields.map((field) => (
                     <div key={field.name} className={field.span === 2 ? 'sm:col-span-2' : ''}>
-                      <Label htmlFor={field.name}>{field.label}</Label>
+                      <Label htmlFor={field.name}>{t(field.labelKey)}</Label>
                       <Input
                         id={field.name}
                         value={formData.shipping_address[field.name as keyof FormData['shipping_address']]}
                         onChange={(e) => updateAddress(field.name, e.target.value)}
-                        placeholder={field.placeholder}
+                        placeholder={field.placeholderKey ? t(field.placeholderKey) : undefined}
                         className="mt-1"
                         required={field.required}
                       />
@@ -296,7 +301,7 @@ export default function CheckoutPage() {
                       onChange={(e) => setFormData((prev) => ({ ...prev, sameAsBilling: e.target.checked }))}
                       className="rounded border-gray-300"
                     />
-                    <span className="text-sm">Billing address same as shipping</span>
+                    <span className="text-sm">{t('shipping.checkbox')}</span>
                   </label>
                 </div>
               </div>
@@ -304,11 +309,9 @@ export default function CheckoutPage() {
               <div className="rounded-lg bg-white p-6 shadow-sm">
                 <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold">
                   <CreditCard className="h-5 w-5" />
-                  Payment Information
+                  {t('payment.heading')}
                 </h2>
-                <p className="text-sm text-gray-600">
-                  Payment processing will be implemented in the next phase. For now, orders will be created without payment.
-                </p>
+                <p className="text-sm text-gray-600">{t('payment.description')}</p>
               </div>
             </div>
           </div>
@@ -316,13 +319,13 @@ export default function CheckoutPage() {
           <div className="lg:col-span-1">
             <div className="sticky top-8 space-y-4">
               <div className="rounded-lg bg-white p-6 shadow-sm">
-                <h2 className="mb-4 text-lg font-semibold">Order Summary</h2>
+                <h2 className="mb-4 text-lg font-semibold">{t('summary.heading')}</h2>
 
                 {hasPriceChanges && (
                   <Alert variant="info" className="mb-4">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription>
-                      Some items in your cart have had price changes since they were added. The updated prices are shown below.
+                      {t('summary.alert')}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -338,7 +341,7 @@ export default function CheckoutPage() {
                           {imageUrl && !imageErrors[item.id] ? (
                             <img
                               src={imageUrl}
-                              alt="Custom mug design"
+                              alt={t('items.imageAlt')}
                               className="h-full w-full object-cover"
                               onError={() => setImageErrors((prev) => ({ ...prev, [item.id]: true }))}
                             />
@@ -351,13 +354,15 @@ export default function CheckoutPage() {
                         <div className="flex-1">
                           <h3 className="text-sm font-medium">{item.article.name}</h3>
                           <p className="text-sm text-gray-600">
-                            {item.variant.colorCode} • Qty: {item.quantity}
+                            {item.variant?.colorCode
+                              ? t('items.variantDetails', { color: item.variant.colorCode, quantity: item.quantity })
+                              : t('items.quantityOnly', { quantity: item.quantity })}
                           </p>
-                          {item.hasPriceChanged && (
-                            <p className="text-xs text-orange-600">Price updated: was ${(item.originalPrice / 100).toFixed(2)}</p>
-                          )}
+                          {item.hasPriceChanged && item.originalPrice ? (
+                            <p className="text-xs text-orange-600">{t('items.priceUpdated', { amount: formatCurrency(item.originalPrice / 100) })}</p>
+                          ) : null}
                         </div>
-                        <div className="text-sm font-medium">${itemTotal.toFixed(2)}</div>
+                        <div className="text-sm font-medium">{formatCurrency(itemTotal)}</div>
                       </div>
                     );
                   })}
@@ -365,32 +370,34 @@ export default function CheckoutPage() {
 
                 <div className="mt-4 space-y-2 border-t pt-4">
                   <div className="flex justify-between text-sm">
-                    <span>Subtotal ({totalItems} items)</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span>{t('summary.subtotal', { count: totalItems })}</span>
+                    <span>{formatCurrency(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>Shipping</span>
-                    <span>${shipping.toFixed(2)}</span>
+                    <span>{t('summary.shipping')}</span>
+                    <span>{formatCurrency(shipping)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>Tax</span>
-                    <span>${tax.toFixed(2)}</span>
+                    <span>{t('summary.tax')}</span>
+                    <span>{formatCurrency(tax)}</span>
                   </div>
                   <div className="flex justify-between border-t pt-2 text-base font-semibold">
-                    <span>Total</span>
-                    <span>${total.toFixed(2)}</span>
+                    <span>{t('summary.total')}</span>
+                    <span>{formatCurrency(total)}</span>
                   </div>
                 </div>
               </div>
 
               <Button type="submit" className="w-full gap-2" size="lg" disabled={createOrderMutation.isPending}>
                 <Lock className="h-4 w-4" />
-                {createOrderMutation.isPending ? 'Processing...' : `Buy Now • $${total.toFixed(2)}`}
+                {createOrderMutation.isPending
+                  ? t('summary.processing')
+                  : t('summary.checkout', { amount: formatCurrency(total) })}
               </Button>
 
               <div className="text-center text-xs text-gray-500">
                 <Lock className="mx-auto mb-1 h-4 w-4" />
-                Your payment information is secure and encrypted
+                {t('security')}
               </div>
             </div>
           </div>

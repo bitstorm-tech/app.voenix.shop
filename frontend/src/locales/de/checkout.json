@@ -1,0 +1,108 @@
+{
+  "title": "Zur Kasse",
+  "loading": "Kasse wird geladen...",
+  "currency": "{{value}} €",
+  "actions": {
+    "tryAgain": "Erneut versuchen",
+    "viewCart": "Warenkorb anzeigen"
+  },
+  "error": {
+    "heading": "Fehler beim Laden des Warenkorbs",
+    "description": "Dein Warenkorb konnte nicht geladen werden"
+  },
+  "empty": {
+    "heading": "Dein Warenkorb ist leer",
+    "message": "Füge Produkte zu deinem Warenkorb hinzu, bevor du zur Kasse gehst"
+  },
+  "contact": {
+    "heading": "Kontaktinformationen",
+    "fields": {
+      "email": {
+        "label": "E-Mail-Adresse",
+        "placeholder": "max.mustermann@example.com"
+      },
+      "firstName": {
+        "label": "Vorname",
+        "placeholder": "Max"
+      },
+      "lastName": {
+        "label": "Nachname",
+        "placeholder": "Mustermann"
+      },
+      "phone": {
+        "label": "Telefonnummer (optional)",
+        "placeholder": "+49 170 1234567"
+      }
+    }
+  },
+  "shipping": {
+    "heading": "Lieferinformationen",
+    "checkbox": "Rechnungsadresse entspricht Lieferadresse",
+    "fields": {
+      "streetAddress1": {
+        "label": "Straße und Hausnummer",
+        "placeholder": "Musterstraße 123"
+      },
+      "streetAddress2": {
+        "label": "Wohnung, Etage usw. (optional)",
+        "placeholder": "Whg 4B"
+      },
+      "city": {
+        "label": "Stadt",
+        "placeholder": "Berlin"
+      },
+      "state": {
+        "label": "Bundesland",
+        "placeholder": "BE"
+      },
+      "postalCode": {
+        "label": "PLZ",
+        "placeholder": "10115"
+      },
+      "country": {
+        "label": "Land",
+        "placeholder": "DE"
+      }
+    }
+  },
+  "payment": {
+    "heading": "Zahlungsinformationen",
+    "description": "Die Zahlungsabwicklung wird in der nächsten Phase implementiert. Bis dahin werden Bestellungen ohne Zahlung erstellt."
+  },
+  "summary": {
+    "heading": "Bestellübersicht",
+    "alert": "Einige Artikel in deinem Warenkorb haben seit dem Hinzufügen eine Preisänderung erhalten. Die aktualisierten Preise werden unten angezeigt.",
+    "subtotal_one": "Zwischensumme ({{count}} Artikel)",
+    "subtotal_other": "Zwischensumme ({{count}} Artikel)",
+    "shipping": "Versand",
+    "tax": "Steuer",
+    "total": "Gesamtbetrag",
+    "checkout": "Jetzt kaufen • {{amount}}",
+    "processing": "Wird verarbeitet..."
+  },
+  "items": {
+    "imageAlt": "Vorschau des individuellen Tassendesigns",
+    "variantDetails": "{{color}} • Menge: {{quantity}}",
+    "quantityOnly": "Menge: {{quantity}}",
+    "priceUpdated": "Preis aktualisiert: vorher {{amount}}"
+  },
+  "security": "Deine Zahlungsinformationen sind sicher und verschlüsselt",
+  "toast": {
+    "orderSuccess": {
+      "title": "Bestellung erfolgreich aufgegeben!",
+      "description": "Bestellung #{{orderNumber}} wurde erstellt."
+    },
+    "receiptSuccess": {
+      "title": "Beleg heruntergeladen!",
+      "description": "Dein Bestellbeleg wurde auf dein Gerät heruntergeladen."
+    },
+    "receiptError": {
+      "title": "PDF-Download fehlgeschlagen",
+      "description": "Du kannst deinen Beleg auf der Bestellseite herunterladen."
+    },
+    "orderError": {
+      "title": "Bestellung konnte nicht abgeschlossen werden",
+      "description": "Bitte versuche es erneut oder kontaktiere den Support."
+    }
+  }
+}

@@ -2,15 +2,17 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
 import deCart from './locales/de/cart.json';
+import deCheckout from './locales/de/checkout.json';
 import deVat from './locales/de/vat.json';
 import enCart from './locales/en/cart.json';
+import enCheckout from './locales/en/checkout.json';
 import enVat from './locales/en/vat.json';
 
 export const defaultNS = 'vat';
 export const LANGUAGE_STORAGE_KEY = 'voenix.shop.language';
 export const resources = {
-  en: { vat: enVat, cart: enCart },
-  de: { vat: deVat, cart: deCart },
+  en: { vat: enVat, cart: enCart, checkout: enCheckout },
+  de: { vat: deVat, cart: deCart, checkout: deCheckout },
 } as const;
 export const namespaces = Object.freeze(Object.keys(resources.en)) as readonly (keyof typeof resources.en)[];
 
