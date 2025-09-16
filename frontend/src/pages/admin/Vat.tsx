@@ -12,7 +12,7 @@ export default function Vat() {
   const navigate = useNavigate();
   const { data: vats = [], isLoading, error } = useVats();
   const deleteVatMutation = useDeleteVat();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
   const [vatToDelete, setVatToDelete] = useState<{ id: number; isDefault: boolean } | undefined>(undefined);
@@ -78,19 +78,6 @@ export default function Vat() {
           <h1 className="text-2xl font-bold">{t('title')}</h1>
         </div>
         <div className="flex items-center gap-4">
-          <label className="flex items-center gap-2 text-sm text-gray-600" htmlFor="vat-language">
-            <span>{t('language.label')}</span>
-            <select
-              id="vat-language"
-              aria-label={t('language.label')}
-              className="rounded border px-2 py-1 text-sm"
-              value={(i18n.resolvedLanguage ?? i18n.language ?? 'en').startsWith('de') ? 'de' : 'en'}
-              onChange={(event) => i18n.changeLanguage(event.target.value)}
-            >
-              <option value="en">{t('language.en')}</option>
-              <option value="de">{t('language.de')}</option>
-            </select>
-          </label>
           <Button onClick={handleNewVat}>
             <Plus className="mr-2 h-4 w-4" />
             {t('add')}

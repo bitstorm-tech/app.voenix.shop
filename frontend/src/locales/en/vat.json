@@ -15,11 +15,6 @@
     "default": "Default"
   },
   "percent": "{{value}}%",
-  "language": {
-    "label": "Language",
-    "en": "English",
-    "de": "German"
-  },
   "confirmation": {
     "title": "Confirm Deletion",
     "description": "This will permanently delete the VAT entry. This action cannot be undone.",

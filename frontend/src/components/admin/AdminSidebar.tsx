@@ -4,6 +4,7 @@ import { useLogout, useSession } from '@/hooks/queries/useAuth';
 import { Box, Database, FileText, FlaskConical, LogOut, Palette, ShoppingBag } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 interface AdminSidebarProps {
   user?: { name?: string };
@@ -15,6 +16,10 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
   const logoutMutation = useLogout();
   const { data: session } = useSession();
   const user = session?.user;
+  const { i18n } = useTranslation();
+
+  const resolvedLanguage = (i18n.resolvedLanguage ?? i18n.language ?? 'en').toLowerCase();
+  const languageValue = resolvedLanguage.startsWith('de') ? 'de' : 'en';
 
   const handleLogout = () => {
     logoutMutation.mutate();
@@ -22,8 +27,21 @@ export default function AdminSidebar({ onNavigate }: AdminSidebarProps = {}) {
 
   return (
     <aside className="flex h-full w-64 flex-col border-r bg-gray-50 md:h-screen">
-      <div className="flex h-16 items-center border-b px-6">
+      <div className="flex h-16 items-center justify-between gap-4 border-b px-6">
         <h2 className="text-xl font-semibold">Admin Panel</h2>
+        <label className="flex items-center" htmlFor="admin-language">
+          <span className="sr-only">Language</span>
+          <select
+            id="admin-language"
+            aria-label="Language"
+            className="rounded border px-2 py-1 text-sm"
+            value={languageValue}
+            onChange={(event) => i18n.changeLanguage(event.target.value)}
+          >
+            <option value="en">🇬🇧</option>
+            <option value="de">🇩🇪</option>
+          </select>
+        </label>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
