@@ -50,7 +50,7 @@
 
 ## Security & Configuration Tips
 - Env vars: `DATABASE_URL` (sqlite or Postgres), `AUTO_MIGRATE=true` for migrations, `SESSION_TTL_SECONDS`, `ADDR` (default `:8081`), `CORS_ALLOWED_ORIGINS`.
-- `.env` is auto‑loaded (current dir and `backend/.env`); use `ENV_FILE` to override.
+- `.env` is auto‑loaded (current dir and `backend/.env`)
 - Cookies are `HttpOnly`/`SameSite=Lax`; set `Secure=true` behind HTTPS in production.
 - Avoid logging secrets and PII; validate and sanitize all inputs.
 

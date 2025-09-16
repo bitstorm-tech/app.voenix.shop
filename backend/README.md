@@ -36,7 +36,6 @@ Configuration
 .env support
 - The server loads environment variables from `.env` automatically if present.
 - Search order: current working directory `.env`, then `backend/.env` (useful when running from repo root).
-- You can specify a custom path with `ENV_FILE=/path/to/.env`.
 - See `backend/.env.example` for a template.
 
 Running
