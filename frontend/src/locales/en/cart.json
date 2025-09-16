@@ -1,0 +1,35 @@
+{
+  "title": "Shopping Cart",
+  "error": {
+    "heading": "Error loading cart",
+    "description": "Unable to load your cart"
+  },
+  "empty": {
+    "heading": "Your cart is empty",
+    "body": "Start by designing your custom mug",
+    "cta": "Design a Mug"
+  },
+  "continueShopping": "Design Another Mug",
+  "summary": {
+    "heading": "Order Summary",
+    "subtotal_one": "Subtotal ({{count}} item)",
+    "subtotal_other": "Subtotal ({{count}} items)",
+    "total": "Total",
+    "checkout": "Checkout • {{amount}}"
+  },
+  "currency": "${{value}}",
+  "item": {
+    "variantLabel": "Variant: {{color}}",
+    "priceWas": "(was {{amount}})",
+    "promptPriceLabel": "{{label}} price:",
+    "promptDefaultLabel": "Prompt",
+    "subtotal": "Subtotal: {{amount}}",
+    "imageAlt": "{{name}} design preview",
+    "imageAltWithColor": "{{name}} - {{color}} design preview",
+    "remove": "Remove item"
+  },
+  "actions": {
+    "checkout": "Checkout",
+    "tryAgain": "Try Again"
+  }
+}

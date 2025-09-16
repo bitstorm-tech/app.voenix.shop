@@ -1,24 +1,27 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+import deCart from './locales/de/cart.json';
 import deVat from './locales/de/vat.json';
+import enCart from './locales/en/cart.json';
 import enVat from './locales/en/vat.json';
 
 export const defaultNS = 'vat';
 export const LANGUAGE_STORAGE_KEY = 'voenix.shop.language';
 export const resources = {
-  en: { vat: enVat },
-  de: { vat: deVat },
+  en: { vat: enVat, cart: enCart },
+  de: { vat: deVat, cart: deCart },
 } as const;
+export const namespaces = Object.freeze(Object.keys(resources.en)) as readonly (keyof typeof resources.en)[];
 
 const detectInitialLanguage = (): string => {
+  if (typeof window === 'undefined') {
+    return 'en';
+  }
+
   const storedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
   if (storedLanguage) {
     return storedLanguage;
-  }
-
-  if (typeof window === 'undefined') {
-    return 'en';
   }
 
   const browserLanguage = (window.navigator.languages && window.navigator.languages[0]) || window.navigator.language || 'en';
@@ -36,7 +39,7 @@ const initialLanguage = detectInitialLanguage();
 i18n.use(initReactI18next).init({
   resources,
   fallbackLng: 'en',
-  ns: [defaultNS],
+  ns: namespaces as string[],
   defaultNS,
   interpolation: { escapeValue: false },
   returnNull: false,

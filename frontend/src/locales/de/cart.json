@@ -1,0 +1,35 @@
+{
+  "title": "Warenkorb",
+  "error": {
+    "heading": "Fehler beim Laden des Warenkorbs",
+    "description": "Dein Warenkorb konnte nicht geladen werden"
+  },
+  "empty": {
+    "heading": "Dein Warenkorb ist leer",
+    "body": "Starte mit dem Design deiner eigenen Tasse",
+    "cta": "Tasse gestalten"
+  },
+  "continueShopping": "Weitere Tasse gestalten",
+  "summary": {
+    "heading": "Bestellübersicht",
+    "subtotal_one": "Zwischensumme ({{count}} Artikel)",
+    "subtotal_other": "Zwischensumme ({{count}} Artikel)",
+    "total": "Gesamt",
+    "checkout": "Zur Kasse • {{amount}}"
+  },
+  "currency": "{{value}} €",
+  "item": {
+    "variantLabel": "Variante: {{color}}",
+    "priceWas": "(vorher {{amount}})",
+    "promptPriceLabel": "{{label}} Preis:",
+    "promptDefaultLabel": "Prompt",
+    "subtotal": "Zwischensumme: {{amount}}",
+    "imageAlt": "{{name}} Designvorschau",
+    "imageAltWithColor": "{{name}} - {{color}} Designvorschau",
+    "remove": "Artikel entfernen"
+  },
+  "actions": {
+    "checkout": "Zur Kasse",
+    "tryAgain": "Erneut versuchen"
+  }
+}
