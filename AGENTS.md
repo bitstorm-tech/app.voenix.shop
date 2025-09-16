@@ -1,5 +1,7 @@
 # Repository Guidelines
 
+We prefer simple, lean solutions delivered quickly over overengineered complexity.
+
 ## Project Structure & Module Organization
 - `backend/`: Go services in `cmd/server`, `cmd/migrate`, with internal app logic under `internal/`. Temporary build artifacts in `bin/` and `tmp/`.
 - `frontend/`: Vite + React storefront; source under `src/`, build output under `dist/` for nginx.
