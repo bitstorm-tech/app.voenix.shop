@@ -1,0 +1,16 @@
+{
+  "page": {
+    "title": "Logistik",
+    "action": "Neue Logistik",
+    "empty": "Keine Logistikdienstleister gefunden. Logistikverwaltung folgt in Kürze..."
+  },
+  "table": {
+    "headers": {
+      "provider": "Anbieter",
+      "serviceType": "Servicetyp",
+      "regions": "Regionen",
+      "status": "Status",
+      "actions": "Aktionen"
+    }
+  }
+}

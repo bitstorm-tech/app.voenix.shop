@@ -4,6 +4,7 @@ import { initReactI18next } from 'react-i18next';
 import deAdminArticleCategories from './locales/de/admin-article-categories.json';
 import deAdminArticles from './locales/de/admin-articles.json';
 import deAdminCompletedOrders from './locales/de/admin-completed-orders.json';
+import deAdminLogistics from './locales/de/admin-logistics.json';
 import deCart from './locales/de/cart.json';
 import deCheckout from './locales/de/checkout.json';
 import deEditor from './locales/de/editor.json';
@@ -15,6 +16,7 @@ import deVat from './locales/de/vat.json';
 import enAdminArticleCategories from './locales/en/admin-article-categories.json';
 import enAdminArticles from './locales/en/admin-articles.json';
 import enAdminCompletedOrders from './locales/en/admin-completed-orders.json';
+import enAdminLogistics from './locales/en/admin-logistics.json';
 import enCart from './locales/en/cart.json';
 import enCheckout from './locales/en/checkout.json';
 import enEditor from './locales/en/editor.json';
@@ -39,6 +41,7 @@ export const resources = {
     adminArticleCategories: enAdminArticleCategories,
     adminArticles: enAdminArticles,
     adminCompletedOrders: enAdminCompletedOrders,
+    adminLogistics: enAdminLogistics,
   },
   de: {
     vat: deVat,
@@ -52,6 +55,7 @@ export const resources = {
     adminArticleCategories: deAdminArticleCategories,
     adminArticles: deAdminArticles,
     adminCompletedOrders: deAdminCompletedOrders,
+    adminLogistics: deAdminLogistics,
   },
 } as const;
 export const namespaces = Object.freeze(Object.keys(resources.en)) as readonly (keyof typeof resources.en)[];
