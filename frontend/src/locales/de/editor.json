@@ -1,0 +1,205 @@
+{
+  "meta": {
+    "title": "Editor - Voenix Shop"
+  },
+  "loading": {
+    "default": "Editor wird geladen...",
+    "session": " (Sitzung wird geprüft)"
+  },
+  "errors": {
+    "load": "Fehler beim Laden des Editors",
+    "loadWithMessage": "Fehler beim Laden des Editors: {{message}}",
+    "prompts": "Prompts konnten nicht geladen werden",
+    "mugs": "Tassen konnten nicht geladen werden. Bitte versuche es später erneut.",
+    "noMugs": "Derzeit sind keine Tassen verfügbar.",
+    "imageMissing": "Bitte wähle ein generiertes Bild aus, bevor du es in den Warenkorb legst",
+    "imageInfoMissing": "Informationen zum generierten Bild fehlen. Bitte generiere das Bild erneut.",
+    "mugMissing": "Bitte wähle eine Tasse aus, bevor du fortfährst",
+    "variantMissing": "Bitte wähle eine Tassenvariante aus, bevor du fortfährst",
+    "addToCart": "Artikel konnte nicht in den Warenkorb gelegt werden. Bitte versuche es erneut.",
+    "generationRetry": "Bitte gehe zurück und versuche es mit einem anderen Bild oder Prompt erneut.",
+    "registration": "Registrierung fehlgeschlagen. Du kannst trotzdem als Gast fortfahren.",
+    "unexpected": "Ein unerwarteter Fehler ist aufgetreten",
+    "rateLimitAuthenticated": "Du hast dein Limit für Bildgenerierungen erreicht. Bitte versuche es später erneut.",
+    "rateLimitGuest": "Du hast das Limit für Bildgenerierungen erreicht. Bitte versuche es in einer Stunde erneut.",
+    "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte aktualisiere die Seite und versuche es erneut."
+  },
+  "hero": {
+    "title": "Gestalte deine individuelle Tasse",
+    "subtitle": "Folge den Schritten, um dein persönliches Design zu erstellen"
+  },
+  "currency": "{{value}} €",
+  "navigation": {
+    "back": "Zurück",
+    "next": "Weiter",
+    "processing": "Wird verarbeitet...",
+    "adding": "Wird in den Warenkorb gelegt...",
+    "addToCart": "In den Warenkorb",
+    "signIn": "Anmelden, um in den Warenkorb zu legen"
+  },
+  "categoryFilter": {
+    "all": "Alle Stile"
+  },
+  "steps": {
+    "labels": {
+      "imageUpload": "Bild hochladen & zuschneiden",
+      "promptSelection": "Stil auswählen",
+      "mugSelection": "Tasse wählen",
+      "userData": "Persönliche Angaben",
+      "imageGeneration": "Magie erzeugen",
+      "preview": "Produktvorschau"
+    },
+    "imageUpload": {
+      "drop": {
+        "title": "Zum Hochladen klicken oder Datei hier ablegen",
+        "subtitle": "PNG, JPG, GIF, WEBP bis 4 MB",
+        "helper": "Lade ein Bild hoch, um mit deinem individuellen Design zu starten"
+      },
+      "uploaded": {
+        "title": "Dein zugeschnittenes Bild",
+        "remove": "Bild entfernen",
+        "ready": "Dein Bild ist bereit! Du kannst zum nächsten Schritt wechseln oder ein anderes Bild hochladen.",
+        "alt": "Zugeschnittene Vorschau"
+      },
+      "toasts": {
+        "invalidType": "Bitte lade eine Bilddatei hoch",
+        "invalidSize": "Die Datei überschreitet die maximal zulässige Größe von 4 MB",
+        "process": "Bild konnte nicht verarbeitet werden"
+      },
+      "cropper": {
+        "title": "Bild zuschneiden",
+        "description": "Wähle den Bereich aus, der für dein Tassendesign verwendet werden soll",
+        "dialog": {
+          "title": "Bild zuschneiden",
+          "description": "Wähle den gewünschten Bildausschnitt",
+          "buttons": {
+            "cancel": "Abbrechen",
+            "confirm": "Zuschnitt übernehmen",
+            "processing": "Wird verarbeitet..."
+          },
+          "toasts": {
+            "noArea": "Bitte wähle einen Bildausschnitt aus",
+            "fail": "Bildzuschnitt konnte nicht erstellt werden"
+          }
+        }
+      }
+    },
+    "promptSelection": {
+      "title": "Wähle deinen Stil",
+      "subtitle": "Wähle einen Stil, der dein Bild in etwas Magisches verwandelt",
+      "noPreview": "Keine Vorschau verfügbar",
+      "empty": "Keine Stile in dieser Kategorie gefunden",
+      "price": "{{amount}}",
+      "promptAlt": "Beispiel für {{title}}"
+    },
+    "mugSelection": {
+      "title": "Wähle deine Tasse",
+      "subtitle": "Wähle die perfekte Tasse, um dein Design zu präsentieren",
+      "dishwasherSafe": "✓ Spülmaschinenfest",
+      "handWash": "Nur Handwäsche",
+      "colors": "Farboptionen:",
+      "selectColor": "Farbe {{color}} auswählen",
+      "price": "{{amount}}"
+    },
+    "userData": {
+      "title": "Persönliche Angaben",
+      "loggedIn": "Du bist bereits angemeldet!",
+      "loggedInDescription": "Wir verwenden deine Kontoinformationen für diese Bestellung.",
+      "loggedInEmail": "E-Mail: {{email}}",
+      "cta": {
+        "continue": "Weiter zur Bildgenerierung",
+        "useDifferent": "Andere Angaben für diese Bestellung verwenden",
+        "useAccount": "Doch meine Kontoinformationen nutzen"
+      },
+      "info": {
+        "heading": "Deine Kontoinformationen werden verwendet, um:",
+        "items": [
+          "dein individuelles Design zu speichern",
+          "dich über Bestellstatus zu informieren",
+          "deine Bestellhistorie nachzuverfolgen"
+        ],
+        "whyHeading": "Warum wir diese Angaben benötigen:",
+        "whyItems": [
+          "damit wir dein personalisiertes Design speichern können",
+          "um dich über den Fortschritt deiner Bestellung zu informieren",
+          "um dich zu kontaktieren, falls es Fragen zu deinem Design gibt"
+        ]
+      },
+      "form": {
+        "defaultDescription": "Wir benötigen einige Angaben, um dein Produkt zu personalisieren",
+        "alternateDescription": "Gib andere Informationen für diese Bestellung ein",
+        "guestSecure": "Deine Daten sind sicher und werden nur zur Bearbeitung deiner personalisierten Tasse verwendet.",
+        "alternateNotice": "Diese Informationen gelten nur für diese Bestellung. Deine Kontodaten bleiben unverändert."
+      },
+      "fields": {
+        "email": {
+          "label": "E-Mail-Adresse",
+          "placeholder": "deine.mail@example.com"
+        },
+        "firstName": {
+          "label": "Vorname",
+          "placeholder": "Max"
+        },
+        "lastName": {
+          "label": "Nachname",
+          "placeholder": "Mustermann"
+        },
+        "phone": {
+          "label": "Telefonnummer",
+          "placeholder": "+49 170 1234567"
+        }
+      },
+      "errors": {
+        "emailRequired": "E-Mail-Adresse ist erforderlich",
+        "emailInvalid": "Bitte gib eine gültige E-Mail-Adresse ein",
+        "phoneInvalid": "Bitte gib eine gültige Telefonnummer ein"
+      }
+    },
+    "imageGeneration": {
+      "loadingTitle": "Deine magischen Designs werden erstellt (das kann bis zu 30 Sekunden dauern)",
+      "loadingHint": "{{message}}",
+      "messages": [
+        "Bringe die Pixel in perfekte Formation...",
+        "Besteche die KI mit virtuellen Keksen für bessere Ergebnisse...",
+        "Überzeuge das neuronale Netz, dass dies sein Meisterwerk ist...",
+        "Streue digitalen Feenstaub über dein Bild...",
+        "Führe ein ernstes Gespräch mit dem Algorithmus...",
+        "Mische künstlerisches Genie mit einer Prise Chaos...",
+        "Bitte die KI ganz höflich um etwas Besonderes...",
+        "Hole die Geister berühmter Künstler hinzu (sie stehen auf Kurzwahl)...",
+        "Führe uralte Rituale durch, um Kreativität zu beschwören...",
+        "Flüstere den Machine-Learning-Modellen süße Worte zu..."
+      ],
+      "title": "Wähle dein Lieblingsdesign",
+      "subtitle": "Wähle die Variante, die deine Idee am besten trifft",
+      "selected": "Tolle Wahl! Klicke auf Weiter, um die Vorschau auf deiner Tasse zu sehen."
+    },
+    "preview": {
+      "title": "Perfektioniere dein Design",
+      "subtitle": "Positioniere und skaliere dein Design links und sieh die Live-Vorschau rechts",
+      "cropper": {
+        "title": "Design positionieren und skalieren",
+        "description": "Ziehe, um dein Bild zu verschieben, und nutze den Regler zum Zoomen",
+        "mugInfo": "Der Zuschnitt entspricht der bedruckbaren Fläche deiner {{name}} ({{width}} mm × {{height}} mm)",
+        "alt": "Zuschnitt-Vorschau"
+      },
+      "summary": {
+        "title": "Bestellübersicht",
+        "product": "Produkt:",
+        "capacity": "Fassungsvermögen:",
+        "special": "Besonderheit:",
+        "customer": "Kunde/Kundin:",
+        "total": "Gesamt:",
+        "saved": "Dein Design wurde gespeichert und steht in deinem Konto zur Verfügung"
+      },
+      "missing": {
+        "title": "Es fehlen Angaben. Bitte schließe alle vorherigen Schritte ab.",
+        "mug": "Tasse nicht ausgewählt.",
+        "image": "Generiertes Bild nicht ausgewählt."
+      }
+    }
+  },
+  "imageVariant": {
+    "alt": "Variante {{index}}"
+  }
+}

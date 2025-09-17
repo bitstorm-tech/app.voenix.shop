@@ -2,13 +2,13 @@ export const WIZARD_STEPS = ['image-upload', 'prompt-selection', 'mug-selection'
 
 export type WizardStep = (typeof WIZARD_STEPS)[number];
 
-export const STEP_LABELS: Record<WizardStep, string> = {
-  'image-upload': 'Upload & Crop Image',
-  'prompt-selection': 'Select Style',
-  'mug-selection': 'Choose Mug',
-  'user-data': 'Personal Information',
-  'image-generation': 'Generate Magic',
-  preview: 'Preview Product',
+export const STEP_LABEL_KEYS: Record<WizardStep, string> = {
+  'image-upload': 'steps.labels.imageUpload',
+  'prompt-selection': 'steps.labels.promptSelection',
+  'mug-selection': 'steps.labels.mugSelection',
+  'user-data': 'steps.labels.userData',
+  'image-generation': 'steps.labels.imageGeneration',
+  preview: 'steps.labels.preview',
 } as const;
 
 export const STEP_INDEX: Record<WizardStep, number> = {

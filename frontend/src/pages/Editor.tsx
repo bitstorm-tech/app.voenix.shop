@@ -12,6 +12,7 @@ import { useAuthWizardSync } from '@/hooks/useAuthWizardSync';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function Editor() {
   const currentStep = useWizardStore((state) => state.currentStep);
@@ -20,12 +21,13 @@ export default function Editor() {
   const hasPreservedState = useWizardStore((state) => state.hasPreservedState);
   const setPreloadedImage = useWizardStore((state) => state.setPreloadedImage);
   const { isLoading: sessionLoading } = useAuthWizardSync();
+  const { t } = useTranslation('editor');
 
   const [searchParams] = useSearchParams();
   const imageFilename = searchParams.get('image');
 
   useEffect(() => {
-    document.title = 'Editor - Voenix Shop';
+    document.title = t('meta.title');
 
     // Check for preserved state on mount
     if (hasPreservedState()) {
@@ -38,24 +40,28 @@ export default function Editor() {
       const imageUrl = `/api/user/images/${imageFilename}`;
       setPreloadedImage(imageUrl, imageFilename);
     }
-  }, [hasPreservedState, restoreState, imageFilename, setPreloadedImage]);
+  }, [hasPreservedState, restoreState, imageFilename, setPreloadedImage, t]);
 
   if (promptsLoading || sessionLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
-          <p className="mt-2 text-sm text-gray-600">Loading editor{sessionLoading && !promptsLoading ? ' (checking session)' : ''}...</p>
+          <p className="mt-2 text-sm text-gray-600">
+            {t('loading.default')}
+            {sessionLoading && !promptsLoading ? t('loading.session') : ''}
+          </p>
         </div>
       </div>
     );
   }
 
   if (promptsError) {
+    const errorMessage = promptsError.message || t('errors.prompts');
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600">Error loading editor: {promptsError.message || 'Failed to load prompts'}</p>
+          <p className="text-red-600">{t('errors.loadWithMessage', { message: errorMessage })}</p>
         </div>
       </div>
     );
@@ -67,8 +73,8 @@ export default function Editor() {
 
       <div className="mx-auto max-w-5xl px-4 pt-8 pb-24 sm:pb-8">
         <div className="mb-8">
-          <h1 className="mb-2 text-center text-3xl font-bold">Create Your Custom Mug</h1>
-          <p className="text-center text-gray-600">Follow the steps below to design your personalized mug</p>
+          <h1 className="mb-2 text-center text-3xl font-bold">{t('hero.title')}</h1>
+          <p className="text-center text-gray-600">{t('hero.subtitle')}</p>
         </div>
 
         <div className="mb-8">

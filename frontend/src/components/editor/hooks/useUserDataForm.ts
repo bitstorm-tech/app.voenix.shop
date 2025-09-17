@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { UserData } from '../types';
 
 interface UseUserDataFormReturn {
@@ -17,6 +18,7 @@ const initialFormData: UserData = {
 };
 
 export function useUserDataForm(initialData?: UserData | null): UseUserDataFormReturn {
+  const { t } = useTranslation('editor');
   const [formData, setFormData] = useState<UserData>(initialData || initialFormData);
   const [errors, setErrors] = useState<Partial<Record<keyof UserData, string>>>({});
 
@@ -36,13 +38,13 @@ export function useUserDataForm(initialData?: UserData | null): UseUserDataFormR
     const newErrors: Partial<Record<keyof UserData, string>> = {};
 
     if (!formData.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('steps.userData.errors.emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
+      newErrors.email = t('steps.userData.errors.emailInvalid');
     }
 
     if (formData.phoneNumber && !/^[\d\s\-+()]+$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = 'Please enter a valid phone number';
+      newErrors.phoneNumber = t('steps.userData.errors.phoneInvalid');
     }
 
     setErrors(newErrors);

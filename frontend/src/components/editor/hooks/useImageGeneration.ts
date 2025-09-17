@@ -2,6 +2,7 @@ import { CropData } from '@/components/editor/types';
 import { publicApi, userApi } from '@/lib/api';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type Provider = 'OPENAI' | 'GOOGLE' | 'FLUX';
 
@@ -20,6 +21,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isAuthenticated = useWizardStore((state) => state.isAuthenticated);
+  const { t } = useTranslation('editor');
 
   const generateImages = async (
     file: File,
@@ -42,7 +44,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
         ids: response.generatedImageIds,
       };
     } catch (err: unknown) {
-      let errorMessage = 'An unexpected error occurred';
+      let errorMessage = t('errors.unexpected');
 
       // Type guard for error objects with status property
       const isErrorWithStatus = (error: unknown): error is { status: number } => {
@@ -51,11 +53,9 @@ export function useImageGeneration(): UseImageGenerationReturn {
 
       // Handle rate limiting error specifically
       if (isErrorWithStatus(err) && err.status === 429) {
-        errorMessage = isAuthenticated
-          ? "You've reached your image generation limit. Please try again later."
-          : "You've reached the limit for image generation. Please try again in an hour.";
+        errorMessage = isAuthenticated ? t('errors.rateLimitAuthenticated') : t('errors.rateLimitGuest');
       } else if (isErrorWithStatus(err) && err.status === 401) {
-        errorMessage = 'Your session has expired. Please refresh the page and try again.';
+        errorMessage = t('errors.sessionExpired');
       } else if (err instanceof Error) {
         errorMessage = err.message;
       }

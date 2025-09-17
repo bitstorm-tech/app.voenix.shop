@@ -3,8 +3,10 @@ import { useMugs } from '@/hooks/useMugs';
 import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Check, Loader2, Star } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export default function MugSelectionStep() {
+  const { t } = useTranslation('editor');
   const selectedMug = useWizardStore((state) => state.selectedMug);
   const selectedVariant = useWizardStore((state) => state.selectedVariant);
   const selectMug = useWizardStore((state) => state.selectMug);
@@ -21,7 +23,7 @@ export default function MugSelectionStep() {
   if (error) {
     return (
       <div className="rounded-lg bg-red-50 p-4 text-center">
-        <p className="text-sm text-red-600">Failed to load mugs. Please try again later.</p>
+        <p className="text-sm text-red-600">{t('errors.mugs')}</p>
       </div>
     );
   }
@@ -29,16 +31,18 @@ export default function MugSelectionStep() {
   if (mugs.length === 0) {
     return (
       <div className="rounded-lg bg-gray-50 p-4 text-center">
-        <p className="text-sm text-gray-600">No mugs available at the moment.</p>
+        <p className="text-sm text-gray-600">{t('errors.noMugs')}</p>
       </div>
     );
   }
 
+  const formatPrice = (price: number) => t('currency', { value: price.toFixed(2) });
+
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="mb-2 text-lg font-semibold">Choose Your Mug</h3>
-        <p className="text-sm text-gray-600">Select the perfect mug to showcase your personalized design</p>
+        <h3 className="mb-2 text-lg font-semibold">{t('steps.mugSelection.title')}</h3>
+        <p className="text-sm text-gray-600">{t('steps.mugSelection.subtitle')}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -104,7 +108,7 @@ export default function MugSelectionStep() {
                         mug.dishwasher_safe ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-600',
                       )}
                     >
-                      {mug.dishwasher_safe ? '✓ Dishwasher Safe' : 'Hand Wash Only'}
+                      {mug.dishwasher_safe ? t('steps.mugSelection.dishwasherSafe') : t('steps.mugSelection.handWash')}
                     </span>
                   )}
                 </div>
@@ -112,7 +116,7 @@ export default function MugSelectionStep() {
                 {/* Variant color swatches - show for all mugs with variants */}
                 {mug.variants && mug.variants.length >= 1 && (
                   <div className="mb-3">
-                    <p className="mb-1.5 text-xs font-medium text-gray-700">Color Options:</p>
+                    <p className="mb-1.5 text-xs font-medium text-gray-700">{t('steps.mugSelection.colors')}</p>
                     <div className="flex flex-wrap gap-2">
                       {mug.variants.map((variant: MugVariant) => {
                         const isVariantSelected = isSelected && selectedVariant?.id === variant.id;
@@ -137,7 +141,7 @@ export default function MugSelectionStep() {
                             style={{
                               backgroundColor: variant.colorCode.startsWith('#') ? variant.colorCode : `#${variant.colorCode}`,
                             }}
-                            aria-label={`Select ${variant.name} color`}
+                            aria-label={t('steps.mugSelection.selectColor', { color: variant.name })}
                             title={variant.name}
                           >
                             {(isVariantSelected || showAsDefault) && (
@@ -152,7 +156,7 @@ export default function MugSelectionStep() {
                   </div>
                 )}
 
-                <p className="text-primary text-lg font-semibold">${mug.price.toFixed(2)}</p>
+                <p className="text-primary text-lg font-semibold">{formatPrice(mug.price)}</p>
               </div>
             </div>
           );

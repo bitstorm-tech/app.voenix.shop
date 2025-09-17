@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ImageVariantSelectorProps {
   variants: string[];
@@ -8,6 +9,7 @@ interface ImageVariantSelectorProps {
 }
 
 export default function ImageVariantSelector({ variants, selectedVariant, onVariantSelect }: ImageVariantSelectorProps) {
+  const { t } = useTranslation('editor');
   return (
     <div className="grid grid-cols-2 gap-4">
       {variants.map((variant, index) => {
@@ -34,7 +36,7 @@ export default function ImageVariantSelector({ variants, selectedVariant, onVari
               <div className="flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-xs font-bold text-white">{index + 1}</div>
             </div>
 
-            <img src={variant} alt={`Variant ${index + 1}`} className="h-full w-full object-cover" />
+            <img src={variant} alt={t('imageVariant.alt', { index: index + 1 })} className="h-full w-full object-cover" />
           </div>
         );
       })}

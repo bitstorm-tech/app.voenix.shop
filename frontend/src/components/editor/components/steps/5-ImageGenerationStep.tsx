@@ -1,24 +1,13 @@
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Loader2, Sparkles } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useImageGeneration } from '../../hooks/useImageGeneration';
 import ImageVariantSelector from '../shared/ImageVariantSelector';
-
-const funnyMessages = [
-  'Teaching pixels to dance in perfect formation...',
-  'Bribing the AI with virtual cookies for better results...',
-  'Convincing the neural network this is its masterpiece...',
-  'Sprinkling digital fairy dust on your image...',
-  'Having a serious conversation with the algorithm...',
-  'Mixing artistic genius with a pinch of chaos...',
-  'Asking the AI nicely to make it extra special...',
-  "Channeling the spirit of famous artists (they're on speed dial)...",
-  'Performing ancient rituals to summon creativity...',
-  'Whispering sweet nothings to the machine learning models...',
-];
+import { useTranslation } from 'react-i18next';
 
 export default function ImageGenerationStep() {
+  const { t } = useTranslation('editor');
   const uploadedImage = useWizardStore((state) => state.uploadedImage);
   const selectedPrompt = useWizardStore((state) => state.selectedPrompt);
   const generatedImages = useWizardStore((state) => state.generatedImages);
@@ -30,16 +19,21 @@ export default function ImageGenerationStep() {
   const { isGenerating, error, generateImages } = useImageGeneration();
   const hasStartedGeneration = useRef(false);
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const funnyMessages = useMemo(() => (t('steps.imageGeneration.messages', { returnObjects: true }) as string[]) ?? [], [t]);
 
   useEffect(() => {
-    if (isGenerating) {
+    if (isGenerating && funnyMessages.length > 0) {
       const interval = setInterval(() => {
         setCurrentMessageIndex((prevIndex) => (prevIndex + 1) % funnyMessages.length);
       }, 5000);
 
       return () => clearInterval(interval);
     }
-  }, [isGenerating]);
+  }, [isGenerating, funnyMessages.length]);
+
+  useEffect(() => {
+    setCurrentMessageIndex(0);
+  }, [funnyMessages.length]);
 
   useEffect(() => {
     if (!generatedImages && uploadedImage && selectedPrompt?.id && !hasStartedGeneration.current) {
@@ -68,8 +62,12 @@ export default function ImageGenerationStep() {
           <Loader2 className="text-primary h-16 w-16 animate-spin" />
           <Sparkles className="absolute inset-0 h-16 w-16 animate-pulse text-yellow-500" />
         </div>
-        <h3 className="mt-6 text-lg font-semibold">Creating Your Magic Designs (this can take up to 30 seconds)</h3>
-        <p className="mt-2 animate-pulse text-gray-600">{funnyMessages[currentMessageIndex]}</p>
+        <h3 className="mt-6 text-lg font-semibold">{t('steps.imageGeneration.loadingTitle')}</h3>
+        {funnyMessages.length > 0 && (
+          <p className="mt-2 animate-pulse text-gray-600">
+            {t('steps.imageGeneration.loadingHint', { message: funnyMessages[currentMessageIndex] })}
+          </p>
+        )}
       </div>
     );
   }
@@ -80,7 +78,7 @@ export default function ImageGenerationStep() {
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-        <p className="text-sm text-gray-600">Please go back and try again with a different image or prompt.</p>
+        <p className="text-sm text-gray-600">{t('errors.generationRetry')}</p>
       </div>
     );
   }
@@ -92,8 +90,8 @@ export default function ImageGenerationStep() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="mb-2 text-lg font-semibold">Choose Your Favorite Design</h3>
-        <p className="text-sm text-gray-600">Select the design that best captures your vision from these AI-generated variations</p>
+        <h3 className="mb-2 text-lg font-semibold">{t('steps.imageGeneration.title')}</h3>
+        <p className="text-sm text-gray-600">{t('steps.imageGeneration.subtitle')}</p>
       </div>
 
       <ImageVariantSelector
@@ -110,7 +108,7 @@ export default function ImageGenerationStep() {
 
       {selectedGeneratedImage && (
         <div className="rounded-lg bg-green-50 p-4">
-          <p className="text-sm font-medium text-green-800">Great choice! Click Next to see how it looks on your selected mug.</p>
+          <p className="text-sm font-medium text-green-800">{t('steps.imageGeneration.selected')}</p>
         </div>
       )}
     </div>

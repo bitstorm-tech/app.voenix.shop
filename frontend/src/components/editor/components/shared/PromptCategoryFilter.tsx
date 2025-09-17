@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
+import { useTranslation } from 'react-i18next';
 
 interface PromptCategoryFilterProps {
   categories: string[];
@@ -8,6 +9,7 @@ interface PromptCategoryFilterProps {
 }
 
 export default function PromptCategoryFilter({ categories, selectedCategory, onCategoryChange }: PromptCategoryFilterProps) {
+  const { t } = useTranslation('editor');
   return (
     <div className="flex flex-wrap gap-2">
       {categories.map((category) => (
@@ -18,7 +20,7 @@ export default function PromptCategoryFilter({ categories, selectedCategory, onC
           onClick={() => onCategoryChange(category)}
           className={cn('capitalize transition-all', selectedCategory === category && 'shadow-md')}
         >
-          {category === 'all' ? 'All Styles' : category}
+          {category === 'all' ? t('categoryFilter.all') : category}
         </Button>
       ))}
     </div>

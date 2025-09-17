@@ -1,0 +1,205 @@
+{
+  "meta": {
+    "title": "Editor - Voenix Shop"
+  },
+  "loading": {
+    "default": "Loading editor...",
+    "session": " (checking session)"
+  },
+  "errors": {
+    "load": "Error loading editor",
+    "loadWithMessage": "Error loading editor: {{message}}",
+    "prompts": "Failed to load prompts",
+    "mugs": "Failed to load mugs. Please try again later.",
+    "noMugs": "No mugs available at the moment.",
+    "imageMissing": "Please select a generated image before adding to cart",
+    "imageInfoMissing": "Generated image information is missing. Please try generating the image again.",
+    "mugMissing": "Please select a mug before adding to cart",
+    "variantMissing": "Please select a mug variant before adding to cart",
+    "addToCart": "Failed to add item to cart. Please try again.",
+    "generationRetry": "Please go back and try again with a different image or prompt.",
+    "registration": "Registration failed. You can still continue as a guest.",
+    "unexpected": "An unexpected error occurred",
+    "rateLimitAuthenticated": "You've reached your image generation limit. Please try again later.",
+    "rateLimitGuest": "You've reached the limit for image generation. Please try again in an hour.",
+    "sessionExpired": "Your session has expired. Please refresh the page and try again."
+  },
+  "hero": {
+    "title": "Create Your Custom Mug",
+    "subtitle": "Follow the steps below to design your personalized mug"
+  },
+  "currency": "${{value}}",
+  "navigation": {
+    "back": "Back",
+    "next": "Next",
+    "processing": "Processing...",
+    "adding": "Adding to Cart...",
+    "addToCart": "Add to Cart",
+    "signIn": "Sign in to Add to Cart"
+  },
+  "categoryFilter": {
+    "all": "All Styles"
+  },
+  "steps": {
+    "labels": {
+      "imageUpload": "Upload & Crop Image",
+      "promptSelection": "Select Style",
+      "mugSelection": "Choose Mug",
+      "userData": "Personal Information",
+      "imageGeneration": "Generate Magic",
+      "preview": "Preview Product"
+    },
+    "imageUpload": {
+      "drop": {
+        "title": "Click to upload or drag and drop",
+        "subtitle": "PNG, JPG, GIF, WEBP up to 4MB",
+        "helper": "Upload an image to get started with your personalized mug design"
+      },
+      "uploaded": {
+        "title": "Your Cropped Image",
+        "remove": "Remove Image",
+        "ready": "Your image is ready! You can continue to the next step or upload a different image.",
+        "alt": "Cropped preview"
+      },
+      "toasts": {
+        "invalidType": "Please upload an image file",
+        "invalidSize": "File size exceeds maximum allowed size of 4MB",
+        "process": "Failed to process image"
+      },
+      "cropper": {
+        "title": "Crop your image",
+        "description": "Select the area you want to use for your mug design",
+        "dialog": {
+          "title": "Crop Image",
+          "description": "Select the area you want to use",
+          "buttons": {
+            "cancel": "Cancel",
+            "confirm": "Confirm Crop",
+            "processing": "Processing..."
+          },
+          "toasts": {
+            "noArea": "Please select a crop area",
+            "fail": "Failed to create cropped image"
+          }
+        }
+      }
+    },
+    "promptSelection": {
+      "title": "Choose Your Style",
+      "subtitle": "Select a style that will transform your image into something magical",
+      "noPreview": "No preview available",
+      "empty": "No styles found in this category",
+      "price": "{{amount}}",
+      "promptAlt": "{{title}} example"
+    },
+    "mugSelection": {
+      "title": "Choose Your Mug",
+      "subtitle": "Select the perfect mug to showcase your personalized design",
+      "dishwasherSafe": "✓ Dishwasher Safe",
+      "handWash": "Hand Wash Only",
+      "colors": "Color Options:",
+      "selectColor": "Select {{color}} color",
+      "price": "{{amount}}"
+    },
+    "userData": {
+      "title": "Personal Information",
+      "loggedIn": "You're already logged in!",
+      "loggedInDescription": "We'll use your account information for this order.",
+      "loggedInEmail": "Email: {{email}}",
+      "cta": {
+        "continue": "Continue to Image Generation",
+        "useDifferent": "Use Different Information for This Order",
+        "useAccount": "Use My Account Information Instead"
+      },
+      "info": {
+        "heading": "Your account information will be used to:",
+        "items": [
+          "Save your personalized design",
+          "Send you order updates",
+          "Track your order history"
+        ],
+        "whyHeading": "Why we need this information:",
+        "whyItems": [
+          "To save your personalized design",
+          "To send you order updates",
+          "To contact you if there are any issues with your design"
+        ]
+      },
+      "form": {
+        "defaultDescription": "We need some basic information to personalize your product",
+        "alternateDescription": "Enter different information for this order",
+        "guestSecure": "Your information is secure and will only be used to process your personalized mug order.",
+        "alternateNotice": "This information will only be used for this order. Your account information remains unchanged."
+      },
+      "fields": {
+        "email": {
+          "label": "Email Address",
+          "placeholder": "your.email@example.com"
+        },
+        "firstName": {
+          "label": "First Name",
+          "placeholder": "John"
+        },
+        "lastName": {
+          "label": "Last Name",
+          "placeholder": "Doe"
+        },
+        "phone": {
+          "label": "Phone Number",
+          "placeholder": "+1 (555) 123-4567"
+        }
+      },
+      "errors": {
+        "emailRequired": "Email is required",
+        "emailInvalid": "Please enter a valid email address",
+        "phoneInvalid": "Please enter a valid phone number"
+      }
+    },
+    "imageGeneration": {
+      "loadingTitle": "Creating Your Magic Designs (this can take up to 30 seconds)",
+      "loadingHint": "{{message}}",
+      "messages": [
+        "Teaching pixels to dance in perfect formation...",
+        "Bribing the AI with virtual cookies for better results...",
+        "Convincing the neural network this is its masterpiece...",
+        "Sprinkling digital fairy dust on your image...",
+        "Having a serious conversation with the algorithm...",
+        "Mixing artistic genius with a pinch of chaos...",
+        "Asking the AI nicely to make it extra special...",
+        "Channeling the spirit of famous artists (they're on speed dial)...",
+        "Performing ancient rituals to summon creativity...",
+        "Whispering sweet nothings to the machine learning models..."
+      ],
+      "title": "Choose Your Favorite Design",
+      "subtitle": "Select the design that best captures your vision from these AI-generated variations",
+      "selected": "Great choice! Click Next to see how it looks on your selected mug."
+    },
+    "preview": {
+      "title": "Perfect Your Design",
+      "subtitle": "Position and scale your design on the left, and see the live preview on the right",
+      "cropper": {
+        "title": "Position and scale your design",
+        "description": "Drag to move your image and use the slider to zoom in or out",
+        "mugInfo": "The crop area matches your {{name}}'s printable area ({{width}}mm × {{height}}mm)",
+        "alt": "Crop preview"
+      },
+      "summary": {
+        "title": "Order Summary",
+        "product": "Product:",
+        "capacity": "Capacity:",
+        "special": "Special Feature:",
+        "customer": "Customer:",
+        "total": "Total:",
+        "saved": "Your design has been saved and will be available in your account"
+      },
+      "missing": {
+        "title": "Missing required data. Please complete all previous steps.",
+        "mug": "Mug not selected.",
+        "image": "Generated image not selected."
+      }
+    }
+  },
+  "imageVariant": {
+    "alt": "Variant {{index}}"
+  }
+}

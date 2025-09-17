@@ -6,8 +6,10 @@ import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Upload, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export default function ImageUploadStep() {
+  const { t } = useTranslation('editor');
   const uploadImage = useWizardStore((state) => state.uploadImage);
   const cropImage = useWizardStore((state) => state.cropImage);
   const removeImage = useWizardStore((state) => state.removeImage);
@@ -20,12 +22,12 @@ export default function ImageUploadStep() {
 
   const handleFileUpload = (file: File) => {
     if (!isValidImageFile(file)) {
-      toast.error('Please upload an image file');
+      toast.error(t('steps.imageUpload.toasts.invalidType'));
       return;
     }
 
     if (!isValidImageSize(file, 4)) {
-      toast.error('File size exceeds maximum allowed size of 4MB');
+      toast.error(t('steps.imageUpload.toasts.invalidSize'));
       return;
     }
 
@@ -92,7 +94,7 @@ export default function ImageUploadStep() {
         setImageFile(null);
       } catch (error) {
         console.error('Failed to process cropped image:', error);
-        toast.error('Failed to process image');
+        toast.error(t('steps.imageUpload.toasts.process'));
       }
     }
   };
@@ -119,8 +121,8 @@ export default function ImageUploadStep() {
           onOpenChange={(open) => !open && handleCropCancel()}
           srcImage={originalImageUrl}
           onConfirm={handleCropConfirm}
-          title="Crop your image"
-          description="Select the area you want to use for your mug design"
+          title={t('steps.imageUpload.cropper.title')}
+          description={t('steps.imageUpload.cropper.description')}
         />
       )}
 
@@ -136,29 +138,29 @@ export default function ImageUploadStep() {
             onClick={() => fileInputRef.current?.click()}
           >
             <Upload className="mb-4 h-12 w-12 text-gray-400" />
-            <p className="mb-2 text-sm font-medium text-gray-700">Click to upload or drag and drop</p>
-            <p className="text-xs text-gray-500">PNG, JPG, GIF, WEBP up to 4MB</p>
+            <p className="mb-2 text-sm font-medium text-gray-700">{t('steps.imageUpload.drop.title')}</p>
+            <p className="text-xs text-gray-500">{t('steps.imageUpload.drop.subtitle')}</p>
 
             <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
           </div>
 
-          <p className="text-center text-sm text-gray-600">Upload an image to get started with your personalized mug design</p>
+          <p className="text-center text-sm text-gray-600">{t('steps.imageUpload.drop.helper')}</p>
         </div>
       ) : (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">Your Cropped Image</h3>
+            <h3 className="text-lg font-semibold">{t('steps.imageUpload.uploaded.title')}</h3>
             <Button variant="ghost" size="sm" onClick={handleRemoveImage} className="text-red-600 hover:text-red-700">
               <X className="mr-2 h-4 w-4" />
-              Remove Image
+              {t('steps.imageUpload.uploaded.remove')}
             </Button>
           </div>
 
           <div className="flex justify-center">
-            <img src={uploadedImageUrl} alt="Cropped preview" className="h-auto max-h-96 w-auto max-w-full rounded border" />
+            <img src={uploadedImageUrl} alt={t('steps.imageUpload.uploaded.alt')} className="h-auto max-h-96 w-auto max-w-full rounded border" />
           </div>
 
-          <p className="text-center text-sm text-gray-600">Your image is ready! You can continue to the next step or upload a different image.</p>
+          <p className="text-center text-sm text-gray-600">{t('steps.imageUpload.uploaded.ready')}</p>
         </div>
       )}
     </>

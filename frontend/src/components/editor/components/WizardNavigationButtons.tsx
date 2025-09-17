@@ -5,10 +5,12 @@ import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { ArrowLeft, ArrowRight, Loader2, LogIn, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function WizardNavigationButtons() {
   const navigate = useNavigate();
   const { data: session } = useSession();
+  const { t } = useTranslation('editor');
   const currentStep = useWizardStore((state) => state.currentStep);
   const canGoNext = useWizardStore((state) => state.canGoNext);
   const canGoPrevious = useWizardStore((state) => state.canGoPrevious);
@@ -41,19 +43,19 @@ export default function WizardNavigationButtons() {
 
       try {
         if (!selectedGeneratedImage) {
-          throw new Error('Please select a generated image before adding to cart');
+          throw new Error(t('errors.imageMissing'));
         }
 
         if (!selectedGeneratedImageInfo?.generatedImageId) {
-          throw new Error('Generated image information is missing. Please try generating the image again.');
+          throw new Error(t('errors.imageInfoMissing'));
         }
 
         if (!selectedMug) {
-          throw new Error('Please select a mug before adding to cart');
+          throw new Error(t('errors.mugMissing'));
         }
 
         if (!selectedVariant) {
-          throw new Error('Please select a mug variant before adding to cart');
+          throw new Error(t('errors.variantMissing'));
         }
 
         // Determine which crop data to use
@@ -78,7 +80,7 @@ export default function WizardNavigationButtons() {
       } catch (error) {
         console.error('Error adding to cart:', error);
 
-        let errorMessage = 'Failed to add item to cart. Please try again.';
+        let errorMessage = t('errors.addToCart');
         if (error instanceof Error) {
           errorMessage = error.message;
         }
@@ -94,34 +96,47 @@ export default function WizardNavigationButtons() {
 
   return (
     <div className="flex items-center justify-between">
-      <Button variant="outline" onClick={goPrevious} disabled={!canGoPrevious || isProcessing} size="default" className="sm:h-12 sm:px-6">
+      <Button
+        variant="outline"
+        onClick={goPrevious}
+        disabled={!canGoPrevious || isProcessing}
+        size="default"
+        className="sm:h-12 sm:px-6"
+        data-wizard-role="previous"
+      >
         <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
-        <span className="hidden sm:inline">Back</span>
+        <span className="hidden sm:inline">{t('navigation.back')}</span>
       </Button>
 
-      <Button onClick={handleNextStep} disabled={!canGoNext || isProcessing || isAddingToCart} className="gap-2 sm:h-12 sm:px-6" size="default">
+      <Button
+        onClick={handleNextStep}
+        disabled={!canGoNext || isProcessing || isAddingToCart}
+        className="gap-2 sm:h-12 sm:px-6"
+        size="default"
+        data-wizard-role="next"
+      >
         {isProcessing || isAddingToCart ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin sm:h-5 sm:w-5" />
-            <span className="hidden sm:inline">{isAddingToCart ? 'Adding to Cart...' : 'Processing...'}</span>
+            <span className="hidden sm:inline">{isAddingToCart ? t('navigation.adding') : t('navigation.processing')}</span>
           </>
         ) : currentStep === 'preview' ? (
           <>
             {session?.authenticated ? (
               <>
                 <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="hidden sm:inline">Add to Cart</span>
+                <span className="hidden sm:inline">{t('navigation.addToCart')}</span>
               </>
             ) : (
               <>
                 <LogIn className="h-4 w-4 sm:h-5 sm:w-5" />
-                <span className="hidden sm:inline">Sign in to Add to Cart</span>
+                <span className="hidden sm:inline">{t('navigation.signIn')}</span>
               </>
             )}
           </>
         ) : (
           <>
-            <span className="hidden sm:inline">Next</span>
+            <span className="hidden sm:inline">{t('navigation.next')}</span>
             <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
           </>
         )}

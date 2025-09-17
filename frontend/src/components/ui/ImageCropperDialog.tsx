@@ -4,6 +4,7 @@ import ImageCropper from '@/components/ui/ImageCropper';
 import { createCroppedImage, type CropArea } from '@/lib/image-utils';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 interface ImageCropperDialogProps {
   open: boolean;
@@ -21,9 +22,10 @@ export default function ImageCropperDialog({
   srcImage,
   aspectRatio,
   onConfirm,
-  title = 'Crop Image',
-  description = 'Select the area you want to use',
+  title,
+  description,
 }: ImageCropperDialogProps) {
+  const { t } = useTranslation('editor');
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -37,7 +39,7 @@ export default function ImageCropperDialog({
 
   const handleConfirm = async () => {
     if (!croppedAreaPixels) {
-      toast.error('Please select a crop area');
+      toast.error(t('steps.imageUpload.cropper.dialog.toasts.noArea'));
       return;
     }
 
@@ -48,7 +50,7 @@ export default function ImageCropperDialog({
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to create cropped image:', error);
-      toast.error('Failed to create cropped image');
+      toast.error(t('steps.imageUpload.cropper.dialog.toasts.fail'));
     } finally {
       setIsLoading(false);
     }
@@ -64,18 +66,20 @@ export default function ImageCropperDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl" showCloseButton={false}>
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle>{title ?? t('steps.imageUpload.cropper.dialog.title')}</DialogTitle>
+          <DialogDescription>{description ?? t('steps.imageUpload.cropper.dialog.description')}</DialogDescription>
         </DialogHeader>
 
         <ImageCropper srcImage={srcImage} aspectRatio={aspectRatio} onCropComplete={handleCropComplete} />
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
-            Cancel
+            {t('steps.imageUpload.cropper.dialog.buttons.cancel')}
           </Button>
           <Button onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? 'Processing...' : 'Confirm Crop'}
+            {isLoading
+              ? t('steps.imageUpload.cropper.dialog.buttons.processing')
+              : t('steps.imageUpload.cropper.dialog.buttons.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

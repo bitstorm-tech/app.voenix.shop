@@ -1,9 +1,11 @@
 import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Check } from 'lucide-react';
-import { STEP_INDEX, STEP_LABELS, WIZARD_STEPS } from '../constants';
+import { STEP_INDEX, STEP_LABEL_KEYS, WIZARD_STEPS } from '../constants';
+import { useTranslation } from 'react-i18next';
 
 export default function WizardStepIndicator() {
+  const { t } = useTranslation('editor');
   const currentStep = useWizardStore((state) => state.currentStep);
   const getCompletedSteps = useWizardStore((state) => state.getCompletedSteps);
   const completedSteps = getCompletedSteps();
@@ -47,7 +49,7 @@ export default function WizardStepIndicator() {
                   !isActive && 'hidden sm:block',
                 )}
               >
-                {STEP_LABELS[step]}
+                {t(STEP_LABEL_KEYS[step])}
               </span>
             </div>
           );

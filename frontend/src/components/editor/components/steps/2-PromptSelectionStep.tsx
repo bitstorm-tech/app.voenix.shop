@@ -4,18 +4,24 @@ import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Check } from 'lucide-react';
 import { usePromptSelection } from '../../hooks/usePromptSelection';
 import PromptCategoryFilter from '../shared/PromptCategoryFilter';
+import { useTranslation } from 'react-i18next';
 
 export default function PromptSelectionStep() {
+  const { t } = useTranslation('editor');
   const { data: prompts = [] } = usePublicPrompts();
   const selectedPrompt = useWizardStore((state) => state.selectedPrompt);
   const selectPrompt = useWizardStore((state) => state.selectPrompt);
   const { selectedCategory, setSelectedCategory, filteredPrompts, categories } = usePromptSelection(prompts);
+  const formatPrice = (priceInCents?: number | null) => {
+    if (typeof priceInCents !== 'number' || priceInCents <= 0) return null;
+    return t('currency', { value: (priceInCents / 100).toFixed(2) });
+  };
 
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="mb-2 text-lg font-semibold">Choose Your Style</h3>
-        <p className="text-sm text-gray-600">Select a style that will transform your image into something magical</p>
+        <h3 className="mb-2 text-lg font-semibold">{t('steps.promptSelection.title')}</h3>
+        <p className="text-sm text-gray-600">{t('steps.promptSelection.subtitle')}</p>
       </div>
 
       <PromptCategoryFilter categories={categories} selectedCategory={selectedCategory} onCategoryChange={setSelectedCategory} />
@@ -23,6 +29,7 @@ export default function PromptSelectionStep() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {filteredPrompts.map((prompt) => {
           const isSelected = selectedPrompt?.id === prompt.id;
+          const formattedPrice = formatPrice(prompt.price);
 
           return (
             <div
@@ -45,14 +52,14 @@ export default function PromptSelectionStep() {
                 <div className="relative">
                   <img
                     src={prompt.exampleImageUrl}
-                    alt={prompt.title}
+                    alt={t('steps.promptSelection.promptAlt', { title: prompt.title })}
                     className="h-48 w-full object-cover transition-transform duration-300 group-hover:scale-110"
                     loading="lazy"
                   />
-                  {typeof prompt.price === 'number' && prompt.price > 0 && (
+                  {formattedPrice && (
                     <div className="absolute top-2 left-2 z-10">
                       <span className="bg-primary/90 text-primary-foreground rounded-full px-2 py-1 text-xs font-semibold shadow">
-                        ${(prompt.price / 100).toFixed(2)}
+                        {formattedPrice}
                       </span>
                     </div>
                   )}
@@ -65,11 +72,11 @@ export default function PromptSelectionStep() {
                 <div className="flex h-48 items-center justify-center bg-gray-100 p-4 transition-colors duration-300 group-hover:bg-gray-200">
                   <div className="text-center">
                     <h4 className="mb-2 font-medium">{prompt.title}</h4>
-                    <p className="text-xs text-gray-500">No preview available</p>
-                    {typeof prompt.price === 'number' && prompt.price > 0 && (
+                    <p className="text-xs text-gray-500">{t('steps.promptSelection.noPreview')}</p>
+                    {formattedPrice && (
                       <div className="mt-2">
                         <span className="bg-primary/10 text-primary rounded-full px-2 py-1 text-xs font-semibold">
-                          ${(prompt.price / 100).toFixed(2)}
+                          {formattedPrice}
                         </span>
                       </div>
                     )}
@@ -83,7 +90,7 @@ export default function PromptSelectionStep() {
 
       {filteredPrompts.length === 0 && (
         <div className="py-12 text-center">
-          <p className="text-gray-500">No styles found in this category</p>
+          <p className="text-gray-500">{t('steps.promptSelection.empty')}</p>
         </div>
       )}
     </div>

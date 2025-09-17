@@ -7,6 +7,7 @@ import { useRef, useState } from 'react';
 import ReactCrop, { centerCrop, makeAspectCrop, type Crop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { MugOption } from '../../types';
+import { useTranslation } from 'react-i18next';
 
 interface ImageCropperProps {
   imageUrl: string;
@@ -36,6 +37,7 @@ export default function ImageCropper({
   title,
   description,
 }: ImageCropperProps) {
+  const { t } = useTranslation('editor');
   const imgRef = useRef<HTMLImageElement>(null);
   const [crop, setCrop] = useState<Crop>();
   const [imageDimensions, setImageDimensions] = useState<{
@@ -138,9 +140,13 @@ export default function ImageCropper({
         <div className="mb-4 text-center">
           {title && <h3 className="text-lg font-semibold">{title}</h3>}
           {description && <p className="text-sm text-gray-600">{description}</p>}
-          {mug && (
+          {mug && mug.print_template_width_mm && mug.print_template_height_mm && (
             <p className="mt-1 text-xs text-gray-500">
-              The crop area matches your {mug.name}&apos;s printable area ({mug.print_template_width_mm}mm × {mug.print_template_height_mm}mm)
+              {t('steps.preview.cropper.mugInfo', {
+                name: mug.name,
+                width: mug.print_template_width_mm,
+                height: mug.print_template_height_mm,
+              })}
             </p>
           )}
         </div>
@@ -155,7 +161,7 @@ export default function ImageCropper({
         circularCrop={cropShape === 'round'}
         keepSelection={true}
       >
-        <img ref={imgRef} onLoad={onImageLoad} src={imageUrl} alt="Crop preview" />
+        <img ref={imgRef} onLoad={onImageLoad} src={imageUrl} alt={t('steps.preview.cropper.alt')} />
       </ReactCrop>
     </>
   );
