@@ -2,8 +2,8 @@ import { Button } from '@/components/ui/Button';
 import { CartBadge } from '@/components/ui/CartBadge';
 import { useSession } from '@/hooks/queries/useAuth';
 import { Images, Package, Palette } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 
 export function AppHeader() {
   const { data: session } = useSession();

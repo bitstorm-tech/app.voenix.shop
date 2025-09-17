@@ -6,8 +6,8 @@ import { useCart, useRemoveCartItem, useUpdateCartItem } from '@/hooks/queries/u
 import { imagePreloader } from '@/lib/imagePreloader';
 import { Minus, Plus, RefreshCw, ShoppingBag, Trash2 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 export default function CartPage() {
   const navigate = useNavigate();
@@ -217,7 +217,9 @@ export default function CartPage() {
                             <div className="mt-1 flex items-center gap-2">
                               <p className="text-lg font-medium text-gray-900">{formatCurrency(articlePriceCents)}</p>
                               {articlePriceChanged && (
-                                <span className="text-sm text-orange-600">{t('item.priceWas', { amount: formatCurrency(articleOriginalCents) })}</span>
+                                <span className="text-sm text-orange-600">
+                                  {t('item.priceWas', { amount: formatCurrency(articleOriginalCents) })}
+                                </span>
                               )}
                             </div>
                             {showPromptLine && (
@@ -257,7 +259,9 @@ export default function CartPage() {
                           >
                             <Plus className="h-4 w-4" />
                           </button>
-                          <span className="ml-6 text-lg font-medium text-gray-900">{t('item.subtotal', { amount: formatCurrency(subtotalCents) })}</span>
+                          <span className="ml-6 text-lg font-medium text-gray-900">
+                            {t('item.subtotal', { amount: formatCurrency(subtotalCents) })}
+                          </span>
                         </div>
                       </div>
                     </div>

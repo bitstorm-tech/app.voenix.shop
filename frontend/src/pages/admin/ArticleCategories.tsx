@@ -9,6 +9,7 @@ import { articleCategoriesApi, articleSubCategoriesApi } from '@/lib/api';
 import { ArticleCategory, ArticleSubCategory } from '@/types/mug';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface CategoryWithSubcategories extends ArticleCategory {
   subcategories: ArticleSubCategory[];
@@ -19,7 +20,7 @@ export default function ArticleCategories() {
   const [subcategories, setSubcategories] = useState<ArticleSubCategory[]>([]);
   const [categoriesWithSubs, setCategoriesWithSubs] = useState<CategoryWithSubcategories[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<'load' | null>(null);
 
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isSubcategoryDialogOpen, setIsSubcategoryDialogOpen] = useState(false);
@@ -33,6 +34,9 @@ export default function ArticleCategories() {
     id: number | null;
     name: string;
   }>({ isOpen: false, type: 'category', id: null, name: '' });
+
+  const { t, i18n } = useTranslation('adminArticleCategories');
+  const locale = i18n.language || 'en';
 
   useEffect(() => {
     fetchData();
@@ -56,7 +60,7 @@ export default function ArticleCategories() {
       setSubcategories(subcategoriesData);
     } catch (error) {
       console.error('Error fetching data:', error);
-      setError('Failed to load categories. Please try again.');
+      setError('load');
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +91,7 @@ export default function ArticleCategories() {
   const handleDeleteCategory = (category: ArticleCategory) => {
     const hasSubcategories = categoriesWithSubs.find((c) => c.id === category.id)?.subcategories.length || 0;
     if (hasSubcategories > 0) {
-      alert('Cannot delete category with subcategories. Please delete all subcategories first.');
+      window.alert(t('alerts.deleteCategoryWithSubs'));
       return;
     }
     setDeleteDialog({
@@ -100,7 +104,7 @@ export default function ArticleCategories() {
 
   const handleDeleteSubcategory = (subcategory: ArticleSubCategory) => {
     if (subcategory.articlesCount && subcategory.articlesCount > 0) {
-      alert('Cannot delete subcategory with associated articles.');
+      window.alert(t('alerts.deleteSubcategoryWithArticles'));
       return;
     }
     setDeleteDialog({
@@ -125,7 +129,8 @@ export default function ArticleCategories() {
       setDeleteDialog({ isOpen: false, type: 'category', id: null, name: '' });
     } catch (error) {
       console.error('Error deleting:', error);
-      alert(`Failed to delete ${deleteDialog.type}. Please try again.`);
+      const entity = t(`page.error.entity.${deleteDialog.type}`);
+      window.alert(t('page.error.delete', { type: entity }));
     }
   };
 
@@ -143,7 +148,7 @@ export default function ArticleCategories() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading categories...</p>
+          <p className="text-gray-500">{t('page.loading')}</p>
         </div>
       </div>
     );
@@ -154,10 +159,8 @@ export default function ArticleCategories() {
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
           <div className="text-center">
-            <p className="mb-4 text-red-500">{error}</p>
-            <button onClick={fetchData} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
-              Retry
-            </button>
+            <p className="mb-4 text-red-500">{t('page.error.load')}</p>
+            <Button onClick={fetchData}>{t('page.error.retry')}</Button>
           </div>
         </div>
       </div>
@@ -167,16 +170,16 @@ export default function ArticleCategories() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Article Categories</h1>
+        <h1 className="text-2xl font-bold">{t('page.title')}</h1>
         <Button onClick={handleAddCategory}>
           <Plus className="mr-2 h-4 w-4" />
-          New Category
+          {t('page.actions.newCategory')}
         </Button>
       </div>
 
       {categoriesWithSubs.length === 0 ? (
         <div className="rounded-md border p-8 text-center">
-          <p className="text-gray-500">No categories found. Create your first category to get started.</p>
+          <p className="text-gray-500">{t('page.empty.description')}</p>
         </div>
       ) : (
         <Accordion type="multiple" className="w-full space-y-2">
@@ -186,8 +189,10 @@ export default function ArticleCategories() {
                 <AccordionTrigger className="flex-1 py-4 hover:no-underline">
                   <div className="flex items-center gap-3">
                     <span className="font-medium">{category.name}</span>
-                    <Badge variant="secondary">{category.subcategories.length} subcategories</Badge>
-                    {category.articles_count && category.articles_count > 0 && <Badge variant="outline">{category.articles_count} articles</Badge>}
+                    <Badge variant="secondary">{t('badges.subcategories', { count: category.subcategories.length })}</Badge>
+                    {category.articles_count && category.articles_count > 0 && (
+                      <Badge variant="outline">{t('badges.articles', { count: category.articles_count })}</Badge>
+                    )}
                   </div>
                 </AccordionTrigger>
                 <div className="flex items-center gap-2 py-4">
@@ -202,10 +207,10 @@ export default function ArticleCategories() {
               <AccordionContent className="px-4 pb-4">
                 {category.subcategories.length === 0 ? (
                   <div className="mb-4 rounded-md bg-gray-50 p-4 text-center">
-                    <p className="mb-2 text-sm text-gray-500">No subcategories yet</p>
+                    <p className="mb-2 text-sm text-gray-500">{t('accordion.noSubcategories')}</p>
                     <Button size="sm" variant="outline" onClick={() => handleAddSubcategory(category.id)}>
                       <Plus className="mr-2 h-3 w-3" />
-                      Add Subcategory
+                      {t('accordion.addSubcategory')}
                     </Button>
                   </div>
                 ) : (
@@ -213,11 +218,11 @@ export default function ArticleCategories() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Articles</TableHead>
-                          <TableHead>Created</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+                          <TableHead>{t('table.headers.name')}</TableHead>
+                          <TableHead>{t('table.headers.description')}</TableHead>
+                          <TableHead>{t('table.headers.articles')}</TableHead>
+                          <TableHead>{t('table.headers.created')}</TableHead>
+                          <TableHead className="text-right">{t('table.headers.actions')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -226,7 +231,7 @@ export default function ArticleCategories() {
                             <TableCell className="font-medium">{subcategory.name}</TableCell>
                             <TableCell className="max-w-xs truncate">{subcategory.description || '-'}</TableCell>
                             <TableCell>{subcategory.articlesCount || 0}</TableCell>
-                            <TableCell>{subcategory.createdAt ? new Date(subcategory.createdAt).toLocaleDateString() : '-'}</TableCell>
+                            <TableCell>{subcategory.createdAt ? new Date(subcategory.createdAt).toLocaleDateString(locale) : '-'}</TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
                                 <Button variant="outline" size="sm" onClick={() => handleEditSubcategory(subcategory)}>
@@ -249,7 +254,7 @@ export default function ArticleCategories() {
                     <div className="mt-4 text-center">
                       <Button size="sm" variant="outline" onClick={() => handleAddSubcategory(category.id)}>
                         <Plus className="mr-2 h-3 w-3" />
-                        Add Subcategory
+                        {t('accordion.addSubcategory')}
                       </Button>
                     </div>
                   </>
@@ -280,7 +285,10 @@ export default function ArticleCategories() {
         isOpen={deleteDialog.isOpen}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteDialog({ ...deleteDialog, isOpen: false })}
-        description={`Are you sure you want to delete ${deleteDialog.type === 'category' ? 'the category' : 'the subcategory'} "${deleteDialog.name}"? This action cannot be undone.`}
+        description={t('confirmation.description', {
+          entity: t(`confirmation.entity.${deleteDialog.type}`),
+          name: deleteDialog.name,
+        })}
       />
     </div>
   );

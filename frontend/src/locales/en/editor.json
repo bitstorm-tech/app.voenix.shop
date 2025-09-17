@@ -113,17 +113,9 @@
       },
       "info": {
         "heading": "Your account information will be used to:",
-        "items": [
-          "Save your personalized design",
-          "Send you order updates",
-          "Track your order history"
-        ],
+        "items": ["Save your personalized design", "Send you order updates", "Track your order history"],
         "whyHeading": "Why we need this information:",
-        "whyItems": [
-          "To save your personalized design",
-          "To send you order updates",
-          "To contact you if there are any issues with your design"
-        ]
+        "whyItems": ["To save your personalized design", "To send you order updates", "To contact you if there are any issues with your design"]
       },
       "form": {
         "defaultDescription": "We need some basic information to personalize your product",

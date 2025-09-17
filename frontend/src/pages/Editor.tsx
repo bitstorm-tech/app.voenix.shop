@@ -11,8 +11,8 @@ import { usePublicPrompts } from '@/hooks/queries/usePublicPrompts';
 import { useAuthWizardSync } from '@/hooks/useAuthWizardSync';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Editor() {
   const currentStep = useWizardStore((state) => state.currentStep);

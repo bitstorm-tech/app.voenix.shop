@@ -2,11 +2,11 @@ import { useDebounce } from '@/hooks/useDebounce';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { CheckCircle } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { PixelCrop } from 'react-image-crop';
 import { GeneratedImageCropData } from '../../types';
 import ImageCropper from '../shared/ImageCropper';
 import MugPreview from '../shared/MugPreview';
-import { useTranslation } from 'react-i18next';
 
 export default function PreviewStep() {
   const { t } = useTranslation('editor');

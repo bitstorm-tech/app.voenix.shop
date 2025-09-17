@@ -5,8 +5,8 @@ import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Upload, X } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 export default function ImageUploadStep() {
   const { t } = useTranslation('editor');

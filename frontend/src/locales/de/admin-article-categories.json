@@ -1,0 +1,110 @@
+{
+  "page": {
+    "title": "Artikelkategorien",
+    "loading": "Kategorien werden geladen...",
+    "empty": {
+      "description": "Es wurden noch keine Kategorien angelegt. Lege deine erste Kategorie an, um zu starten."
+    },
+    "error": {
+      "load": "Kategorien konnten nicht geladen werden. Bitte versuche es erneut.",
+      "retry": "Erneut versuchen",
+      "delete": "{{type}} konnte nicht gelöscht werden. Bitte versuche es erneut.",
+      "entity": {
+        "category": "die Kategorie",
+        "subcategory": "die Unterkategorie"
+      }
+    },
+    "actions": {
+      "newCategory": "Neue Kategorie"
+    }
+  },
+  "badges": {
+    "subcategories": "{{count}} Unterkategorie",
+    "subcategories_plural": "{{count}} Unterkategorien",
+    "articles": "{{count}} Artikel",
+    "articles_plural": "{{count}} Artikel"
+  },
+  "alerts": {
+    "deleteCategoryWithSubs": "Kategorie mit Unterkategorien kann nicht gelöscht werden. Bitte lösche zuerst alle Unterkategorien.",
+    "deleteSubcategoryWithArticles": "Unterkategorie mit zugehörigen Artikeln kann nicht gelöscht werden."
+  },
+  "accordion": {
+    "noSubcategories": "Noch keine Unterkategorien",
+    "addSubcategory": "Unterkategorie hinzufügen"
+  },
+  "table": {
+    "headers": {
+      "name": "Name",
+      "description": "Beschreibung",
+      "articles": "Artikel",
+      "created": "Erstellt am",
+      "actions": "Aktionen"
+    }
+  },
+  "confirmation": {
+    "description": "Möchtest du wirklich {{entity}} \"{{name}}\" löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "entity": {
+      "category": "die Kategorie",
+      "subcategory": "die Unterkategorie"
+    }
+  },
+  "forms": {
+    "common": {
+      "labels": {
+        "name": "Name",
+        "description": "Beschreibung",
+        "category": "Kategorie"
+      },
+      "placeholders": {
+        "name": "Name eingeben",
+        "description": "Beschreibung eingeben (optional)",
+        "category": "Kategorie auswählen"
+      },
+      "errors": {
+        "nameRequired": "Name ist erforderlich",
+        "categoryRequired": "Kategorie ist erforderlich",
+        "saveFailed": "Speichern fehlgeschlagen. Bitte versuche es erneut."
+      },
+      "actions": {
+        "cancel": "Abbrechen",
+        "saving": "Speichern...",
+        "create": "Erstellen",
+        "update": "Aktualisieren"
+      }
+    },
+    "category": {
+      "title": {
+        "create": "Neue Kategorie",
+        "edit": "Kategorie bearbeiten"
+      },
+      "description": {
+        "create": "Erstelle über das Formular unten eine neue Kategorie",
+        "edit": "Aktualisiere die Kategoriedetails unten"
+      },
+      "placeholders": {
+        "name": "Kategorienamen eingeben",
+        "description": "Kategoriebeschreibung eingeben (optional)"
+      },
+      "errors": {
+        "saveFailed": "Kategorie konnte nicht gespeichert werden. Bitte versuche es erneut."
+      }
+    },
+    "subcategory": {
+      "title": {
+        "create": "Neue Unterkategorie",
+        "edit": "Unterkategorie bearbeiten"
+      },
+      "description": {
+        "create": "Erstelle über das Formular unten eine neue Unterkategorie",
+        "edit": "Aktualisiere die Unterkategoriedetails unten"
+      },
+      "placeholders": {
+        "name": "Unterkategorienamen eingeben",
+        "description": "Unterkategoriebeschreibung eingeben (optional)"
+      },
+      "errors": {
+        "saveFailed": "Unterkategorie konnte nicht gespeichert werden. Bitte versuche es erneut."
+      }
+    }
+  }
+}

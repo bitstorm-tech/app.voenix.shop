@@ -6,8 +6,8 @@ import { useOrders } from '@/hooks/queries/useOrders';
 import type { OrderDto } from '@/types/order';
 import { AlertTriangle, Package, ShoppingBag } from 'lucide-react';
 import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function OrdersPage() {
   const navigate = useNavigate();
@@ -187,9 +187,7 @@ export default function OrdersPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="text-sm text-gray-600">
-              {summaryText}
-            </div>
+            <div className="text-sm text-gray-600">{summaryText}</div>
             {orders.map((order) => (
               <OrderCard key={order.id} order={order} />
             ))}

@@ -1,6 +1,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 
+import deAdminArticleCategories from './locales/de/admin-article-categories.json';
 import deCart from './locales/de/cart.json';
 import deCheckout from './locales/de/checkout.json';
 import deEditor from './locales/de/editor.json';
@@ -9,6 +10,7 @@ import deMyImages from './locales/de/my-images.json';
 import deOrderSuccess from './locales/de/order-success.json';
 import deOrders from './locales/de/orders.json';
 import deVat from './locales/de/vat.json';
+import enAdminArticleCategories from './locales/en/admin-article-categories.json';
 import enCart from './locales/en/cart.json';
 import enCheckout from './locales/en/checkout.json';
 import enEditor from './locales/en/editor.json';
@@ -30,6 +32,7 @@ export const resources = {
     myImages: enMyImages,
     orders: enOrders,
     orderSuccess: enOrderSuccess,
+    adminArticleCategories: enAdminArticleCategories,
   },
   de: {
     vat: deVat,
@@ -40,6 +43,7 @@ export const resources = {
     myImages: deMyImages,
     orders: deOrders,
     orderSuccess: deOrderSuccess,
+    adminArticleCategories: deAdminArticleCategories,
   },
 } as const;
 export const namespaces = Object.freeze(Object.keys(resources.en)) as readonly (keyof typeof resources.en)[];

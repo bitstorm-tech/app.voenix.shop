@@ -5,9 +5,9 @@ import { useOrder } from '@/hooks/queries/useOrders';
 import { createManualDownloadUrl, downloadOrderPDF } from '@/lib/pdfDownload';
 import { AlertTriangle, CheckCircle, Download, Package, ShoppingBag, Truck } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
 
 export default function OrderSuccessPage() {
   const { orderId } = useParams<{ orderId: string }>();

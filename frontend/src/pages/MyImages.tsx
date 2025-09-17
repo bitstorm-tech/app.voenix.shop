@@ -9,8 +9,8 @@ import { useImageWithFallback } from '@/hooks/useImageWithFallback';
 import type { UserImage, UserImagesParams } from '@/types/userImage';
 import { AlertTriangle, ChevronLeft, ChevronRight, Download, ImageIcon, Palette, Upload } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 const ImageCard = ({ image }: { image: UserImage }) => {
   const imageUrl = image.imageUrl || `/api/user/images/${image.filename}`;
@@ -163,7 +163,7 @@ export default function MyImagesPage() {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
-      page: key === 'page' ? (value as UserImagesParams['page']) ?? 0 : 0, // Reset page when changing other filters
+      page: key === 'page' ? ((value as UserImagesParams['page']) ?? 0) : 0, // Reset page when changing other filters
     }));
   };
 
@@ -256,7 +256,10 @@ export default function MyImagesPage() {
             <label htmlFor="order-filter" className="text-sm font-medium text-gray-700">
               {t('filters.order.label')}
             </label>
-            <Select value={filters.sortDirection} onValueChange={(value) => handleFilterChange('sortDirection', value as UserImagesParams['sortDirection'])}>
+            <Select
+              value={filters.sortDirection}
+              onValueChange={(value) => handleFilterChange('sortDirection', value as UserImagesParams['sortDirection'])}
+            >
               <SelectTrigger id="order-filter" className="w-[180px]">
                 <SelectValue />
               </SelectTrigger>
@@ -269,9 +272,7 @@ export default function MyImagesPage() {
         </div>
 
         {/* Results count */}
-        {totalElements > 0 && (
-          <div className="mb-4 text-sm text-gray-600">{resultsText}</div>
-        )}
+        {totalElements > 0 && <div className="mb-4 text-sm text-gray-600">{resultsText}</div>}
 
         {/* Images Grid or Empty State */}
         {images.length === 0 ? (
@@ -279,11 +280,7 @@ export default function MyImagesPage() {
             <Upload className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="mt-4 text-lg font-medium text-gray-900">{t('empty.title')}</h3>
             <p className="mt-2 text-gray-600">
-              {filters.type === 'uploaded'
-                ? t('empty.uploaded')
-                : filters.type === 'generated'
-                  ? t('empty.generated')
-                  : t('empty.all')}
+              {filters.type === 'uploaded' ? t('empty.uploaded') : filters.type === 'generated' ? t('empty.generated') : t('empty.all')}
             </p>
           </div>
         ) : (

@@ -3,8 +3,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import ImageCropper from '@/components/ui/ImageCropper';
 import { createCroppedImage, type CropArea } from '@/lib/image-utils';
 import { useCallback, useEffect, useState } from 'react';
-import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 interface ImageCropperDialogProps {
   open: boolean;
@@ -16,15 +16,7 @@ interface ImageCropperDialogProps {
   description?: string;
 }
 
-export default function ImageCropperDialog({
-  open,
-  onOpenChange,
-  srcImage,
-  aspectRatio,
-  onConfirm,
-  title,
-  description,
-}: ImageCropperDialogProps) {
+export default function ImageCropperDialog({ open, onOpenChange, srcImage, aspectRatio, onConfirm, title, description }: ImageCropperDialogProps) {
   const { t } = useTranslation('editor');
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<CropArea | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -77,9 +69,7 @@ export default function ImageCropperDialog({
             {t('steps.imageUpload.cropper.dialog.buttons.cancel')}
           </Button>
           <Button onClick={handleConfirm} disabled={isLoading}>
-            {isLoading
-              ? t('steps.imageUpload.cropper.dialog.buttons.processing')
-              : t('steps.imageUpload.cropper.dialog.buttons.confirm')}
+            {isLoading ? t('steps.imageUpload.cropper.dialog.buttons.processing') : t('steps.imageUpload.cropper.dialog.buttons.confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

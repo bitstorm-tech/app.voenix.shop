@@ -4,10 +4,10 @@
  * See ImageUploadStep for the new implementation pattern.
  */
 import { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import ReactCrop, { centerCrop, makeAspectCrop, type Crop, type PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { MugOption } from '../../types';
-import { useTranslation } from 'react-i18next';
 
 interface ImageCropperProps {
   imageUrl: string;

@@ -2,9 +2,9 @@ import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Loader2, Sparkles } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useImageGeneration } from '../../hooks/useImageGeneration';
 import ImageVariantSelector from '../shared/ImageVariantSelector';
-import { useTranslation } from 'react-i18next';
 
 export default function ImageGenerationStep() {
   const { t } = useTranslation('editor');
