@@ -1,14 +1,16 @@
 import { ColorSwatch } from '@/components/ui/ColorSwatch';
-import type { Article, ArticleShirtVariant } from '@/types/article';
+import type { ArticleShirtVariant } from '@/types/article';
+import { useTranslation } from 'react-i18next';
 
 interface ShirtVariantListProps {
   variants: ArticleShirtVariant[];
-  article: Article;
 }
 
 export function ShirtVariantList({ variants }: ShirtVariantListProps) {
+  const { t } = useTranslation('adminArticles');
+
   if (variants.length === 0) {
-    return <div className="text-muted-foreground py-4 text-center text-sm">No variants available</div>;
+    return <div className="text-muted-foreground py-4 text-center text-sm">{t('variants.none')}</div>;
   }
 
   // Group variants by color
@@ -35,14 +37,14 @@ export function ShirtVariantList({ variants }: ShirtVariantListProps) {
           <div className="flex flex-wrap gap-2">
             {colorVariants.map((variant) => (
               <div key={variant.id} className="bg-muted rounded-md px-3 py-1 text-sm">
-                Size {variant.size}
+                {t('variants.size', { size: variant.size })}
               </div>
             ))}
           </div>
 
           {colorVariants[0]?.exampleImageUrl && (
             <div className="mt-2">
-              <img src={colorVariants[0].exampleImageUrl} alt={`${color} variant`} className="h-16 w-16 rounded-md object-cover" />
+              <img src={colorVariants[0].exampleImageUrl} alt={t('variants.colorAlt', { color })} className="h-16 w-16 rounded-md object-cover" />
             </div>
           )}
         </div>

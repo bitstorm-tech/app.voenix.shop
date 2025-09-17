@@ -1,0 +1,49 @@
+{
+  "page": {
+    "title": "Articles",
+    "subtitle": "Manage your product catalog",
+    "loading": "Loading articles...",
+    "empty": {
+      "description": "No articles found",
+      "cta": "Add your first article"
+    },
+    "filter": {
+      "label": "Filter",
+      "placeholder": "Filter by type",
+      "all": "All Types",
+      "mug": "Mugs",
+      "shirt": "T-Shirts"
+    },
+    "actions": {
+      "new": "New Article",
+      "edit": "Edit article",
+      "delete": "Delete article"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "variantsHeading": "Variants",
+    "confirmation": "Are you sure you want to delete this article? This action cannot be undone.",
+    "imageAlt": "Image preview of {{name}}"
+  },
+  "badges": {
+    "variants": "{{count}} variant",
+    "variants_plural": "{{count}} variants"
+  },
+  "articleTypes": {
+    "MUG": "Mug",
+    "SHIRT": "T-Shirt"
+  },
+  "variants": {
+    "none": "No variants available",
+    "default": "Default",
+    "inside": "Inside",
+    "outside": "Outside",
+    "size": "Size {{size}}",
+    "colorAlt": "{{color}} variant"
+  },
+  "supplier": {
+    "unknown": "-"
+  }
+}

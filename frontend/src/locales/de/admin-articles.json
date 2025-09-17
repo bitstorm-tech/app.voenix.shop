@@ -1,0 +1,49 @@
+{
+  "page": {
+    "title": "Artikel",
+    "subtitle": "Verwalte deinen Produktkatalog",
+    "loading": "Artikel werden geladen...",
+    "empty": {
+      "description": "Keine Artikel gefunden",
+      "cta": "Lege deinen ersten Artikel an"
+    },
+    "filter": {
+      "label": "Filter",
+      "placeholder": "Nach Typ filtern",
+      "all": "Alle Typen",
+      "mug": "Tassen",
+      "shirt": "T-Shirts"
+    },
+    "actions": {
+      "new": "Neuer Artikel",
+      "edit": "Artikel bearbeiten",
+      "delete": "Artikel löschen"
+    },
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "variantsHeading": "Varianten",
+    "confirmation": "Möchtest du diesen Artikel wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "imageAlt": "Bildvorschau von {{name}}"
+  },
+  "badges": {
+    "variants": "{{count}} Variante",
+    "variants_plural": "{{count}} Varianten"
+  },
+  "articleTypes": {
+    "MUG": "Tasse",
+    "SHIRT": "T-Shirt"
+  },
+  "variants": {
+    "none": "Keine Varianten vorhanden",
+    "default": "Standard",
+    "inside": "Innen",
+    "outside": "Außen",
+    "size": "Größe {{size}}",
+    "colorAlt": "Variante {{color}}"
+  },
+  "supplier": {
+    "unknown": "-"
+  }
+}
