@@ -1,0 +1,34 @@
+{
+  "alerts": {
+    "deleteError": "Slot-Variante konnte nicht gelöscht werden. Bitte versuchen Sie es erneut."
+  },
+  "confirmation": {
+    "cancel": "Abbrechen",
+    "confirm": "Löschen",
+    "description": "Möchten Sie diese Slot-Variante wirklich löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.",
+    "title": "Slot-Variante löschen"
+  },
+  "page": {
+    "error": {
+      "loadFailed": "Slot-Varianten konnten nicht geladen werden. Bitte versuchen Sie es erneut."
+    },
+    "loading": "Slot-Varianten werden geladen...",
+    "new": "Neue Slot-Variante",
+    "retry": "Erneut versuchen",
+    "title": "Slot-Varianten"
+  },
+  "table": {
+    "empty": "Keine Slot-Varianten gefunden",
+    "headers": {
+      "actions": "Aktionen",
+      "createdAt": "Erstellt am",
+      "description": "Beschreibung",
+      "example": "Beispiel",
+      "id": "ID",
+      "name": "Name",
+      "prompt": "Prompt",
+      "slotType": "Slot-Typ"
+    },
+    "loading": "Wird geladen..."
+  }
+}

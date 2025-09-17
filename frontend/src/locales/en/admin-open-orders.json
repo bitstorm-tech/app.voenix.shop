@@ -1,0 +1,49 @@
+{
+  "buttons": {
+    "markCompleted": "Mark as Completed",
+    "processOrder": "Process Order"
+  },
+  "details": {
+    "created": "Created",
+    "customer": "Customer Information",
+    "items": "Items",
+    "title": "Order Details",
+    "total": "Total",
+    "updated": "Updated"
+  },
+  "items": {
+    "priceEach": "{{price}} each",
+    "quantity": "Qty: {{count}}"
+  },
+  "page": {
+    "count": "{{count}} Open Order",
+    "count_plural": "{{count}} Open Orders",
+    "empty": "No open orders",
+    "loading": "Loading orders...",
+    "noSelection": "No order selected",
+    "selectionDescription": "Select an order to view details",
+    "subtitle": "Manage pending and processing orders",
+    "title": "Open Orders"
+  },
+  "status": {
+    "pending": "Pending",
+    "processing": "Processing"
+  },
+  "table": {
+    "customer": {
+      "email": "{{email}}"
+    },
+    "headers": {
+      "actions": "Actions",
+      "created": "Created",
+      "customer": "Customer",
+      "id": "Order ID",
+      "status": "Status",
+      "total": "Total"
+    }
+  },
+  "tableCard": {
+    "description": "Click on an order to view details",
+    "title": "Order List"
+  }
+}

@@ -3,6 +3,7 @@ import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { promptSlotTypesApi } from '@/lib/api';
 import type { PromptSlotType } from '@/types/promptSlotVariant';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function PromptSlotTypes() {
   const [promptSlotTypes, setPromptSlotTypes] = useState<PromptSlotType[]>([]);
@@ -10,6 +11,7 @@ export default function PromptSlotTypes() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const { t } = useTranslation('adminPromptSlotTypes');
 
   useEffect(() => {
     fetchPromptSlotTypes();
@@ -81,18 +83,18 @@ export default function PromptSlotTypes() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Prompt Slot Types</h1>
-        <p className="mt-1 text-gray-600">Manage prompt slot types and their display order</p>
+        <h1 className="text-2xl font-bold">{t('page.title')}</h1>
+        <p className="mt-1 text-gray-600">{t('page.subtitle')}</p>
       </div>
 
       {loading ? (
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading...</p>
+          <p className="text-gray-500">{t('page.loading')}</p>
         </div>
       ) : (
         <>
           <SortableSlotTypeList slotTypes={promptSlotTypes} onSlotTypesChange={handlePromptSlotTypesChange} onDelete={handleDelete} />
-          {isSaving && <div className="mt-2 text-sm text-gray-500">Saving position changes...</div>}
+          {isSaving && <div className="mt-2 text-sm text-gray-500">{t('page.saving')}</div>}
         </>
       )}
 
@@ -100,7 +102,10 @@ export default function PromptSlotTypes() {
         isOpen={isDeleting}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        description="Are you sure you want to delete this prompt slot type? This action cannot be undone."
+        title={t('confirmation.title')}
+        description={t('confirmation.description')}
+        confirmText={t('confirmation.confirm')}
+        cancelText={t('confirmation.cancel')}
       />
     </div>
   );

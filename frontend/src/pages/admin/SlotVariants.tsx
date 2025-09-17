@@ -5,6 +5,7 @@ import { promptSlotVariantsApi } from '@/lib/api';
 import type { PromptSlotVariant } from '@/types/promptSlotVariant';
 import { Edit, Image, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 export default function SlotVariants() {
@@ -13,7 +14,9 @@ export default function SlotVariants() {
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<'load' | null>(null);
+  const { t, i18n } = useTranslation('adminSlotVariants');
+  const locale = i18n.language || 'en';
 
   useEffect(() => {
     fetchSlotVariants();
@@ -27,7 +30,7 @@ export default function SlotVariants() {
       setSlotVariants(data);
     } catch (error) {
       console.error('Error fetching slot variants:', error);
-      setError('Failed to load slot variants. Please try again.');
+      setError('load');
     } finally {
       setLoading(false);
     }
@@ -49,7 +52,7 @@ export default function SlotVariants() {
         console.error('Error deleting slot variant:', error);
         setIsDeleting(false);
         setDeleteId(null);
-        alert('Failed to delete slot variant. Please try again.');
+        window.alert(t('alerts.deleteError'));
       }
     }
   };
@@ -68,7 +71,7 @@ export default function SlotVariants() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading slot variants...</p>
+          <p className="text-gray-500">{t('page.loading')}</p>
         </div>
       </div>
     );
@@ -79,8 +82,8 @@ export default function SlotVariants() {
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
           <div className="text-center">
-            <p className="mb-4 text-red-500">{error}</p>
-            <Button onClick={fetchSlotVariants}>Retry</Button>
+            <p className="mb-4 text-red-500">{t('page.error.loadFailed')}</p>
+            <Button onClick={fetchSlotVariants}>{t('page.retry')}</Button>
           </div>
         </div>
       </div>
@@ -90,10 +93,10 @@ export default function SlotVariants() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Slot Variants</h1>
+        <h1 className="text-2xl font-bold">{t('page.title')}</h1>
         <Button onClick={() => navigate('/admin/slot-variants/new')}>
           <Plus className="mr-2 h-4 w-4" />
-          New Slot Variant
+          {t('page.new')}
         </Button>
       </div>
 
@@ -101,27 +104,27 @@ export default function SlotVariants() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>ID</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Slot Type</TableHead>
-              <TableHead>Prompt</TableHead>
-              <TableHead>Description</TableHead>
-              <TableHead>Example</TableHead>
-              <TableHead>Created At</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t('table.headers.id')}</TableHead>
+              <TableHead>{t('table.headers.name')}</TableHead>
+              <TableHead>{t('table.headers.slotType')}</TableHead>
+              <TableHead>{t('table.headers.prompt')}</TableHead>
+              <TableHead>{t('table.headers.description')}</TableHead>
+              <TableHead>{t('table.headers.example')}</TableHead>
+              <TableHead>{t('table.headers.createdAt')}</TableHead>
+              <TableHead className="text-right">{t('table.headers.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center text-gray-500">
-                  Loading...
+                  {t('table.loading')}
                 </TableCell>
               </TableRow>
             ) : slotVariants.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center text-gray-500">
-                  No slot variants found
+                  {t('table.empty')}
                 </TableCell>
               </TableRow>
             ) : (
@@ -149,7 +152,7 @@ export default function SlotVariants() {
                       <div className="text-center text-gray-400">-</div>
                     )}
                   </TableCell>
-                  <TableCell>{slot.createdAt ? new Date(slot.createdAt).toLocaleDateString() : '-'}</TableCell>
+                  <TableCell>{slot.createdAt ? new Date(slot.createdAt).toLocaleDateString(locale) : '-'}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button variant="outline" size="sm" onClick={() => navigate(`/admin/slot-variants/${slot.id}/edit`)}>
@@ -171,7 +174,10 @@ export default function SlotVariants() {
         isOpen={isDeleting}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        description="Are you sure you want to delete this slot variant? This action cannot be undone."
+        title={t('confirmation.title')}
+        description={t('confirmation.description')}
+        confirmText={t('confirmation.confirm')}
+        cancelText={t('confirmation.cancel')}
       />
     </div>
   );

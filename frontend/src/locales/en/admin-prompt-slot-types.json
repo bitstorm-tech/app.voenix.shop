@@ -1,0 +1,24 @@
+{
+  "confirmation": {
+    "cancel": "Cancel",
+    "confirm": "Delete",
+    "description": "Are you sure you want to delete this prompt slot type? This action cannot be undone.",
+    "title": "Delete Slot Type"
+  },
+  "list": {
+    "actions": {
+      "delete": "Delete slot type {{name}}",
+      "edit": "Edit slot type {{name}}"
+    },
+    "dragHandle": "Drag to reorder",
+    "empty": "No slot types found. Click \"{{action}}\" to get started.",
+    "instructions": "Drag to reorder slot types",
+    "new": "New Slot Type"
+  },
+  "page": {
+    "loading": "Loading...",
+    "saving": "Saving position changes...",
+    "subtitle": "Manage prompt slot types and their display order",
+    "title": "Prompt Slot Types"
+  }
+}

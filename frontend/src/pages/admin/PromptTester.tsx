@@ -5,7 +5,8 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { Code, Loader2, Upload } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 type Background = 'auto' | 'transparent' | 'opaque';
 type Quality = 'low' | 'medium' | 'high';
@@ -23,15 +24,15 @@ interface OpenAiRequestParams {
   background?: string;
 }
 
-const SIZES: Record<string, string> = {
-  '1024x1024': '1024x1024',
-  '1536x1024': '1536x1024 (landscape)',
-  '1024x1536': '1024x1536 (portrait)',
-};
+const SIZE_VALUES = ['1024x1024', '1536x1024', '1024x1536'] as const;
+const BACKGROUND_VALUES: Background[] = ['auto', 'transparent', 'opaque'];
+const QUALITY_VALUES: Quality[] = ['low', 'medium', 'high'];
+const PROVIDER_VALUES: Provider[] = ['OPENAI', 'GOOGLE', 'FLUX'];
 
 const MASTER_PROMPT_STORAGE_KEY = 'promptTester.masterPrompt';
 
 export default function PromptTester() {
+  const { t } = useTranslation('adminPromptTester');
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -85,7 +86,7 @@ export default function PromptTester() {
     e.preventDefault();
 
     if (!uploadedImage) {
-      setError('Please upload an image');
+      setError(t('errors.uploadRequired'));
       return;
     }
 
@@ -124,9 +125,9 @@ export default function PromptTester() {
         // If JSON parsing fails, it's likely an HTML error page
         const text = await responseClone.text();
         if (text.includes('Maximum execution time')) {
-          throw new Error('The request timed out. Please try again with simpler settings or a smaller image.');
+          throw new Error(t('errors.timeout'));
         }
-        throw new Error('Server returned an invalid response. Please check the server logs.');
+        throw new Error(t('errors.invalidResponse'));
       }
 
       if (!response.ok) {
@@ -134,79 +135,96 @@ export default function PromptTester() {
           setValidationErrors(result.errors);
           return;
         }
-        throw new Error(result.message || 'Failed to generate image');
+        throw new Error(result.message || t('errors.generateFailed'));
       }
 
       setGeneratedImage(result.imageUrl);
       setRequestParams(result.requestParams);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : t('errors.generic'));
     } finally {
       setIsGenerating(false);
     }
   };
 
+  const providerOptions = useMemo(
+    () => PROVIDER_VALUES.map((value) => ({ value, label: t(`form.provider.options.${value.toLowerCase() as Lowercase<Provider>}`) })),
+    [t],
+  );
+
+  const backgroundOptions = useMemo(() => BACKGROUND_VALUES.map((value) => ({ value, label: t(`form.background.options.${value}`) })), [t]);
+
+  const qualityOptions = useMemo(() => QUALITY_VALUES.map((value) => ({ value, label: t(`form.quality.options.${value}`) })), [t]);
+
+  const sizeOptions = useMemo(() => SIZE_VALUES.map((value) => ({ value, label: t(`form.size.options.${value}`) })), [t]);
+
   return (
     <>
       <main className="p-8">
-        <h1 className="mb-8 text-3xl font-bold">Prompt Tester</h1>
+        <h1 className="mb-8 text-3xl font-bold">{t('page.title')}</h1>
 
         <form onSubmit={handleSubmit} className="flex max-w-4xl flex-col gap-6">
           <div className="flex flex-wrap gap-8">
             <div>
-              <Label htmlFor="provider">AI Provider</Label>
+              <Label htmlFor="provider">{t('form.provider.label')}</Label>
               <Select value={data.provider} onValueChange={(value) => setData('provider', value as Provider)}>
                 <SelectTrigger id="provider" className="mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="OPENAI">OpenAI</SelectItem>
-                  <SelectItem value="GOOGLE">Google (Gemini)</SelectItem>
-                  <SelectItem value="FLUX">Flux</SelectItem>
+                  {providerOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="background">Background</Label>
+              <Label htmlFor="background">{t('form.background.label')}</Label>
               <Select value={data.background} onValueChange={(value) => setData('background', value as Background)}>
                 <SelectTrigger id="background" className={`mt-1 ${validationErrors.background ? 'border-red-500' : ''}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="auto">Auto</SelectItem>
-                  <SelectItem value="transparent">Transparent</SelectItem>
-                  <SelectItem value="opaque">Opaque</SelectItem>
+                  {backgroundOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {validationErrors.background && <p className="mt-1 text-sm text-red-600">{validationErrors.background}</p>}
             </div>
 
             <div>
-              <Label htmlFor="quality">Quality</Label>
+              <Label htmlFor="quality">{t('form.quality.label')}</Label>
               <Select value={data.quality} onValueChange={(value) => setData('quality', value as Quality)}>
                 <SelectTrigger id="quality" className={`mt-1 ${validationErrors.quality ? 'border-red-500' : ''}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
+                  {qualityOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               {validationErrors.quality && <p className="mt-1 text-sm text-red-600">{validationErrors.quality}</p>}
             </div>
 
             <div>
-              <Label htmlFor="size">Size</Label>
+              <Label htmlFor="size">{t('form.size.label')}</Label>
               <Select value={data.size} onValueChange={(value) => setData('size', value)}>
                 <SelectTrigger id="size" className={`mt-1 ${validationErrors.size ? 'border-red-500' : ''}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.entries(SIZES).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
+                  {sizeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -217,10 +235,10 @@ export default function PromptTester() {
 
           <div className="flex flex-col gap-4">
             <div>
-              <Label htmlFor="masterPrompt">Master Prompt</Label>
+              <Label htmlFor="masterPrompt">{t('form.masterPrompt.label')}</Label>
               <Textarea
                 id="masterPrompt"
-                placeholder="Enter master prompt..."
+                placeholder={t('form.masterPrompt.placeholder')}
                 value={data.masterPrompt}
                 onChange={(e) => setData('masterPrompt', e.target.value)}
                 className={`mt-1 min-h-[120px] ${validationErrors.masterPrompt ? 'border-red-500' : ''}`}
@@ -229,10 +247,10 @@ export default function PromptTester() {
             </div>
 
             <div>
-              <Label htmlFor="specificPrompt">Specific Prompt</Label>
+              <Label htmlFor="specificPrompt">{t('form.specificPrompt.label')}</Label>
               <Textarea
                 id="specificPrompt"
-                placeholder="Enter specific prompt..."
+                placeholder={t('form.specificPrompt.placeholder')}
                 value={data.specificPrompt}
                 onChange={(e) => setData('specificPrompt', e.target.value)}
                 className={`mt-1 min-h-[120px] ${validationErrors.specificPrompt ? 'border-red-500' : ''}`}
@@ -242,7 +260,7 @@ export default function PromptTester() {
           </div>
 
           <div>
-            <Label htmlFor="image">Upload Image</Label>
+            <Label htmlFor="image">{t('form.image.label')}</Label>
             <div className="mt-1">
               <label
                 htmlFor="image"
@@ -251,11 +269,11 @@ export default function PromptTester() {
                 }`}
               >
                 {previewUrl ? (
-                  <img src={previewUrl} alt="Preview" className="max-h-48 rounded" />
+                  <img src={previewUrl} alt={t('form.image.previewAlt')} className="max-h-48 rounded" />
                 ) : (
                   <>
                     <Upload className="mb-2 h-8 w-8 text-gray-400" />
-                    <span className="text-sm text-gray-600">Click to upload image</span>
+                    <span className="text-sm text-gray-600">{t('form.image.helper')}</span>
                   </>
                 )}
                 <input id="image" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
@@ -270,10 +288,10 @@ export default function PromptTester() {
             {isGenerating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
+                {t('actions.generating')}
               </>
             ) : (
-              'Generate Image'
+              t('actions.generate')
             )}
           </Button>
         </form>
@@ -281,8 +299,8 @@ export default function PromptTester() {
         {generatedImage && (
           <div className="mt-8 space-y-6">
             <div>
-              <h2 className="mb-4 text-xl font-semibold">Generated Image</h2>
-              <img src={generatedImage} alt="Generated" className="max-w-full rounded-lg shadow-lg" />
+              <h2 className="mb-4 text-xl font-semibold">{t('results.title')}</h2>
+              <img src={generatedImage} alt={t('results.imageAlt')} className="max-w-full rounded-lg shadow-lg" />
             </div>
 
             {requestParams && (
@@ -290,61 +308,61 @@ export default function PromptTester() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Code className="h-5 w-5" />
-                    API Request Parameters
+                    {t('results.request.title')}
                   </CardTitle>
-                  <CardDescription>These are the actual parameters sent to the OpenAI API</CardDescription>
+                  <CardDescription>{t('results.request.description')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="prompts">
-                      <AccordionTrigger>Prompts</AccordionTrigger>
+                      <AccordionTrigger>{t('results.request.sections.prompts.title')}</AccordionTrigger>
                       <AccordionContent>
                         <div className="space-y-4">
                           <div>
-                            <Label className="text-sm font-medium">Master Prompt</Label>
+                            <Label className="text-sm font-medium">{t('results.request.sections.prompts.master')}</Label>
                             <div className="mt-1 rounded-md bg-gray-50 p-3 text-sm">{requestParams.masterPrompt}</div>
                           </div>
                           <div>
-                            <Label className="text-sm font-medium">Specific Prompt</Label>
+                            <Label className="text-sm font-medium">{t('results.request.sections.prompts.specific')}</Label>
                             <div className="mt-1 rounded-md bg-gray-50 p-3 text-sm">{requestParams.specificPrompt}</div>
                           </div>
                           <div>
-                            <Label className="text-sm font-medium">Combined Prompt (Sent to OpenAI API)</Label>
+                            <Label className="text-sm font-medium">{t('results.request.sections.prompts.combined')}</Label>
                             <div className="mt-1 rounded-md bg-gray-50 p-3 text-sm">{requestParams.combinedPrompt}</div>
                           </div>
                         </div>
                       </AccordionContent>
                     </AccordionItem>
                     <AccordionItem value="parameters">
-                      <AccordionTrigger>Other Parameters</AccordionTrigger>
+                      <AccordionTrigger>{t('results.request.sections.parameters.title')}</AccordionTrigger>
                       <AccordionContent>
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
-                            <Label className="font-medium">Model</Label>
+                            <Label className="font-medium">{t('results.request.sections.parameters.model')}</Label>
                             <p className="mt-1 text-gray-600">{requestParams.model}</p>
                           </div>
                           <div>
-                            <Label className="font-medium">Size</Label>
+                            <Label className="font-medium">{t('results.request.sections.parameters.size')}</Label>
                             <p className="mt-1 text-gray-600">{requestParams.size}</p>
                           </div>
                           {requestParams.quality && (
                             <div>
-                              <Label className="font-medium">Quality</Label>
+                              <Label className="font-medium">{t('results.request.sections.parameters.quality')}</Label>
                               <p className="mt-1 text-gray-600">{requestParams.quality}</p>
                             </div>
                           )}
                           {requestParams.background && (
                             <div>
-                              <Label className="font-medium">Background</Label>
+                              <Label className="font-medium">{t('results.request.sections.parameters.background')}</Label>
                               <p className="mt-1 text-gray-600">{requestParams.background}</p>
                             </div>
                           )}
                           <div>
-                            <Label className="font-medium">Number of Images</Label>
+                            <Label className="font-medium">{t('results.request.sections.parameters.count')}</Label>
                             <p className="mt-1 text-gray-600">{requestParams.n}</p>
                           </div>
                           <div>
-                            <Label className="font-medium">Response Format</Label>
+                            <Label className="font-medium">{t('results.request.sections.parameters.responseFormat')}</Label>
                             <p className="mt-1 text-gray-600">{requestParams.responseFormat}</p>
                           </div>
                         </div>

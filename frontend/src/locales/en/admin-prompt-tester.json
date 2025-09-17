@@ -1,0 +1,88 @@
+{
+  "actions": {
+    "generate": "Generate Image",
+    "generating": "Generating..."
+  },
+  "errors": {
+    "generateFailed": "Failed to generate image",
+    "generic": "An error occurred",
+    "invalidResponse": "Server returned an invalid response. Please check the server logs.",
+    "timeout": "The request timed out. Please try again with simpler settings or a smaller image.",
+    "uploadRequired": "Please upload an image"
+  },
+  "form": {
+    "background": {
+      "label": "Background",
+      "options": {
+        "auto": "Auto",
+        "opaque": "Opaque",
+        "transparent": "Transparent"
+      }
+    },
+    "image": {
+      "helper": "Click to upload image",
+      "label": "Upload Image",
+      "previewAlt": "Preview"
+    },
+    "masterPrompt": {
+      "label": "Master Prompt",
+      "placeholder": "Enter master prompt..."
+    },
+    "provider": {
+      "label": "AI Provider",
+      "options": {
+        "flux": "Flux",
+        "google": "Google (Gemini)",
+        "openai": "OpenAI"
+      }
+    },
+    "quality": {
+      "label": "Quality",
+      "options": {
+        "high": "High",
+        "low": "Low",
+        "medium": "Medium"
+      }
+    },
+    "size": {
+      "label": "Size",
+      "options": {
+        "1024x1024": "1024x1024",
+        "1024x1536": "1024x1536 (portrait)",
+        "1536x1024": "1536x1024 (landscape)"
+      }
+    },
+    "specificPrompt": {
+      "label": "Specific Prompt",
+      "placeholder": "Enter specific prompt..."
+    }
+  },
+  "page": {
+    "title": "Prompt Tester"
+  },
+  "results": {
+    "imageAlt": "Generated image",
+    "request": {
+      "description": "These are the actual parameters sent to the OpenAI API",
+      "sections": {
+        "parameters": {
+          "background": "Background",
+          "count": "Number of Images",
+          "model": "Model",
+          "quality": "Quality",
+          "responseFormat": "Response Format",
+          "size": "Size",
+          "title": "Other Parameters"
+        },
+        "prompts": {
+          "combined": "Combined Prompt (Sent to OpenAI API)",
+          "master": "Master Prompt",
+          "specific": "Specific Prompt",
+          "title": "Prompts"
+        }
+      },
+      "title": "API Request Parameters"
+    },
+    "title": "Generated Image"
+  }
+}

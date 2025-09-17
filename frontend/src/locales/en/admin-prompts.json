@@ -1,0 +1,44 @@
+{
+  "buttons": {
+    "newPrompt": "New Prompt",
+    "retry": "Retry"
+  },
+  "deleteDialog": {
+    "cancel": "Cancel",
+    "confirm": "Delete",
+    "description": "This will permanently delete the prompt. This action cannot be undone.",
+    "title": "Delete Prompt"
+  },
+  "filters": {
+    "all": "All Categories",
+    "label": "Filter by Category:",
+    "placeholder": "Select a category"
+  },
+  "modal": {
+    "close": "Close",
+    "title": "Test Prompt"
+  },
+  "page": {
+    "loadError": "Failed to load prompts. Please try again.",
+    "loading": "Loading prompts...",
+    "title": "Prompts"
+  },
+  "table": {
+    "actions": {
+      "delete": "Delete prompt {{title}}",
+      "edit": "Edit prompt {{title}}",
+      "test": "Test prompt {{title}}"
+    },
+    "headers": {
+      "actions": "Actions",
+      "active": "Active",
+      "category": "Category",
+      "name": "Name",
+      "prompt": "Prompt"
+    },
+    "status": {
+      "active": "Yes",
+      "inactive": "No"
+    }
+  }
+}

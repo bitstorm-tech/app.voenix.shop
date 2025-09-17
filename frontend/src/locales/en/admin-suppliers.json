@@ -1,0 +1,19 @@
+{
+  "buttons": {
+    "new": "New Supplier"
+  },
+  "confirmDelete": "Are you sure you want to delete this supplier?",
+  "loading": "Loading suppliers...",
+  "table": {
+    "empty": "No suppliers found. Click \"{{action}}\" to add one.",
+    "headers": {
+      "actions": "Actions",
+      "city": "City",
+      "contact": "Contact",
+      "email": "Email",
+      "name": "Name",
+      "phone": "Phone"
+    }
+  },
+  "title": "Suppliers"
+}

@@ -5,6 +5,7 @@ import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { usePromptCategories } from '@/hooks/queries/useCategories';
 import { useDeletePrompt, usePrompts } from '@/hooks/queries/usePrompts';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 export default function Prompts() {
@@ -12,6 +13,7 @@ export default function Prompts() {
   const { data: prompts = [], isLoading: isLoadingPrompts, error: promptsError } = usePrompts();
   const { data: categories = [], isLoading: isLoadingCategories } = usePromptCategories();
   const deletePromptMutation = useDeletePrompt();
+  const { t } = useTranslation('adminPrompts');
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -67,7 +69,7 @@ export default function Prompts() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading prompts...</p>
+          <p className="text-gray-500">{t('page.loading')}</p>
         </div>
       </div>
     );
@@ -78,9 +80,9 @@ export default function Prompts() {
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
           <div className="text-center">
-            <p className="mb-4 text-red-500">Failed to load prompts. Please try again.</p>
+            <p className="mb-4 text-red-500">{t('page.loadError')}</p>
             <button onClick={() => window.location.reload()} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
-              Retry
+              {t('buttons.retry')}
             </button>
           </div>
         </div>
@@ -105,7 +107,10 @@ export default function Prompts() {
         isOpen={isDeleteDialogOpen}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        description="This will permanently delete the prompt. This action cannot be undone."
+        title={t('deleteDialog.title')}
+        description={t('deleteDialog.description')}
+        confirmText={t('deleteDialog.confirm')}
+        cancelText={t('deleteDialog.cancel')}
       />
     </div>
   );

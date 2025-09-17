@@ -1,0 +1,34 @@
+{
+  "alerts": {
+    "deleteError": "Failed to delete slot variant. Please try again."
+  },
+  "confirmation": {
+    "cancel": "Cancel",
+    "confirm": "Delete",
+    "description": "Are you sure you want to delete this slot variant? This action cannot be undone.",
+    "title": "Delete Slot Variant"
+  },
+  "page": {
+    "error": {
+      "loadFailed": "Failed to load slot variants. Please try again."
+    },
+    "loading": "Loading slot variants...",
+    "new": "New Slot Variant",
+    "retry": "Retry",
+    "title": "Slot Variants"
+  },
+  "table": {
+    "empty": "No slot variants found",
+    "headers": {
+      "actions": "Actions",
+      "createdAt": "Created At",
+      "description": "Description",
+      "example": "Example",
+      "id": "ID",
+      "name": "Name",
+      "prompt": "Prompt",
+      "slotType": "Slot Type"
+    },
+    "loading": "Loading..."
+  }
+}
