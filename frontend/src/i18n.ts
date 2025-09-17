@@ -6,6 +6,7 @@ import deCheckout from './locales/de/checkout.json';
 import deEditor from './locales/de/editor.json';
 import deLogin from './locales/de/login.json';
 import deMyImages from './locales/de/my-images.json';
+import deOrderSuccess from './locales/de/order-success.json';
 import deOrders from './locales/de/orders.json';
 import deVat from './locales/de/vat.json';
 import enCart from './locales/en/cart.json';
@@ -13,14 +14,33 @@ import enCheckout from './locales/en/checkout.json';
 import enEditor from './locales/en/editor.json';
 import enLogin from './locales/en/login.json';
 import enMyImages from './locales/en/my-images.json';
+import enOrderSuccess from './locales/en/order-success.json';
 import enOrders from './locales/en/orders.json';
 import enVat from './locales/en/vat.json';
 
 export const defaultNS = 'vat';
 export const LANGUAGE_STORAGE_KEY = 'voenix.shop.language';
 export const resources = {
-  en: { vat: enVat, cart: enCart, checkout: enCheckout, editor: enEditor, login: enLogin, myImages: enMyImages, orders: enOrders },
-  de: { vat: deVat, cart: deCart, checkout: deCheckout, editor: deEditor, login: deLogin, myImages: deMyImages, orders: deOrders },
+  en: {
+    vat: enVat,
+    cart: enCart,
+    checkout: enCheckout,
+    editor: enEditor,
+    login: enLogin,
+    myImages: enMyImages,
+    orders: enOrders,
+    orderSuccess: enOrderSuccess,
+  },
+  de: {
+    vat: deVat,
+    cart: deCart,
+    checkout: deCheckout,
+    editor: deEditor,
+    login: deLogin,
+    myImages: deMyImages,
+    orders: deOrders,
+    orderSuccess: deOrderSuccess,
+  },
 } as const;
 export const namespaces = Object.freeze(Object.keys(resources.en)) as readonly (keyof typeof resources.en)[];
 

@@ -7,11 +7,14 @@ import { AlertTriangle, CheckCircle, Download, Package, ShoppingBag, Truck } fro
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 export default function OrderSuccessPage() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const { data: order, isLoading, error } = useOrder(orderId!);
+  const { t, i18n } = useTranslation('orderSuccess');
+  const locale = i18n.language === 'de' ? 'de-DE' : 'en-US';
 
   // PDF download states
   const [pdfDownloadStatus, setPdfDownloadStatus] = useState<'idle' | 'downloading' | 'success' | 'error'>('idle');
@@ -33,27 +36,30 @@ export default function OrderSuccessPage() {
         onProgress: (progress) => {
           setPdfDownloadProgress(progress);
         },
-        onError: (error) => {
-          setPdfDownloadError(error.message);
+        onError: (downloadError) => {
+          setPdfDownloadError(downloadError.message || t('receipt.errorDefault'));
         },
       });
 
       if (result.success) {
         setPdfDownloadStatus('success');
-        toast.success('Receipt downloaded!', {
-          description: 'Your order receipt has been downloaded to your device.',
+        toast.success(t('toast.downloadSuccess.title'), {
+          description: t('toast.downloadSuccess.description'),
         });
       } else {
         setPdfDownloadStatus('error');
-        setPdfDownloadError(result.error || 'Download failed');
-        toast.error('Download failed', {
-          description: 'You can try the manual download link below.',
+        setPdfDownloadError(result.error || t('receipt.errorDefault'));
+        toast.error(t('toast.downloadError.title'), {
+          description: t('toast.downloadError.description'),
         });
       }
-    } catch (error) {
+    } catch (err) {
       setPdfDownloadStatus('error');
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = err instanceof Error && err.message ? err.message : t('receipt.errorDefault');
       setPdfDownloadError(errorMessage);
+      toast.error(t('toast.downloadError.title'), {
+        description: t('toast.downloadError.description'),
+      });
     }
   };
 
@@ -62,31 +68,42 @@ export default function OrderSuccessPage() {
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <LoadingSpinner />
-          <p className="mt-2 text-sm text-gray-600">Loading order details...</p>
+          <p className="mt-2 text-sm text-gray-600">{t('loading.indicator')}</p>
         </div>
       </div>
     );
   }
 
   if (error || !order) {
+    const errorMessage = error instanceof Error && error.message ? error.message : t('error.defaultMessage');
     return (
       <div className="flex min-h-screen items-center justify-center px-4">
         <div className="text-center">
           <div className="mx-auto h-12 w-12 text-red-500">
             <AlertTriangle className="h-12 w-12" />
           </div>
-          <h2 className="mt-4 text-lg font-medium text-gray-900">Order not found</h2>
-          <p className="mt-2 text-sm text-gray-600">{error instanceof Error ? error.message : 'Unable to load order details'}</p>
+          <h2 className="mt-4 text-lg font-medium text-gray-900">{t('error.title')}</h2>
+          <p className="mt-2 text-sm text-gray-600">{errorMessage}</p>
           <Button onClick={() => navigate('/')} className="mt-6">
-            Continue shopping
+            {t('error.cta')}
           </Button>
         </div>
       </div>
     );
   }
 
+  const currencyFormatter = new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' });
+
   const formatPrice = (priceInCents: number) => {
-    return (priceInCents / 100).toFixed(2);
+    return currencyFormatter.format(priceInCents / 100);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString(locale, {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   };
 
   return (
@@ -98,51 +115,45 @@ export default function OrderSuccessPage() {
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
             <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
-          <h1 className="mt-4 text-2xl font-bold text-gray-900 sm:text-3xl">Order confirmed!</h1>
-          <p className="mt-2 text-gray-600">Thank you for your order. We&apos;ve received your order and will begin processing it shortly.</p>
+          <h1 className="mt-4 text-2xl font-bold text-gray-900 sm:text-3xl">{t('header.title')}</h1>
+          <p className="mt-2 text-gray-600">{t('header.description')}</p>
         </div>
 
         {/* Order Details Card */}
         <div className="mt-8 rounded-lg bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between border-b pb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Order Details</h2>
+            <h2 className="text-lg font-semibold text-gray-900">{t('detailsCard.title')}</h2>
             <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
-              {order.status}
+              {t(`detailsCard.status.${order.status.toLowerCase()}`, { defaultValue: order.status })}
             </span>
           </div>
 
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Order Number</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('detailsCard.orderNumberLabel')}</h3>
               <p className="mt-1 font-mono text-sm text-gray-900">{order.orderNumber}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Order Date</h3>
-              <p className="mt-1 text-sm text-gray-900">
-                {new Date(order.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </p>
+              <h3 className="text-sm font-medium text-gray-500">{t('detailsCard.orderDateLabel')}</h3>
+              <p className="mt-1 text-sm text-gray-900">{formatDate(order.createdAt)}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Customer</h3>
+              <h3 className="text-sm font-medium text-gray-500">{t('detailsCard.customerLabel')}</h3>
               <p className="mt-1 text-sm text-gray-900">
                 {order.customerFirstName} {order.customerLastName}
               </p>
               <p className="text-sm text-gray-600">{order.customerEmail}</p>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-gray-500">Total</h3>
-              <p className="mt-1 text-lg font-semibold text-gray-900">${formatPrice(order.totalAmount)}</p>
+              <h3 className="text-sm font-medium text-gray-500">{t('detailsCard.totalLabel')}</h3>
+              <p className="mt-1 text-lg font-semibold text-gray-900">{formatPrice(order.totalAmount)}</p>
             </div>
           </div>
         </div>
 
         {/* Order Items */}
         <div className="mt-8 rounded-lg bg-white p-6 shadow-sm">
-          <h2 className="mb-4 text-lg font-semibold text-gray-900">Order Items</h2>
+          <h2 className="mb-4 text-lg font-semibold text-gray-900">{t('items.title')}</h2>
           <div className="space-y-4">
             {order.items.map((item) => {
               const imageUrl = item.generatedImageFilename ? `/api/user/images/${item.generatedImageFilename}` : undefined;
@@ -153,7 +164,7 @@ export default function OrderSuccessPage() {
                     {imageUrl ? (
                       <img
                         src={imageUrl}
-                        alt="Custom mug design"
+                        alt={t('items.imageAlt')}
                         className="h-full w-full object-cover"
                         onError={(e) => {
                           e.currentTarget.style.display = 'none';
@@ -173,13 +184,11 @@ export default function OrderSuccessPage() {
                   </div>
                   <div className="flex-1">
                     <h3 className="font-medium text-gray-900">{item.article.name}</h3>
-                    <p className="text-sm text-gray-600">
-                      {item.variant.colorCode} • Qty: {item.quantity}
-                    </p>
-                    <p className="text-sm text-gray-600">${formatPrice(item.pricePerItem)} each</p>
+                    <p className="text-sm text-gray-600">{t('items.variant', { color: item.variant.colorCode, quantity: item.quantity })}</p>
+                    <p className="text-sm text-gray-600">{t('items.priceEach', { price: formatPrice(item.pricePerItem) })}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium text-gray-900">${formatPrice(item.totalPrice)}</p>
+                    <p className="font-medium text-gray-900">{formatPrice(item.totalPrice)}</p>
                   </div>
                 </div>
               );
@@ -190,20 +199,20 @@ export default function OrderSuccessPage() {
           <div className="mt-6 border-t pt-4">
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span>Subtotal</span>
-                <span>${formatPrice(order.subtotal)}</span>
+                <span>{t('summary.subtotal')}</span>
+                <span>{formatPrice(order.subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Shipping</span>
-                <span>${formatPrice(order.shippingAmount)}</span>
+                <span>{t('summary.shipping')}</span>
+                <span>{formatPrice(order.shippingAmount)}</span>
               </div>
               <div className="flex justify-between text-sm">
-                <span>Tax</span>
-                <span>${formatPrice(order.taxAmount)}</span>
+                <span>{t('summary.tax')}</span>
+                <span>{formatPrice(order.taxAmount)}</span>
               </div>
               <div className="flex justify-between border-t pt-2 text-base font-semibold">
-                <span>Total</span>
-                <span>${formatPrice(order.totalAmount)}</span>
+                <span>{t('summary.total')}</span>
+                <span>{formatPrice(order.totalAmount)}</span>
               </div>
             </div>
           </div>
@@ -213,7 +222,7 @@ export default function OrderSuccessPage() {
         <div className="mt-8 rounded-lg bg-white p-6 shadow-sm">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
             <Truck className="h-5 w-5" />
-            Shipping Address
+            {t('shipping.title')}
           </h2>
           <div className="text-sm text-gray-600">
             <p className="font-medium text-gray-900">
@@ -232,17 +241,17 @@ export default function OrderSuccessPage() {
         <div className="mt-8 rounded-lg bg-white p-6 shadow-sm">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-gray-900">
             <Download className="h-5 w-5" />
-            Order Receipt
+            {t('receipt.title')}
           </h2>
 
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">Download your order receipt as a PDF for your records.</p>
+            <p className="text-sm text-gray-600">{t('receipt.description')}</p>
 
             {/* Download Progress */}
             {pdfDownloadStatus === 'downloading' && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span>Preparing download...</span>
+                  <span>{t('receipt.progressLabel')}</span>
                   <span>{pdfDownloadProgress}%</span>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
@@ -255,17 +264,18 @@ export default function OrderSuccessPage() {
             {pdfDownloadStatus === 'success' && (
               <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3">
                 <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-sm font-medium text-green-800">Receipt downloaded successfully!</span>
+                <span className="text-sm font-medium text-green-800">{t('receipt.success')}</span>
               </div>
             )}
 
             {/* Error Message */}
-            {pdfDownloadStatus === 'error' && pdfDownloadError && (
+            {pdfDownloadStatus === 'error' && (
               <div className="flex items-center gap-2 rounded-lg bg-red-50 p-3">
                 <AlertTriangle className="h-5 w-5 text-red-600" />
                 <div className="text-sm text-red-800">
-                  <div className="font-medium">Download failed</div>
-                  <div>{pdfDownloadError}</div>
+                  <div className="font-medium">{t('receipt.errorTitle')}</div>
+                  <div>{pdfDownloadError ?? t('receipt.errorDefault')}</div>
+                  <div>{t('receipt.errorHelp')}</div>
                 </div>
               </div>
             )}
@@ -274,14 +284,14 @@ export default function OrderSuccessPage() {
             <div className="flex flex-col gap-2 sm:flex-row">
               <Button onClick={handleDownloadPDF} disabled={pdfDownloadStatus === 'downloading'} className="gap-2">
                 <Download className="h-4 w-4" />
-                {pdfDownloadStatus === 'downloading' ? 'Downloading...' : 'Download Receipt'}
+                {pdfDownloadStatus === 'downloading' ? t('receipt.primary.downloading') : t('receipt.primary.idle')}
               </Button>
 
               {/* Manual Download Link - Always visible as fallback */}
               <Button asChild variant="outline" className="gap-2">
                 <a href={createManualDownloadUrl(order.id)} download target="_blank" rel="noopener noreferrer">
                   <Download className="h-4 w-4" />
-                  Download PDF
+                  {t('receipt.secondary')}
                 </a>
               </Button>
             </div>
@@ -290,22 +300,19 @@ export default function OrderSuccessPage() {
 
         {/* What's Next */}
         <div className="mt-8 rounded-lg bg-blue-50 p-6">
-          <h2 className="mb-2 text-lg font-semibold text-blue-900">What&apos;s next?</h2>
-          <p className="text-sm text-blue-800">
-            We&apos;ll send you an email confirmation with your order details and tracking information once your order ships. You can check your order
-            status anytime by visiting your order history.
-          </p>
+          <h2 className="mb-2 text-lg font-semibold text-blue-900">{t('nextSteps.title')}</h2>
+          <p className="text-sm text-blue-800">{t('nextSteps.description')}</p>
         </div>
 
         {/* Action Buttons */}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
           <Button onClick={() => navigate('/orders')} variant="outline" className="gap-2">
             <ShoppingBag className="h-4 w-4" />
-            View Order History
+            {t('actions.viewOrders')}
           </Button>
           <Button asChild>
             <Link to="/" reloadDocument>
-              Continue Shopping
+              {t('actions.continueShopping')}
             </Link>
           </Button>
         </div>
