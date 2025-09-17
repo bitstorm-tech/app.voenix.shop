@@ -4,10 +4,12 @@ import { Input } from '@/components/ui/Input';
 import { Switch } from '@/components/ui/Switch';
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
 import type { CreateMugDetailsRequest } from '@/types/article';
+import { useTranslation } from 'react-i18next';
 
 export default function MugDetailsTab() {
   const { article, updateMugDetails } = useArticleFormStore();
   const mugDetails = article.mugDetails;
+  const { t } = useTranslation('adminArticles');
 
   const handleChange = (field: keyof CreateMugDetailsRequest, value: string | number | boolean | undefined) => {
     // Ensure numeric fields are integers
@@ -41,17 +43,17 @@ export default function MugDetailsTab() {
     const docMargin = mugDetails?.documentFormatMarginBottomMm;
 
     if (docWidth !== undefined) {
-      if (docWidth <= 0) errors.push('Document width must be positive');
-      if (docWidth <= printWidth) errors.push('Document width should be greater than print template width');
+      if (docWidth <= 0) errors.push(t('form.mugDetails.validation.documentWidthPositive'));
+      if (docWidth <= printWidth) errors.push(t('form.mugDetails.validation.documentWidthLarger'));
     }
 
     if (docHeight !== undefined) {
-      if (docHeight <= 0) errors.push('Document height must be positive');
-      if (docHeight <= printHeight) errors.push('Document height should be greater than print template height');
+      if (docHeight <= 0) errors.push(t('form.mugDetails.validation.documentHeightPositive'));
+      if (docHeight <= printHeight) errors.push(t('form.mugDetails.validation.documentHeightLarger'));
     }
 
     if (docMargin !== undefined && (docMargin < 0 || docMargin > 100)) {
-      errors.push('Bottom margin should be between 0-100mm');
+      errors.push(t('form.mugDetails.validation.documentMarginRange'));
     }
 
     return errors;
@@ -62,21 +64,21 @@ export default function MugDetailsTab() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mug Specifications</CardTitle>
-        <CardDescription>Physical dimensions and properties</CardDescription>
+        <CardTitle>{t('form.mugDetails.title')}</CardTitle>
+        <CardDescription>{t('form.mugDetails.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <FieldLabel htmlFor="heightMm" required>
-              Height (mm)
+              {t('form.mugDetails.fields.height.label', { unit: 'mm' })}
             </FieldLabel>
             <Input
               id="heightMm"
               type="number"
               value={mugDetails?.heightMm || 0}
               onChange={(e) => handleChange('heightMm', Number(e.target.value))}
-              placeholder="95"
+              placeholder={t('form.mugDetails.fields.height.placeholder')}
               min="0"
               step="1"
             />
@@ -84,14 +86,14 @@ export default function MugDetailsTab() {
 
           <div className="space-y-2">
             <FieldLabel htmlFor="diameterMm" required>
-              Diameter (mm)
+              {t('form.mugDetails.fields.diameter.label', { unit: 'mm' })}
             </FieldLabel>
             <Input
               id="diameterMm"
               type="number"
               value={mugDetails?.diameterMm || 0}
               onChange={(e) => handleChange('diameterMm', Number(e.target.value))}
-              placeholder="82"
+              placeholder={t('form.mugDetails.fields.diameter.placeholder')}
               min="0"
               step="1"
             />
@@ -100,13 +102,13 @@ export default function MugDetailsTab() {
 
         <div className="space-y-2">
           <FieldLabel htmlFor="fillingQuantity" optional>
-            Filling Quantity
+            {t('form.mugDetails.fields.fillingQuantity.label')}
           </FieldLabel>
           <Input
             id="fillingQuantity"
             value={mugDetails?.fillingQuantity || ''}
             onChange={(e) => handleChange('fillingQuantity', e.target.value)}
-            placeholder="250ml"
+            placeholder={t('form.mugDetails.fields.fillingQuantity.placeholder')}
           />
         </div>
 
@@ -116,14 +118,14 @@ export default function MugDetailsTab() {
             checked={mugDetails?.dishwasherSafe ?? true}
             onCheckedChange={(checked) => handleChange('dishwasherSafe', checked)}
           />
-          <FieldLabel htmlFor="dishwasherSafe">Dishwasher Safe</FieldLabel>
+          <FieldLabel htmlFor="dishwasherSafe">{t('form.mugDetails.fields.dishwasherSafe')}</FieldLabel>
         </div>
 
         {/* Document Format Section */}
         <div className="border-t pt-6">
           <div className="mb-4">
-            <h3 className="text-lg font-medium">Document Format</h3>
-            <p className="mt-1 text-sm text-gray-600">Optional dimensions for PDF generation.</p>
+            <h3 className="text-lg font-medium">{t('form.mugDetails.documentFormat.title')}</h3>
+            <p className="mt-1 text-sm text-gray-600">{t('form.mugDetails.documentFormat.description')}</p>
           </div>
 
           {validationErrors.length > 0 && (
@@ -141,14 +143,14 @@ export default function MugDetailsTab() {
           <div className="mb-4 grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <FieldLabel htmlFor="printTemplateWidthMm" required>
-                Print Template Width (mm)
+                {t('form.mugDetails.fields.printTemplateWidth.label', { unit: 'mm' })}
               </FieldLabel>
               <Input
                 id="printTemplateWidthMm"
                 type="number"
                 value={mugDetails?.printTemplateWidthMm || 0}
                 onChange={(e) => handleChange('printTemplateWidthMm', Number(e.target.value))}
-                placeholder="200"
+                placeholder={t('form.mugDetails.fields.printTemplateWidth.placeholder')}
                 min="0"
                 step="1"
               />
@@ -156,14 +158,14 @@ export default function MugDetailsTab() {
 
             <div className="space-y-2">
               <FieldLabel htmlFor="printTemplateHeightMm" required>
-                Print Template Height (mm)
+                {t('form.mugDetails.fields.printTemplateHeight.label', { unit: 'mm' })}
               </FieldLabel>
               <Input
                 id="printTemplateHeightMm"
                 type="number"
                 value={mugDetails?.printTemplateHeightMm || 0}
                 onChange={(e) => handleChange('printTemplateHeightMm', Number(e.target.value))}
-                placeholder="80"
+                placeholder={t('form.mugDetails.fields.printTemplateHeight.placeholder')}
                 min="0"
                 step="1"
               />
@@ -173,7 +175,7 @@ export default function MugDetailsTab() {
           <div className="mb-4 grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <FieldLabel htmlFor="documentFormatWidthMm" required>
-                Document Width (mm)
+                {t('form.mugDetails.fields.documentWidth.label', { unit: 'mm' })}
               </FieldLabel>
               <Input
                 id="documentFormatWidthMm"
@@ -183,7 +185,7 @@ export default function MugDetailsTab() {
                   const value = e.target.value;
                   handleChange('documentFormatWidthMm', value ? Number(value) : undefined);
                 }}
-                placeholder="e.g. 250"
+                placeholder={t('form.mugDetails.fields.documentWidth.placeholder')}
                 min="1"
                 step="1"
               />
@@ -191,7 +193,7 @@ export default function MugDetailsTab() {
 
             <div className="space-y-2">
               <FieldLabel htmlFor="documentFormatHeightMm" required>
-                Document Height (mm)
+                {t('form.mugDetails.fields.documentHeight.label', { unit: 'mm' })}
               </FieldLabel>
               <Input
                 id="documentFormatHeightMm"
@@ -201,7 +203,7 @@ export default function MugDetailsTab() {
                   const value = e.target.value;
                   handleChange('documentFormatHeightMm', value ? Number(value) : undefined);
                 }}
-                placeholder="e.g. 120"
+                placeholder={t('form.mugDetails.fields.documentHeight.placeholder')}
                 min="1"
                 step="1"
               />
@@ -210,7 +212,7 @@ export default function MugDetailsTab() {
 
           <div className="space-y-2">
             <FieldLabel htmlFor="documentFormatMarginBottomMm" required>
-              Bottom Margin (mm)
+              {t('form.mugDetails.fields.documentMargin.label', { unit: 'mm' })}
             </FieldLabel>
             <Input
               id="documentFormatMarginBottomMm"
@@ -220,7 +222,7 @@ export default function MugDetailsTab() {
                 const value = e.target.value;
                 handleChange('documentFormatMarginBottomMm', value ? Number(value) : undefined);
               }}
-              placeholder="e.g. 10"
+              placeholder={t('form.mugDetails.fields.documentMargin.placeholder')}
               min="0"
               max="100"
               step="1"

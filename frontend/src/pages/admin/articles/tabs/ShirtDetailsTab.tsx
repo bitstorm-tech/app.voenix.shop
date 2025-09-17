@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import type { CreateShirtDetailsRequest, FitType } from '@/types/article';
+import { useTranslation } from 'react-i18next';
 
 interface ShirtDetailsTabProps {
   shirtDetails?: Partial<CreateShirtDetailsRequest>;
@@ -21,6 +22,7 @@ export default function ShirtDetailsTab({ shirtDetails, onChange }: ShirtDetails
     fitType: shirtDetails?.fitType || 'REGULAR',
     availableSizes: shirtDetails?.availableSizes || [],
   };
+  const { t } = useTranslation('adminArticles');
 
   const handleChange = (field: keyof CreateShirtDetailsRequest, value: string | string[] | FitType) => {
     onChange({ ...details, [field]: value });
@@ -34,48 +36,53 @@ export default function ShirtDetailsTab({ shirtDetails, onChange }: ShirtDetails
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Shirt Details</CardTitle>
-        <CardDescription>Material and sizing information</CardDescription>
+        <CardTitle>{t('form.shirtDetails.title')}</CardTitle>
+        <CardDescription>{t('form.shirtDetails.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <FieldLabel htmlFor="material" required>
-            Material
+            {t('form.shirtDetails.fields.material.label')}
           </FieldLabel>
-          <Input id="material" value={details.material} onChange={(e) => handleChange('material', e.target.value)} placeholder="100% Cotton" />
+          <Input
+            id="material"
+            value={details.material}
+            onChange={(e) => handleChange('material', e.target.value)}
+            placeholder={t('form.shirtDetails.fields.material.placeholder')}
+          />
         </div>
 
         <div className="space-y-2">
           <FieldLabel htmlFor="fitType" required>
-            Fit Type
+            {t('form.shirtDetails.fields.fitType.label')}
           </FieldLabel>
           <Select value={details.fitType} onValueChange={(value) => handleChange('fitType', value as FitType)}>
             <SelectTrigger id="fitType">
-              <SelectValue placeholder="Select fit type" />
+              <SelectValue placeholder={t('form.shirtDetails.fields.fitType.placeholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="REGULAR">Regular</SelectItem>
-              <SelectItem value="SLIM">Slim</SelectItem>
-              <SelectItem value="LOOSE">Loose</SelectItem>
+              <SelectItem value="REGULAR">{t('form.shirtDetails.fields.fitType.options.regular')}</SelectItem>
+              <SelectItem value="SLIM">{t('form.shirtDetails.fields.fitType.options.slim')}</SelectItem>
+              <SelectItem value="LOOSE">{t('form.shirtDetails.fields.fitType.options.loose')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-2">
           <FieldLabel htmlFor="careInstructions" optional>
-            Care Instructions
+            {t('form.shirtDetails.fields.careInstructions.label')}
           </FieldLabel>
           <Textarea
             id="careInstructions"
             value={details.careInstructions}
             onChange={(e) => handleChange('careInstructions', e.target.value)}
-            placeholder="Machine wash cold, tumble dry low"
+            placeholder={t('form.shirtDetails.fields.careInstructions.placeholder')}
             rows={3}
           />
         </div>
 
         <div className="space-y-2">
-          <FieldLabel required>Available Sizes</FieldLabel>
+          <FieldLabel required>{t('form.shirtDetails.fields.availableSizes.label')}</FieldLabel>
           <div className="grid grid-cols-4 gap-3">
             {AVAILABLE_SIZES.map((size) => (
               <div key={size} className="flex items-center space-x-2">

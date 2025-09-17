@@ -4,6 +4,7 @@ import { useArticleForm } from '@/hooks/useArticleForm';
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
 import { ArrowLeft, Calculator, ChevronRight, Coffee, FileText, Layers, Loader2, Package, Save, Shirt } from 'lucide-react';
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import GeneralTab from './components/GeneralTab';
 import PriceCalculationTab from './components/PriceCalculationTab';
@@ -21,6 +22,7 @@ export default function NewOrEditArticle() {
   const location = useLocation();
   const { id } = useParams();
   const articleId = id ? Number(id) : undefined;
+  const { t } = useTranslation('adminArticles');
 
   // Use the new consolidated store
   const { article, activeTab, setActiveTab, initializeForm, resetForm, updateShirtDetails } = useArticleFormStore();
@@ -75,6 +77,7 @@ export default function NewOrEditArticle() {
 
   const ArticleIcon = article.articleType ? articleTypeIcons[article.articleType] : Package;
   const isEdit = !!articleId;
+  const articleTypeLabel = article.articleType ? t(`articleTypes.${article.articleType}`) : t('form.header.defaultType');
 
   return (
     <div className="bg-background min-h-screen">
@@ -86,16 +89,16 @@ export default function NewOrEditArticle() {
             <div className="flex items-center gap-2 text-sm">
               <Button variant="ghost" size="sm" onClick={() => navigate('/admin/articles')} className="gap-1">
                 <ArrowLeft className="h-4 w-4" />
-                Articles
+                {t('page.title')}
               </Button>
               <ChevronRight className="text-muted-foreground h-4 w-4" />
-              <span className="font-medium">{isEdit ? 'Edit' : 'New'} Article</span>
+              <span className="font-medium">{isEdit ? t('form.breadcrumb.editArticle') : t('form.breadcrumb.newArticle')}</span>
             </div>
 
             {/* Save Button */}
             <Button onClick={saveArticle} disabled={isSaving} className="gap-2">
               {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              {isEdit ? 'Update' : 'Create'} Article
+              {isEdit ? t('form.actions.update') : t('form.actions.create')}
             </Button>
           </div>
         </div>
@@ -110,7 +113,7 @@ export default function NewOrEditArticle() {
               <ArticleIcon className="h-6 w-6" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold">{isEdit ? `Edit ${article.articleType === 'MUG' ? 'Mug' : 'Shirt'}` : 'Create New Article'}</h1>
+              <h1 className="text-2xl font-bold">{isEdit ? t('form.header.editTitle', { type: articleTypeLabel }) : t('form.header.createTitle')}</h1>
               {article.name && <p className="text-muted-foreground text-sm">{article.name}</p>}
             </div>
           </div>
@@ -120,31 +123,31 @@ export default function NewOrEditArticle() {
             <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:grid-flow-col">
               <TabsTrigger value="general" className="gap-2">
                 <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">General</span>
+                <span className="hidden sm:inline">{t('form.tabs.general')}</span>
               </TabsTrigger>
 
               {article.articleType === 'MUG' && (
                 <TabsTrigger value="mug-details" className="gap-2">
                   <Coffee className="h-4 w-4" />
-                  <span className="hidden sm:inline">Mug Details</span>
+                  <span className="hidden sm:inline">{t('form.tabs.mugDetails')}</span>
                 </TabsTrigger>
               )}
 
               {article.articleType === 'SHIRT' && (
                 <TabsTrigger value="shirt-details" className="gap-2">
                   <Shirt className="h-4 w-4" />
-                  <span className="hidden sm:inline">Shirt Details</span>
+                  <span className="hidden sm:inline">{t('form.tabs.shirtDetails')}</span>
                 </TabsTrigger>
               )}
 
               <TabsTrigger value="variants" className="gap-2">
                 <Layers className="h-4 w-4" />
-                <span className="hidden sm:inline">Variants</span>
+                <span className="hidden sm:inline">{t('form.tabs.variants')}</span>
               </TabsTrigger>
 
               <TabsTrigger value="cost-calculation" className="gap-2">
                 <Calculator className="h-4 w-4" />
-                <span className="hidden sm:inline">Price Calculation</span>
+                <span className="hidden sm:inline">{t('form.tabs.priceCalculation')}</span>
               </TabsTrigger>
             </TabsList>
 
