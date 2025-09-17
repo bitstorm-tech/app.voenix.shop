@@ -42,10 +42,33 @@ import enOrderSuccess from './locales/en/order-success.json';
 import enOrders from './locales/en/orders.json';
 import enVat from './locales/en/vat.json';
 
+const enAdminNamespace = {
+  articleCategory: enAdminArticleCategory,
+  articleSubCategory: enAdminArticleSubCategory,
+  prompt: enAdminPrompt,
+  promptSlotType: enAdminPromptSlotType,
+  promptSlotVariant: enAdminPromptSlotVariant,
+  supplier: enAdminSupplier,
+  vatForm: enAdminVat,
+  common: enAdminCommon,
+};
+
+const deAdminNamespace = {
+  articleCategory: deAdminArticleCategory,
+  articleSubCategory: deAdminArticleSubCategory,
+  prompt: deAdminPrompt,
+  promptSlotType: deAdminPromptSlotType,
+  promptSlotVariant: deAdminPromptSlotVariant,
+  supplier: deAdminSupplier,
+  vatForm: deAdminVat,
+  common: deAdminCommon,
+};
+
 export const defaultNS = 'vat';
 export const LANGUAGE_STORAGE_KEY = 'voenix.shop.language';
 export const resources = {
   en: {
+    admin: enAdminNamespace,
     adminArticleCategories: enAdminArticleCategories,
     adminArticles: enAdminArticles,
     adminCompletedOrders: enAdminCompletedOrders,
@@ -68,6 +91,7 @@ export const resources = {
     vatForm: enAdminVat,
   },
   de: {
+    admin: deAdminNamespace,
     adminArticleCategories: deAdminArticleCategories,
     adminArticles: deAdminArticles,
     adminCompletedOrders: deAdminCompletedOrders,
