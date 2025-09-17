@@ -13,12 +13,8 @@ import type { ArticleType } from '@/types/article';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { ChevronDownIcon, Edit, Filter, Package, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-
-const articleTypeLabels: Record<ArticleType, string> = {
-  MUG: 'Mug',
-  SHIRT: 'T-Shirt',
-};
 
 const articleTypeColors: Record<ArticleType, string> = {
   MUG: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
@@ -30,6 +26,12 @@ export default function Articles() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const { t } = useTranslation('adminArticles');
+
+  const articleTypeLabels: Record<ArticleType, string> = {
+    MUG: t('articleTypes.MUG'),
+    SHIRT: t('articleTypes.SHIRT'),
+  };
 
   const typeFilter = searchParams.get('type') as ArticleType | null;
   const page = parseInt(searchParams.get('page') || '0');
@@ -84,22 +86,23 @@ export default function Articles() {
       <div className="mb-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Articles</h1>
-            <p className="text-muted-foreground mt-2">Manage your product catalog</p>
+            <h1 className="text-3xl font-bold tracking-tight">{t('page.title')}</h1>
+            <p className="text-muted-foreground mt-2">{t('page.subtitle')}</p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             {/* Filter */}
             <div className="flex items-center gap-2">
-              <Filter className="text-muted-foreground h-4 w-4" />
+              <Filter className="text-muted-foreground h-4 w-4" aria-hidden="true" />
+              <span className="text-muted-foreground text-sm">{t('page.filter.label')}</span>
               <Select value={typeFilter || 'all'} onValueChange={handleTypeFilterChange}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by type" />
+                <SelectTrigger className="w-[180px]" aria-label={t('page.filter.placeholder')}>
+                  <SelectValue placeholder={t('page.filter.placeholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="MUG">Mugs</SelectItem>
-                  <SelectItem value="SHIRT">T-Shirts</SelectItem>
+                  <SelectItem value="all">{t('page.filter.all')}</SelectItem>
+                  <SelectItem value="MUG">{t('page.filter.mug')}</SelectItem>
+                  <SelectItem value="SHIRT">{t('page.filter.shirt')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -107,7 +110,7 @@ export default function Articles() {
             {/* Add Button */}
             <Button onClick={() => navigate('/admin/articles/new')} className="w-full sm:w-auto">
               <Plus className="mr-2 h-4 w-4" />
-              New Article
+              {t('page.actions.new')}
             </Button>
           </div>
         </div>
@@ -119,15 +122,15 @@ export default function Articles() {
           {loading ? (
             <div className="text-muted-foreground flex h-32 flex-col items-center justify-center gap-3">
               <Package className="h-8 w-8 animate-pulse" />
-              <p>Loading articles...</p>
+              <p>{t('page.loading')}</p>
             </div>
           ) : articles.length === 0 ? (
             <div className="text-muted-foreground flex h-32 flex-col items-center justify-center gap-3">
               <Package className="h-8 w-8" />
-              <p>No articles found</p>
+              <p>{t('page.empty.description')}</p>
               <Button variant="outline" size="sm" onClick={() => navigate('/admin/articles/new')}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add your first article
+                {t('page.empty.cta')}
               </Button>
             </div>
           ) : (
@@ -150,7 +153,7 @@ export default function Articles() {
                             <div className="grid flex-1 grid-cols-1 items-center gap-4 text-left md:grid-cols-6">
                               {/* Image Column */}
                               <div className="flex items-center">
-                                <ArticleImage src={getArticleImage(article)} alt={`${article.name} preview`} size="xs" />
+                                <ArticleImage src={getArticleImage(article)} alt={t('page.imageAlt', { name: article.name })} size="xs" />
                               </div>
 
                               {/* Name Column */}
@@ -159,7 +162,7 @@ export default function Articles() {
                                   <span className="font-medium">{article.name}</span>
                                   {variantCount > 0 && (
                                     <Badge variant="outline" className="text-xs">
-                                      {variantCount} variant{variantCount !== 1 ? 's' : ''}
+                                      {t('badges.variants', { count: variantCount })}
                                     </Badge>
                                   )}
                                   {article.supplierArticleName && (
@@ -189,7 +192,7 @@ export default function Articles() {
                               </div>
 
                               {/* Supplier Column */}
-                              <div className="text-muted-foreground flex items-center">{article.supplierName || '-'}</div>
+                              <div className="text-muted-foreground flex items-center">{article.supplierName || t('supplier.unknown')}</div>
                             </div>
 
                             {/* Status Badge */}
@@ -197,7 +200,7 @@ export default function Articles() {
                               variant={article.active ? 'default' : 'secondary'}
                               className={article.active ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : ''}
                             >
-                              {article.active ? 'Active' : 'Inactive'}
+                              {article.active ? t('page.status.active') : t('page.status.inactive')}
                             </Badge>
                           </div>
                         </AccordionPrimitive.Trigger>
@@ -212,7 +215,7 @@ export default function Articles() {
                             e.stopPropagation();
                             navigate(`/admin/articles/${article.id}/edit`);
                           }}
-                          title="Edit article"
+                          title={t('page.actions.edit')}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -223,7 +226,7 @@ export default function Articles() {
                             e.stopPropagation();
                             handleDelete(article.id);
                           }}
-                          title="Delete article"
+                          title={t('page.actions.delete')}
                           className="text-destructive hover:text-destructive"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -233,7 +236,7 @@ export default function Articles() {
 
                     <AccordionContent className="px-6">
                       <div className="bg-muted/50 rounded-lg p-4">
-                        <h4 className="mb-3 text-sm font-medium">Variants</h4>
+                        <h4 className="mb-3 text-sm font-medium">{t('page.variantsHeading')}</h4>
                         <ArticleVariants article={article} />
                       </div>
                     </AccordionContent>
@@ -245,12 +248,7 @@ export default function Articles() {
         </CardContent>
       </Card>
 
-      <ConfirmationDialog
-        isOpen={isDeleting}
-        onConfirm={confirmDelete}
-        onCancel={cancelDelete}
-        description="Are you sure you want to delete this article? This action cannot be undone."
-      />
+      <ConfirmationDialog isOpen={isDeleting} onConfirm={confirmDelete} onCancel={cancelDelete} description={t('page.confirmation')} />
     </div>
   );
 }

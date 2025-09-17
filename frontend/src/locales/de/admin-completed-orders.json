@@ -1,0 +1,61 @@
+{
+  "page": {
+    "title": "Abgeschlossene Bestellungen",
+    "subtitle": "Sieh dir erfüllte Bestellungen an und verwalte sie",
+    "loading": "Bestellungen werden geladen...",
+    "empty": "Keine Bestellungen gefunden",
+    "noSelection": "Keine Bestellung ausgewählt",
+    "selectionDescription": "Wähle eine Bestellung aus, um Details zu sehen",
+    "searchPlaceholder": "Bestellungen durchsuchen...",
+    "export": "Exportieren",
+    "viewInvoice": "Rechnung anzeigen",
+    "resendReceipt": "Beleg erneut senden"
+  },
+  "tableCard": {
+    "title": "Bestellverlauf",
+    "description": "Alle abgeschlossenen und versandten Bestellungen"
+  },
+  "cards": {
+    "totalOrders": {
+      "title": "Bestellungen insgesamt",
+      "description": "Abgeschlossene & versandte Bestellungen"
+    },
+    "totalRevenue": {
+      "title": "Gesamtumsatz",
+      "description": "Aus abgeschlossenen Bestellungen"
+    },
+    "averageOrder": {
+      "title": "Durchschnittlicher Bestellwert",
+      "description": "Pro Bestellung"
+    }
+  },
+  "table": {
+    "headers": {
+      "id": "Bestell-ID",
+      "customer": "Kunde",
+      "total": "Summe",
+      "status": "Status",
+      "completed": "Abgeschlossen",
+      "actions": "Aktionen"
+    },
+    "customer": {
+      "email": "{{email}}"
+    }
+  },
+  "status": {
+    "completed": "Abgeschlossen",
+    "shipped": "Versandt"
+  },
+  "details": {
+    "title": "Bestelldetails",
+    "customer": "Kundeninformation",
+    "items": "Artikel",
+    "total": "Summe",
+    "created": "Erstellt",
+    "completed": "Abgeschlossen"
+  },
+  "items": {
+    "quantity": "Menge: {{count}}",
+    "priceEach": "{{price}} pro Stück"
+  }
+}

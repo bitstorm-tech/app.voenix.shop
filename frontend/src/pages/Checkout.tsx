@@ -10,9 +10,9 @@ import { downloadOrderPDF } from '@/lib/pdfDownload';
 import type { CreateOrderRequest } from '@/types/order';
 import { AlertTriangle, CreditCard, Lock, ShoppingBag, Truck } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
 
 // Pricing configuration
 const CHECKOUT_CONFIG = {
@@ -31,14 +31,27 @@ interface FieldConfig {
 }
 
 const contactFields: FieldConfig[] = [
-  { name: 'email', type: 'email', required: true, span: 2, labelKey: 'contact.fields.email.label', placeholderKey: 'contact.fields.email.placeholder' },
+  {
+    name: 'email',
+    type: 'email',
+    required: true,
+    span: 2,
+    labelKey: 'contact.fields.email.label',
+    placeholderKey: 'contact.fields.email.placeholder',
+  },
   { name: 'firstName', required: true, labelKey: 'contact.fields.firstName.label', placeholderKey: 'contact.fields.firstName.placeholder' },
   { name: 'lastName', required: true, labelKey: 'contact.fields.lastName.label', placeholderKey: 'contact.fields.lastName.placeholder' },
   { name: 'phone', type: 'tel', span: 2, labelKey: 'contact.fields.phone.label', placeholderKey: 'contact.fields.phone.placeholder' },
 ];
 
 const addressFields: FieldConfig[] = [
-  { name: 'streetAddress1', required: true, span: 2, labelKey: 'shipping.fields.streetAddress1.label', placeholderKey: 'shipping.fields.streetAddress1.placeholder' },
+  {
+    name: 'streetAddress1',
+    required: true,
+    span: 2,
+    labelKey: 'shipping.fields.streetAddress1.label',
+    placeholderKey: 'shipping.fields.streetAddress1.placeholder',
+  },
   { name: 'streetAddress2', span: 2, labelKey: 'shipping.fields.streetAddress2.label', placeholderKey: 'shipping.fields.streetAddress2.placeholder' },
   { name: 'city', required: true, labelKey: 'shipping.fields.city.label', placeholderKey: 'shipping.fields.city.placeholder' },
   { name: 'state', required: true, labelKey: 'shipping.fields.state.label', placeholderKey: 'shipping.fields.state.placeholder' },
@@ -206,10 +219,7 @@ export default function CheckoutPage() {
   if (!session?.authenticated) return null;
 
   if (cartError) {
-    const errorMessage =
-      typeof cartError === 'object' && cartError && 'message' in cartError
-        ? (cartError as Error).message
-        : t('error.description');
+    const errorMessage = typeof cartError === 'object' && cartError && 'message' in cartError ? (cartError as Error).message : t('error.description');
     return (
       <CheckoutState
         icon={AlertTriangle}
@@ -324,9 +334,7 @@ export default function CheckoutPage() {
                 {hasPriceChanges && (
                   <Alert variant="info" className="mb-4">
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      {t('summary.alert')}
-                    </AlertDescription>
+                    <AlertDescription>{t('summary.alert')}</AlertDescription>
                   </Alert>
                 )}
 
@@ -390,9 +398,7 @@ export default function CheckoutPage() {
 
               <Button type="submit" className="w-full gap-2" size="lg" disabled={createOrderMutation.isPending}>
                 <Lock className="h-4 w-4" />
-                {createOrderMutation.isPending
-                  ? t('summary.processing')
-                  : t('summary.checkout', { amount: formatCurrency(total) })}
+                {createOrderMutation.isPending ? t('summary.processing') : t('summary.checkout', { amount: formatCurrency(total) })}
               </Button>
 
               <div className="text-center text-xs text-gray-500">

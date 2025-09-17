@@ -1,0 +1,41 @@
+{
+  "title": "Your Orders",
+  "description": "Track and manage your recent orders",
+  "loading": {
+    "indicator": "Loading your orders..."
+  },
+  "error": {
+    "title": "Error loading orders",
+    "defaultMessage": "Unable to load your orders",
+    "retry": "Try Again"
+  },
+  "empty": {
+    "title": "No orders yet",
+    "description": "When you place orders, they'll appear here.",
+    "cta": "Start Shopping"
+  },
+  "summary": {
+    "showing": "Showing {{count}} {{label}}",
+    "label": "order",
+    "label_plural": "orders"
+  },
+  "buttons": {
+    "viewDetails": "View Details",
+    "cancel": "Cancel Order"
+  },
+  "card": {
+    "orderNumber": "Order #{{number}}",
+    "placedOn": "Placed on {{date}}",
+    "items": "{{count}} item",
+    "items_plural": "{{count}} items",
+    "andMore": "and {{count}} more",
+    "itemImageAlt": "Order item",
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    }
+  }
+}

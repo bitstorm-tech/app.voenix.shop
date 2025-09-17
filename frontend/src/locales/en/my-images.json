@@ -1,0 +1,65 @@
+{
+  "title": "My Images",
+  "description": "View and manage your uploaded and generated images",
+  "loading": {
+    "indicator": "Loading your images..."
+  },
+  "error": {
+    "title": "Error loading images",
+    "defaultMessage": "Unable to load your images",
+    "retry": "Try Again"
+  },
+  "filters": {
+    "type": {
+      "label": "Type:",
+      "all": "All Images",
+      "uploaded": "Uploaded Only",
+      "generated": "Generated Only"
+    },
+    "sortBy": {
+      "label": "Sort by:",
+      "createdAt": "Date",
+      "type": "Type"
+    },
+    "order": {
+      "label": "Order:",
+      "desc": "Newest First",
+      "asc": "Oldest First"
+    }
+  },
+  "results": {
+    "count": "Showing {{shown}} of {{total}} {{label}}",
+    "label": "image",
+    "label_plural": "images"
+  },
+  "empty": {
+    "title": "No images yet",
+    "all": "Upload or generate images to see them here.",
+    "uploaded": "You haven't uploaded any images yet.",
+    "generated": "You haven't generated any images yet."
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "card": {
+    "loadingFailed": "Failed to load image",
+    "retry": "Retry",
+    "generated": "Generated",
+    "uploaded": "Uploaded",
+    "prompt": "Prompt: {{title}}",
+    "fileSizeUnknown": "Unknown size",
+    "fileSizeZero": "0 {{unit}}",
+    "download": "Download",
+    "designMug": "Design Mug",
+    "alt": "User image"
+  },
+  "fileSize": {
+    "units": {
+      "bytes": "Bytes",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
+  }
+}

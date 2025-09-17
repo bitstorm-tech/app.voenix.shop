@@ -1,0 +1,61 @@
+{
+  "page": {
+    "title": "Completed Orders",
+    "subtitle": "View and manage fulfilled orders",
+    "loading": "Loading orders...",
+    "empty": "No orders found",
+    "noSelection": "No order selected",
+    "selectionDescription": "Select an order to view details",
+    "searchPlaceholder": "Search orders...",
+    "export": "Export",
+    "viewInvoice": "View Invoice",
+    "resendReceipt": "Resend Receipt"
+  },
+  "tableCard": {
+    "title": "Order History",
+    "description": "All completed and shipped orders"
+  },
+  "cards": {
+    "totalOrders": {
+      "title": "Total Orders",
+      "description": "Completed & shipped orders"
+    },
+    "totalRevenue": {
+      "title": "Total Revenue",
+      "description": "From completed orders"
+    },
+    "averageOrder": {
+      "title": "Average Order Value",
+      "description": "Per order"
+    }
+  },
+  "table": {
+    "headers": {
+      "id": "Order ID",
+      "customer": "Customer",
+      "total": "Total",
+      "status": "Status",
+      "completed": "Completed",
+      "actions": "Actions"
+    },
+    "customer": {
+      "email": "{{email}}"
+    }
+  },
+  "status": {
+    "completed": "Completed",
+    "shipped": "Shipped"
+  },
+  "details": {
+    "title": "Order Details",
+    "customer": "Customer Information",
+    "items": "Items",
+    "total": "Total",
+    "created": "Created",
+    "completed": "Completed"
+  },
+  "items": {
+    "quantity": "Qty: {{count}}",
+    "priceEach": "{{price}} each"
+  }
+}

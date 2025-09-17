@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { CheckCircle2, Download, Eye, Package2, Search, Truck } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface OrderItem {
   name: string;
@@ -29,6 +30,9 @@ export default function CompletedOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const { t, i18n } = useTranslation('adminCompletedOrders');
+  const locale = i18n.language || 'en';
+  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }), [locale]);
 
   useEffect(() => {
     // Mock data for now - replace with actual API call when orders endpoint is available
@@ -92,20 +96,20 @@ export default function CompletedOrders() {
       return (
         <Badge className="bg-green-100 text-green-800">
           <CheckCircle2 className="mr-1 h-3 w-3" />
-          Completed
+          {t('status.completed')}
         </Badge>
       );
     }
     return (
       <Badge className="bg-purple-100 text-purple-800">
         <Truck className="mr-1 h-3 w-3" />
-        Shipped
+        {t('status.shipped')}
       </Badge>
     );
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString(locale, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -122,43 +126,44 @@ export default function CompletedOrders() {
   );
 
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+  const formatCurrency = (value: number) => currencyFormatter.format(value);
 
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold">Completed Orders</h1>
-        <p className="text-gray-600">View and manage fulfilled orders</p>
+        <h1 className="text-3xl font-bold">{t('page.title')}</h1>
+        <p className="text-gray-600">{t('page.subtitle')}</p>
       </div>
 
       <div className="mb-6 grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('cards.totalOrders.title')}</CardTitle>
             <Package2 className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{orders.length}</div>
-            <p className="text-muted-foreground text-xs">Completed & shipped orders</p>
+            <p className="text-muted-foreground text-xs">{t('cards.totalOrders.description')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('cards.totalRevenue.title')}</CardTitle>
             <span className="text-muted-foreground text-sm">$</span>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-            <p className="text-muted-foreground text-xs">From completed orders</p>
+            <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>
+            <p className="text-muted-foreground text-xs">{t('cards.totalRevenue.description')}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Average Order Value</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('cards.averageOrder.title')}</CardTitle>
             <span className="text-muted-foreground text-sm">$</span>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${orders.length > 0 ? (totalRevenue / orders.length).toFixed(2) : '0.00'}</div>
-            <p className="text-muted-foreground text-xs">Per order</p>
+            <div className="text-2xl font-bold">{formatCurrency(orders.length > 0 ? totalRevenue / orders.length : 0)}</div>
+            <p className="text-muted-foreground text-xs">{t('cards.averageOrder.description')}</p>
           </CardContent>
         </Card>
       </div>
@@ -169,12 +174,12 @@ export default function CompletedOrders() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Order History</CardTitle>
-                  <CardDescription>All completed and shipped orders</CardDescription>
+                  <CardTitle>{t('tableCard.title')}</CardTitle>
+                  <CardDescription>{t('tableCard.description')}</CardDescription>
                 </div>
                 <Button variant="outline" size="sm">
                   <Download className="mr-2 h-4 w-4" />
-                  Export
+                  {t('page.export')}
                 </Button>
               </div>
             </CardHeader>
@@ -183,7 +188,7 @@ export default function CompletedOrders() {
                 <Search className="h-4 w-4 text-gray-400" />
                 <Input
                   type="text"
-                  placeholder="Search orders..."
+                  placeholder={t('page.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="max-w-sm"
@@ -193,25 +198,25 @@ export default function CompletedOrders() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Order ID</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Completed</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
+                      <TableHead>{t('table.headers.id')}</TableHead>
+                      <TableHead>{t('table.headers.customer')}</TableHead>
+                      <TableHead>{t('table.headers.total')}</TableHead>
+                      <TableHead>{t('table.headers.status')}</TableHead>
+                      <TableHead>{t('table.headers.completed')}</TableHead>
+                      <TableHead className="text-right">{t('table.headers.actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {isLoading ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center text-gray-500">
-                          Loading orders...
+                          {t('page.loading')}
                         </TableCell>
                       </TableRow>
                     ) : filteredOrders.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center text-gray-500">
-                          No orders found
+                          {t('page.empty')}
                         </TableCell>
                       </TableRow>
                     ) : (
@@ -221,10 +226,10 @@ export default function CompletedOrders() {
                           <TableCell>
                             <div>
                               <div className="font-medium">{order.customer_name}</div>
-                              <div className="text-sm text-gray-500">{order.customer_email}</div>
+                              <div className="text-sm text-gray-500">{t('table.customer.email', { email: order.customer_email })}</div>
                             </div>
                           </TableCell>
-                          <TableCell>${order.total.toFixed(2)}</TableCell>
+                          <TableCell>{formatCurrency(order.total)}</TableCell>
                           <TableCell>{getStatusBadge(order.status)}</TableCell>
                           <TableCell className="text-sm text-gray-500">{formatDate(order.completed_at)}</TableCell>
                           <TableCell className="text-right">
@@ -253,28 +258,28 @@ export default function CompletedOrders() {
           {selectedOrder ? (
             <Card>
               <CardHeader>
-                <CardTitle>Order Details</CardTitle>
+                <CardTitle>{t('details.title')}</CardTitle>
                 <CardDescription>{selectedOrder.id}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-semibold">Customer Information</h3>
+                  <h3 className="font-semibold">{t('details.customer')}</h3>
                   <p className="text-sm">{selectedOrder.customer_name}</p>
-                  <p className="text-sm text-gray-500">{selectedOrder.customer_email}</p>
+                  <p className="text-sm text-gray-500">{t('table.customer.email', { email: selectedOrder.customer_email })}</p>
                 </div>
 
                 <div>
-                  <h3 className="mb-2 font-semibold">Items</h3>
+                  <h3 className="mb-2 font-semibold">{t('details.items')}</h3>
                   <div className="space-y-2">
                     {selectedOrder.items.map((item, index) => (
                       <div key={index} className="flex justify-between rounded bg-gray-50 p-2 text-sm">
                         <div>
                           <div className="font-medium">{item.name}</div>
-                          <div className="text-gray-500">Qty: {item.quantity}</div>
+                          <div className="text-gray-500">{t('items.quantity', { count: item.quantity })}</div>
                         </div>
                         <div className="text-right">
-                          <div>${(item.price * item.quantity).toFixed(2)}</div>
-                          <div className="text-xs text-gray-500">${item.price.toFixed(2)} each</div>
+                          <div>{formatCurrency(item.price * item.quantity)}</div>
+                          <div className="text-xs text-gray-500">{t('items.priceEach', { price: formatCurrency(item.price) })}</div>
                         </div>
                       </div>
                     ))}
@@ -283,18 +288,18 @@ export default function CompletedOrders() {
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between font-semibold">
-                    <span>Total</span>
-                    <span>${selectedOrder.total.toFixed(2)}</span>
+                    <span>{t('details.total')}</span>
+                    <span>{formatCurrency(selectedOrder.total)}</span>
                   </div>
                 </div>
 
                 <div className="space-y-2 border-t pt-4">
                   <div className="text-sm">
-                    <span className="text-gray-600">Created: </span>
+                    <span className="text-gray-600">{t('details.created')}: </span>
                     <span>{formatDate(selectedOrder.created_at)}</span>
                   </div>
                   <div className="text-sm">
-                    <span className="text-gray-600">Completed: </span>
+                    <span className="text-gray-600">{t('details.completed')}: </span>
                     <span>{formatDate(selectedOrder.completed_at)}</span>
                   </div>
                   <div className="mt-2">{getStatusBadge(selectedOrder.status)}</div>
@@ -302,10 +307,10 @@ export default function CompletedOrders() {
 
                 <div className="flex gap-2 border-t pt-4">
                   <Button className="flex-1" variant="outline">
-                    View Invoice
+                    {t('page.viewInvoice')}
                   </Button>
                   <Button className="flex-1" variant="outline">
-                    Resend Receipt
+                    {t('page.resendReceipt')}
                   </Button>
                 </div>
               </CardContent>
@@ -313,12 +318,12 @@ export default function CompletedOrders() {
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>Order Details</CardTitle>
-                <CardDescription>Select an order to view details</CardDescription>
+                <CardTitle>{t('details.title')}</CardTitle>
+                <CardDescription>{t('page.selectionDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex h-40 items-center justify-center text-gray-400">
-                  <p>No order selected</p>
+                  <p>{t('page.noSelection')}</p>
                 </div>
               </CardContent>
             </Card>

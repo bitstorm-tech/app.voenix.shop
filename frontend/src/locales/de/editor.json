@@ -113,11 +113,7 @@
       },
       "info": {
         "heading": "Deine Kontoinformationen werden verwendet, um:",
-        "items": [
-          "dein individuelles Design zu speichern",
-          "dich über Bestellstatus zu informieren",
-          "deine Bestellhistorie nachzuverfolgen"
-        ],
+        "items": ["dein individuelles Design zu speichern", "dich über Bestellstatus zu informieren", "deine Bestellhistorie nachzuverfolgen"],
         "whyHeading": "Warum wir diese Angaben benötigen:",
         "whyItems": [
           "damit wir dein personalisiertes Design speichern können",

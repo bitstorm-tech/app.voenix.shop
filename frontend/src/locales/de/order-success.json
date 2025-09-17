@@ -1,0 +1,78 @@
+{
+  "loading": {
+    "indicator": "Bestelldetails werden geladen..."
+  },
+  "error": {
+    "title": "Bestellung nicht gefunden",
+    "defaultMessage": "Die Bestelldetails konnten nicht geladen werden",
+    "cta": "Weiter einkaufen"
+  },
+  "header": {
+    "title": "Bestellung bestätigt!",
+    "description": "Vielen Dank für deine Bestellung. Wir haben sie erhalten und beginnen in Kürze mit der Bearbeitung."
+  },
+  "detailsCard": {
+    "title": "Bestelldetails",
+    "status": {
+      "pending": "Ausstehend",
+      "processing": "In Bearbeitung",
+      "shipped": "Versandt",
+      "delivered": "Zugestellt",
+      "cancelled": "Storniert"
+    },
+    "orderNumberLabel": "Bestellnummer",
+    "orderDateLabel": "Bestelldatum",
+    "customerLabel": "Kunde",
+    "totalLabel": "Gesamt"
+  },
+  "items": {
+    "title": "Bestellartikel",
+    "imageAlt": "Individuelles Tassendesign",
+    "variant": "{{color}} • Menge: {{quantity}}",
+    "priceEach": "{{price}} pro Stück",
+    "andMore": "und {{count}} weitere",
+    "count": "{{count}} Artikel",
+    "count_plural": "{{count}} Artikel"
+  },
+  "summary": {
+    "subtotal": "Zwischensumme",
+    "shipping": "Versand",
+    "tax": "Steuern",
+    "total": "Gesamt"
+  },
+  "shipping": {
+    "title": "Lieferadresse"
+  },
+  "receipt": {
+    "title": "Bestellbeleg",
+    "description": "Lade den Bestellbeleg als PDF für deine Unterlagen herunter.",
+    "progressLabel": "Download wird vorbereitet...",
+    "primary": {
+      "idle": "Beleg herunterladen",
+      "downloading": "Download läuft..."
+    },
+    "secondary": "PDF herunterladen",
+    "success": "Beleg erfolgreich heruntergeladen!",
+    "errorTitle": "Download fehlgeschlagen",
+    "errorDefault": "Download fehlgeschlagen",
+    "errorHelp": "Du kannst den manuellen Download-Link unten verwenden."
+  },
+  "nextSteps": {
+    "title": "Wie geht es weiter?",
+    "description": "Wir senden dir eine E-Mail-Bestätigung mit Bestell- und Sendungsverfolgungsdaten, sobald deine Bestellung verschickt wurde. Du kannst den Status jederzeit in deiner Bestellübersicht nachsehen."
+  },
+  "actions": {
+    "viewOrders": "Bestellübersicht öffnen",
+    "continueShopping": "Weiter einkaufen"
+  },
+  "toast": {
+    "downloadSuccess": {
+      "title": "Beleg heruntergeladen!",
+      "description": "Der Bestellbeleg wurde auf dein Gerät heruntergeladen."
+    },
+    "downloadError": {
+      "title": "Download fehlgeschlagen",
+      "description": "Du kannst den manuellen Download-Link unten verwenden."
+    }
+  }
+}

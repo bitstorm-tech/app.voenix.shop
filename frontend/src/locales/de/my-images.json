@@ -1,0 +1,65 @@
+{
+  "title": "Meine Bilder",
+  "description": "Sieh dir deine hochgeladenen und generierten Bilder an",
+  "loading": {
+    "indicator": "Lade deine Bilder..."
+  },
+  "error": {
+    "title": "Fehler beim Laden der Bilder",
+    "defaultMessage": "Deine Bilder konnten nicht geladen werden",
+    "retry": "Nochmals versuchen"
+  },
+  "filters": {
+    "type": {
+      "label": "Typ:",
+      "all": "Alle Bilder",
+      "uploaded": "Nur hochgeladene",
+      "generated": "Nur generierte"
+    },
+    "sortBy": {
+      "label": "Sortieren nach:",
+      "createdAt": "Datum",
+      "type": "Typ"
+    },
+    "order": {
+      "label": "Reihenfolge:",
+      "desc": "Neueste zuerst",
+      "asc": "Älteste zuerst"
+    }
+  },
+  "results": {
+    "count": "Angezeigt werden {{shown}} von {{total}} {{label}}",
+    "label": "Bild",
+    "label_plural": "Bilder"
+  },
+  "empty": {
+    "title": "Noch keine Bilder",
+    "all": "Lade Bilder hoch oder generiere welche, um sie hier zu sehen.",
+    "uploaded": "Du hast bisher keine Bilder hochgeladen.",
+    "generated": "Du hast bisher keine Bilder generiert."
+  },
+  "pagination": {
+    "previous": "Zurück",
+    "next": "Weiter"
+  },
+  "card": {
+    "loadingFailed": "Bild konnte nicht geladen werden",
+    "retry": "Erneut versuchen",
+    "generated": "Generiert",
+    "uploaded": "Hochgeladen",
+    "prompt": "Prompt: {{title}}",
+    "fileSizeUnknown": "Unbekannte Größe",
+    "fileSizeZero": "0 {{unit}}",
+    "download": "Herunterladen",
+    "designMug": "Tasse gestalten",
+    "alt": "Benutzerbild"
+  },
+  "fileSize": {
+    "units": {
+      "bytes": "Bytes",
+      "kb": "KB",
+      "mb": "MB",
+      "gb": "GB"
+    }
+  }
+}

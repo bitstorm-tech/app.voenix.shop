@@ -4,8 +4,8 @@ import { useAddToCart } from '@/hooks/queries/useCart';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { ArrowLeft, ArrowRight, Loader2, LogIn, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 export default function WizardNavigationButtons() {
   const navigate = useNavigate();

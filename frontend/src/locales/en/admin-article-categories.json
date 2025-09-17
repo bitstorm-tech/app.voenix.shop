@@ -1,0 +1,110 @@
+{
+  "page": {
+    "title": "Article Categories",
+    "loading": "Loading categories...",
+    "empty": {
+      "description": "No categories found. Create your first category to get started."
+    },
+    "error": {
+      "load": "Failed to load categories. Please try again.",
+      "retry": "Retry",
+      "delete": "Failed to delete {{type}}. Please try again.",
+      "entity": {
+        "category": "category",
+        "subcategory": "subcategory"
+      }
+    },
+    "actions": {
+      "newCategory": "New Category"
+    }
+  },
+  "badges": {
+    "subcategories": "{{count}} subcategory",
+    "subcategories_plural": "{{count}} subcategories",
+    "articles": "{{count}} article",
+    "articles_plural": "{{count}} articles"
+  },
+  "alerts": {
+    "deleteCategoryWithSubs": "Cannot delete category with subcategories. Please delete all subcategories first.",
+    "deleteSubcategoryWithArticles": "Cannot delete subcategory with associated articles."
+  },
+  "accordion": {
+    "noSubcategories": "No subcategories yet",
+    "addSubcategory": "Add Subcategory"
+  },
+  "table": {
+    "headers": {
+      "name": "Name",
+      "description": "Description",
+      "articles": "Articles",
+      "created": "Created",
+      "actions": "Actions"
+    }
+  },
+  "confirmation": {
+    "description": "Are you sure you want to delete {{entity}} \"{{name}}\"? This action cannot be undone.",
+    "entity": {
+      "category": "the category",
+      "subcategory": "the subcategory"
+    }
+  },
+  "forms": {
+    "common": {
+      "labels": {
+        "name": "Name",
+        "description": "Description",
+        "category": "Category"
+      },
+      "placeholders": {
+        "name": "Enter name",
+        "description": "Enter description (optional)",
+        "category": "Select a category"
+      },
+      "errors": {
+        "nameRequired": "Name is required",
+        "categoryRequired": "Category is required",
+        "saveFailed": "Failed to save. Please try again."
+      },
+      "actions": {
+        "cancel": "Cancel",
+        "saving": "Saving...",
+        "create": "Create",
+        "update": "Update"
+      }
+    },
+    "category": {
+      "title": {
+        "create": "New Category",
+        "edit": "Edit Category"
+      },
+      "description": {
+        "create": "Create a new category with the form below",
+        "edit": "Update the category details below"
+      },
+      "placeholders": {
+        "name": "Enter category name",
+        "description": "Enter category description (optional)"
+      },
+      "errors": {
+        "saveFailed": "Failed to save category. Please try again."
+      }
+    },
+    "subcategory": {
+      "title": {
+        "create": "New Subcategory",
+        "edit": "Edit Subcategory"
+      },
+      "description": {
+        "create": "Create a new subcategory with the form below",
+        "edit": "Update the subcategory details below"
+      },
+      "placeholders": {
+        "name": "Enter subcategory name",
+        "description": "Enter subcategory description (optional)"
+      },
+      "errors": {
+        "saveFailed": "Failed to save subcategory. Please try again."
+      }
+    }
+  }
+}

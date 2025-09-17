@@ -1,0 +1,16 @@
+{
+  "page": {
+    "title": "Logistics",
+    "action": "New Logistics",
+    "empty": "No logistics providers found. Logistics management coming soon..."
+  },
+  "table": {
+    "headers": {
+      "provider": "Provider",
+      "serviceType": "Service Type",
+      "regions": "Regions",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  }
+}

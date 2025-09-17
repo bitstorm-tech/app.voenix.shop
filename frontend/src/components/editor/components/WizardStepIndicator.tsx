@@ -1,8 +1,8 @@
 import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Check } from 'lucide-react';
-import { STEP_INDEX, STEP_LABEL_KEYS, WIZARD_STEPS } from '../constants';
 import { useTranslation } from 'react-i18next';
+import { STEP_INDEX, STEP_LABEL_KEYS, WIZARD_STEPS } from '../constants';
 
 export default function WizardStepIndicator() {
   const { t } = useTranslation('editor');

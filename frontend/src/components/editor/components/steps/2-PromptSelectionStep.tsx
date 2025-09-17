@@ -2,9 +2,9 @@ import { usePublicPrompts } from '@/hooks/queries/usePublicPrompts';
 import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Check } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { usePromptSelection } from '../../hooks/usePromptSelection';
 import PromptCategoryFilter from '../shared/PromptCategoryFilter';
-import { useTranslation } from 'react-i18next';
 
 export default function PromptSelectionStep() {
   const { t } = useTranslation('editor');
@@ -75,9 +75,7 @@ export default function PromptSelectionStep() {
                     <p className="text-xs text-gray-500">{t('steps.promptSelection.noPreview')}</p>
                     {formattedPrice && (
                       <div className="mt-2">
-                        <span className="bg-primary/10 text-primary rounded-full px-2 py-1 text-xs font-semibold">
-                          {formattedPrice}
-                        </span>
+                        <span className="bg-primary/10 text-primary rounded-full px-2 py-1 text-xs font-semibold">{formattedPrice}</span>
                       </div>
                     )}
                   </div>

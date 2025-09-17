@@ -1,0 +1,78 @@
+{
+  "loading": {
+    "indicator": "Loading order details..."
+  },
+  "error": {
+    "title": "Order not found",
+    "defaultMessage": "Unable to load order details",
+    "cta": "Continue shopping"
+  },
+  "header": {
+    "title": "Order confirmed!",
+    "description": "Thank you for your order. We've received your order and will begin processing it shortly."
+  },
+  "detailsCard": {
+    "title": "Order Details",
+    "status": {
+      "pending": "Pending",
+      "processing": "Processing",
+      "shipped": "Shipped",
+      "delivered": "Delivered",
+      "cancelled": "Cancelled"
+    },
+    "orderNumberLabel": "Order Number",
+    "orderDateLabel": "Order Date",
+    "customerLabel": "Customer",
+    "totalLabel": "Total"
+  },
+  "items": {
+    "title": "Order Items",
+    "imageAlt": "Custom mug design",
+    "variant": "{{color}} • Qty: {{quantity}}",
+    "priceEach": "{{price}} each",
+    "andMore": "and {{count}} more",
+    "count": "{{count}} item",
+    "count_plural": "{{count}} items"
+  },
+  "summary": {
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "tax": "Tax",
+    "total": "Total"
+  },
+  "shipping": {
+    "title": "Shipping Address"
+  },
+  "receipt": {
+    "title": "Order Receipt",
+    "description": "Download your order receipt as a PDF for your records.",
+    "progressLabel": "Preparing download...",
+    "primary": {
+      "idle": "Download Receipt",
+      "downloading": "Downloading..."
+    },
+    "secondary": "Download PDF",
+    "success": "Receipt downloaded successfully!",
+    "errorTitle": "Download failed",
+    "errorDefault": "Download failed",
+    "errorHelp": "You can try the manual download link below."
+  },
+  "nextSteps": {
+    "title": "What's next?",
+    "description": "We'll send you an email confirmation with your order details and tracking information once your order ships. You can check your order status anytime by visiting your order history."
+  },
+  "actions": {
+    "viewOrders": "View Order History",
+    "continueShopping": "Continue Shopping"
+  },
+  "toast": {
+    "downloadSuccess": {
+      "title": "Receipt downloaded!",
+      "description": "Your order receipt has been downloaded to your device."
+    },
+    "downloadError": {
+      "title": "Download failed",
+      "description": "You can try the manual download link below."
+    }
+  }
+}

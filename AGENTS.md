@@ -2,6 +2,13 @@
 
 We prefer simple, lean solutions delivered quickly over overengineered complexity.
 
+## AGENTS Compliance (Nested AGENTS.md)
+- Before editing any file, the agent must perform an "AGENTS check":
+    - Search the repo for all files named `AGENTS.md`.
+    - For each file you plan to touch, determine the applicable `AGENTS.md` by choosing the nearest one in its directory tree (deeper files take precedence over parent/root files).
+    - Read all applicable `AGENTS.md` files.
+- In case of conflicting instructions, follow the most deeply nested `AGENTS.md` for the files being changed. Direct user instructions still take precedence over any `AGENTS.md`.
+
 ## Project Structure & Module Organization
 - `backend/`: Go services in `cmd/server`, `cmd/migrate`, with internal app logic under `internal/`. Temporary build artifacts in `bin/` and `tmp/`.
 - `frontend/`: Vite + React storefront; source under `src/`, build output under `dist/` for nginx.
