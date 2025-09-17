@@ -397,7 +397,11 @@ export default function NewOrEditPrompt() {
                     <div className="space-y-3">
                       {exampleImageUrl ? (
                         <div className="relative w-full max-w-md">
-                          <img src={exampleImageUrl} alt={t('prompt.exampleImage.alt')} className="w-full rounded-lg border border-gray-200 object-contain" />
+                          <img
+                            src={exampleImageUrl}
+                            alt={t('prompt.exampleImage.alt')}
+                            className="w-full rounded-lg border border-gray-200 object-contain"
+                          />
                           <Button
                             type="button"
                             variant="outline"
@@ -447,11 +451,7 @@ export default function NewOrEditPrompt() {
         {/* Global action bar visible for both tabs */}
         <div className="mt-6 flex gap-4">
           <Button type="submit" form="prompt-form" disabled={loading}>
-            {loading
-              ? t('common.status.saving')
-              : isEditing
-                ? t('prompt.actions.update')
-                : t('prompt.actions.create')}
+            {loading ? t('common.status.saving') : isEditing ? t('prompt.actions.update') : t('prompt.actions.create')}
           </Button>
           <Button type="button" variant="outline" onClick={handleCancel}>
             {t('common.actions.cancel')}

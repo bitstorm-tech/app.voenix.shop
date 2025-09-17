@@ -121,9 +121,7 @@ export default function NewOrEditArticleSubCategory() {
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
           <CardTitle>{isEditing ? t('articleSubCategory.title.edit') : t('articleSubCategory.title.new')}</CardTitle>
-          <CardDescription>
-            {isEditing ? t('articleSubCategory.description.edit') : t('articleSubCategory.description.new')}
-          </CardDescription>
+          <CardDescription>{isEditing ? t('articleSubCategory.description.edit') : t('articleSubCategory.description.new')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -172,11 +170,7 @@ export default function NewOrEditArticleSubCategory() {
 
             <div className="flex gap-4">
               <Button type="submit" disabled={loading}>
-                {loading
-                  ? t('common.status.saving')
-                  : isEditing
-                    ? t('articleSubCategory.actions.update')
-                    : t('articleSubCategory.actions.create')}
+                {loading ? t('common.status.saving') : isEditing ? t('articleSubCategory.actions.update') : t('articleSubCategory.actions.create')}
               </Button>
               <Button type="button" variant="outline" onClick={handleCancel}>
                 {t('common.actions.cancel')}

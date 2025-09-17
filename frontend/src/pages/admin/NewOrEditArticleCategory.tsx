@@ -108,9 +108,7 @@ export default function NewOrEditArticleCategory() {
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
           <CardTitle>{isEditing ? t('articleCategory.title.edit') : t('articleCategory.title.new')}</CardTitle>
-          <CardDescription>
-            {isEditing ? t('articleCategory.description.edit') : t('articleCategory.description.new')}
-          </CardDescription>
+          <CardDescription>{isEditing ? t('articleCategory.description.edit') : t('articleCategory.description.new')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -126,9 +124,7 @@ export default function NewOrEditArticleCategory() {
                 maxLength={255}
                 required
               />
-              <p className="text-sm text-gray-500">
-                {t('articleCategory.form.charCount', { count: formData.name.length, max: 255 })}
-              </p>
+              <p className="text-sm text-gray-500">{t('articleCategory.form.charCount', { count: formData.name.length, max: 255 })}</p>
             </div>
 
             <div className="space-y-2">
@@ -144,11 +140,7 @@ export default function NewOrEditArticleCategory() {
 
             <div className="flex gap-4">
               <Button type="submit" disabled={loading}>
-                {loading
-                  ? t('common.status.saving')
-                  : isEditing
-                    ? t('articleCategory.actions.update')
-                    : t('articleCategory.actions.create')}
+                {loading ? t('common.status.saving') : isEditing ? t('articleCategory.actions.update') : t('articleCategory.actions.create')}
               </Button>
               <Button type="button" variant="outline" onClick={handleCancel}>
                 {t('common.actions.cancel')}

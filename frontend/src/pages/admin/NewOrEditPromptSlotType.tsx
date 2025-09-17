@@ -138,11 +138,7 @@ export default function NewOrEditPromptSlotType() {
 
             <div className="flex gap-4">
               <Button type="submit" disabled={loading}>
-                {loading
-                  ? t('common.status.saving')
-                  : isEditing
-                    ? t('promptSlotType.actions.update')
-                    : t('promptSlotType.actions.create')}
+                {loading ? t('common.status.saving') : isEditing ? t('promptSlotType.actions.update') : t('promptSlotType.actions.create')}
               </Button>
               <Button type="button" variant="outline" onClick={handleCancel}>
                 {t('common.actions.cancel')}

@@ -76,20 +76,14 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
   }
 
   if (sortedSlotTypes.length === 0) {
-    return (
-      <div className="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-gray-600">
-        {t('prompt.slotSelector.empty')}
-      </div>
-    );
+    return <div className="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-gray-600">{t('prompt.slotSelector.empty')}</div>;
   }
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <Label>{t('prompt.slotSelector.label')}</Label>
-        <Badge variant="secondary">
-          {t('prompt.slotSelector.badge', { selected: selectedSlotIds.length, total: sortedSlotTypes.length })}
-        </Badge>
+        <Badge variant="secondary">{t('prompt.slotSelector.badge', { selected: selectedSlotIds.length, total: sortedSlotTypes.length })}</Badge>
       </div>
 
       <Accordion type="multiple" className="w-full">
