@@ -3,6 +3,7 @@ import { initReactI18next } from 'react-i18next';
 
 import deAdminArticleCategories from './locales/de/admin-article-categories.json';
 import deAdminArticles from './locales/de/admin-articles.json';
+import deAdminCompletedOrders from './locales/de/admin-completed-orders.json';
 import deCart from './locales/de/cart.json';
 import deCheckout from './locales/de/checkout.json';
 import deEditor from './locales/de/editor.json';
@@ -13,6 +14,7 @@ import deOrders from './locales/de/orders.json';
 import deVat from './locales/de/vat.json';
 import enAdminArticleCategories from './locales/en/admin-article-categories.json';
 import enAdminArticles from './locales/en/admin-articles.json';
+import enAdminCompletedOrders from './locales/en/admin-completed-orders.json';
 import enCart from './locales/en/cart.json';
 import enCheckout from './locales/en/checkout.json';
 import enEditor from './locales/en/editor.json';
@@ -36,6 +38,7 @@ export const resources = {
     orderSuccess: enOrderSuccess,
     adminArticleCategories: enAdminArticleCategories,
     adminArticles: enAdminArticles,
+    adminCompletedOrders: enAdminCompletedOrders,
   },
   de: {
     vat: deVat,
@@ -48,6 +51,7 @@ export const resources = {
     orderSuccess: deOrderSuccess,
     adminArticleCategories: deAdminArticleCategories,
     adminArticles: deAdminArticles,
+    adminCompletedOrders: deAdminCompletedOrders,
   },
 } as const;
 export const namespaces = Object.freeze(Object.keys(resources.en)) as readonly (keyof typeof resources.en)[];
