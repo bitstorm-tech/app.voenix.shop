@@ -8,6 +8,7 @@ import { useCreateVat, useUpdateVat, useVat } from '@/hooks/queries/useVat';
 import type { CreateValueAddedTaxRequest, UpdateValueAddedTaxRequest } from '@/types/vat';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -15,6 +16,7 @@ export default function NewOrEditVat() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
+  const { t } = useTranslation('admin');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -43,15 +45,15 @@ export default function NewOrEditVat() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = t('vatForm.errors.nameRequired');
     }
 
     if (!formData.percent) {
-      newErrors.percent = 'Percent is required';
+      newErrors.percent = t('vatForm.errors.percentRequired');
     } else {
       const percentNum = parseInt(formData.percent);
       if (isNaN(percentNum) || percentNum <= 0) {
-        newErrors.percent = 'Percent must be a positive number';
+        newErrors.percent = t('vatForm.errors.percentPositive');
       }
     }
 
@@ -84,7 +86,8 @@ export default function NewOrEditVat() {
       }
       navigate('/admin/vat');
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      const fallbackMessage = t('common.errors.generic');
+      const errorMessage = error instanceof Error ? error.message : fallbackMessage;
       toast.error(errorMessage);
     }
   };
@@ -97,7 +100,7 @@ export default function NewOrEditVat() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading VAT data...</p>
+          <p className="text-gray-500">{t('vatForm.loading')}</p>
         </div>
       </div>
     );
@@ -108,38 +111,38 @@ export default function NewOrEditVat() {
       <div className="mb-6">
         <button onClick={() => navigate('/admin/vat')} className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900">
           <ArrowLeft className="h-4 w-4" />
-          Back to VAT List
+          {t('vatForm.breadcrumb.back')}
         </button>
-        <h1 className="text-2xl font-bold">{isEditing ? 'Edit VAT' : 'Create New VAT'}</h1>
+        <h1 className="text-2xl font-bold">{isEditing ? t('vatForm.title.edit') : t('vatForm.title.new')}</h1>
       </div>
 
       <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle>{isEditing ? 'Edit VAT Details' : 'VAT Details'}</CardTitle>
-          <CardDescription>{isEditing ? 'Update the VAT information below.' : 'Enter the details for the new VAT entry.'}</CardDescription>
+          <CardTitle>{isEditing ? t('vatForm.cardTitle.edit') : t('vatForm.cardTitle.new')}</CardTitle>
+          <CardDescription>{isEditing ? t('vatForm.cardDescription.edit') : t('vatForm.cardDescription.new')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name">{t('vatForm.form.name')}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Standard VAT"
+                placeholder={t('vatForm.form.namePlaceholder')}
                 className={errors.name ? 'border-red-500' : ''}
               />
               {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
             </div>
 
             <div>
-              <Label htmlFor="percent">Percent (%) *</Label>
+              <Label htmlFor="percent">{t('vatForm.form.percent')}</Label>
               <Input
                 id="percent"
                 type="number"
                 value={formData.percent}
                 onChange={(e) => setFormData({ ...formData, percent: e.target.value })}
-                placeholder="e.g., 19"
+                placeholder={t('vatForm.form.percentPlaceholder')}
                 min="1"
                 className={errors.percent ? 'border-red-500' : ''}
               />
@@ -147,12 +150,12 @@ export default function NewOrEditVat() {
             </div>
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('vatForm.form.description')}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Optional description for this VAT rate"
+                placeholder={t('vatForm.form.descriptionPlaceholder')}
                 rows={3}
               />
             </div>
@@ -164,16 +167,20 @@ export default function NewOrEditVat() {
                 onCheckedChange={(checked) => setFormData({ ...formData, isDefault: checked === true })}
               />
               <Label htmlFor="isDefault" className="cursor-pointer text-sm font-normal">
-                Set as default VAT
+                {t('vatForm.form.isDefault')}
               </Label>
             </div>
 
             <div className="flex gap-3 pt-4">
               <Button type="submit" disabled={createVatMutation.isPending || updateVatMutation.isPending}>
-                {createVatMutation.isPending || updateVatMutation.isPending ? 'Saving...' : isEditing ? 'Update VAT' : 'Create VAT'}
+                {createVatMutation.isPending || updateVatMutation.isPending
+                  ? t('common.status.saving')
+                  : isEditing
+                    ? t('vatForm.actions.update')
+                    : t('vatForm.actions.create')}
               </Button>
               <Button type="button" variant="outline" onClick={handleCancel} disabled={createVatMutation.isPending || updateVatMutation.isPending}>
-                Cancel
+                {t('common.actions.cancel')}
               </Button>
             </div>
           </form>

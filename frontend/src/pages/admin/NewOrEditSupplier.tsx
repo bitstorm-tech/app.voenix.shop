@@ -8,6 +8,7 @@ import { useCreateSupplier, useSupplier, useUpdateSupplier } from '@/hooks/queri
 import type { CreateSupplierRequest, UpdateSupplierRequest } from '@/types/supplier';
 import { ArrowLeft } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -15,6 +16,7 @@ export default function NewOrEditSupplier() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
+  const { t } = useTranslation('admin');
 
   const [formData, setFormData] = useState<{
     name: string;
@@ -79,11 +81,11 @@ export default function NewOrEditSupplier() {
     const newErrors: Record<string, string> = {};
 
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
+      newErrors.email = t('supplier.errors.invalidEmail');
     }
 
     if (formData.postalCode && (isNaN(Number(formData.postalCode)) || Number(formData.postalCode) <= 0)) {
-      newErrors.postalCode = 'Postal code must be a positive number';
+      newErrors.postalCode = t('supplier.errors.postalCode');
     }
 
     setErrors(newErrors);
@@ -125,7 +127,8 @@ export default function NewOrEditSupplier() {
       }
       navigate('/admin/suppliers');
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+      const fallbackMessage = t('common.errors.generic');
+      const errorMessage = error instanceof Error ? error.message : fallbackMessage;
       toast.error(errorMessage);
     }
   };
@@ -138,7 +141,7 @@ export default function NewOrEditSupplier() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading...</p>
+          <p className="text-gray-500">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -149,37 +152,37 @@ export default function NewOrEditSupplier() {
       <div className="mb-6">
         <button onClick={() => navigate('/admin/suppliers')} className="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900">
           <ArrowLeft className="h-4 w-4" />
-          Back to Suppliers
+          {t('supplier.breadcrumb.back')}
         </button>
-        <h1 className="text-2xl font-bold">{isEditing ? 'Edit Supplier' : 'Create New Supplier'}</h1>
+        <h1 className="text-2xl font-bold">{isEditing ? t('supplier.title.edit') : t('supplier.title.new')}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Company Information */}
         <Card>
           <CardHeader>
-            <CardTitle>Company Information</CardTitle>
-            <CardDescription>Basic information about the supplier company</CardDescription>
+            <CardTitle>{t('supplier.sections.company.title')}</CardTitle>
+            <CardDescription>{t('supplier.sections.company.description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="name">Company Name</Label>
+              <Label htmlFor="name">{t('supplier.form.name')}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., ABC Supplies Ltd."
+                placeholder={t('supplier.form.namePlaceholder')}
               />
             </div>
 
             <div>
-              <Label htmlFor="website">Website</Label>
+              <Label htmlFor="website">{t('supplier.form.website')}</Label>
               <Input
                 id="website"
                 type="url"
                 value={formData.website}
                 onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-                placeholder="e.g., https://www.example.com"
+                placeholder={t('supplier.form.websitePlaceholder')}
               />
             </div>
           </CardContent>
@@ -188,50 +191,50 @@ export default function NewOrEditSupplier() {
         {/* Contact Person */}
         <Card>
           <CardHeader>
-            <CardTitle>Contact Person</CardTitle>
-            <CardDescription>Primary contact person at the supplier</CardDescription>
+            <CardTitle>{t('supplier.sections.contact.title')}</CardTitle>
+            <CardDescription>{t('supplier.sections.contact.description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-3">
               <div>
-                <Label htmlFor="title">Title</Label>
+                <Label htmlFor="title">{t('supplier.form.title')}</Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g., Mr., Ms., Dr."
+                  placeholder={t('supplier.form.titlePlaceholder')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="firstName">First Name</Label>
+                <Label htmlFor="firstName">{t('supplier.form.firstName')}</Label>
                 <Input
                   id="firstName"
                   value={formData.firstName}
                   onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                  placeholder="e.g., John"
+                  placeholder={t('supplier.form.firstNamePlaceholder')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="lastName">Last Name</Label>
+                <Label htmlFor="lastName">{t('supplier.form.lastName')}</Label>
                 <Input
                   id="lastName"
                   value={formData.lastName}
                   onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                  placeholder="e.g., Doe"
+                  placeholder={t('supplier.form.lastNamePlaceholder')}
                 />
               </div>
             </div>
 
             <div>
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('supplier.form.email')}</Label>
               <Input
                 id="email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="e.g., contact@example.com"
+                placeholder={t('supplier.form.emailPlaceholder')}
                 className={errors.email ? 'border-red-500' : ''}
               />
               {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
@@ -242,60 +245,60 @@ export default function NewOrEditSupplier() {
         {/* Address */}
         <Card>
           <CardHeader>
-            <CardTitle>Address</CardTitle>
-            <CardDescription>Physical address of the supplier</CardDescription>
+            <CardTitle>{t('supplier.sections.address.title')}</CardTitle>
+            <CardDescription>{t('supplier.sections.address.description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <Label htmlFor="street">Street</Label>
+                <Label htmlFor="street">{t('supplier.form.street')}</Label>
                 <Input
                   id="street"
                   value={formData.street}
                   onChange={(e) => setFormData({ ...formData, street: e.target.value })}
-                  placeholder="e.g., Main Street"
+                  placeholder={t('supplier.form.streetPlaceholder')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="houseNumber">House Number</Label>
+                <Label htmlFor="houseNumber">{t('supplier.form.houseNumber')}</Label>
                 <Input
                   id="houseNumber"
                   value={formData.houseNumber}
                   onChange={(e) => setFormData({ ...formData, houseNumber: e.target.value })}
-                  placeholder="e.g., 123"
+                  placeholder={t('supplier.form.houseNumberPlaceholder')}
                 />
               </div>
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
               <div>
-                <Label htmlFor="city">City</Label>
+                <Label htmlFor="city">{t('supplier.form.city')}</Label>
                 <Input
                   id="city"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  placeholder="e.g., Berlin"
+                  placeholder={t('supplier.form.cityPlaceholder')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="postalCode">Postal Code</Label>
+                <Label htmlFor="postalCode">{t('supplier.form.postalCode')}</Label>
                 <Input
                   id="postalCode"
                   value={formData.postalCode}
                   onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
-                  placeholder="e.g., 10115"
+                  placeholder={t('supplier.form.postalCodePlaceholder')}
                   className={errors.postalCode ? 'border-red-500' : ''}
                 />
                 {errors.postalCode && <p className="mt-1 text-sm text-red-500">{errors.postalCode}</p>}
               </div>
 
               <div>
-                <Label htmlFor="country">Country</Label>
+                <Label htmlFor="country">{t('supplier.form.country')}</Label>
                 <Select value={formData.countryId || undefined} onValueChange={(value) => setFormData({ ...formData, countryId: value })}>
                   <SelectTrigger id="country">
-                    <SelectValue placeholder="Select a country" />
+                    <SelectValue placeholder={t('supplier.form.countryPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {countries?.map((country) => (
@@ -313,41 +316,41 @@ export default function NewOrEditSupplier() {
         {/* Phone Numbers */}
         <Card>
           <CardHeader>
-            <CardTitle>Phone Numbers</CardTitle>
-            <CardDescription>Contact phone numbers for the supplier</CardDescription>
+            <CardTitle>{t('supplier.sections.phone.title')}</CardTitle>
+            <CardDescription>{t('supplier.sections.phone.description')}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-3">
               <div>
-                <Label htmlFor="phoneNumber1">Primary Phone</Label>
+                <Label htmlFor="phoneNumber1">{t('supplier.form.phoneNumber1')}</Label>
                 <Input
                   id="phoneNumber1"
                   type="tel"
                   value={formData.phoneNumber1}
                   onChange={(e) => setFormData({ ...formData, phoneNumber1: e.target.value })}
-                  placeholder="e.g., +49 30 12345678"
+                  placeholder={t('supplier.form.phoneNumber1Placeholder')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="phoneNumber2">Secondary Phone</Label>
+                <Label htmlFor="phoneNumber2">{t('supplier.form.phoneNumber2')}</Label>
                 <Input
                   id="phoneNumber2"
                   type="tel"
                   value={formData.phoneNumber2}
                   onChange={(e) => setFormData({ ...formData, phoneNumber2: e.target.value })}
-                  placeholder="e.g., +49 30 87654321"
+                  placeholder={t('supplier.form.phoneNumber2Placeholder')}
                 />
               </div>
 
               <div>
-                <Label htmlFor="phoneNumber3">Mobile Phone</Label>
+                <Label htmlFor="phoneNumber3">{t('supplier.form.phoneNumber3')}</Label>
                 <Input
                   id="phoneNumber3"
                   type="tel"
                   value={formData.phoneNumber3}
                   onChange={(e) => setFormData({ ...formData, phoneNumber3: e.target.value })}
-                  placeholder="e.g., +49 170 1234567"
+                  placeholder={t('supplier.form.phoneNumber3Placeholder')}
                 />
               </div>
             </div>
@@ -357,7 +360,11 @@ export default function NewOrEditSupplier() {
         {/* Actions */}
         <div className="flex gap-3">
           <Button type="submit" disabled={createSupplierMutation.isPending || updateSupplierMutation.isPending}>
-            {createSupplierMutation.isPending || updateSupplierMutation.isPending ? 'Saving...' : isEditing ? 'Update Supplier' : 'Create Supplier'}
+            {createSupplierMutation.isPending || updateSupplierMutation.isPending
+              ? t('common.status.saving')
+              : isEditing
+                ? t('supplier.actions.update')
+                : t('supplier.actions.create')}
           </Button>
           <Button
             type="button"
@@ -365,7 +372,7 @@ export default function NewOrEditSupplier() {
             onClick={handleCancel}
             disabled={createSupplierMutation.isPending || updateSupplierMutation.isPending}
           >
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
         </div>
       </form>

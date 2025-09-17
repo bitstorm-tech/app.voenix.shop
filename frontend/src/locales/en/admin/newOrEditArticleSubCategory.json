@@ -1,0 +1,32 @@
+{
+  "title": {
+    "new": "New Article Subcategory",
+    "edit": "Edit Article Subcategory"
+  },
+  "description": {
+    "new": "Create a new article subcategory with the form below",
+    "edit": "Update the article subcategory details below"
+  },
+  "form": {
+    "category": "Category",
+    "categoryPlaceholder": "Select a category",
+    "name": "Name",
+    "namePlaceholder": "Enter subcategory name",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter subcategory description (optional)",
+    "subcategory": "Subcategory (optional)",
+    "subcategoryPlaceholder": "Select a subcategory (optional)",
+    "noSubcategory": "No subcategory"
+  },
+  "errors": {
+    "loadCategories": "Failed to load article categories",
+    "load": "Failed to load article subcategory",
+    "save": "Failed to save article subcategory. Please try again.",
+    "nameRequired": "Name is required",
+    "categoryRequired": "Category is required"
+  },
+  "actions": {
+    "create": "Create Subcategory",
+    "update": "Update Subcategory"
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "breadcrumb": {
+    "back": "Back to Suppliers"
+  },
+  "title": {
+    "new": "Create New Supplier",
+    "edit": "Edit Supplier"
+  },
+  "sections": {
+    "company": {
+      "title": "Company Information",
+      "description": "Basic information about the supplier company"
+    },
+    "contact": {
+      "title": "Contact Person",
+      "description": "Primary contact person at the supplier"
+    },
+    "address": {
+      "title": "Address",
+      "description": "Physical address of the supplier"
+    },
+    "phone": {
+      "title": "Phone Numbers",
+      "description": "Contact phone numbers for the supplier"
+    }
+  },
+  "form": {
+    "name": "Company Name",
+    "namePlaceholder": "e.g., ABC Supplies Ltd.",
+    "website": "Website",
+    "websitePlaceholder": "e.g., https://www.example.com",
+    "title": "Title",
+    "titlePlaceholder": "e.g., Mr., Ms., Dr.",
+    "firstName": "First Name",
+    "firstNamePlaceholder": "e.g., John",
+    "lastName": "Last Name",
+    "lastNamePlaceholder": "e.g., Doe",
+    "email": "Email",
+    "emailPlaceholder": "e.g., contact@example.com",
+    "street": "Street",
+    "streetPlaceholder": "e.g., Main Street",
+    "houseNumber": "House Number",
+    "houseNumberPlaceholder": "e.g., 123",
+    "city": "City",
+    "cityPlaceholder": "e.g., Berlin",
+    "postalCode": "Postal Code",
+    "postalCodePlaceholder": "e.g., 10115",
+    "country": "Country",
+    "countryPlaceholder": "Select a country",
+    "phoneNumber1": "Primary Phone",
+    "phoneNumber1Placeholder": "e.g., +49 30 12345678",
+    "phoneNumber2": "Secondary Phone",
+    "phoneNumber2Placeholder": "e.g., +49 30 87654321",
+    "phoneNumber3": "Mobile Phone",
+    "phoneNumber3Placeholder": "e.g., +49 170 1234567"
+  },
+  "errors": {
+    "invalidEmail": "Invalid email format",
+    "postalCode": "Postal code must be a positive number"
+  },
+  "actions": {
+    "create": "Create Supplier",
+    "update": "Update Supplier"
+  }
+}

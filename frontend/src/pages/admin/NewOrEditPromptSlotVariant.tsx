@@ -9,12 +9,14 @@ import { imagesApi, promptSlotTypesApi, promptSlotVariantsApi } from '@/lib/api'
 import type { PromptSlotType } from '@/types/promptSlotVariant';
 import { Trash2, Upload } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditPromptSlotVariant() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
+  const { t } = useTranslation('admin');
 
   const [formData, setFormData] = useState<CreatePromptSlotVariantRequest>({
     name: '',
@@ -38,9 +40,9 @@ export default function NewOrEditPromptSlotVariant() {
       setPromptSlotTypes(data);
     } catch (error) {
       console.error('Error fetching prompt slot types:', error);
-      setError('Failed to load prompt slot types');
+      setError(t('promptSlotVariant.errors.loadTypes'));
     }
-  }, []);
+  }, [t]);
 
   const fetchSlot = useCallback(async () => {
     if (!id) return;
@@ -60,11 +62,11 @@ export default function NewOrEditPromptSlotVariant() {
       }
     } catch (error) {
       console.error('Error fetching slot:', error);
-      setError('Failed to load slot');
+      setError(t('promptSlotVariant.errors.load'));
     } finally {
       setInitialLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     fetchPromptSlotTypes();
@@ -88,17 +90,17 @@ export default function NewOrEditPromptSlotVariant() {
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      setError('Name is required');
+      setError(t('promptSlotVariant.errors.nameRequired'));
       return;
     }
 
     if (!formData.promptSlotTypeId) {
-      setError('Prompt slot type is required');
+      setError(t('promptSlotVariant.errors.typeRequired'));
       return;
     }
 
     if (!formData.prompt.trim()) {
-      setError('Prompt is required');
+      setError(t('promptSlotVariant.errors.promptRequired'));
       return;
     }
 
@@ -116,7 +118,7 @@ export default function NewOrEditPromptSlotVariant() {
           finalImageFilename = response.filename;
         } catch (error) {
           console.error('Error uploading image:', error);
-          setError('Failed to upload image. Please try again.');
+          setError(t('promptSlotVariant.errors.uploadImage'));
           return;
         } finally {
           setUploadingImage(false);
@@ -148,7 +150,7 @@ export default function NewOrEditPromptSlotVariant() {
       navigate('/admin/slot-variants');
     } catch (error) {
       console.error('Error saving slot:', error);
-      setError('Failed to save slot. Please try again.');
+      setError(t('promptSlotVariant.errors.save'));
     } finally {
       setLoading(false);
     }
@@ -164,13 +166,13 @@ export default function NewOrEditPromptSlotVariant() {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file');
+      setError(t('promptSlotVariant.errors.invalidImage'));
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError('Image size must be less than 5MB');
+      setError(t('promptSlotVariant.errors.imageTooLarge'));
       return;
     }
 
@@ -208,7 +210,7 @@ export default function NewOrEditPromptSlotVariant() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading...</p>
+          <p className="text-gray-500">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -218,32 +220,32 @@ export default function NewOrEditPromptSlotVariant() {
     <div className="container mx-auto p-6">
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
-          <CardTitle>{isEditing ? 'Edit Slot' : 'New Slot'}</CardTitle>
-          <CardDescription>{isEditing ? 'Update the slot details below' : 'Create a new slot with the form below'}</CardDescription>
+          <CardTitle>{isEditing ? t('promptSlotVariant.title.edit') : t('promptSlotVariant.title.new')}</CardTitle>
+          <CardDescription>{isEditing ? t('promptSlotVariant.description.edit') : t('promptSlotVariant.description.new')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
 
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t('promptSlotVariant.form.name')}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter slot name"
+                placeholder={t('promptSlotVariant.form.namePlaceholder')}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="promptSlotType">Prompt Slot Type</Label>
+              <Label htmlFor="promptSlotType">{t('promptSlotVariant.form.type')}</Label>
               <Select
                 value={formData.promptSlotTypeId.toString()}
                 onValueChange={(value) => setFormData({ ...formData, promptSlotTypeId: parseInt(value) })}
               >
                 <SelectTrigger id="promptSlotType">
-                  <SelectValue placeholder="Select a prompt slot type" />
+                  <SelectValue placeholder={t('promptSlotVariant.form.typePlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {promptSlotTypes.map((type) => (
@@ -256,34 +258,34 @@ export default function NewOrEditPromptSlotVariant() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="prompt">Prompt</Label>
+              <Label htmlFor="prompt">{t('promptSlotVariant.form.prompt')}</Label>
               <Textarea
                 id="prompt"
                 value={formData.prompt}
                 onChange={(e) => setFormData({ ...formData, prompt: e.target.value })}
-                placeholder="Enter the prompt text"
+                placeholder={t('promptSlotVariant.form.promptPlaceholder')}
                 rows={6}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('promptSlotVariant.form.description')}</Label>
               <Textarea
                 id="description"
                 value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Enter an optional description for this slot"
+                placeholder={t('promptSlotVariant.form.descriptionPlaceholder')}
                 rows={3}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="exampleImage">Example Image</Label>
+              <Label htmlFor="exampleImage">{t('promptSlotVariant.form.exampleImage')}</Label>
               <div className="space-y-4">
                 {currentImageUrl ? (
                   <div className="relative inline-block">
-                    <img src={currentImageUrl} alt="Example" className="h-32 w-32 rounded-lg border object-cover" />
+                    <img src={currentImageUrl} alt={t('promptSlotVariant.form.exampleAlt')} className="h-32 w-32 rounded-lg border object-cover" />
                     <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-8 w-8" onClick={handleRemoveImage}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -296,9 +298,9 @@ export default function NewOrEditPromptSlotVariant() {
                       className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed px-4 py-2 hover:border-gray-400"
                     >
                       <Upload className="h-4 w-4" />
-                      Upload Image
+                      {t('common.actions.uploadImage')}
                     </Label>
-                    <span className="text-sm text-gray-500">Optional example image for this slot</span>
+                    <span className="text-sm text-gray-500">{t('promptSlotVariant.form.exampleHint')}</span>
                   </div>
                 )}
               </div>
@@ -306,10 +308,16 @@ export default function NewOrEditPromptSlotVariant() {
 
             <div className="flex gap-4">
               <Button type="submit" disabled={loading || uploadingImage}>
-                {uploadingImage ? 'Uploading image...' : loading ? 'Saving...' : isEditing ? 'Update Slot' : 'Create Slot'}
+                {uploadingImage
+                  ? t('common.status.uploadingImage')
+                  : loading
+                    ? t('common.status.saving')
+                    : isEditing
+                      ? t('promptSlotVariant.actions.update')
+                      : t('promptSlotVariant.actions.create')}
               </Button>
               <Button type="button" variant="outline" onClick={handleCancel}>
-                Cancel
+                {t('common.actions.cancel')}
               </Button>
             </div>
           </form>

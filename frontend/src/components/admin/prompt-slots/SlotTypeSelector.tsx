@@ -3,7 +3,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Label } from '@/components/ui/Label';
 import { promptSlotVariantsApi } from '@/lib/api';
 import type { PromptSlotType, PromptSlotVariant } from '@/types/promptSlotVariant';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface SlotTypeSelectorProps {
   selectedSlotIds: number[];
@@ -11,15 +12,12 @@ interface SlotTypeSelectorProps {
 }
 
 export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTypeSelectorProps) {
+  const { t } = useTranslation('admin');
   const [slotVariants, setSlotVariants] = useState<PromptSlotVariant[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchSlotVariants();
-  }, []);
-
-  const fetchSlotVariants = async () => {
+  const fetchSlotVariants = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -27,11 +25,15 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
       setSlotVariants(data);
     } catch (error) {
       console.error('Error fetching slot variants:', error);
-      setError('Failed to load slot variants');
+      setError(t('prompt.slotSelector.errors.load'));
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    fetchSlotVariants();
+  }, [fetchSlotVariants]);
 
   // Group slot variants by type
   const slotVariantsByType = slotVariants.reduce(
@@ -40,7 +42,7 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
 
       if (!acc[typeId]) {
         acc[typeId] = {
-          type: slot.promptSlotType || { id: 0, name: 'Other', position: 999 },
+          type: slot.promptSlotType || { id: 0, name: t('prompt.slotSelector.fallbackType'), position: 999 },
           slotVariants: [],
         };
       }
@@ -66,7 +68,7 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
   };
 
   if (loading) {
-    return <div className="py-8 text-center text-gray-500">Loading slot variants...</div>;
+    return <div className="py-8 text-center text-gray-500">{t('prompt.slotSelector.loading')}</div>;
   }
 
   if (error) {
@@ -74,20 +76,14 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
   }
 
   if (sortedSlotTypes.length === 0) {
-    return (
-      <div className="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-gray-600">
-        No slot variants available. Please create slot variants first.
-      </div>
-    );
+    return <div className="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-gray-600">{t('prompt.slotSelector.empty')}</div>;
   }
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label>Prompt Slot Variants</Label>
-        <Badge variant="secondary">
-          {selectedSlotIds.length} of {sortedSlotTypes.length} types selected
-        </Badge>
+        <Label>{t('prompt.slotSelector.label')}</Label>
+        <Badge variant="secondary">{t('prompt.slotSelector.badge', { selected: selectedSlotIds.length, total: sortedSlotTypes.length })}</Badge>
       </div>
 
       <Accordion type="multiple" className="w-full">
@@ -101,7 +97,7 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
                   <span>{type.name}</span>
                   {isSelected && (
                     <Badge variant="default" className="h-5 text-xs">
-                      Selected
+                      {t('prompt.slotSelector.selectedBadge')}
                     </Badge>
                   )}
                 </div>
@@ -121,7 +117,11 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
                         <div className="text-sm text-gray-600">{slot.prompt}</div>
                         {slot.description && <div className="text-sm text-gray-500">{slot.description}</div>}
                         {slot.exampleImageUrl && (
-                          <img src={slot.exampleImageUrl} alt={`Example for ${slot.name}`} className="mt-2 h-20 w-20 rounded object-cover" />
+                          <img
+                            src={slot.exampleImageUrl}
+                            alt={t('prompt.slotSelector.exampleAlt', { name: slot.name })}
+                            className="mt-2 h-20 w-20 rounded object-cover"
+                          />
                         )}
                       </div>
                     </label>

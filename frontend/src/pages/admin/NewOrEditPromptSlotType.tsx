@@ -5,12 +5,14 @@ import { Label } from '@/components/ui/Label';
 import type { CreatePromptSlotTypeRequest, UpdatePromptSlotTypeRequest } from '@/lib/api';
 import { promptSlotTypesApi } from '@/lib/api';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditPromptSlotType() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
+  const { t } = useTranslation('admin');
 
   const [formData, setFormData] = useState<CreatePromptSlotTypeRequest>({
     name: '',
@@ -49,11 +51,11 @@ export default function NewOrEditPromptSlotType() {
       });
     } catch (error) {
       console.error('Error fetching prompt slot type:', error);
-      setError('Failed to load prompt slot type');
+      setError(t('promptSlotType.errors.load'));
     } finally {
       setInitialLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     if (isEditing) {
@@ -68,7 +70,7 @@ export default function NewOrEditPromptSlotType() {
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      setError('Name is required');
+      setError(t('promptSlotType.errors.nameRequired'));
       return;
     }
 
@@ -92,7 +94,7 @@ export default function NewOrEditPromptSlotType() {
       navigate('/admin/prompt-slot-types');
     } catch (error) {
       console.error('Error saving prompt slot type:', error);
-      setError('Failed to save prompt slot type. Please try again.');
+      setError(t('promptSlotType.errors.save'));
     } finally {
       setLoading(false);
     }
@@ -106,7 +108,7 @@ export default function NewOrEditPromptSlotType() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading...</p>
+          <p className="text-gray-500">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -116,30 +118,30 @@ export default function NewOrEditPromptSlotType() {
     <div className="container mx-auto p-6">
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
-          <CardTitle>{isEditing ? 'Edit Slot Type' : 'New Slot Type'}</CardTitle>
-          <CardDescription>{isEditing ? 'Update the slot type details below' : 'Create a new slot type with the form below'}</CardDescription>
+          <CardTitle>{isEditing ? t('promptSlotType.title.edit') : t('promptSlotType.title.new')}</CardTitle>
+          <CardDescription>{isEditing ? t('promptSlotType.description.edit') : t('promptSlotType.description.new')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
 
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t('promptSlotType.form.name')}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter slot type name"
+                placeholder={t('promptSlotType.form.namePlaceholder')}
                 required
               />
             </div>
 
             <div className="flex gap-4">
               <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : isEditing ? 'Update Slot Type' : 'Create Slot Type'}
+                {loading ? t('common.status.saving') : isEditing ? t('promptSlotType.actions.update') : t('promptSlotType.actions.create')}
               </Button>
               <Button type="button" variant="outline" onClick={handleCancel}>
-                Cancel
+                {t('common.actions.cancel')}
               </Button>
             </div>
           </form>

@@ -1,0 +1,27 @@
+{
+  "title": {
+    "new": "Neue Artikelkategorie",
+    "edit": "Artikelkategorie bearbeiten"
+  },
+  "description": {
+    "new": "Erstellen Sie mit dem Formular unten eine neue Artikelkategorie",
+    "edit": "Aktualisieren Sie die Details der Artikelkategorie unten"
+  },
+  "form": {
+    "name": "Name *",
+    "namePlaceholder": "Name der Artikelkategorie eingeben",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Beschreibung der Artikelkategorie eingeben (optional)",
+    "charCount": "{{count}}/{{max}} Zeichen"
+  },
+  "errors": {
+    "load": "Artikelkategorie konnte nicht geladen werden",
+    "save": "Artikelkategorie konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "nameRequired": "Name ist erforderlich",
+    "nameMaxLength": "Name darf maximal 255 Zeichen enthalten"
+  },
+  "actions": {
+    "create": "Kategorie erstellen",
+    "update": "Kategorie aktualisieren"
+  }
+}

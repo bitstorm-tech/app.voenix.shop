@@ -1,0 +1,36 @@
+{
+  "breadcrumb": {
+    "back": "Back to VAT List"
+  },
+  "title": {
+    "new": "Create New VAT",
+    "edit": "Edit VAT"
+  },
+  "cardTitle": {
+    "new": "VAT Details",
+    "edit": "Edit VAT Details"
+  },
+  "cardDescription": {
+    "new": "Enter the details for the new VAT entry.",
+    "edit": "Update the VAT information below."
+  },
+  "form": {
+    "name": "Name *",
+    "namePlaceholder": "e.g., Standard VAT",
+    "percent": "Percent (%) *",
+    "percentPlaceholder": "e.g., 19",
+    "description": "Description",
+    "descriptionPlaceholder": "Optional description for this VAT rate",
+    "isDefault": "Set as default VAT"
+  },
+  "errors": {
+    "nameRequired": "Name is required",
+    "percentRequired": "Percent is required",
+    "percentPositive": "Percent must be a positive number"
+  },
+  "loading": "Loading VAT data...",
+  "actions": {
+    "create": "Create VAT",
+    "update": "Update VAT"
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "tabs": {
+    "prompt": "Prompt",
+    "costCalculation": "Preisberechnung"
+  },
+  "title": {
+    "new": "Neuer Prompt",
+    "edit": "Prompt bearbeiten"
+  },
+  "description": {
+    "new": "Erstellen Sie mit dem Formular unten einen neuen Prompt",
+    "edit": "Aktualisieren Sie die Prompt-Details unten"
+  },
+  "form": {
+    "title": "Titel",
+    "titlePlaceholder": "Prompt-Titel eingeben",
+    "promptNumber": "Prompt-Nummer",
+    "category": "Kategorie",
+    "categoryPlaceholder": "Kategorie auswählen",
+    "subcategory": "Subkategorie (optional)",
+    "subcategoryPlaceholder": "Subkategorie auswählen (optional)",
+    "noSubcategory": "Keine Subkategorie",
+    "promptStyle": "Prompt-Stil (optional)",
+    "promptStylePlaceholder": "Prompt-Text eingeben...",
+    "status": "Status",
+    "statusHint": "Diesen Prompt zur Nutzung freigeben"
+  },
+  "exampleImage": {
+    "label": "Beispielbild (optional)",
+    "hint": "PNG, JPG, GIF oder WEBP (wird automatisch in WebP umgewandelt)",
+    "alt": "Prompt-Beispiel"
+  },
+  "errors": {
+    "loadCategories": "Kategorien konnten nicht geladen werden",
+    "loadSubcategories": "Unterkategorien konnten nicht geladen werden",
+    "load": "Prompt konnte nicht geladen werden",
+    "save": "Prompt konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "titleRequired": "Titel ist erforderlich",
+    "categoryRequired": "Kategorie ist erforderlich",
+    "invalidImage": "Bitte wählen Sie eine gültige Bilddatei aus",
+    "imageTooLarge": "Dateigröße überschreitet das maximale Limit von 10 MB",
+    "uploadImage": "Bild konnte nicht hochgeladen werden: {{message}}"
+  },
+  "actions": {
+    "create": "Prompt erstellen",
+    "update": "Prompt aktualisieren"
+  },
+  "slotSelector": {
+    "label": "Prompt-Slot-Varianten",
+    "loading": "Slot-Varianten werden geladen...",
+    "errors": {
+      "load": "Slot-Varianten konnten nicht geladen werden"
+    },
+    "empty": "Keine Slot-Varianten vorhanden. Bitte erstellen Sie zuerst Slot-Varianten.",
+    "badge": "{{selected}} von {{total}} Typen ausgewählt",
+    "selectedBadge": "Ausgewählt",
+    "fallbackType": "Andere",
+    "exampleAlt": "Beispiel für {{name}}"
+  },
+  "priceCalculation": {
+    "purchase": {
+      "title": "Einkauf",
+      "description": "Einkaufspreis und Preisberechnungen",
+      "taxRateLabel": "Steuersatz",
+      "taxRatePlaceholder": "Umsatzsteuersatz auswählen",
+      "taxRateHint": "(aus Artikel- oder Dienstleistungsgruppe)",
+      "mode": {
+        "net": "Netto",
+        "gross": "Brutto"
+      },
+      "headers": {
+        "net": "Netto",
+        "tax": "Steuer",
+        "gross": "Brutto"
+      },
+      "priceLabel": "Einkaufspreis",
+      "costLabel": "Einkaufskosten",
+      "costPercentLabel": "Einkaufskosten %",
+      "totalLabel": "Einkauf gesamt",
+      "priceCorrespondsLabel": "Preis entspricht",
+      "priceCorrespondsPlaceholder": "Auswählen",
+      "unitPlaceholder": "1,00",
+      "unitHint": "Mengeneinheit(en) oder Verpackung"
+    },
+    "sales": {
+      "title": "Verkauf",
+      "description": "Verkaufspreis- und Margenberechnungen",
+      "taxRateLabel": "Steuersatz",
+      "taxRatePlaceholder": "Umsatzsteuersatz auswählen",
+      "taxRateHint": "(aus Artikel- oder Dienstleistungsgruppe)",
+      "mode": {
+        "net": "Netto",
+        "gross": "Brutto"
+      },
+      "headers": {
+        "net": "Netto",
+        "tax": "Steuer",
+        "gross": "Brutto"
+      },
+      "marginLabel": "Marge",
+      "marginPercentLabel": "Marge %",
+      "totalLabel": "Verkauf gesamt",
+      "priceCorrespondsLabel": "Preis entspricht",
+      "priceCorrespondsPlaceholder": "Auswählen",
+      "unitPlaceholder": "1,00",
+      "unitHint": "Mengeneinheit(en) oder Verpackung"
+    }
+  }
+}

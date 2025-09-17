@@ -5,6 +5,14 @@ import deAdminArticleCategories from './locales/de/admin-article-categories.json
 import deAdminArticles from './locales/de/admin-articles.json';
 import deAdminCompletedOrders from './locales/de/admin-completed-orders.json';
 import deAdminLogistics from './locales/de/admin-logistics.json';
+import deAdminCommon from './locales/de/admin/common.json';
+import deAdminArticleCategory from './locales/de/admin/newOrEditArticleCategory.json';
+import deAdminArticleSubCategory from './locales/de/admin/newOrEditArticleSubCategory.json';
+import deAdminPrompt from './locales/de/admin/newOrEditPrompt.json';
+import deAdminPromptSlotType from './locales/de/admin/newOrEditPromptSlotType.json';
+import deAdminPromptSlotVariant from './locales/de/admin/newOrEditPromptSlotVariant.json';
+import deAdminSupplier from './locales/de/admin/newOrEditSupplier.json';
+import deAdminVat from './locales/de/admin/newOrEditVat.json';
 import deCart from './locales/de/cart.json';
 import deCheckout from './locales/de/checkout.json';
 import deEditor from './locales/de/editor.json';
@@ -17,6 +25,14 @@ import enAdminArticleCategories from './locales/en/admin-article-categories.json
 import enAdminArticles from './locales/en/admin-articles.json';
 import enAdminCompletedOrders from './locales/en/admin-completed-orders.json';
 import enAdminLogistics from './locales/en/admin-logistics.json';
+import enAdminCommon from './locales/en/admin/common.json';
+import enAdminArticleCategory from './locales/en/admin/newOrEditArticleCategory.json';
+import enAdminArticleSubCategory from './locales/en/admin/newOrEditArticleSubCategory.json';
+import enAdminPrompt from './locales/en/admin/newOrEditPrompt.json';
+import enAdminPromptSlotType from './locales/en/admin/newOrEditPromptSlotType.json';
+import enAdminPromptSlotVariant from './locales/en/admin/newOrEditPromptSlotVariant.json';
+import enAdminSupplier from './locales/en/admin/newOrEditSupplier.json';
+import enAdminVat from './locales/en/admin/newOrEditVat.json';
 import enCart from './locales/en/cart.json';
 import enCheckout from './locales/en/checkout.json';
 import enEditor from './locales/en/editor.json';
@@ -30,32 +46,48 @@ export const defaultNS = 'vat';
 export const LANGUAGE_STORAGE_KEY = 'voenix.shop.language';
 export const resources = {
   en: {
-    vat: enVat,
-    cart: enCart,
-    checkout: enCheckout,
-    editor: enEditor,
-    login: enLogin,
-    myImages: enMyImages,
-    orders: enOrders,
-    orderSuccess: enOrderSuccess,
     adminArticleCategories: enAdminArticleCategories,
     adminArticles: enAdminArticles,
     adminCompletedOrders: enAdminCompletedOrders,
     adminLogistics: enAdminLogistics,
+    articleCategory: enAdminArticleCategory,
+    articleSubCategory: enAdminArticleSubCategory,
+    cart: enCart,
+    checkout: enCheckout,
+    common: enAdminCommon,
+    editor: enEditor,
+    login: enLogin,
+    myImages: enMyImages,
+    orderSuccess: enOrderSuccess,
+    orders: enOrders,
+    prompt: enAdminPrompt,
+    promptSlotType: enAdminPromptSlotType,
+    promptSlotVariant: enAdminPromptSlotVariant,
+    supplier: enAdminSupplier,
+    vat: enVat,
+    vatForm: enAdminVat,
   },
   de: {
-    vat: deVat,
-    cart: deCart,
-    checkout: deCheckout,
-    editor: deEditor,
-    login: deLogin,
-    myImages: deMyImages,
-    orders: deOrders,
-    orderSuccess: deOrderSuccess,
     adminArticleCategories: deAdminArticleCategories,
     adminArticles: deAdminArticles,
     adminCompletedOrders: deAdminCompletedOrders,
     adminLogistics: deAdminLogistics,
+    articleCategory: deAdminArticleCategory,
+    articleSubCategory: deAdminArticleSubCategory,
+    cart: deCart,
+    checkout: deCheckout,
+    common: deAdminCommon,
+    editor: deEditor,
+    login: deLogin,
+    myImages: deMyImages,
+    orderSuccess: deOrderSuccess,
+    orders: deOrders,
+    prompt: deAdminPrompt,
+    promptSlotType: deAdminPromptSlotType,
+    promptSlotVariant: deAdminPromptSlotVariant,
+    supplier: deAdminSupplier,
+    vat: deVat,
+    vatForm: deAdminVat,
   },
 } as const;
 export const namespaces = Object.freeze(Object.keys(resources.en)) as readonly (keyof typeof resources.en)[];

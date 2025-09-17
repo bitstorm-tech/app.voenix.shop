@@ -1,0 +1,38 @@
+{
+  "title": {
+    "new": "Neuer Slot",
+    "edit": "Slot bearbeiten"
+  },
+  "description": {
+    "new": "Erstellen Sie mit dem Formular unten einen neuen Slot",
+    "edit": "Aktualisieren Sie die Slot-Details unten"
+  },
+  "form": {
+    "name": "Name",
+    "namePlaceholder": "Slot-Namen eingeben",
+    "type": "Prompt-Slot-Typ",
+    "typePlaceholder": "Prompt-Slot-Typ auswählen",
+    "prompt": "Prompt",
+    "promptPlaceholder": "Prompt-Text eingeben",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Optionale Beschreibung für diesen Slot eingeben",
+    "exampleImage": "Beispielbild",
+    "exampleHint": "Optionales Beispielbild für diesen Slot",
+    "exampleAlt": "Beispielbild"
+  },
+  "errors": {
+    "loadTypes": "Prompt-Slot-Typen konnten nicht geladen werden",
+    "load": "Slot konnte nicht geladen werden",
+    "save": "Slot konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "nameRequired": "Name ist erforderlich",
+    "typeRequired": "Prompt-Slot-Typ ist erforderlich",
+    "promptRequired": "Prompt ist erforderlich",
+    "invalidImage": "Bitte laden Sie eine Bilddatei hoch",
+    "imageTooLarge": "Bildgröße muss kleiner als 5 MB sein",
+    "uploadImage": "Bild konnte nicht hochgeladen werden. Bitte erneut versuchen."
+  },
+  "actions": {
+    "create": "Slot erstellen",
+    "update": "Slot aktualisieren"
+  }
+}

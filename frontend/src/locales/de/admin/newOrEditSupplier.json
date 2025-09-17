@@ -1,0 +1,65 @@
+{
+  "breadcrumb": {
+    "back": "Zurück zu den Lieferanten"
+  },
+  "title": {
+    "new": "Neuen Lieferanten anlegen",
+    "edit": "Lieferanten bearbeiten"
+  },
+  "sections": {
+    "company": {
+      "title": "Unternehmensinformationen",
+      "description": "Grundlegende Informationen zum Lieferanten"
+    },
+    "contact": {
+      "title": "Ansprechpartner",
+      "description": "Hauptansprechpartner beim Lieferanten"
+    },
+    "address": {
+      "title": "Adresse",
+      "description": "Physische Adresse des Lieferanten"
+    },
+    "phone": {
+      "title": "Telefonnummern",
+      "description": "Kontakttelefonnummern des Lieferanten"
+    }
+  },
+  "form": {
+    "name": "Firmenname",
+    "namePlaceholder": "z. B. ABC Supplies GmbH",
+    "website": "Webseite",
+    "websitePlaceholder": "z. B. https://www.beispiel.de",
+    "title": "Anrede",
+    "titlePlaceholder": "z. B. Herr, Frau, Dr.",
+    "firstName": "Vorname",
+    "firstNamePlaceholder": "z. B. Max",
+    "lastName": "Nachname",
+    "lastNamePlaceholder": "z. B. Mustermann",
+    "email": "E-Mail",
+    "emailPlaceholder": "z. B. kontakt@beispiel.de",
+    "street": "Straße",
+    "streetPlaceholder": "z. B. Hauptstraße",
+    "houseNumber": "Hausnummer",
+    "houseNumberPlaceholder": "z. B. 123",
+    "city": "Stadt",
+    "cityPlaceholder": "z. B. Berlin",
+    "postalCode": "Postleitzahl",
+    "postalCodePlaceholder": "z. B. 10115",
+    "country": "Land",
+    "countryPlaceholder": "Land auswählen",
+    "phoneNumber1": "Telefon (primär)",
+    "phoneNumber1Placeholder": "z. B. +49 30 12345678",
+    "phoneNumber2": "Telefon (sekundär)",
+    "phoneNumber2Placeholder": "z. B. +49 30 87654321",
+    "phoneNumber3": "Mobiltelefon",
+    "phoneNumber3Placeholder": "z. B. +49 170 1234567"
+  },
+  "errors": {
+    "invalidEmail": "Ungültiges E-Mail-Format",
+    "postalCode": "Postleitzahl muss eine positive Zahl sein"
+  },
+  "actions": {
+    "create": "Lieferanten erstellen",
+    "update": "Lieferanten aktualisieren"
+  }
+}
