@@ -1,0 +1,88 @@
+{
+  "actions": {
+    "generate": "Bild generieren",
+    "generating": "Wird generiert..."
+  },
+  "errors": {
+    "generateFailed": "Bild konnte nicht generiert werden",
+    "generic": "Es ist ein Fehler aufgetreten",
+    "invalidResponse": "Der Server hat eine ungültige Antwort zurückgegeben. Bitte prüfen Sie die Serverprotokolle.",
+    "timeout": "Die Anfrage hat zu lange gedauert. Bitte versuchen Sie es erneut mit einfacheren Einstellungen oder einem kleineren Bild.",
+    "uploadRequired": "Bitte laden Sie ein Bild hoch"
+  },
+  "form": {
+    "background": {
+      "label": "Hintergrund",
+      "options": {
+        "auto": "Automatisch",
+        "opaque": "Deckend",
+        "transparent": "Transparent"
+      }
+    },
+    "image": {
+      "helper": "Zum Hochladen klicken",
+      "label": "Bild hochladen",
+      "previewAlt": "Vorschau"
+    },
+    "masterPrompt": {
+      "label": "Master-Prompt",
+      "placeholder": "Master-Prompt eingeben..."
+    },
+    "provider": {
+      "label": "KI-Anbieter",
+      "options": {
+        "flux": "Flux",
+        "google": "Google (Gemini)",
+        "openai": "OpenAI"
+      }
+    },
+    "quality": {
+      "label": "Qualität",
+      "options": {
+        "high": "Hoch",
+        "low": "Niedrig",
+        "medium": "Mittel"
+      }
+    },
+    "size": {
+      "label": "Größe",
+      "options": {
+        "1024x1024": "1024x1024",
+        "1024x1536": "1024x1536 (Hochformat)",
+        "1536x1024": "1536x1024 (Querformat)"
+      }
+    },
+    "specificPrompt": {
+      "label": "Spezifischer Prompt",
+      "placeholder": "Spezifischen Prompt eingeben..."
+    }
+  },
+  "page": {
+    "title": "Prompt-Tester"
+  },
+  "results": {
+    "imageAlt": "Generiertes Bild",
+    "request": {
+      "description": "Dies sind die tatsächlich an die OpenAI-API gesendeten Parameter",
+      "sections": {
+        "parameters": {
+          "background": "Hintergrund",
+          "count": "Anzahl der Bilder",
+          "model": "Modell",
+          "quality": "Qualität",
+          "responseFormat": "Antwortformat",
+          "size": "Größe",
+          "title": "Weitere Parameter"
+        },
+        "prompts": {
+          "combined": "Kombinierter Prompt (an die OpenAI-API gesendet)",
+          "master": "Master-Prompt",
+          "specific": "Spezifischer Prompt",
+          "title": "Prompts"
+        }
+      },
+      "title": "API-Anfrageparameter"
+    },
+    "title": "Generiertes Bild"
+  }
+}

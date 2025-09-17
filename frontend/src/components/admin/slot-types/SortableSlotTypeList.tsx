@@ -5,6 +5,7 @@ import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, PointerSensor, c
 import { SortableContext, arrayMove, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { SortableSlotTypeItem } from './SortableSlotTypeItem';
 
@@ -17,6 +18,7 @@ interface SortableSlotTypeListProps {
 export function SortableSlotTypeList({ slotTypes, onSlotTypesChange, onDelete }: SortableSlotTypeListProps) {
   const navigate = useNavigate();
   const [activeId, setActiveId] = useState<number | null>(null);
+  const { t } = useTranslation('adminPromptSlotTypes');
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -59,16 +61,16 @@ export function SortableSlotTypeList({ slotTypes, onSlotTypesChange, onDelete }:
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-700">Drag to reorder slot types</h3>
+        <h3 className="text-sm font-medium text-gray-700">{t('list.instructions')}</h3>
         <Button onClick={() => navigate('/admin/prompt-slot-types/new')}>
           <Plus className="mr-2 h-4 w-4" />
-          New Slot Type
+          {t('list.new')}
         </Button>
       </div>
 
       {slotTypes.length === 0 ? (
         <Card className="border-dashed p-8 text-center">
-          <p className="text-sm text-gray-500">No slot types found. Click &quot;New Slot Type&quot; to get started.</p>
+          <p className="text-sm text-gray-500">{t('list.empty', { action: t('list.new') })}</p>
         </Card>
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>

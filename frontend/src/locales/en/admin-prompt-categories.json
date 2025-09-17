@@ -1,0 +1,51 @@
+{
+  "accordion": {
+    "promptCount": "{{count}} prompts",
+    "subcategoryCount": "{{count}} subcategories"
+  },
+  "alerts": {
+    "deleteCategoryWithSubs": "Cannot delete category with subcategories. Please delete all subcategories first.",
+    "deleteError": "Failed to delete {{entity}}. Please try again.",
+    "deleteSubcategoryWithPrompts": "Cannot delete subcategory with associated prompts."
+  },
+  "confirmation": {
+    "cancel": "Cancel",
+    "confirm": "Delete",
+    "description": "Are you sure you want to delete the {{entity}} \"{{name}}\"? This action cannot be undone.",
+    "title": "Delete {{entity}}",
+    "types": {
+      "category": "category",
+      "subcategory": "subcategory"
+    }
+  },
+  "emptyState": {
+    "description": "No categories found. Create your first category to get started."
+  },
+  "entities": {
+    "category": "category",
+    "subcategory": "subcategory"
+  },
+  "page": {
+    "error": {
+      "loadFailed": "Failed to load categories. Please try again."
+    },
+    "loading": "Loading categories...",
+    "newCategory": "New Category",
+    "retry": "Retry",
+    "subtitle": "",
+    "title": "Prompt Categories"
+  },
+  "subcategory": {
+    "add": "Add Subcategory",
+    "empty": "No subcategories yet",
+    "table": {
+      "headers": {
+        "actions": "Actions",
+        "created": "Created",
+        "description": "Description",
+        "name": "Name",
+        "prompts": "Prompts"
+      }
+    }
+  }
+}

@@ -5,6 +5,13 @@ import deAdminArticleCategories from './locales/de/admin-article-categories.json
 import deAdminArticles from './locales/de/admin-articles.json';
 import deAdminCompletedOrders from './locales/de/admin-completed-orders.json';
 import deAdminLogistics from './locales/de/admin-logistics.json';
+import deAdminOpenOrders from './locales/de/admin-open-orders.json';
+import deAdminPromptCategories from './locales/de/admin-prompt-categories.json';
+import deAdminPromptSlotTypes from './locales/de/admin-prompt-slot-types.json';
+import deAdminPromptTester from './locales/de/admin-prompt-tester.json';
+import deAdminPrompts from './locales/de/admin-prompts.json';
+import deAdminSlotVariants from './locales/de/admin-slot-variants.json';
+import deAdminSuppliers from './locales/de/admin-suppliers.json';
 import deAdminCommon from './locales/de/admin/common.json';
 import deAdminArticleCategory from './locales/de/admin/newOrEditArticleCategory.json';
 import deAdminArticleSubCategory from './locales/de/admin/newOrEditArticleSubCategory.json';
@@ -25,6 +32,13 @@ import enAdminArticleCategories from './locales/en/admin-article-categories.json
 import enAdminArticles from './locales/en/admin-articles.json';
 import enAdminCompletedOrders from './locales/en/admin-completed-orders.json';
 import enAdminLogistics from './locales/en/admin-logistics.json';
+import enAdminOpenOrders from './locales/en/admin-open-orders.json';
+import enAdminPromptCategories from './locales/en/admin-prompt-categories.json';
+import enAdminPromptSlotTypes from './locales/en/admin-prompt-slot-types.json';
+import enAdminPromptTester from './locales/en/admin-prompt-tester.json';
+import enAdminPrompts from './locales/en/admin-prompts.json';
+import enAdminSlotVariants from './locales/en/admin-slot-variants.json';
+import enAdminSuppliers from './locales/en/admin-suppliers.json';
 import enAdminCommon from './locales/en/admin/common.json';
 import enAdminArticleCategory from './locales/en/admin/newOrEditArticleCategory.json';
 import enAdminArticleSubCategory from './locales/en/admin/newOrEditArticleSubCategory.json';
@@ -71,6 +85,13 @@ export const resources = {
     admin: enAdminNamespace,
     adminArticleCategories: enAdminArticleCategories,
     adminArticles: enAdminArticles,
+    adminOpenOrders: enAdminOpenOrders,
+    adminPromptCategories: enAdminPromptCategories,
+    adminPromptSlotTypes: enAdminPromptSlotTypes,
+    adminPromptTester: enAdminPromptTester,
+    adminPrompts: enAdminPrompts,
+    adminSlotVariants: enAdminSlotVariants,
+    adminSuppliers: enAdminSuppliers,
     adminCompletedOrders: enAdminCompletedOrders,
     adminLogistics: enAdminLogistics,
     articleCategory: enAdminArticleCategory,
@@ -94,6 +115,13 @@ export const resources = {
     admin: deAdminNamespace,
     adminArticleCategories: deAdminArticleCategories,
     adminArticles: deAdminArticles,
+    adminOpenOrders: deAdminOpenOrders,
+    adminPromptCategories: deAdminPromptCategories,
+    adminPromptSlotTypes: deAdminPromptSlotTypes,
+    adminPromptTester: deAdminPromptTester,
+    adminPrompts: deAdminPrompts,
+    adminSlotVariants: deAdminSlotVariants,
+    adminSuppliers: deAdminSuppliers,
     adminCompletedOrders: deAdminCompletedOrders,
     adminLogistics: deAdminLogistics,
     articleCategory: deAdminArticleCategory,

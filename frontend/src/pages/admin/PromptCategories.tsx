@@ -9,6 +9,7 @@ import { promptCategoriesApi, promptSubCategoriesApi } from '@/lib/api';
 import { PromptCategory, PromptSubCategory } from '@/types/prompt';
 import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface CategoryWithSubcategories extends PromptCategory {
   subcategories: PromptSubCategory[];
@@ -19,7 +20,7 @@ export default function PromptCategories() {
   const [subcategories, setSubcategories] = useState<PromptSubCategory[]>([]);
   const [categoriesWithSubs, setCategoriesWithSubs] = useState<CategoryWithSubcategories[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<'load' | null>(null);
 
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = useState(false);
   const [isSubcategoryDialogOpen, setIsSubcategoryDialogOpen] = useState(false);
@@ -33,6 +34,8 @@ export default function PromptCategories() {
     id: number | null;
     name: string;
   }>({ isOpen: false, type: 'category', id: null, name: '' });
+  const { t, i18n } = useTranslation('adminPromptCategories');
+  const locale = i18n.language || 'en';
 
   useEffect(() => {
     fetchData();
@@ -56,7 +59,7 @@ export default function PromptCategories() {
       setSubcategories(subcategoriesData);
     } catch (error) {
       console.error('Error fetching data:', error);
-      setError('Failed to load categories. Please try again.');
+      setError('load');
     } finally {
       setIsLoading(false);
     }
@@ -87,7 +90,7 @@ export default function PromptCategories() {
   const handleDeleteCategory = (category: PromptCategory) => {
     const hasSubcategories = categoriesWithSubs.find((c) => c.id === category.id)?.subcategories.length || 0;
     if (hasSubcategories > 0) {
-      alert('Cannot delete category with subcategories. Please delete all subcategories first.');
+      window.alert(t('alerts.deleteCategoryWithSubs'));
       return;
     }
     setDeleteDialog({
@@ -100,7 +103,7 @@ export default function PromptCategories() {
 
   const handleDeleteSubcategory = (subcategory: PromptSubCategory) => {
     if (subcategory.promptsCount && subcategory.promptsCount > 0) {
-      alert('Cannot delete subcategory with associated prompts.');
+      window.alert(t('alerts.deleteSubcategoryWithPrompts'));
       return;
     }
     setDeleteDialog({
@@ -125,7 +128,7 @@ export default function PromptCategories() {
       setDeleteDialog({ isOpen: false, type: 'category', id: null, name: '' });
     } catch (error) {
       console.error('Error deleting:', error);
-      alert(`Failed to delete ${deleteDialog.type}. Please try again.`);
+      window.alert(t('alerts.deleteError', { entity: t(`entities.${deleteDialog.type}`) }));
     }
   };
 
@@ -143,7 +146,7 @@ export default function PromptCategories() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading categories...</p>
+          <p className="text-gray-500">{t('page.loading')}</p>
         </div>
       </div>
     );
@@ -154,9 +157,9 @@ export default function PromptCategories() {
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
           <div className="text-center">
-            <p className="mb-4 text-red-500">{error}</p>
+            <p className="mb-4 text-red-500">{t('page.error.loadFailed')}</p>
             <button onClick={fetchData} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
-              Retry
+              {t('page.retry')}
             </button>
           </div>
         </div>
@@ -167,16 +170,16 @@ export default function PromptCategories() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Prompt Categories</h1>
+        <h1 className="text-2xl font-bold">{t('page.title')}</h1>
         <Button onClick={handleAddCategory}>
           <Plus className="mr-2 h-4 w-4" />
-          New Category
+          {t('page.newCategory')}
         </Button>
       </div>
 
       {categoriesWithSubs.length === 0 ? (
         <div className="rounded-md border p-8 text-center">
-          <p className="text-gray-500">No categories found. Create your first category to get started.</p>
+          <p className="text-gray-500">{t('emptyState.description')}</p>
         </div>
       ) : (
         <Accordion type="multiple" className="w-full space-y-2">
@@ -186,8 +189,10 @@ export default function PromptCategories() {
                 <AccordionTrigger className="flex-1 py-4 hover:no-underline">
                   <div className="flex items-center gap-3">
                     <span className="font-medium">{category.name}</span>
-                    <Badge variant="secondary">{category.subcategories.length} subcategories</Badge>
-                    {category.prompts_count && category.prompts_count > 0 && <Badge variant="outline">{category.prompts_count} prompts</Badge>}
+                    <Badge variant="secondary">{t('accordion.subcategoryCount', { count: category.subcategories.length })}</Badge>
+                    {category.prompts_count && category.prompts_count > 0 && (
+                      <Badge variant="outline">{t('accordion.promptCount', { count: category.prompts_count })}</Badge>
+                    )}
                   </div>
                 </AccordionTrigger>
                 <div className="flex items-center gap-2 py-4">
@@ -202,10 +207,10 @@ export default function PromptCategories() {
               <AccordionContent className="px-4 pb-4">
                 {category.subcategories.length === 0 ? (
                   <div className="mb-4 rounded-md bg-gray-50 p-4 text-center">
-                    <p className="mb-2 text-sm text-gray-500">No subcategories yet</p>
+                    <p className="mb-2 text-sm text-gray-500">{t('subcategory.empty')}</p>
                     <Button size="sm" variant="outline" onClick={() => handleAddSubcategory(category.id)}>
                       <Plus className="mr-2 h-3 w-3" />
-                      Add Subcategory
+                      {t('subcategory.add')}
                     </Button>
                   </div>
                 ) : (
@@ -213,11 +218,11 @@ export default function PromptCategories() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Description</TableHead>
-                          <TableHead>Prompts</TableHead>
-                          <TableHead>Created</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
+                          <TableHead>{t('subcategory.table.headers.name')}</TableHead>
+                          <TableHead>{t('subcategory.table.headers.description')}</TableHead>
+                          <TableHead>{t('subcategory.table.headers.prompts')}</TableHead>
+                          <TableHead>{t('subcategory.table.headers.created')}</TableHead>
+                          <TableHead className="text-right">{t('subcategory.table.headers.actions')}</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -226,7 +231,7 @@ export default function PromptCategories() {
                             <TableCell className="font-medium">{subcategory.name}</TableCell>
                             <TableCell className="max-w-xs truncate">{subcategory.description || '-'}</TableCell>
                             <TableCell>{subcategory.promptsCount || 0}</TableCell>
-                            <TableCell>{subcategory.createdAt ? new Date(subcategory.createdAt).toLocaleDateString() : '-'}</TableCell>
+                            <TableCell>{subcategory.createdAt ? new Date(subcategory.createdAt).toLocaleDateString(locale) : '-'}</TableCell>
                             <TableCell className="text-right">
                               <div className="flex justify-end gap-2">
                                 <Button variant="outline" size="sm" onClick={() => handleEditSubcategory(subcategory)}>
@@ -249,7 +254,7 @@ export default function PromptCategories() {
                     <div className="mt-4 text-center">
                       <Button size="sm" variant="outline" onClick={() => handleAddSubcategory(category.id)}>
                         <Plus className="mr-2 h-3 w-3" />
-                        Add Subcategory
+                        {t('subcategory.add')}
                       </Button>
                     </div>
                   </>
@@ -280,7 +285,13 @@ export default function PromptCategories() {
         isOpen={deleteDialog.isOpen}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteDialog({ ...deleteDialog, isOpen: false })}
-        description={`Are you sure you want to delete ${deleteDialog.type === 'category' ? 'the category' : 'the subcategory'} "${deleteDialog.name}"? This action cannot be undone.`}
+        title={t('confirmation.title', { entity: t(`confirmation.types.${deleteDialog.type}`) })}
+        description={t('confirmation.description', {
+          entity: t(`confirmation.types.${deleteDialog.type}`),
+          name: deleteDialog.name,
+        })}
+        confirmText={t('confirmation.confirm')}
+        cancelText={t('confirmation.cancel')}
       />
     </div>
   );

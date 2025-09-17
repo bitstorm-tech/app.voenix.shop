@@ -1,0 +1,19 @@
+{
+  "buttons": {
+    "new": "Neuer Lieferant"
+  },
+  "confirmDelete": "Möchten Sie diesen Lieferanten wirklich löschen?",
+  "loading": "Lieferanten werden geladen...",
+  "table": {
+    "empty": "Keine Lieferanten gefunden. Klicken Sie auf \"{{action}}\", um einen hinzuzufügen.",
+    "headers": {
+      "actions": "Aktionen",
+      "city": "Stadt",
+      "contact": "Kontakt",
+      "email": "E-Mail",
+      "name": "Name",
+      "phone": "Telefon"
+    }
+  },
+  "title": "Lieferanten"
+}

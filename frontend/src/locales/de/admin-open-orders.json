@@ -1,0 +1,49 @@
+{
+  "buttons": {
+    "markCompleted": "Als abgeschlossen markieren",
+    "processOrder": "Bestellung bearbeiten"
+  },
+  "details": {
+    "created": "Erstellt",
+    "customer": "Kundendaten",
+    "items": "Artikel",
+    "title": "Bestelldetails",
+    "total": "Gesamt",
+    "updated": "Aktualisiert"
+  },
+  "items": {
+    "priceEach": "{{price}} pro Stück",
+    "quantity": "Menge: {{count}}"
+  },
+  "page": {
+    "count": "{{count}} offene Bestellung",
+    "count_plural": "{{count}} offene Bestellungen",
+    "empty": "Keine offenen Bestellungen",
+    "loading": "Bestellungen werden geladen...",
+    "noSelection": "Keine Bestellung ausgewählt",
+    "selectionDescription": "Wählen Sie eine Bestellung aus, um Details anzusehen",
+    "subtitle": "Offene und in Bearbeitung befindliche Bestellungen verwalten",
+    "title": "Offene Bestellungen"
+  },
+  "status": {
+    "pending": "Ausstehend",
+    "processing": "In Bearbeitung"
+  },
+  "table": {
+    "customer": {
+      "email": "{{email}}"
+    },
+    "headers": {
+      "actions": "Aktionen",
+      "created": "Erstellt",
+      "customer": "Kunde",
+      "id": "Bestellnummer",
+      "status": "Status",
+      "total": "Gesamt"
+    }
+  },
+  "tableCard": {
+    "description": "Klicken Sie auf eine Bestellung, um Details anzusehen",
+    "title": "Bestellübersicht"
+  }
+}

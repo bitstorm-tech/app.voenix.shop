@@ -4,6 +4,7 @@ import type { PromptSlotType } from '@/types/promptSlotVariant';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { Edit, GripVertical, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface SortableSlotTypeItemProps {
   slotType: PromptSlotType;
@@ -15,6 +16,7 @@ export function SortableSlotTypeItem({ slotType, onEdit, onDelete }: SortableSlo
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: slotType.id,
   });
+  const { t } = useTranslation('adminPromptSlotTypes');
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -30,7 +32,7 @@ export function SortableSlotTypeItem({ slotType, onEdit, onDelete }: SortableSlo
           {...attributes}
           {...listeners}
           type="button"
-          aria-label="Drag to reorder"
+          aria-label={t('list.dragHandle')}
         >
           <GripVertical className="h-5 w-5" />
         </button>
@@ -41,10 +43,15 @@ export function SortableSlotTypeItem({ slotType, onEdit, onDelete }: SortableSlo
               <h4 className="font-medium text-gray-900">{slotType.name}</h4>
             </div>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => onEdit(slotType.id)} aria-label={`Edit ${slotType.name}`}>
+              <Button variant="outline" size="sm" onClick={() => onEdit(slotType.id)} aria-label={t('list.actions.edit', { name: slotType.name })}>
                 <Edit className="h-4 w-4" />
               </Button>
-              <Button variant="outline" size="sm" onClick={() => onDelete(slotType.id)} aria-label={`Delete ${slotType.name}`}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onDelete(slotType.id)}
+                aria-label={t('list.actions.delete', { name: slotType.name })}
+              >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>

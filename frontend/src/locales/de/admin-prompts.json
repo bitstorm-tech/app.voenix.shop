@@ -1,0 +1,44 @@
+{
+  "buttons": {
+    "newPrompt": "Neuer Prompt",
+    "retry": "Erneut versuchen"
+  },
+  "deleteDialog": {
+    "cancel": "Abbrechen",
+    "confirm": "Löschen",
+    "description": "Dieser Prompt wird dauerhaft gelöscht. Dieser Vorgang kann nicht rückgängig gemacht werden.",
+    "title": "Prompt löschen"
+  },
+  "filters": {
+    "all": "Alle Kategorien",
+    "label": "Nach Kategorie filtern:",
+    "placeholder": "Kategorie auswählen"
+  },
+  "modal": {
+    "close": "Schließen",
+    "title": "Prompt testen"
+  },
+  "page": {
+    "loadError": "Prompts konnten nicht geladen werden. Bitte versuchen Sie es erneut.",
+    "loading": "Prompts werden geladen...",
+    "title": "Prompts"
+  },
+  "table": {
+    "actions": {
+      "delete": "Prompt {{title}} löschen",
+      "edit": "Prompt {{title}} bearbeiten",
+      "test": "Prompt {{title}} testen"
+    },
+    "headers": {
+      "actions": "Aktionen",
+      "active": "Aktiv",
+      "category": "Kategorie",
+      "name": "Name",
+      "prompt": "Prompt"
+    },
+    "status": {
+      "active": "Ja",
+      "inactive": "Nein"
+    }
+  }
+}

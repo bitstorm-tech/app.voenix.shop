@@ -1,0 +1,51 @@
+{
+  "accordion": {
+    "promptCount": "{{count}} Prompts",
+    "subcategoryCount": "{{count}} Unterkategorien"
+  },
+  "alerts": {
+    "deleteCategoryWithSubs": "Kategorie mit Unterkategorien kann nicht gelöscht werden. Bitte löschen Sie zuerst alle Unterkategorien.",
+    "deleteError": "{{entity}} konnte nicht gelöscht werden. Bitte versuchen Sie es erneut.",
+    "deleteSubcategoryWithPrompts": "Unterkategorie mit zugeordneten Prompts kann nicht gelöscht werden."
+  },
+  "confirmation": {
+    "cancel": "Abbrechen",
+    "confirm": "Löschen",
+    "description": "Möchten Sie die {{entity}} \"{{name}}\" wirklich löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.",
+    "title": "{{entity}} löschen",
+    "types": {
+      "category": "Kategorie",
+      "subcategory": "Unterkategorie"
+    }
+  },
+  "emptyState": {
+    "description": "Keine Kategorien gefunden. Erstellen Sie Ihre erste Kategorie, um zu starten."
+  },
+  "entities": {
+    "category": "Kategorie",
+    "subcategory": "Unterkategorie"
+  },
+  "page": {
+    "error": {
+      "loadFailed": "Kategorien konnten nicht geladen werden. Bitte versuchen Sie es erneut."
+    },
+    "loading": "Kategorien werden geladen...",
+    "newCategory": "Neue Kategorie",
+    "retry": "Erneut versuchen",
+    "subtitle": "",
+    "title": "Prompt-Kategorien"
+  },
+  "subcategory": {
+    "add": "Unterkategorie hinzufügen",
+    "empty": "Noch keine Unterkategorien",
+    "table": {
+      "headers": {
+        "actions": "Aktionen",
+        "created": "Erstellt",
+        "description": "Beschreibung",
+        "name": "Name",
+        "prompts": "Prompts"
+      }
+    }
+  }
+}

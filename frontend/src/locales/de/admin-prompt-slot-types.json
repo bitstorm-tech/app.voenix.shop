@@ -1,0 +1,24 @@
+{
+  "confirmation": {
+    "cancel": "Abbrechen",
+    "confirm": "Löschen",
+    "description": "Möchten Sie diesen Prompt-Slot-Typ wirklich löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.",
+    "title": "Slot-Typ löschen"
+  },
+  "list": {
+    "actions": {
+      "delete": "Slot-Typ {{name}} löschen",
+      "edit": "Slot-Typ {{name}} bearbeiten"
+    },
+    "dragHandle": "Zum Neuordnen ziehen",
+    "empty": "Keine Slot-Typen gefunden. Klicken Sie auf \"{{action}}\", um zu beginnen.",
+    "instructions": "Slot-Typen zum Neuordnen ziehen",
+    "new": "Neuer Slot-Typ"
+  },
+  "page": {
+    "loading": "Wird geladen...",
+    "saving": "Positionsänderungen werden gespeichert...",
+    "subtitle": "Prompt-Slot-Typen und ihre Reihenfolge verwalten",
+    "title": "Prompt-Slot-Typen"
+  }
+}

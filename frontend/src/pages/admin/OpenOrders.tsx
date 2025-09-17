@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { Clock, Eye, Package } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface OrderItem {
   name: string;
@@ -26,6 +27,16 @@ export default function OpenOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { t, i18n } = useTranslation('adminOpenOrders');
+  const locale = i18n.language || 'en';
+  const currencyFormatter = useMemo(
+    () =>
+      new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: 'USD',
+      }),
+    [locale],
+  );
 
   useEffect(() => {
     // Mock data for now - replace with actual API call when orders endpoint is available
@@ -80,13 +91,13 @@ export default function OpenOrders() {
 
   const getStatusBadge = (status: string) => {
     if (status === 'pending') {
-      return <Badge variant="secondary">Pending</Badge>;
+      return <Badge variant="secondary">{t('status.pending')}</Badge>;
     }
-    return <Badge className="bg-blue-100 text-blue-800">Processing</Badge>;
+    return <Badge className="bg-blue-100 text-blue-800">{t('status.processing')}</Badge>;
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString(locale, {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
@@ -99,12 +110,12 @@ export default function OpenOrders() {
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Open Orders</h1>
-          <p className="text-gray-600">Manage pending and processing orders</p>
+          <h1 className="text-3xl font-bold">{t('page.title')}</h1>
+          <p className="text-gray-600">{t('page.subtitle')}</p>
         </div>
         <div className="flex items-center gap-2">
           <Package className="h-5 w-5 text-gray-500" />
-          <span className="text-lg font-semibold">{orders.length} Open Orders</span>
+          <span className="text-lg font-semibold">{t('page.count', { count: orders.length })}</span>
         </div>
       </div>
 
@@ -112,32 +123,32 @@ export default function OpenOrders() {
         <div className="lg:col-span-2">
           <Card>
             <CardHeader>
-              <CardTitle>Order List</CardTitle>
-              <CardDescription>Click on an order to view details</CardDescription>
+              <CardTitle>{t('tableCard.title')}</CardTitle>
+              <CardDescription>{t('tableCard.description')}</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Order ID</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Total</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead>{t('table.headers.id')}</TableHead>
+                    <TableHead>{t('table.headers.customer')}</TableHead>
+                    <TableHead>{t('table.headers.total')}</TableHead>
+                    <TableHead>{t('table.headers.status')}</TableHead>
+                    <TableHead>{t('table.headers.created')}</TableHead>
+                    <TableHead className="text-right">{t('table.headers.actions')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-gray-500">
-                        Loading orders...
+                        {t('page.loading')}
                       </TableCell>
                     </TableRow>
                   ) : orders.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-gray-500">
-                        No open orders
+                        {t('page.empty')}
                       </TableCell>
                     </TableRow>
                   ) : (
@@ -147,10 +158,10 @@ export default function OpenOrders() {
                         <TableCell>
                           <div>
                             <div className="font-medium">{order.customer_name}</div>
-                            <div className="text-sm text-gray-500">{order.customer_email}</div>
+                            <div className="text-sm text-gray-500">{t('table.customer.email', { email: order.customer_email })}</div>
                           </div>
                         </TableCell>
-                        <TableCell>${order.total.toFixed(2)}</TableCell>
+                        <TableCell>{currencyFormatter.format(order.total)}</TableCell>
                         <TableCell>{getStatusBadge(order.status)}</TableCell>
                         <TableCell className="text-sm text-gray-500">{formatDate(order.created_at)}</TableCell>
                         <TableCell className="text-right">
@@ -178,28 +189,28 @@ export default function OpenOrders() {
           {selectedOrder ? (
             <Card>
               <CardHeader>
-                <CardTitle>Order Details</CardTitle>
+                <CardTitle>{t('details.title')}</CardTitle>
                 <CardDescription>{selectedOrder.id}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h3 className="font-semibold">Customer Information</h3>
+                  <h3 className="font-semibold">{t('details.customer')}</h3>
                   <p className="text-sm">{selectedOrder.customer_name}</p>
                   <p className="text-sm text-gray-500">{selectedOrder.customer_email}</p>
                 </div>
 
                 <div>
-                  <h3 className="mb-2 font-semibold">Items</h3>
+                  <h3 className="mb-2 font-semibold">{t('details.items')}</h3>
                   <div className="space-y-2">
                     {selectedOrder.items.map((item, index) => (
                       <div key={index} className="flex justify-between rounded bg-gray-50 p-2 text-sm">
                         <div>
                           <div className="font-medium">{item.name}</div>
-                          <div className="text-gray-500">Qty: {item.quantity}</div>
+                          <div className="text-gray-500">{t('items.quantity', { count: item.quantity })}</div>
                         </div>
                         <div className="text-right">
-                          <div>${(item.price * item.quantity).toFixed(2)}</div>
-                          <div className="text-xs text-gray-500">${item.price.toFixed(2)} each</div>
+                          <div>{currencyFormatter.format(item.price * item.quantity)}</div>
+                          <div className="text-xs text-gray-500">{t('items.priceEach', { price: currencyFormatter.format(item.price) })}</div>
                         </div>
                       </div>
                     ))}
@@ -208,39 +219,43 @@ export default function OpenOrders() {
 
                 <div className="border-t pt-4">
                   <div className="flex justify-between font-semibold">
-                    <span>Total</span>
-                    <span>${selectedOrder.total.toFixed(2)}</span>
+                    <span>{t('details.total')}</span>
+                    <span>{currencyFormatter.format(selectedOrder.total)}</span>
                   </div>
                 </div>
 
                 <div className="space-y-2 border-t pt-4">
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-600">Created: {formatDate(selectedOrder.created_at)}</span>
+                    <span className="text-gray-600">
+                      {t('details.created')}: {formatDate(selectedOrder.created_at)}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
                     <Clock className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-600">Updated: {formatDate(selectedOrder.updated_at)}</span>
+                    <span className="text-gray-600">
+                      {t('details.updated')}: {formatDate(selectedOrder.updated_at)}
+                    </span>
                   </div>
                 </div>
 
                 <div className="flex gap-2 border-t pt-4">
                   <Button className="flex-1" variant="outline">
-                    Mark as Completed
+                    {t('buttons.markCompleted')}
                   </Button>
-                  <Button className="flex-1">Process Order</Button>
+                  <Button className="flex-1">{t('buttons.processOrder')}</Button>
                 </div>
               </CardContent>
             </Card>
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>Order Details</CardTitle>
-                <CardDescription>Select an order to view details</CardDescription>
+                <CardTitle>{t('details.title')}</CardTitle>
+                <CardDescription>{t('page.selectionDescription')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="flex h-40 items-center justify-center text-gray-400">
-                  <p>No order selected</p>
+                  <p>{t('page.noSelection')}</p>
                 </div>
               </CardContent>
             </Card>

@@ -3,15 +3,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useDeleteSupplier, useSuppliers } from '@/hooks/queries/useSuppliers';
 import type { Supplier } from '@/types/supplier';
 import { Edit, Plus, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 export default function Suppliers() {
   const navigate = useNavigate();
   const { data: suppliers, isLoading } = useSuppliers();
   const deleteSupplierMutation = useDeleteSupplier();
+  const { t } = useTranslation('adminSuppliers');
 
   const handleDelete = (id: number) => {
-    if (window.confirm('Are you sure you want to delete this supplier?')) {
+    if (window.confirm(t('confirmDelete'))) {
       deleteSupplierMutation.mutate(id);
     }
   };
@@ -29,7 +31,7 @@ export default function Suppliers() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading suppliers...</p>
+          <p className="text-gray-500">{t('loading')}</p>
         </div>
       </div>
     );
@@ -38,10 +40,10 @@ export default function Suppliers() {
   return (
     <div className="container mx-auto p-6">
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Suppliers</h1>
+        <h1 className="text-2xl font-bold">{t('title')}</h1>
         <Button onClick={() => navigate('/admin/suppliers/new')}>
           <Plus className="mr-2 h-4 w-4" />
-          New Supplier
+          {t('buttons.new')}
         </Button>
       </div>
 
@@ -49,12 +51,12 @@ export default function Suppliers() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Contact</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>City</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead>{t('table.headers.name')}</TableHead>
+              <TableHead>{t('table.headers.contact')}</TableHead>
+              <TableHead>{t('table.headers.email')}</TableHead>
+              <TableHead>{t('table.headers.phone')}</TableHead>
+              <TableHead>{t('table.headers.city')}</TableHead>
+              <TableHead className="text-right">{t('table.headers.actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -81,7 +83,7 @@ export default function Suppliers() {
             ) : (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
-                  <p className="text-gray-500">No suppliers found. Click &quot;New Supplier&quot; to add one.</p>
+                  <p className="text-gray-500">{t('table.empty', { action: t('buttons.new') })}</p>
                 </TableCell>
               </TableRow>
             )}
