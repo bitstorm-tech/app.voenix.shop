@@ -1,0 +1,20 @@
+{
+  "title": "Admin-Anmeldung",
+  "description": "Gib deine Zugangsdaten ein, um auf das Admin-Panel zuzugreifen",
+  "fields": {
+    "email": "E-Mail-Adresse",
+    "password": "Passwort"
+  },
+  "placeholders": {
+    "email": "admin@example.com"
+  },
+  "actions": {
+    "submit": "Anmelden",
+    "loggingIn": "Anmeldung läuft..."
+  },
+  "errors": {
+    "invalidCredentials": "Ungültige E-Mail-Adresse oder falsches Passwort",
+    "generic": "Beim Anmelden ist ein Fehler aufgetreten",
+    "unexpected": "Es ist ein unerwarteter Fehler aufgetreten"
+  }
+}

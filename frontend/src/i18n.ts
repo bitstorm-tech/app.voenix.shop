@@ -4,17 +4,19 @@ import { initReactI18next } from 'react-i18next';
 import deCart from './locales/de/cart.json';
 import deCheckout from './locales/de/checkout.json';
 import deEditor from './locales/de/editor.json';
+import deLogin from './locales/de/login.json';
 import deVat from './locales/de/vat.json';
 import enCart from './locales/en/cart.json';
 import enCheckout from './locales/en/checkout.json';
 import enEditor from './locales/en/editor.json';
+import enLogin from './locales/en/login.json';
 import enVat from './locales/en/vat.json';
 
 export const defaultNS = 'vat';
 export const LANGUAGE_STORAGE_KEY = 'voenix.shop.language';
 export const resources = {
-  en: { vat: enVat, cart: enCart, checkout: enCheckout, editor: enEditor },
-  de: { vat: deVat, cart: deCart, checkout: deCheckout, editor: deEditor },
+  en: { vat: enVat, cart: enCart, checkout: enCheckout, editor: enEditor, login: enLogin },
+  de: { vat: deVat, cart: deCart, checkout: deCheckout, editor: deEditor, login: deLogin },
 } as const;
 export const namespaces = Object.freeze(Object.keys(resources.en)) as readonly (keyof typeof resources.en)[];
 

@@ -1,0 +1,20 @@
+{
+  "title": "Admin Login",
+  "description": "Enter your credentials to access the admin panel",
+  "fields": {
+    "email": "Email",
+    "password": "Password"
+  },
+  "placeholders": {
+    "email": "admin@example.com"
+  },
+  "actions": {
+    "submit": "Log in",
+    "loggingIn": "Logging in..."
+  },
+  "errors": {
+    "invalidCredentials": "Invalid email or password",
+    "generic": "An error occurred during login",
+    "unexpected": "An unexpected error occurred"
+  }
+}

@@ -5,12 +5,14 @@ import { Label } from '@/components/ui/Label';
 import { useLogin } from '@/hooks/queries/useAuth';
 import { ApiError } from '@/lib/api';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
   const loginMutation = useLogin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const { t } = useTranslation('login');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,13 +24,20 @@ export default function Login() {
         onError: (err) => {
           if (err instanceof ApiError) {
             if (err.status === 401) {
-              setError('Invalid email or password');
-            } else {
-              setError(err.message || 'An error occurred during login');
+              setError(t('errors.invalidCredentials'));
+              return;
             }
-          } else {
-            setError('An unexpected error occurred');
+
+            if (err.message) {
+              setError(err.message);
+              return;
+            }
+
+            setError(t('errors.generic'));
+            return;
           }
+
+          setError(t('errors.unexpected'));
         },
       },
     );
@@ -38,17 +47,17 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Admin Login</CardTitle>
-          <CardDescription>Enter your credentials to access the admin panel</CardDescription>
+          <CardTitle className="text-2xl font-bold">{t('title')}</CardTitle>
+          <CardDescription>{t('description')}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{t('fields.email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@example.com"
+                placeholder={t('placeholders.email')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -57,7 +66,7 @@ export default function Login() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t('fields.password')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -70,7 +79,7 @@ export default function Login() {
             </div>
             {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-800">{error}</div>}
             <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
-              {loginMutation.isPending ? 'Logging in...' : 'Log in'}
+              {loginMutation.isPending ? t('actions.loggingIn') : t('actions.submit')}
             </Button>
           </form>
         </CardContent>
