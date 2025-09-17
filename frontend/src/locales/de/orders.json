@@ -1,0 +1,41 @@
+{
+  "title": "Deine Bestellungen",
+  "description": "Verfolge und verwalte deine aktuellen Bestellungen",
+  "loading": {
+    "indicator": "Lade deine Bestellungen..."
+  },
+  "error": {
+    "title": "Fehler beim Laden der Bestellungen",
+    "defaultMessage": "Deine Bestellungen konnten nicht geladen werden",
+    "retry": "Erneut versuchen"
+  },
+  "empty": {
+    "title": "Noch keine Bestellungen",
+    "description": "Sobald du bestellst, erscheinen sie hier.",
+    "cta": "Jetzt einkaufen"
+  },
+  "summary": {
+    "showing": "Angezeigt werden {{count}} {{label}}",
+    "label": "Bestellung",
+    "label_plural": "Bestellungen"
+  },
+  "buttons": {
+    "viewDetails": "Details ansehen",
+    "cancel": "Bestellung stornieren"
+  },
+  "card": {
+    "orderNumber": "Bestellung #{{number}}",
+    "placedOn": "Bestellt am {{date}}",
+    "items": "{{count}} Artikel",
+    "items_plural": "{{count}} Artikel",
+    "andMore": "und {{count}} weitere",
+    "itemImageAlt": "Bestellartikel",
+    "status": {
+      "pending": "Ausstehend",
+      "processing": "In Bearbeitung",
+      "shipped": "Versandt",
+      "delivered": "Zugestellt",
+      "cancelled": "Storniert"
+    }
+  }
+}
