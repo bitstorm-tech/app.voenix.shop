@@ -1,0 +1,18 @@
+{
+  "loading": "Wird geladen...",
+  "actions": {
+    "cancel": "Abbrechen",
+    "uploadImage": "Bild hochladen"
+  },
+  "status": {
+    "saving": "Speichern...",
+    "uploadingImage": "Bild wird hochgeladen..."
+  },
+  "placeholders": {
+    "select": "Auswählen",
+    "unit": "1,00"
+  },
+  "errors": {
+    "generic": "Ein Fehler ist aufgetreten"
+  }
+}

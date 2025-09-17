@@ -1,0 +1,109 @@
+{
+  "tabs": {
+    "prompt": "Prompt",
+    "costCalculation": "Price Calculation"
+  },
+  "title": {
+    "new": "New Prompt",
+    "edit": "Edit Prompt"
+  },
+  "description": {
+    "new": "Create a new prompt with the form below",
+    "edit": "Update the prompt details below"
+  },
+  "form": {
+    "title": "Title",
+    "titlePlaceholder": "Enter prompt title",
+    "promptNumber": "Prompt Number",
+    "category": "Category",
+    "categoryPlaceholder": "Select a category",
+    "subcategory": "Subcategory (optional)",
+    "subcategoryPlaceholder": "Select a subcategory (optional)",
+    "noSubcategory": "No subcategory",
+    "promptStyle": "Prompt Style (optional)",
+    "promptStylePlaceholder": "Enter the prompt text content...",
+    "status": "Status",
+    "statusHint": "Make this prompt available for use"
+  },
+  "exampleImage": {
+    "label": "Example Image (optional)",
+    "hint": "PNG, JPG, GIF, or WEBP (automatically converted to WebP)",
+    "alt": "Prompt example"
+  },
+  "errors": {
+    "loadCategories": "Failed to load categories",
+    "loadSubcategories": "Failed to load subcategories",
+    "load": "Failed to load prompt",
+    "save": "Failed to save prompt. Please try again.",
+    "titleRequired": "Title is required",
+    "categoryRequired": "Category is required",
+    "invalidImage": "Please select a valid image file",
+    "imageTooLarge": "File size exceeds maximum allowed size of 10MB",
+    "uploadImage": "Failed to upload image: {{message}}"
+  },
+  "actions": {
+    "create": "Create Prompt",
+    "update": "Update Prompt"
+  },
+  "slotSelector": {
+    "label": "Prompt Slot Variants",
+    "loading": "Loading slot variants...",
+    "errors": {
+      "load": "Failed to load slot variants"
+    },
+    "empty": "No slot variants available. Please create slot variants first.",
+    "badge": "{{selected}} of {{total}} types selected",
+    "selectedBadge": "Selected",
+    "fallbackType": "Other",
+    "exampleAlt": "Example for {{name}}"
+  },
+  "priceCalculation": {
+    "purchase": {
+      "title": "Purchase",
+      "description": "Purchase price and price calculations",
+      "taxRateLabel": "Tax Rate",
+      "taxRatePlaceholder": "Select VAT rate",
+      "taxRateHint": "(from article or service group)",
+      "mode": {
+        "net": "Net",
+        "gross": "Gross"
+      },
+      "headers": {
+        "net": "Net",
+        "tax": "Tax",
+        "gross": "Gross"
+      },
+      "priceLabel": "Purchase Price",
+      "costLabel": "Purchase Cost",
+      "costPercentLabel": "Purchase Cost %",
+      "totalLabel": "Purchase Total",
+      "priceCorrespondsLabel": "Price corresponds to",
+      "priceCorrespondsPlaceholder": "Select",
+      "unitPlaceholder": "1.00",
+      "unitHint": "Quantity unit(s) or packaging"
+    },
+    "sales": {
+      "title": "Sales",
+      "description": "Sales price and margin calculations",
+      "taxRateLabel": "Tax Rate",
+      "taxRatePlaceholder": "Select VAT rate",
+      "taxRateHint": "(from article or service group)",
+      "mode": {
+        "net": "Net",
+        "gross": "Gross"
+      },
+      "headers": {
+        "net": "Net",
+        "tax": "Tax",
+        "gross": "Gross"
+      },
+      "marginLabel": "Margin",
+      "marginPercentLabel": "Margin %",
+      "totalLabel": "Sales Total",
+      "priceCorrespondsLabel": "Price corresponds to",
+      "priceCorrespondsPlaceholder": "Select",
+      "unitPlaceholder": "1.00",
+      "unitHint": "Quantity unit(s) or packaging"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "title": {
+    "new": "New Article Category",
+    "edit": "Edit Article Category"
+  },
+  "description": {
+    "new": "Create a new article category with the form below",
+    "edit": "Update the article category details below"
+  },
+  "form": {
+    "name": "Name *",
+    "namePlaceholder": "Enter article category name",
+    "description": "Description",
+    "descriptionPlaceholder": "Enter article category description (optional)",
+    "charCount": "{{count}}/{{max}} characters"
+  },
+  "errors": {
+    "load": "Failed to load article category",
+    "save": "Failed to save article category. Please try again.",
+    "nameRequired": "Name is required",
+    "nameMaxLength": "Name must not exceed 255 characters"
+  },
+  "actions": {
+    "create": "Create Category",
+    "update": "Update Category"
+  }
+}

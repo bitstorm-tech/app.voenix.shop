@@ -1,0 +1,23 @@
+{
+  "title": {
+    "new": "New Slot Type",
+    "edit": "Edit Slot Type"
+  },
+  "description": {
+    "new": "Create a new slot type with the form below",
+    "edit": "Update the slot type details below"
+  },
+  "form": {
+    "name": "Name",
+    "namePlaceholder": "Enter slot type name"
+  },
+  "errors": {
+    "load": "Failed to load prompt slot type",
+    "save": "Failed to save prompt slot type. Please try again.",
+    "nameRequired": "Name is required"
+  },
+  "actions": {
+    "create": "Create Slot Type",
+    "update": "Update Slot Type"
+  }
+}

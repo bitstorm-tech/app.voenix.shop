@@ -1,0 +1,23 @@
+{
+  "title": {
+    "new": "Neuer Slot-Typ",
+    "edit": "Slot-Typ bearbeiten"
+  },
+  "description": {
+    "new": "Erstellen Sie mit dem Formular unten einen neuen Slot-Typ",
+    "edit": "Aktualisieren Sie die Slot-Typ-Details unten"
+  },
+  "form": {
+    "name": "Name",
+    "namePlaceholder": "Name des Slot-Typs eingeben"
+  },
+  "errors": {
+    "load": "Slot-Typ konnte nicht geladen werden",
+    "save": "Slot-Typ konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "nameRequired": "Name ist erforderlich"
+  },
+  "actions": {
+    "create": "Slot-Typ erstellen",
+    "update": "Slot-Typ aktualisieren"
+  }
+}

@@ -16,6 +16,7 @@ import { usePromptPriceStore } from '@/stores/admin/prompts/usePromptPriceStore'
 import type { PromptCategory, PromptSubCategory } from '@/types/prompt';
 import { Calculator, FileText, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import PriceCalculationTab from './prompts/components/PriceCalculationTab';
 // no extra API needed; prompt includes costCalculation
@@ -24,6 +25,7 @@ export default function NewOrEditPrompt() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
+  const { t } = useTranslation('admin');
 
   const [formData, setFormData] = useState({
     title: '',
@@ -53,9 +55,9 @@ export default function NewOrEditPrompt() {
       setCategories(data);
     } catch (error) {
       console.error('Error fetching categories:', error);
-      setError('Failed to load categories');
+      setError(t('prompt.errors.loadCategories'));
     }
-  }, []);
+  }, [t]);
 
   const fetchSubcategories = useCallback(async (categoryId: number) => {
     if (!categoryId) {
@@ -118,11 +120,11 @@ export default function NewOrEditPrompt() {
       }
     } catch (error) {
       console.error('Error fetching prompt:', error);
-      setError('Failed to load prompt');
+      setError(t('prompt.errors.load'));
     } finally {
       setInitialLoading(false);
     }
-  }, [fetchSubcategories, id, setCostCalculation]);
+  }, [fetchSubcategories, id, setCostCalculation, t]);
 
   useEffect(() => {
     fetchCategories();
@@ -146,13 +148,13 @@ export default function NewOrEditPrompt() {
     e.preventDefault();
 
     if (!formData.title.trim()) {
-      setError('Title is required');
+      setError(t('prompt.errors.titleRequired'));
       setActiveTab('prompt');
       return;
     }
 
     if (!formData.categoryId) {
-      setError('Category is required');
+      setError(t('prompt.errors.categoryRequired'));
       setActiveTab('prompt');
       return;
     }
@@ -170,8 +172,12 @@ export default function NewOrEditPrompt() {
           imageFilename = uploadResult.filename;
         } catch (uploadError: unknown) {
           console.error('Error uploading image:', uploadError);
-          const errorMessage = uploadError instanceof Error ? uploadError.message : 'Please try again.';
-          setError(`Failed to upload image: ${errorMessage}`);
+          const errorMessage = uploadError instanceof Error ? uploadError.message : '';
+          setError(
+            t('prompt.errors.uploadImage', {
+              message: errorMessage || t('common.errors.generic'),
+            }),
+          );
           setLoading(false);
           return;
         }
@@ -215,7 +221,7 @@ export default function NewOrEditPrompt() {
       navigate('/admin/prompts');
     } catch (error) {
       console.error('Error saving prompt:', error);
-      setError('Failed to save prompt. Please try again.');
+      setError(t('prompt.errors.save'));
     } finally {
       setLoading(false);
     }
@@ -228,14 +234,14 @@ export default function NewOrEditPrompt() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !file.type.startsWith('image/')) {
-      setError('Please select a valid image file');
+      setError(t('prompt.errors.invalidImage'));
       return;
     }
 
     // Check file size (10MB limit)
     const maxSize = 10 * 1024 * 1024;
     if (file.size > maxSize) {
-      setError('File size exceeds maximum allowed size of 10MB');
+      setError(t('prompt.errors.imageTooLarge'));
       return;
     }
 
@@ -270,7 +276,7 @@ export default function NewOrEditPrompt() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading...</p>
+          <p className="text-gray-500">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -283,37 +289,37 @@ export default function NewOrEditPrompt() {
           <TabsList className="grid w-full grid-cols-2 lg:w-auto lg:grid-flow-col">
             <TabsTrigger value="prompt" className="gap-2">
               <FileText className="h-4 w-4" />
-              <span className="hidden sm:inline">Prompt</span>
+              <span className="hidden sm:inline">{t('prompt.tabs.prompt')}</span>
             </TabsTrigger>
             <TabsTrigger value="cost-calculation" className="gap-2">
               <Calculator className="h-4 w-4" />
-              <span className="hidden sm:inline">Price Calculation</span>
+              <span className="hidden sm:inline">{t('prompt.tabs.costCalculation')}</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="prompt" forceMount>
             <Card>
               <CardHeader>
-                <CardTitle>{isEditing ? 'Edit Prompt' : 'New Prompt'}</CardTitle>
-                <CardDescription>{isEditing ? 'Update the prompt details below' : 'Create a new prompt with the form below'}</CardDescription>
+                <CardTitle>{isEditing ? t('prompt.title.edit') : t('prompt.title.new')}</CardTitle>
+                <CardDescription>{isEditing ? t('prompt.description.edit') : t('prompt.description.new')}</CardDescription>
               </CardHeader>
               <CardContent>
                 <form id="prompt-form" onSubmit={handleSubmit} className="space-y-6">
                   {error && <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
 
                   <div className="space-y-2">
-                    <Label htmlFor="title">Title</Label>
+                    <Label htmlFor="title">{t('prompt.form.title')}</Label>
                     <Input
                       id="title"
                       value={formData.title}
                       onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      placeholder="Enter prompt title"
+                      placeholder={t('prompt.form.titlePlaceholder')}
                       required
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="promptNumber">Prompt Number</Label>
+                    <Label htmlFor="promptNumber">{t('prompt.form.promptNumber')}</Label>
                     <InputWithCopy
                       id="promptNumber"
                       value={
@@ -326,7 +332,7 @@ export default function NewOrEditPrompt() {
 
                   <div className="flex gap-8">
                     <div className="space-y-2">
-                      <Label htmlFor="category">Category</Label>
+                      <Label htmlFor="category">{t('prompt.form.category')}</Label>
                       <Select
                         value={formData.categoryId.toString()}
                         onValueChange={(value) => {
@@ -336,7 +342,7 @@ export default function NewOrEditPrompt() {
                         }}
                       >
                         <SelectTrigger id="category">
-                          <SelectValue placeholder="Select a category" />
+                          <SelectValue placeholder={t('prompt.form.categoryPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent>
                           {categories.map((category) => (
@@ -350,16 +356,16 @@ export default function NewOrEditPrompt() {
 
                     {formData.categoryId > 0 && subcategories.length > 0 && (
                       <div className="space-y-2">
-                        <Label htmlFor="subcategory">Subcategory (optional)</Label>
+                        <Label htmlFor="subcategory">{t('prompt.form.subcategory')}</Label>
                         <Select
                           value={formData.subcategoryId.toString()}
                           onValueChange={(value) => setFormData({ ...formData, subcategoryId: parseInt(value) })}
                         >
                           <SelectTrigger id="subcategory">
-                            <SelectValue placeholder="Select a subcategory (optional)" />
+                            <SelectValue placeholder={t('prompt.form.subcategoryPlaceholder')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="0">No subcategory</SelectItem>
+                            <SelectItem value="0">{t('prompt.form.noSubcategory')}</SelectItem>
                             {subcategories.map((subcategory) => (
                               <SelectItem key={subcategory.id} value={subcategory.id.toString()}>
                                 {subcategory.name}
@@ -372,12 +378,12 @@ export default function NewOrEditPrompt() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="promptText">Prompt Style (optional)</Label>
+                    <Label htmlFor="promptText">{t('prompt.form.promptStyle')}</Label>
                     <Textarea
                       id="promptText"
                       value={formData.promptText}
                       onChange={(e) => setFormData({ ...formData, promptText: e.target.value })}
-                      placeholder="Enter the prompt text content..."
+                      placeholder={t('prompt.form.promptStylePlaceholder')}
                       rows={4}
                     />
                   </div>
@@ -387,11 +393,11 @@ export default function NewOrEditPrompt() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Example Image (optional)</Label>
+                    <Label>{t('prompt.exampleImage.label')}</Label>
                     <div className="space-y-3">
                       {exampleImageUrl ? (
                         <div className="relative w-full max-w-md">
-                          <img src={exampleImageUrl} alt="Prompt example" className="w-full rounded-lg border border-gray-200 object-contain" />
+                          <img src={exampleImageUrl} alt={t('prompt.exampleImage.alt')} className="w-full rounded-lg border border-gray-200 object-contain" />
                           <Button
                             type="button"
                             variant="outline"
@@ -406,9 +412,9 @@ export default function NewOrEditPrompt() {
                         <div className="flex items-center gap-2">
                           <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
                             <Upload className="mr-2 h-4 w-4" />
-                            Upload Image
+                            {t('common.actions.uploadImage')}
                           </Button>
-                          <p className="text-sm text-gray-500">PNG, JPG, GIF, or WEBP (automatically converted to WebP)</p>
+                          <p className="text-sm text-gray-500">{t('prompt.exampleImage.hint')}</p>
                         </div>
                       )}
                       <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
@@ -416,7 +422,7 @@ export default function NewOrEditPrompt() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="active">Status</Label>
+                    <Label htmlFor="active">{t('prompt.form.status')}</Label>
                     <div className="flex items-center space-x-2">
                       <Checkbox
                         id="active"
@@ -424,7 +430,7 @@ export default function NewOrEditPrompt() {
                         onCheckedChange={(checked) => setFormData({ ...formData, active: checked as boolean })}
                       />
                       <Label htmlFor="active" className="font-normal">
-                        Make this prompt available for use
+                        {t('prompt.form.statusHint')}
                       </Label>
                     </div>
                   </div>
@@ -441,10 +447,14 @@ export default function NewOrEditPrompt() {
         {/* Global action bar visible for both tabs */}
         <div className="mt-6 flex gap-4">
           <Button type="submit" form="prompt-form" disabled={loading}>
-            {loading ? 'Saving...' : isEditing ? 'Update Prompt' : 'Create Prompt'}
+            {loading
+              ? t('common.status.saving')
+              : isEditing
+                ? t('prompt.actions.update')
+                : t('prompt.actions.create')}
           </Button>
           <Button type="button" variant="outline" onClick={handleCancel}>
-            Cancel
+            {t('common.actions.cancel')}
           </Button>
         </div>
       </div>

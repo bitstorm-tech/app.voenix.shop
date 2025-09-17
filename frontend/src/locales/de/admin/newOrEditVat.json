@@ -1,0 +1,36 @@
+{
+  "breadcrumb": {
+    "back": "Zurück zur Umsatzsteuerliste"
+  },
+  "title": {
+    "new": "Neue Umsatzsteuer anlegen",
+    "edit": "Umsatzsteuer bearbeiten"
+  },
+  "cardTitle": {
+    "new": "Umsatzsteuer-Details",
+    "edit": "Umsatzsteuerdetails bearbeiten"
+  },
+  "cardDescription": {
+    "new": "Geben Sie die Details für den neuen Umsatzsteuersatz ein.",
+    "edit": "Aktualisieren Sie die Umsatzsteuerinformationen unten."
+  },
+  "form": {
+    "name": "Name *",
+    "namePlaceholder": "z. B. Standard-USt",
+    "percent": "Prozent (%) *",
+    "percentPlaceholder": "z. B. 19",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Optionale Beschreibung für diesen Umsatzsteuersatz",
+    "isDefault": "Als Standard-Umsatzsteuer festlegen"
+  },
+  "errors": {
+    "nameRequired": "Name ist erforderlich",
+    "percentRequired": "Prozentsatz ist erforderlich",
+    "percentPositive": "Prozentsatz muss eine positive Zahl sein"
+  },
+  "loading": "Umsatzsteuerdaten werden geladen...",
+  "actions": {
+    "create": "Umsatzsteuer erstellen",
+    "update": "Umsatzsteuer aktualisieren"
+  }
+}

@@ -8,12 +8,14 @@ import type { CreateArticleSubCategoryRequest, UpdateArticleSubCategoryRequest }
 import { articleCategoriesApi, articleSubCategoriesApi } from '@/lib/api';
 import type { ArticleCategory } from '@/types/mug';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditArticleSubCategory() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
+  const { t } = useTranslation('admin');
 
   const [formData, setFormData] = useState<CreateArticleSubCategoryRequest>({
     articleCategoryId: 0,
@@ -31,9 +33,9 @@ export default function NewOrEditArticleSubCategory() {
       setCategories(data);
     } catch (error) {
       console.error('Error fetching article categories:', error);
-      setError('Failed to load article categories');
+      setError(t('articleSubCategory.errors.loadCategories'));
     }
-  }, []);
+  }, [t]);
 
   const fetchArticleSubCategory = useCallback(async () => {
     if (!id) return;
@@ -48,11 +50,11 @@ export default function NewOrEditArticleSubCategory() {
       });
     } catch (error) {
       console.error('Error fetching article subcategory:', error);
-      setError('Failed to load article subcategory');
+      setError(t('articleSubCategory.errors.load'));
     } finally {
       setInitialLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     fetchCategories();
@@ -67,12 +69,12 @@ export default function NewOrEditArticleSubCategory() {
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      setError('Name is required');
+      setError(t('articleSubCategory.errors.nameRequired'));
       return;
     }
 
     if (!formData.articleCategoryId) {
-      setError('Category is required');
+      setError(t('articleSubCategory.errors.categoryRequired'));
       return;
     }
 
@@ -94,7 +96,7 @@ export default function NewOrEditArticleSubCategory() {
       navigate('/admin/article-subcategories');
     } catch (error) {
       console.error('Error saving article subcategory:', error);
-      setError('Failed to save article subcategory. Please try again.');
+      setError(t('articleSubCategory.errors.save'));
     } finally {
       setLoading(false);
     }
@@ -108,7 +110,7 @@ export default function NewOrEditArticleSubCategory() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading...</p>
+          <p className="text-gray-500">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -118,9 +120,9 @@ export default function NewOrEditArticleSubCategory() {
     <div className="container mx-auto p-6">
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
-          <CardTitle>{isEditing ? 'Edit Article Subcategory' : 'New Article Subcategory'}</CardTitle>
+          <CardTitle>{isEditing ? t('articleSubCategory.title.edit') : t('articleSubCategory.title.new')}</CardTitle>
           <CardDescription>
-            {isEditing ? 'Update the article subcategory details below' : 'Create a new article subcategory with the form below'}
+            {isEditing ? t('articleSubCategory.description.edit') : t('articleSubCategory.description.new')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -128,13 +130,13 @@ export default function NewOrEditArticleSubCategory() {
             {error && <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">{t('articleSubCategory.form.category')}</Label>
               <Select
                 value={formData.articleCategoryId.toString()}
                 onValueChange={(value) => setFormData({ ...formData, articleCategoryId: parseInt(value) })}
               >
                 <SelectTrigger id="category">
-                  <SelectValue placeholder="Select a category" />
+                  <SelectValue placeholder={t('articleSubCategory.form.categoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((category) => (
@@ -147,33 +149,37 @@ export default function NewOrEditArticleSubCategory() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
+              <Label htmlFor="name">{t('articleSubCategory.form.name')}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter subcategory name"
+                placeholder={t('articleSubCategory.form.namePlaceholder')}
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('articleSubCategory.form.description')}</Label>
               <Textarea
                 id="description"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Enter subcategory description (optional)"
+                placeholder={t('articleSubCategory.form.descriptionPlaceholder')}
                 rows={3}
               />
             </div>
 
             <div className="flex gap-4">
               <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : isEditing ? 'Update Subcategory' : 'Create Subcategory'}
+                {loading
+                  ? t('common.status.saving')
+                  : isEditing
+                    ? t('articleSubCategory.actions.update')
+                    : t('articleSubCategory.actions.create')}
               </Button>
               <Button type="button" variant="outline" onClick={handleCancel}>
-                Cancel
+                {t('common.actions.cancel')}
               </Button>
             </div>
           </form>

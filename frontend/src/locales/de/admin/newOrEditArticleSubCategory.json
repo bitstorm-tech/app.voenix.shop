@@ -1,0 +1,32 @@
+{
+  "title": {
+    "new": "Neue Artikelsubkategorie",
+    "edit": "Artikelsubkategorie bearbeiten"
+  },
+  "description": {
+    "new": "Erstellen Sie mit dem Formular unten eine neue Artikelsubkategorie",
+    "edit": "Aktualisieren Sie die Details der Artikelsubkategorie unten"
+  },
+  "form": {
+    "category": "Kategorie",
+    "categoryPlaceholder": "Kategorie auswählen",
+    "name": "Name",
+    "namePlaceholder": "Name der Subkategorie eingeben",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Beschreibung der Subkategorie eingeben (optional)",
+    "subcategory": "Subkategorie (optional)",
+    "subcategoryPlaceholder": "Subkategorie auswählen (optional)",
+    "noSubcategory": "Keine Subkategorie"
+  },
+  "errors": {
+    "loadCategories": "Artikelkategorien konnten nicht geladen werden",
+    "load": "Artikelsubkategorie konnte nicht geladen werden",
+    "save": "Artikelsubkategorie konnte nicht gespeichert werden. Bitte erneut versuchen.",
+    "nameRequired": "Name ist erforderlich",
+    "categoryRequired": "Kategorie ist erforderlich"
+  },
+  "actions": {
+    "create": "Subkategorie erstellen",
+    "update": "Subkategorie aktualisieren"
+  }
+}

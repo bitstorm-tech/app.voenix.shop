@@ -6,12 +6,14 @@ import { Textarea } from '@/components/ui/Textarea';
 import type { CreateArticleCategoryRequest, UpdateArticleCategoryRequest } from '@/lib/api';
 import { articleCategoriesApi } from '@/lib/api';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
 export default function NewOrEditArticleCategory() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
+  const { t } = useTranslation('admin');
 
   const [formData, setFormData] = useState<CreateArticleCategoryRequest>({
     name: '',
@@ -33,11 +35,11 @@ export default function NewOrEditArticleCategory() {
       });
     } catch (error) {
       console.error('Error fetching article category:', error);
-      setError('Failed to load article category');
+      setError(t('articleCategory.errors.load'));
     } finally {
       setInitialLoading(false);
     }
-  }, [id]);
+  }, [id, t]);
 
   useEffect(() => {
     if (isEditing) {
@@ -51,12 +53,12 @@ export default function NewOrEditArticleCategory() {
     e.preventDefault();
 
     if (!formData.name.trim()) {
-      setError('Name is required');
+      setError(t('articleCategory.errors.nameRequired'));
       return;
     }
 
     if (formData.name.length > 255) {
-      setError('Name must not exceed 255 characters');
+      setError(t('articleCategory.errors.nameMaxLength'));
       return;
     }
 
@@ -81,7 +83,7 @@ export default function NewOrEditArticleCategory() {
       navigate('/admin/article-categories');
     } catch (error) {
       console.error('Error saving article category:', error);
-      setError('Failed to save article category. Please try again.');
+      setError(t('articleCategory.errors.save'));
     } finally {
       setLoading(false);
     }
@@ -95,7 +97,7 @@ export default function NewOrEditArticleCategory() {
     return (
       <div className="container mx-auto p-6">
         <div className="flex h-64 items-center justify-center">
-          <p className="text-gray-500">Loading...</p>
+          <p className="text-gray-500">{t('common.loading')}</p>
         </div>
       </div>
     );
@@ -105,9 +107,9 @@ export default function NewOrEditArticleCategory() {
     <div className="container mx-auto p-6">
       <Card className="mx-auto max-w-2xl">
         <CardHeader>
-          <CardTitle>{isEditing ? 'Edit Article Category' : 'New Article Category'}</CardTitle>
+          <CardTitle>{isEditing ? t('articleCategory.title.edit') : t('articleCategory.title.new')}</CardTitle>
           <CardDescription>
-            {isEditing ? 'Update the article category details below' : 'Create a new article category with the form below'}
+            {isEditing ? t('articleCategory.description.edit') : t('articleCategory.description.new')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -115,35 +117,41 @@ export default function NewOrEditArticleCategory() {
             {error && <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">{error}</div>}
 
             <div className="space-y-2">
-              <Label htmlFor="name">Name *</Label>
+              <Label htmlFor="name">{t('articleCategory.form.name')}</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter article category name"
+                placeholder={t('articleCategory.form.namePlaceholder')}
                 maxLength={255}
                 required
               />
-              <p className="text-sm text-gray-500">{formData.name.length}/255 characters</p>
+              <p className="text-sm text-gray-500">
+                {t('articleCategory.form.charCount', { count: formData.name.length, max: 255 })}
+              </p>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">{t('articleCategory.form.description')}</Label>
               <Textarea
                 id="description"
                 value={formData.description || ''}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Enter article category description (optional)"
+                placeholder={t('articleCategory.form.descriptionPlaceholder')}
                 rows={4}
               />
             </div>
 
             <div className="flex gap-4">
               <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : isEditing ? 'Update Category' : 'Create Category'}
+                {loading
+                  ? t('common.status.saving')
+                  : isEditing
+                    ? t('articleCategory.actions.update')
+                    : t('articleCategory.actions.create')}
               </Button>
               <Button type="button" variant="outline" onClick={handleCancel}>
-                Cancel
+                {t('common.actions.cancel')}
               </Button>
             </div>
           </form>
