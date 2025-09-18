@@ -6,9 +6,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useVats } from '@/hooks/queries/useVat';
 import { useArticleFormStore } from '@/stores/admin/articles/useArticleFormStore';
 import { useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export default function PriceCalculationTab() {
   const { data: vats = [] } = useVats();
+  const { t } = useTranslation('adminArticles');
 
   const {
     costCalculation,
@@ -84,16 +86,16 @@ export default function PriceCalculationTab() {
       {/* Purchase Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Purchase</CardTitle>
-          <CardDescription>Purchase price and price calculations</CardDescription>
+          <CardTitle>{t('form.price.purchase.title')}</CardTitle>
+          <CardDescription>{t('form.price.purchase.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Tax Rate */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <FieldLabel optional>Tax Rate</FieldLabel>
+            <FieldLabel optional>{t('form.price.common.vatLabel')}</FieldLabel>
             <Select value={costCalculation.purchaseVatRateId?.toString() || ''} onValueChange={handlePurchaseVatRateChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Select VAT rate" />
+                <SelectValue placeholder={t('form.price.common.vatPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {vats.map((vat) => (
@@ -103,7 +105,7 @@ export default function PriceCalculationTab() {
                 ))}
               </SelectContent>
             </Select>
-            <div className="text-muted-foreground col-span-2 text-sm">(from article or service group)</div>
+            <div className="text-muted-foreground col-span-2 text-sm">{t('form.price.common.vatHelper')}</div>
           </div>
 
           {/* Calculation Mode */}
@@ -117,7 +119,7 @@ export default function PriceCalculationTab() {
                 onChange={() => setPurchaseCalculationMode('NET')}
                 className="h-4 w-4"
               />
-              <span>Net</span>
+              <span>{t('form.common.net')}</span>
             </label>
             <label className="flex items-center space-x-2">
               <input
@@ -128,21 +130,21 @@ export default function PriceCalculationTab() {
                 onChange={() => setPurchaseCalculationMode('GROSS')}
                 className="h-4 w-4"
               />
-              <span>Gross</span>
+              <span>{t('form.common.gross')}</span>
             </label>
           </div>
 
           {/* Headers */}
           <div className="text-muted-foreground grid grid-cols-4 gap-4 text-sm font-medium">
             <div></div>
-            <div className="text-center">Net</div>
-            <div className="text-center">Tax</div>
-            <div className="text-center">Gross</div>
+            <div className="text-center">{t('form.common.net')}</div>
+            <div className="text-center">{t('form.common.tax')}</div>
+            <div className="text-center">{t('form.common.gross')}</div>
           </div>
 
           {/* Purchase Price */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <FieldLabel optional>Purchase Price</FieldLabel>
+            <FieldLabel optional>{t('form.price.purchase.fields.price')}</FieldLabel>
             <CurrencyInput
               value={costCalculation.purchasePriceNet}
               onChange={(value) => updatePurchasePrice('net', value)}
@@ -171,7 +173,7 @@ export default function PriceCalculationTab() {
                 className="h-4 w-4"
               />
               <FieldLabel htmlFor="purchaseCostRadio" optional>
-                Purchase Cost
+                {t('form.price.purchase.fields.cost')}
               </FieldLabel>
             </div>
             <CurrencyInput
@@ -202,7 +204,7 @@ export default function PriceCalculationTab() {
                 className="h-4 w-4"
               />
               <FieldLabel htmlFor="purchaseCostPercentRadio" optional>
-                Purchase Cost %
+                {t('form.price.purchase.fields.costPercent')}
               </FieldLabel>
             </div>
             <CurrencyInput
@@ -221,7 +223,7 @@ export default function PriceCalculationTab() {
 
           {/* Purchase Total */}
           <div className="grid grid-cols-4 items-center gap-4 font-semibold">
-            <FieldLabel>Purchase Total</FieldLabel>
+            <FieldLabel>{t('form.price.purchase.fields.total')}</FieldLabel>
             <CurrencyInput value={costCalculation.purchaseTotalNet} onChange={() => {}} disabled />
             <CurrencyInput value={costCalculation.purchaseTotalTax} onChange={() => {}} disabled />
             <CurrencyInput value={costCalculation.purchaseTotalGross} onChange={() => {}} disabled />
@@ -230,15 +232,15 @@ export default function PriceCalculationTab() {
           {/* Price corresponds selection */}
           <div className="flex flex-wrap items-center gap-2 pt-2">
             <FieldLabel htmlFor="purchasePriceCorresponds" className="text-sm font-normal" optional>
-              Price corresponds to
+              {t('form.price.common.priceCorresponds')}
             </FieldLabel>
             <Select value={costCalculation.purchasePriceCorresponds} onValueChange={handlePurchasePriceCorrespondsChange}>
               <SelectTrigger id="purchasePriceCorresponds" className="w-32">
-                <SelectValue placeholder="Select" />
+                <SelectValue placeholder={t('form.common.select')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="NET">Net</SelectItem>
-                <SelectItem value="GROSS">Gross</SelectItem>
+                <SelectItem value="NET">{t('form.common.net')}</SelectItem>
+                <SelectItem value="GROSS">{t('form.common.gross')}</SelectItem>
               </SelectContent>
             </Select>
             <Input
@@ -246,9 +248,9 @@ export default function PriceCalculationTab() {
               value={costCalculation.purchasePriceUnit}
               onChange={(e) => updateCostField('purchasePriceUnit', e.target.value)}
               className="w-32"
-              placeholder="1.00"
+              placeholder={t('form.common.unitPlaceholder')}
             />
-            <span className="text-muted-foreground text-sm">Quantity unit(s) or packaging</span>
+            <span className="text-muted-foreground text-sm">{t('form.price.common.quantityHelper')}</span>
           </div>
         </CardContent>
       </Card>
@@ -256,16 +258,16 @@ export default function PriceCalculationTab() {
       {/* Sales Section */}
       <Card>
         <CardHeader>
-          <CardTitle>Sales</CardTitle>
-          <CardDescription>Sales price and margin calculations</CardDescription>
+          <CardTitle>{t('form.price.sales.title')}</CardTitle>
+          <CardDescription>{t('form.price.sales.description')}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Tax Rate */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <FieldLabel optional>Tax Rate</FieldLabel>
+            <FieldLabel optional>{t('form.price.common.vatLabel')}</FieldLabel>
             <Select value={costCalculation.salesVatRateId?.toString() || ''} onValueChange={handleSalesVatRateChange}>
               <SelectTrigger>
-                <SelectValue placeholder="Select VAT rate" />
+                <SelectValue placeholder={t('form.price.common.vatPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
                 {vats.map((vat) => (
@@ -275,7 +277,7 @@ export default function PriceCalculationTab() {
                 ))}
               </SelectContent>
             </Select>
-            <div className="text-muted-foreground col-span-2 text-sm">(from article or service group)</div>
+            <div className="text-muted-foreground col-span-2 text-sm">{t('form.price.common.vatHelper')}</div>
           </div>
 
           {/* Calculation Mode */}
@@ -289,7 +291,7 @@ export default function PriceCalculationTab() {
                 onChange={() => setSalesCalculationMode('NET')}
                 className="h-4 w-4"
               />
-              <span>Net</span>
+              <span>{t('form.common.net')}</span>
             </label>
             <label className="flex items-center space-x-2">
               <input
@@ -300,16 +302,16 @@ export default function PriceCalculationTab() {
                 onChange={() => setSalesCalculationMode('GROSS')}
                 className="h-4 w-4"
               />
-              <span>Gross</span>
+              <span>{t('form.common.gross')}</span>
             </label>
           </div>
 
           {/* Headers */}
           <div className="text-muted-foreground grid grid-cols-4 gap-4 text-sm font-medium">
             <div></div>
-            <div className="text-center">Net</div>
-            <div className="text-center">Tax</div>
-            <div className="text-center">Gross</div>
+            <div className="text-center">{t('form.common.net')}</div>
+            <div className="text-center">{t('form.common.tax')}</div>
+            <div className="text-center">{t('form.common.gross')}</div>
           </div>
 
           {/* Margin */}
@@ -325,7 +327,7 @@ export default function PriceCalculationTab() {
                 className="h-4 w-4"
               />
               <FieldLabel htmlFor="salesMarginRadio" optional>
-                Margin
+                {t('form.price.sales.fields.margin')}
               </FieldLabel>
             </div>
             <CurrencyInput
@@ -354,7 +356,7 @@ export default function PriceCalculationTab() {
                 className="h-4 w-4"
               />
               <FieldLabel htmlFor="salesMarginPercentRadio" optional>
-                Margin %
+                {t('form.price.sales.fields.marginPercent')}
               </FieldLabel>
             </div>
             <CurrencyInput
@@ -382,7 +384,7 @@ export default function PriceCalculationTab() {
                 onChange={() => updateCostField('salesActiveRow', 'TOTAL')}
                 className="h-4 w-4"
               />
-              <FieldLabel htmlFor="salesTotalRadio">Sales Total</FieldLabel>
+              <FieldLabel htmlFor="salesTotalRadio">{t('form.price.sales.fields.total')}</FieldLabel>
             </div>
             <CurrencyInput
               value={costCalculation.salesTotalNet}
@@ -400,15 +402,15 @@ export default function PriceCalculationTab() {
           {/* Price corresponds selection */}
           <div className="flex flex-wrap items-center gap-2 pt-2">
             <FieldLabel htmlFor="salesPriceCorresponds" className="text-sm font-normal" optional>
-              Price corresponds to
+              {t('form.price.common.priceCorresponds')}
             </FieldLabel>
             <Select value={costCalculation.salesPriceCorresponds} onValueChange={handleSalesPriceCorrespondsChange}>
               <SelectTrigger id="salesPriceCorresponds" className="w-32">
-                <SelectValue placeholder="Select" />
+                <SelectValue placeholder={t('form.common.select')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="NET">Net</SelectItem>
-                <SelectItem value="GROSS">Gross</SelectItem>
+                <SelectItem value="NET">{t('form.common.net')}</SelectItem>
+                <SelectItem value="GROSS">{t('form.common.gross')}</SelectItem>
               </SelectContent>
             </Select>
             <Input
@@ -416,9 +418,9 @@ export default function PriceCalculationTab() {
               value={costCalculation.salesPriceUnit}
               onChange={(e) => updateCostField('salesPriceUnit', e.target.value)}
               className="w-32"
-              placeholder="1.00"
+              placeholder={t('form.common.unitPlaceholder')}
             />
-            <span className="text-muted-foreground text-sm">Quantity unit(s) or packaging</span>
+            <span className="text-muted-foreground text-sm">{t('form.price.common.quantityHelper')}</span>
           </div>
         </CardContent>
       </Card>

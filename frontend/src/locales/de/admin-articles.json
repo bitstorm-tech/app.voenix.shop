@@ -1,49 +1,310 @@
 {
-  "page": {
-    "title": "Artikel",
-    "subtitle": "Verwalte deinen Produktkatalog",
-    "loading": "Artikel werden geladen...",
-    "empty": {
-      "description": "Keine Artikel gefunden",
-      "cta": "Lege deinen ersten Artikel an"
-    },
-    "filter": {
-      "label": "Filter",
-      "placeholder": "Nach Typ filtern",
-      "all": "Alle Typen",
-      "mug": "Tassen",
-      "shirt": "T-Shirts"
-    },
-    "actions": {
-      "new": "Neuer Artikel",
-      "edit": "Artikel bearbeiten",
-      "delete": "Artikel löschen"
-    },
-    "status": {
-      "active": "Aktiv",
-      "inactive": "Inaktiv"
-    },
-    "variantsHeading": "Varianten",
-    "confirmation": "Möchtest du diesen Artikel wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "imageAlt": "Bildvorschau von {{name}}"
+  "articleTypes": {
+    "MUG": "Tasse",
+    "SHIRT": "T-Shirt"
   },
   "badges": {
     "variants": "{{count}} Variante",
     "variants_plural": "{{count}} Varianten"
   },
-  "articleTypes": {
-    "MUG": "Tasse",
-    "SHIRT": "T-Shirt"
+  "form": {
+    "actions": {
+      "create": "Artikel erstellen",
+      "update": "Artikel aktualisieren"
+    },
+    "breadcrumb": {
+      "editArticle": "Artikel bearbeiten",
+      "newArticle": "Neuer Artikel"
+    },
+    "common": {
+      "actions": "Aktionen",
+      "active": "Aktiv",
+      "add": "Hinzufügen",
+      "default": "Standard",
+      "gross": "Brutto",
+      "inactive": "Inaktiv",
+      "net": "Netto",
+      "select": "Auswählen",
+      "tax": "Steuer",
+      "unitPlaceholder": "1,00",
+      "yes": "Ja"
+    },
+    "general": {
+      "articleType": {
+        "description": "Wähle den Produkttyp, den du erstellen möchtest",
+        "placeholder": "Artikeltyp auswählen",
+        "title": "Artikeltyp"
+      },
+      "basicInformation": {
+        "description": "Wichtige Stammdaten zu deinem Artikel",
+        "fields": {
+          "active": "Aktiv",
+          "descriptionLong": {
+            "label": "Ausführliche Beschreibung",
+            "placeholder": "Komplette Produktbeschreibung mit Eigenschaften und Vorteilen"
+          },
+          "descriptionShort": {
+            "label": "Kurzbeschreibung",
+            "placeholder": "Kurzer Beschreibungstext für Produktlisten"
+          },
+          "name": {
+            "label": "Artikelname",
+            "placeholder": "z. B. Premium Kaffeetasse"
+          }
+        },
+        "title": "Basisinformationen"
+      },
+      "organization": {
+        "description": "Ordne deinen Artikel Kategorien und Lieferanten zu",
+        "fields": {
+          "articleNumber": {
+            "label": "Artikelnummer"
+          },
+          "category": {
+            "label": "Kategorie",
+            "placeholder": "Kategorie auswählen"
+          },
+          "subcategory": {
+            "disabledPlaceholder": "Zuerst Kategorie wählen",
+            "label": "Unterkategorie",
+            "placeholder": "Unterkategorie auswählen"
+          },
+          "supplier": {
+            "label": "Lieferant",
+            "none": "Kein Lieferant",
+            "placeholder": "Lieferant auswählen (optional)"
+          },
+          "supplierArticleName": {
+            "label": "Lieferantenartikelname",
+            "placeholder": "z. B. Premium Keramiktasse"
+          },
+          "supplierArticleNumber": {
+            "label": "Lieferantenartikelnummer",
+            "placeholder": "z. B. SKU-12345"
+          }
+        },
+        "title": "Organisation"
+      }
+    },
+    "header": {
+      "createTitle": "Neuen Artikel erstellen",
+      "defaultType": "Artikel",
+      "editTitle": "{{type}} bearbeiten"
+    },
+    "mugDetails": {
+      "description": "Physische Maße und Eigenschaften",
+      "documentFormat": {
+        "description": "Optionale Maße für die PDF-Erstellung.",
+        "title": "Dokumentenformat"
+      },
+      "fields": {
+        "diameter": {
+          "label": "Durchmesser ({{unit}})",
+          "placeholder": "82"
+        },
+        "dishwasherSafe": "Spülmaschinengeeignet",
+        "documentHeight": {
+          "label": "Dokumenthöhe ({{unit}})",
+          "placeholder": "z. B. 120"
+        },
+        "documentMargin": {
+          "label": "Unterer Rand ({{unit}})",
+          "placeholder": "z. B. 10"
+        },
+        "documentWidth": {
+          "label": "Dokumentbreite ({{unit}})",
+          "placeholder": "z. B. 250"
+        },
+        "fillingQuantity": {
+          "label": "Füllmenge",
+          "placeholder": "250ml"
+        },
+        "height": {
+          "label": "Höhe ({{unit}})",
+          "placeholder": "95"
+        },
+        "printTemplateHeight": {
+          "label": "Druckvorlagenhöhe ({{unit}})",
+          "placeholder": "80"
+        },
+        "printTemplateWidth": {
+          "label": "Druckvorlagenbreite ({{unit}})",
+          "placeholder": "200"
+        }
+      },
+      "title": "Tassenspezifikationen",
+      "validation": {
+        "documentHeightLarger": "Die Dokumenthöhe sollte größer sein als die Höhe der Druckvorlage",
+        "documentHeightPositive": "Die Dokumenthöhe muss positiv sein",
+        "documentMarginRange": "Der untere Rand muss zwischen 0-100 mm liegen",
+        "documentWidthLarger": "Die Dokumentbreite sollte größer sein als die Breite der Druckvorlage",
+        "documentWidthPositive": "Die Dokumentbreite muss positiv sein"
+      }
+    },
+    "mugVariants": {
+      "actions": {
+        "add": "Variante hinzufügen",
+        "copy": "Varianten kopieren"
+      },
+      "confirmation": {
+        "confirm": "Variante löschen",
+        "description": "Möchtest du diese Tassenvariante wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+        "title": "Tassenvariante löschen"
+      },
+      "description": "Füge unterschiedliche Farbkombinationen für diese Tasse hinzu. Jede Variante kann Innen- und Außenfarbe kombinieren.",
+      "imageAlt": "Beispielbild für {{name}}",
+      "info": {
+        "unsavedNotice": "Diese Varianten werden gespeichert, sobald du den Artikel speicherst."
+      },
+      "table": {
+        "articleVariantNumber": "Artikelvariantennummer",
+        "exampleImage": "Beispielbild",
+        "insideColor": "Innenfarbe",
+        "name": "Name",
+        "outsideColor": "Außenfarbe"
+      },
+      "title": "Tassenvarianten",
+      "toasts": {
+        "deleteError": "Variante konnte nicht gelöscht werden",
+        "deleted": "Variante erfolgreich gelöscht",
+        "removed": "Variante entfernt",
+        "saveBeforeCopy": "Bitte speichere den Artikel, bevor du Varianten kopierst"
+      }
+    },
+    "price": {
+      "common": {
+        "priceCorresponds": "Preis bezieht sich auf",
+        "quantityHelper": "Mengeneinheit oder Verpackung",
+        "vatHelper": "(aus Artikel oder Leistungsgruppe)",
+        "vatLabel": "Steuersatz",
+        "vatPlaceholder": "Steuersatz auswählen"
+      },
+      "purchase": {
+        "description": "Einkaufspreise und Berechnungen",
+        "fields": {
+          "cost": "Einkaufskosten",
+          "costPercent": "Einkaufskosten %",
+          "price": "Einkaufspreis",
+          "total": "Einkauf gesamt"
+        },
+        "title": "Einkauf"
+      },
+      "sales": {
+        "description": "Verkaufspreise und Margenberechnungen",
+        "fields": {
+          "margin": "Marge",
+          "marginPercent": "Marge %",
+          "total": "Verkauf gesamt"
+        },
+        "title": "Verkauf"
+      }
+    },
+    "shirtDetails": {
+      "description": "Material- und Größenangaben",
+      "fields": {
+        "availableSizes": {
+          "label": "Verfügbare Größen"
+        },
+        "careInstructions": {
+          "label": "Pflegehinweise",
+          "placeholder": "Maschinenwäsche kalt, trocknen bei niedriger Temperatur"
+        },
+        "fitType": {
+          "label": "Passform",
+          "options": {
+            "loose": "Locker",
+            "regular": "Regulär",
+            "slim": "Schmal"
+          },
+          "placeholder": "Passform auswählen"
+        },
+        "material": {
+          "label": "Material",
+          "placeholder": "100 % Baumwolle"
+        }
+      },
+      "title": "Shirt-Details"
+    },
+    "shirtVariants": {
+      "description": "Füge Farb- und Größenkombinationen für dieses Shirt hinzu. Jede Kombination bildet eine eigene Produktvariante.",
+      "fields": {
+        "color": {
+          "label": "Farbe",
+          "placeholder": "z. B. Schwarz"
+        },
+        "exampleImage": {
+          "label": "Beispielbild",
+          "placeholder": "bild.jpg"
+        },
+        "size": {
+          "label": "Größe"
+        }
+      },
+      "info": {
+        "unsavedNotice": "Diese Varianten werden gespeichert, sobald du den Artikel speicherst."
+      },
+      "table": {
+        "color": "Farbe",
+        "exampleImage": "Beispielbild",
+        "size": "Größe"
+      },
+      "title": "Shirt-Varianten",
+      "toasts": {
+        "addError": "Variante konnte nicht hinzugefügt werden",
+        "added": "Variante erfolgreich hinzugefügt",
+        "addedTemporary": "Variante hinzugefügt (wird mit dem Artikel gespeichert)",
+        "colorRequired": "Bitte gib eine Farbe ein",
+        "deleteError": "Variante konnte nicht gelöscht werden",
+        "deleted": "Variante erfolgreich gelöscht",
+        "duplicate": "Diese Kombination aus Farbe und Größe existiert bereits",
+        "removed": "Variante entfernt"
+      }
+    },
+    "tabs": {
+      "general": "Allgemein",
+      "mugDetails": "Tassendetails",
+      "priceCalculation": "Preiskalkulation",
+      "shirtDetails": "Shirt-Details",
+      "variants": "Varianten"
+    }
   },
-  "variants": {
-    "none": "Keine Varianten vorhanden",
-    "default": "Standard",
-    "inside": "Innen",
-    "outside": "Außen",
-    "size": "Größe {{size}}",
-    "colorAlt": "Variante {{color}}"
+  "page": {
+    "actions": {
+      "delete": "Artikel löschen",
+      "edit": "Artikel bearbeiten",
+      "new": "Neuer Artikel"
+    },
+    "confirmation": "Möchtest du diesen Artikel wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "empty": {
+      "cta": "Lege deinen ersten Artikel an",
+      "description": "Keine Artikel gefunden"
+    },
+    "filter": {
+      "all": "Alle Typen",
+      "label": "Filter",
+      "mug": "Tassen",
+      "placeholder": "Nach Typ filtern",
+      "shirt": "T-Shirts"
+    },
+    "imageAlt": "Bildvorschau von {{name}}",
+    "loading": "Artikel werden geladen...",
+    "status": {
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "subtitle": "Verwalte deinen Produktkatalog",
+    "title": "Artikel",
+    "variantsHeading": "Varianten"
   },
   "supplier": {
     "unknown": "-"
+  },
+  "variants": {
+    "colorAlt": "Variante {{color}}",
+    "default": "Standard",
+    "inside": "Innen",
+    "none": "Keine Varianten vorhanden",
+    "outside": "Außen",
+    "size": "Größe {{size}}"
   }
 }

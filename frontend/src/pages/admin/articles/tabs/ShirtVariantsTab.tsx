@@ -8,6 +8,7 @@ import { articlesApi } from '@/lib/api';
 import type { ArticleShirtVariant, CreateArticleShirtVariantRequest } from '@/types/article';
 import { Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 interface ShirtVariantsTabProps {
@@ -34,6 +35,7 @@ export default function ShirtVariantsTab({
     size: 'M',
     exampleImageFilename: '',
   });
+  const { t } = useTranslation('adminArticles');
 
   // Sync local state with prop changes (important for when variants are copied or refetched)
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function ShirtVariantsTab({
 
   const handleAddVariant = async () => {
     if (!newVariant.color) {
-      toast.error('Please enter a color');
+      toast.error(t('form.shirtVariants.toasts.colorRequired'));
       return;
     }
 
@@ -52,7 +54,7 @@ export default function ShirtVariantsTab({
       : temporaryVariants.some((v) => v.color === newVariant.color && v.size === newVariant.size);
 
     if (isDuplicate) {
-      toast.error('This color and size combination already exists');
+      toast.error(t('form.shirtVariants.toasts.duplicate'));
       return;
     }
 
@@ -65,7 +67,7 @@ export default function ShirtVariantsTab({
           size: 'M',
           exampleImageFilename: '',
         });
-        toast.success('Variant added (will be saved with article)');
+        toast.success(t('form.shirtVariants.toasts.addedTemporary'));
       }
       return;
     }
@@ -79,10 +81,10 @@ export default function ShirtVariantsTab({
         size: 'M',
         exampleImageFilename: '',
       });
-      toast.success('Variant added successfully');
+      toast.success(t('form.shirtVariants.toasts.added'));
     } catch (error) {
       console.error('Error adding variant:', error);
-      toast.error('Failed to add variant');
+      toast.error(t('form.shirtVariants.toasts.addError'));
     }
   };
 
@@ -90,45 +92,47 @@ export default function ShirtVariantsTab({
     try {
       await articlesApi.deleteShirtVariant(variantId);
       setVariants(variants.filter((v) => v.id !== variantId));
-      toast.success('Variant deleted successfully');
+      toast.success(t('form.shirtVariants.toasts.deleted'));
     } catch (error) {
       console.error('Error deleting variant:', error);
-      toast.error('Failed to delete variant');
+      toast.error(t('form.shirtVariants.toasts.deleteError'));
     }
   };
 
   const handleDeleteTemporaryVariant = (index: number) => {
     if (onDeleteTemporaryVariant) {
       onDeleteTemporaryVariant(index);
-      toast.success('Variant removed');
+      toast.success(t('form.shirtVariants.toasts.removed'));
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Shirt Variants</CardTitle>
-        <CardDescription>Add color and size combinations for this shirt. Each combination represents a unique product variant.</CardDescription>
+        <CardTitle>{t('form.shirtVariants.title')}</CardTitle>
+        <CardDescription>{t('form.shirtVariants.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {!articleId && temporaryVariants.length > 0 && (
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
-            These variants will be saved when you save the article.
-          </div>
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">{t('form.shirtVariants.info.unsavedNotice')}</div>
         )}
 
         <div className="space-y-4">
           <div className="grid grid-cols-5 gap-4">
             <div className="space-y-2">
-              <Label>Color</Label>
-              <Input value={newVariant.color} onChange={(e) => setNewVariant({ ...newVariant, color: e.target.value })} placeholder="e.g., Black" />
+              <Label>{t('form.shirtVariants.fields.color.label')}</Label>
+              <Input
+                value={newVariant.color}
+                onChange={(e) => setNewVariant({ ...newVariant, color: e.target.value })}
+                placeholder={t('form.shirtVariants.fields.color.placeholder')}
+              />
             </div>
 
             <div className="space-y-2">
-              <Label>Size</Label>
+              <Label>{t('form.shirtVariants.fields.size.label')}</Label>
               <Select value={newVariant.size} onValueChange={(value) => setNewVariant({ ...newVariant, size: value })}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <SelectValue placeholder={t('form.common.select')} />
                 </SelectTrigger>
                 <SelectContent>
                   {SHIRT_SIZES.map((size) => (
@@ -141,18 +145,18 @@ export default function ShirtVariantsTab({
             </div>
 
             <div className="space-y-2">
-              <Label>Example Image</Label>
+              <Label>{t('form.shirtVariants.fields.exampleImage.label')}</Label>
               <Input
                 value={newVariant.exampleImageFilename}
                 onChange={(e) => setNewVariant({ ...newVariant, exampleImageFilename: e.target.value })}
-                placeholder="image.jpg"
+                placeholder={t('form.shirtVariants.fields.exampleImage.placeholder')}
               />
             </div>
 
             <div className="flex items-end">
               <Button onClick={handleAddVariant} className="w-full">
                 <Plus className="mr-2 h-4 w-4" />
-                Add
+                {t('form.common.add')}
               </Button>
             </div>
           </div>
@@ -164,11 +168,11 @@ export default function ShirtVariantsTab({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Color</TableHead>
-                  <TableHead>Size</TableHead>
+                  <TableHead>{t('form.shirtVariants.table.color')}</TableHead>
+                  <TableHead>{t('form.shirtVariants.table.size')}</TableHead>
 
-                  <TableHead>Example Image</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t('form.shirtVariants.table.exampleImage')}</TableHead>
+                  <TableHead className="text-right">{t('form.common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -177,7 +181,7 @@ export default function ShirtVariantsTab({
                     <TableCell>{variant.color}</TableCell>
                     <TableCell>{variant.size}</TableCell>
 
-                    <TableCell>{variant.exampleImageUrl ? 'Yes' : '-'}</TableCell>
+                    <TableCell>{variant.exampleImageUrl ? t('form.common.yes') : '-'}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="sm" onClick={() => handleDeleteVariant(variant.id)}>
                         <Trash2 className="h-4 w-4" />
@@ -196,11 +200,11 @@ export default function ShirtVariantsTab({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Color</TableHead>
-                  <TableHead>Size</TableHead>
+                  <TableHead>{t('form.shirtVariants.table.color')}</TableHead>
+                  <TableHead>{t('form.shirtVariants.table.size')}</TableHead>
 
-                  <TableHead>Example Image</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
+                  <TableHead>{t('form.shirtVariants.table.exampleImage')}</TableHead>
+                  <TableHead className="text-right">{t('form.common.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

@@ -1,49 +1,310 @@
 {
-  "page": {
-    "title": "Articles",
-    "subtitle": "Manage your product catalog",
-    "loading": "Loading articles...",
-    "empty": {
-      "description": "No articles found",
-      "cta": "Add your first article"
-    },
-    "filter": {
-      "label": "Filter",
-      "placeholder": "Filter by type",
-      "all": "All Types",
-      "mug": "Mugs",
-      "shirt": "T-Shirts"
-    },
-    "actions": {
-      "new": "New Article",
-      "edit": "Edit article",
-      "delete": "Delete article"
-    },
-    "status": {
-      "active": "Active",
-      "inactive": "Inactive"
-    },
-    "variantsHeading": "Variants",
-    "confirmation": "Are you sure you want to delete this article? This action cannot be undone.",
-    "imageAlt": "Image preview of {{name}}"
+  "articleTypes": {
+    "MUG": "Mug",
+    "SHIRT": "T-Shirt"
   },
   "badges": {
     "variants": "{{count}} variant",
     "variants_plural": "{{count}} variants"
   },
-  "articleTypes": {
-    "MUG": "Mug",
-    "SHIRT": "T-Shirt"
+  "form": {
+    "actions": {
+      "create": "Create Article",
+      "update": "Update Article"
+    },
+    "breadcrumb": {
+      "editArticle": "Edit Article",
+      "newArticle": "New Article"
+    },
+    "common": {
+      "actions": "Actions",
+      "active": "Active",
+      "add": "Add",
+      "default": "Default",
+      "gross": "Gross",
+      "inactive": "Inactive",
+      "net": "Net",
+      "select": "Select",
+      "tax": "Tax",
+      "unitPlaceholder": "1.00",
+      "yes": "Yes"
+    },
+    "general": {
+      "articleType": {
+        "description": "Choose the type of product you want to create",
+        "placeholder": "Select article type",
+        "title": "Article Type"
+      },
+      "basicInformation": {
+        "description": "Essential details about your article",
+        "fields": {
+          "active": "Active",
+          "descriptionLong": {
+            "label": "Detailed Description",
+            "placeholder": "Full product description with features and benefits"
+          },
+          "descriptionShort": {
+            "label": "Short Description",
+            "placeholder": "Brief description for product listings"
+          },
+          "name": {
+            "label": "Article Name",
+            "placeholder": "e.g., Premium Coffee Mug"
+          }
+        },
+        "title": "Basic Information"
+      },
+      "organization": {
+        "description": "Categorize and organize your article",
+        "fields": {
+          "articleNumber": {
+            "label": "Article Number"
+          },
+          "category": {
+            "label": "Category",
+            "placeholder": "Select a category"
+          },
+          "subcategory": {
+            "disabledPlaceholder": "Select category first",
+            "label": "Subcategory",
+            "placeholder": "Select a subcategory"
+          },
+          "supplier": {
+            "label": "Supplier",
+            "none": "No supplier",
+            "placeholder": "Select a supplier (optional)"
+          },
+          "supplierArticleName": {
+            "label": "Supplier Article Name",
+            "placeholder": "e.g., Premium Ceramic Mug"
+          },
+          "supplierArticleNumber": {
+            "label": "Supplier Article Number",
+            "placeholder": "e.g., SKU-12345"
+          }
+        },
+        "title": "Organization"
+      }
+    },
+    "header": {
+      "createTitle": "Create New Article",
+      "defaultType": "Article",
+      "editTitle": "Edit {{type}}"
+    },
+    "mugDetails": {
+      "description": "Physical dimensions and properties",
+      "documentFormat": {
+        "description": "Optional dimensions for PDF generation.",
+        "title": "Document Format"
+      },
+      "fields": {
+        "diameter": {
+          "label": "Diameter ({{unit}})",
+          "placeholder": "82"
+        },
+        "dishwasherSafe": "Dishwasher Safe",
+        "documentHeight": {
+          "label": "Document Height ({{unit}})",
+          "placeholder": "e.g. 120"
+        },
+        "documentMargin": {
+          "label": "Bottom Margin ({{unit}})",
+          "placeholder": "e.g. 10"
+        },
+        "documentWidth": {
+          "label": "Document Width ({{unit}})",
+          "placeholder": "e.g. 250"
+        },
+        "fillingQuantity": {
+          "label": "Filling Quantity",
+          "placeholder": "250ml"
+        },
+        "height": {
+          "label": "Height ({{unit}})",
+          "placeholder": "95"
+        },
+        "printTemplateHeight": {
+          "label": "Print Template Height ({{unit}})",
+          "placeholder": "80"
+        },
+        "printTemplateWidth": {
+          "label": "Print Template Width ({{unit}})",
+          "placeholder": "200"
+        }
+      },
+      "title": "Mug Specifications",
+      "validation": {
+        "documentHeightLarger": "Document height should be greater than print template height",
+        "documentHeightPositive": "Document height must be positive",
+        "documentMarginRange": "Bottom margin should be between 0-100mm",
+        "documentWidthLarger": "Document width should be greater than print template width",
+        "documentWidthPositive": "Document width must be positive"
+      }
+    },
+    "mugVariants": {
+      "actions": {
+        "add": "Add Variant",
+        "copy": "Copy Variants"
+      },
+      "confirmation": {
+        "confirm": "Delete Variant",
+        "description": "Are you sure you want to delete this mug variant? This action cannot be undone.",
+        "title": "Delete Mug Variant"
+      },
+      "description": "Add different color combinations for this mug. Each variant can have different inside and outside colors.",
+      "imageAlt": "Example image for {{name}}",
+      "info": {
+        "unsavedNotice": "These variants will be saved when you save the article."
+      },
+      "table": {
+        "articleVariantNumber": "Article Variant Number",
+        "exampleImage": "Example Image",
+        "insideColor": "Inside Color",
+        "name": "Name",
+        "outsideColor": "Outside Color"
+      },
+      "title": "Mug Variants",
+      "toasts": {
+        "deleteError": "Failed to delete variant",
+        "deleted": "Variant deleted successfully",
+        "removed": "Variant removed",
+        "saveBeforeCopy": "Please save the article first before copying variants"
+      }
+    },
+    "price": {
+      "common": {
+        "priceCorresponds": "Price corresponds to",
+        "quantityHelper": "Quantity unit(s) or packaging",
+        "vatHelper": "(from article or service group)",
+        "vatLabel": "Tax Rate",
+        "vatPlaceholder": "Select VAT rate"
+      },
+      "purchase": {
+        "description": "Purchase price and price calculations",
+        "fields": {
+          "cost": "Purchase Cost",
+          "costPercent": "Purchase Cost %",
+          "price": "Purchase Price",
+          "total": "Purchase Total"
+        },
+        "title": "Purchase"
+      },
+      "sales": {
+        "description": "Sales price and margin calculations",
+        "fields": {
+          "margin": "Margin",
+          "marginPercent": "Margin %",
+          "total": "Sales Total"
+        },
+        "title": "Sales"
+      }
+    },
+    "shirtDetails": {
+      "description": "Material and sizing information",
+      "fields": {
+        "availableSizes": {
+          "label": "Available Sizes"
+        },
+        "careInstructions": {
+          "label": "Care Instructions",
+          "placeholder": "Machine wash cold, tumble dry low"
+        },
+        "fitType": {
+          "label": "Fit Type",
+          "options": {
+            "loose": "Loose",
+            "regular": "Regular",
+            "slim": "Slim"
+          },
+          "placeholder": "Select fit type"
+        },
+        "material": {
+          "label": "Material",
+          "placeholder": "100% Cotton"
+        }
+      },
+      "title": "Shirt Details"
+    },
+    "shirtVariants": {
+      "description": "Add color and size combinations for this shirt. Each combination represents a unique product variant.",
+      "fields": {
+        "color": {
+          "label": "Color",
+          "placeholder": "e.g., Black"
+        },
+        "exampleImage": {
+          "label": "Example Image",
+          "placeholder": "image.jpg"
+        },
+        "size": {
+          "label": "Size"
+        }
+      },
+      "info": {
+        "unsavedNotice": "These variants will be saved when you save the article."
+      },
+      "table": {
+        "color": "Color",
+        "exampleImage": "Example Image",
+        "size": "Size"
+      },
+      "title": "Shirt Variants",
+      "toasts": {
+        "addError": "Failed to add variant",
+        "added": "Variant added successfully",
+        "addedTemporary": "Variant added (will be saved with article)",
+        "colorRequired": "Please enter a color",
+        "deleteError": "Failed to delete variant",
+        "deleted": "Variant deleted successfully",
+        "duplicate": "This color and size combination already exists",
+        "removed": "Variant removed"
+      }
+    },
+    "tabs": {
+      "general": "General",
+      "mugDetails": "Mug Details",
+      "priceCalculation": "Price Calculation",
+      "shirtDetails": "Shirt Details",
+      "variants": "Variants"
+    }
   },
-  "variants": {
-    "none": "No variants available",
-    "default": "Default",
-    "inside": "Inside",
-    "outside": "Outside",
-    "size": "Size {{size}}",
-    "colorAlt": "{{color}} variant"
+  "page": {
+    "actions": {
+      "delete": "Delete article",
+      "edit": "Edit article",
+      "new": "New Article"
+    },
+    "confirmation": "Are you sure you want to delete this article? This action cannot be undone.",
+    "empty": {
+      "cta": "Add your first article",
+      "description": "No articles found"
+    },
+    "filter": {
+      "all": "All Types",
+      "label": "Filter",
+      "mug": "Mugs",
+      "placeholder": "Filter by type",
+      "shirt": "T-Shirts"
+    },
+    "imageAlt": "Image preview of {{name}}",
+    "loading": "Loading articles...",
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "subtitle": "Manage your product catalog",
+    "title": "Articles",
+    "variantsHeading": "Variants"
   },
   "supplier": {
     "unknown": "-"
+  },
+  "variants": {
+    "colorAlt": "{{color}} variant",
+    "default": "Default",
+    "inside": "Inside",
+    "none": "No variants available",
+    "outside": "Outside",
+    "size": "Size {{size}}"
   }
 }

@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import type { ArticleMugVariant, CreateArticleMugVariantRequest } from '@/types/article';
 import { Copy, Edit, Image as ImageIcon, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -33,19 +34,20 @@ function VariantTable<T extends ArticleMugVariant | CreateArticleMugVariantReque
   onDelete,
   isTemporary = false,
 }: VariantTableProps<T>) {
+  const { t } = useTranslation('adminArticles');
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
-            <TableHead>Article Variant Number</TableHead>
-            <TableHead>Inside Color</TableHead>
-            <TableHead>Outside Color</TableHead>
-            <TableHead>Default</TableHead>
-            <TableHead>Active</TableHead>
-            <TableHead>Example Image</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead>{t('form.mugVariants.table.name')}</TableHead>
+            <TableHead>{t('form.mugVariants.table.articleVariantNumber')}</TableHead>
+            <TableHead>{t('form.mugVariants.table.insideColor')}</TableHead>
+            <TableHead>{t('form.mugVariants.table.outsideColor')}</TableHead>
+            <TableHead>{t('form.common.default')}</TableHead>
+            <TableHead>{t('form.common.active')}</TableHead>
+            <TableHead>{t('form.mugVariants.table.exampleImage')}</TableHead>
+            <TableHead className="text-right">{t('form.common.actions')}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -55,7 +57,9 @@ function VariantTable<T extends ArticleMugVariant | CreateArticleMugVariantReque
                 <div className="flex items-center gap-2">
                   {variant.name}
                   {!isActive(variant) && (
-                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">Inactive</span>
+                    <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
+                      {t('form.common.inactive')}
+                    </span>
                   )}
                 </div>
               </TableCell>
@@ -68,21 +72,27 @@ function VariantTable<T extends ArticleMugVariant | CreateArticleMugVariantReque
               </TableCell>
               <TableCell>
                 {variant.isDefault && (
-                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">Default</span>
+                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                    {t('form.common.default')}
+                  </span>
                 )}
               </TableCell>
               <TableCell>
                 {isActive(variant) ? (
-                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">Active</span>
+                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
+                    {t('form.common.active')}
+                  </span>
                 ) : (
-                  <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">Inactive</span>
+                  <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-1 text-xs font-medium text-red-700">
+                    {t('form.common.inactive')}
+                  </span>
                 )}
               </TableCell>
               <TableCell>
                 {!isTemporary && (variant as ArticleMugVariant).exampleImageUrl ? (
                   <img
                     src={(variant as ArticleMugVariant).exampleImageUrl!}
-                    alt={`${variant.name} example`}
+                    alt={t('form.mugVariants.imageAlt', { name: variant.name })}
                     className="h-10 w-10 rounded border object-cover"
                   />
                 ) : (
@@ -138,6 +148,7 @@ export default function MugVariantsTab({
   const [variants, setVariants] = useState<ArticleMugVariant[]>(initialVariants);
   const [dialogState, setDialogState] = useState<DialogState>({ type: 'closed' });
   const [deleteState, setDeleteState] = useState<DeleteState>({ type: 'none' });
+  const { t } = useTranslation('adminArticles');
 
   // Sync local state with prop changes (important for when variants are copied or refetched)
   useEffect(() => {
@@ -192,17 +203,17 @@ export default function MugVariantsTab({
     switch (deleteState.type) {
       case 'temporary':
         onDeleteTemporaryVariant?.(deleteState.index);
-        toast.success('Variant removed');
+        toast.success(t('form.mugVariants.toasts.removed'));
         break;
 
       case 'saved':
         try {
           await articlesApi.deleteMugVariant(deleteState.id);
           setVariants((prev) => prev.filter((v) => v.id !== deleteState.id));
-          toast.success('Variant deleted successfully');
+          toast.success(t('form.mugVariants.toasts.deleted'));
         } catch (error) {
           console.error('Error deleting variant:', error);
-          toast.error('Failed to delete variant');
+          toast.error(t('form.mugVariants.toasts.deleteError'));
         }
         break;
     }
@@ -213,7 +224,7 @@ export default function MugVariantsTab({
 
   const handleCopyVariants = () => {
     if (!articleId) {
-      toast.error('Please save the article first before copying variants');
+      toast.error(t('form.mugVariants.toasts.saveBeforeCopy'));
       return;
     }
     navigate(`/admin/articles/${articleId}/copy-variants`);
@@ -222,14 +233,12 @@ export default function MugVariantsTab({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Mug Variants</CardTitle>
-        <CardDescription>Add different color combinations for this mug. Each variant can have different inside and outside colors.</CardDescription>
+        <CardTitle>{t('form.mugVariants.title')}</CardTitle>
+        <CardDescription>{t('form.mugVariants.description')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {!articleId && temporaryVariants.length > 0 && (
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
-            These variants will be saved when you save the article.
-          </div>
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">{t('form.mugVariants.info.unsavedNotice')}</div>
         )}
 
         <MugVariantDialog
@@ -250,12 +259,12 @@ export default function MugVariantsTab({
           {articleId && (
             <Button onClick={handleCopyVariants} variant="outline" className="min-w-[140px]">
               <Copy className="mr-2 h-4 w-4" />
-              Copy Variants
+              {t('form.mugVariants.actions.copy')}
             </Button>
           )}
           <Button onClick={handleAddVariant} className="min-w-[140px]">
             <Plus className="mr-2 h-4 w-4" />
-            Add Variant
+            {t('form.mugVariants.actions.add')}
           </Button>
         </div>
 
@@ -279,9 +288,9 @@ export default function MugVariantsTab({
         isOpen={deleteState.type !== 'none'}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
-        title="Delete Mug Variant"
-        description="Are you sure you want to delete this mug variant? This action cannot be undone."
-        confirmText="Delete Variant"
+        title={t('form.mugVariants.confirmation.title')}
+        description={t('form.mugVariants.confirmation.description')}
+        confirmText={t('form.mugVariants.confirmation.confirm')}
       />
     </Card>
   );
