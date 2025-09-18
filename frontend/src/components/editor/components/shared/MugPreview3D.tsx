@@ -2,6 +2,7 @@ import { getCroppedImgFromArea } from '@/lib/imageCropUtils';
 import { Environment, OrbitControls } from '@react-three/drei';
 import { Canvas, useFrame, useLoader } from '@react-three/fiber';
 import { Suspense, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as THREE from 'three';
 import { GeneratedImageCropData, MugOption } from '../../types';
 
@@ -89,6 +90,7 @@ function LoadingSpinner() {
 export default function MugPreview3D({ imageUrl, cropData }: MugPreview3DProps) {
   const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
+  const { t } = useTranslation('editor');
 
   useEffect(() => {
     const processImage = async () => {
@@ -149,7 +151,7 @@ export default function MugPreview3D({ imageUrl, cropData }: MugPreview3DProps) 
       </Canvas>
 
       {/* Instructions */}
-      <div className="mt-2 text-center text-sm text-gray-600">Drag to rotate • Scroll to zoom</div>
+      <div className="mt-2 text-center text-sm text-gray-600">{t('steps.preview.controlsHint')}</div>
     </div>
   );
 }
