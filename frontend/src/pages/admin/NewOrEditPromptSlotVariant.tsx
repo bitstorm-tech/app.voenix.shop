@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/Textarea';
 import type { CreatePromptSlotVariantRequest, UpdatePromptSlotVariantRequest } from '@/lib/api';
 import { imagesApi, promptLlmsApi, promptSlotTypesApi, promptSlotVariantsApi } from '@/lib/api';
-import type { PromptLLMOption, PromptSlotType } from '@/types/promptSlotVariant';
+import type { PromptSlotType, ProviderLLM } from '@/types/promptSlotVariant';
 import { Trash2, Upload } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -27,7 +27,7 @@ export default function NewOrEditPromptSlotVariant() {
     llm: '',
   });
   const [promptSlotTypes, setPromptSlotTypes] = useState<PromptSlotType[]>([]);
-  const [llmOptions, setLlmOptions] = useState<PromptLLMOption[]>([]);
+  const [llmOptions, setLlmOptions] = useState<ProviderLLM[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,10 +73,17 @@ export default function NewOrEditPromptSlotVariant() {
       });
       if (slot.llm) {
         setLlmOptions((current) => {
-          if (current.some((option) => option.id === slot.llm)) {
+          if (current.some((option) => option.llm === slot.llm)) {
             return current;
           }
-          return [...current, { id: slot.llm, label: slot.llm }];
+          return [
+            ...current,
+            {
+              llm: slot.llm,
+              provider: 'Unknown',
+              friendlyName: slot.llm,
+            },
+          ];
         });
       }
       if (slot.exampleImageUrl) {
@@ -310,8 +317,8 @@ export default function NewOrEditPromptSlotVariant() {
                   </SelectTrigger>
                   <SelectContent>
                     {llmOptions.map((option) => (
-                      <SelectItem key={option.id} value={option.id}>
-                        {option.label}
+                      <SelectItem key={option.llm} value={option.llm}>
+                        {option.friendlyName}
                       </SelectItem>
                     ))}
                   </SelectContent>

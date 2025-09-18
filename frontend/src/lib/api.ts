@@ -17,7 +17,7 @@ import type { MugWithVariantsSummary } from '@/types/copyVariants';
 import type { Country } from '@/types/country';
 import type { ArticleCategory, ArticleSubCategory, Mug, MugVariant } from '@/types/mug';
 import type { Prompt, PromptCategory, PromptSubCategory } from '@/types/prompt';
-import type { PromptLLMOption, PromptSlotType, PromptSlotVariant } from '@/types/promptSlotVariant';
+import type { PromptSlotType, PromptSlotVariant, ProviderLLM } from '@/types/promptSlotVariant';
 import type { CreateSupplierRequest, Supplier, UpdateSupplierRequest } from '@/types/supplier';
 import type { CreateValueAddedTaxRequest, UpdateValueAddedTaxRequest, ValueAddedTax } from '@/types/vat';
 
@@ -429,7 +429,7 @@ export const promptSlotVariantsApi = {
 };
 
 export const promptLlmsApi = {
-  getAll: () => api.get<{ llms: PromptLLMOption[] }>('/admin/prompts/llms'),
+  getAll: () => api.get<{ llms: ProviderLLM[] }>('/admin/ai/llms'),
 };
 
 // Type definitions for Prompt Slot Variant API requests

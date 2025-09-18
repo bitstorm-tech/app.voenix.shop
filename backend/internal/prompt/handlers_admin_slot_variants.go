@@ -124,12 +124,3 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 		c.Status(http.StatusNoContent)
 	})
 }
-
-func registerAdminLLMRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
-	grp := r.Group("/api/admin/prompts/llms")
-	grp.Use(auth.RequireAdmin(db))
-
-	grp.GET("", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"llms": svc.listLLMOptions()})
-	})
-}

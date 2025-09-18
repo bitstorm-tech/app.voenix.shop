@@ -13,11 +13,21 @@ import (
 
 // service centralizes all DB access and business logic for prompts.
 type service struct {
-	db         *gorm.DB
-	llmOptions []LLMOption
+	db          *gorm.DB
+	allowedLLMs map[string]struct{}
 }
 
-func newService(db *gorm.DB) *service { return &service{db: db, llmOptions: loadLLMOptionsFromEnv()} }
+func newService(db *gorm.DB, allowedLLMs []string) *service {
+	llmSet := make(map[string]struct{}, len(allowedLLMs))
+	for _, llm := range allowedLLMs {
+		trimmed := strings.TrimSpace(llm)
+		if trimmed == "" {
+			continue
+		}
+		llmSet[trimmed] = struct{}{}
+	}
+	return &service{db: db, allowedLLMs: llmSet}
+}
 
 type conflictError struct{ Detail string }
 
@@ -217,17 +227,9 @@ func (s *service) deleteSlotVariant(ctx context.Context, id int) error {
 	return s.db.WithContext(ctx).Delete(&PromptSlotVariant{}, existing.ID).Error
 }
 
-func (s *service) listLLMOptions() []LLMOption {
-	return cloneLLMOptions(s.llmOptions)
-}
-
 func (s *service) isValidLLM(llm string) bool {
-	for i := range s.llmOptions {
-		if s.llmOptions[i].ID == llm {
-			return true
-		}
-	}
-	return false
+	_, ok := s.allowedLLMs[llm]
+	return ok
 }
 
 // ---------------

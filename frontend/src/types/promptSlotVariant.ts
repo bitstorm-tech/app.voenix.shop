@@ -19,7 +19,8 @@ export interface PromptSlotVariant {
   updatedAt?: string;
 }
 
-export interface PromptLLMOption {
-  id: string;
-  label: string;
+export interface ProviderLLM {
+  provider: string;
+  llm: string;
+  friendlyName: string;
 }
