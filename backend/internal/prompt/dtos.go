@@ -20,6 +20,7 @@ type PromptSlotVariantRead struct {
 	Prompt           *string             `json:"prompt"`
 	Description      *string             `json:"description"`
 	ExampleImageURL  *string             `json:"exampleImageUrl"`
+	LLM              string              `json:"llm"`
 	CreatedAt        *time.Time          `json:"createdAt"`
 	UpdatedAt        *time.Time          `json:"updatedAt"`
 }

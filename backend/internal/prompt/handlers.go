@@ -11,6 +11,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	// Admin
 	registerAdminSlotTypeRoutes(r, db, svc)
 	registerAdminSlotVariantRoutes(r, db, svc)
+	registerAdminLLMRoutes(r, db, svc)
 	registerAdminCategoryRoutes(r, db, svc)
 	registerAdminSubCategoryRoutes(r, db, svc)
 	registerAdminPromptRoutes(r, db, svc)

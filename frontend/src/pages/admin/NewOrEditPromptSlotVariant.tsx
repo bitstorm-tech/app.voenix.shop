@@ -5,8 +5,8 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import type { CreatePromptSlotVariantRequest, UpdatePromptSlotVariantRequest } from '@/lib/api';
-import { imagesApi, promptSlotTypesApi, promptSlotVariantsApi } from '@/lib/api';
-import type { PromptSlotType } from '@/types/promptSlotVariant';
+import { imagesApi, promptLlmsApi, promptSlotTypesApi, promptSlotVariantsApi } from '@/lib/api';
+import type { PromptLLMOption, PromptSlotType } from '@/types/promptSlotVariant';
 import { Trash2, Upload } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -24,11 +24,14 @@ export default function NewOrEditPromptSlotVariant() {
     prompt: '',
     description: '',
     exampleImageFilename: undefined,
+    llm: '',
   });
   const [promptSlotTypes, setPromptSlotTypes] = useState<PromptSlotType[]>([]);
+  const [llmOptions, setLlmOptions] = useState<PromptLLMOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [llmError, setLlmError] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -44,11 +47,21 @@ export default function NewOrEditPromptSlotVariant() {
     }
   }, [t]);
 
+  const fetchLlmOptions = useCallback(async () => {
+    try {
+      const response = await promptLlmsApi.getAll();
+      setLlmOptions(response.llms);
+      setLlmError(null);
+    } catch (error) {
+      console.error('Error fetching llm options:', error);
+      setLlmError(t('promptSlotVariant.errors.loadLLMs'));
+    }
+  }, [t]);
+
   const fetchSlot = useCallback(async () => {
     if (!id) return;
 
     try {
-      setInitialLoading(true);
       const slot = await promptSlotVariantsApi.getById(parseInt(id));
       setFormData({
         name: slot.name,
@@ -56,26 +69,51 @@ export default function NewOrEditPromptSlotVariant() {
         prompt: slot.prompt,
         description: slot.description || '',
         exampleImageFilename: slot.exampleImageUrl ? slot.exampleImageUrl.split('/').pop() : undefined,
+        llm: slot.llm || '',
       });
+      if (slot.llm) {
+        setLlmOptions((current) => {
+          if (current.some((option) => option.id === slot.llm)) {
+            return current;
+          }
+          return [...current, { id: slot.llm, label: slot.llm }];
+        });
+      }
       if (slot.exampleImageUrl) {
         setCurrentImageUrl(slot.exampleImageUrl);
       }
     } catch (error) {
       console.error('Error fetching slot:', error);
       setError(t('promptSlotVariant.errors.load'));
-    } finally {
-      setInitialLoading(false);
     }
   }, [id, t]);
 
   useEffect(() => {
-    fetchPromptSlotTypes();
-    if (isEditing) {
-      fetchSlot();
-    } else {
-      setInitialLoading(false);
-    }
-  }, [fetchPromptSlotTypes, fetchSlot, isEditing]);
+    let isActive = true;
+    const load = async () => {
+      try {
+        setInitialLoading(true);
+        await Promise.all([fetchPromptSlotTypes(), fetchLlmOptions()]);
+        if (isEditing) {
+          await fetchSlot();
+        }
+      } finally {
+        if (isActive) {
+          setInitialLoading(false);
+        }
+      }
+    };
+
+    load().catch(() => {
+      if (isActive) {
+        setInitialLoading(false);
+      }
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, [fetchPromptSlotTypes, fetchLlmOptions, fetchSlot, isEditing]);
 
   // Cleanup blob URLs
   useEffect(() => {
@@ -101,6 +139,11 @@ export default function NewOrEditPromptSlotVariant() {
 
     if (!formData.prompt.trim()) {
       setError(t('promptSlotVariant.errors.promptRequired'));
+      return;
+    }
+
+    if (!formData.llm.trim()) {
+      setError(t('promptSlotVariant.errors.llmRequired'));
       return;
     }
 
@@ -131,6 +174,7 @@ export default function NewOrEditPromptSlotVariant() {
           promptSlotTypeId: formData.promptSlotTypeId,
           prompt: formData.prompt,
           description: formData.description,
+          llm: formData.llm,
           // Send null to explicitly remove image, undefined to not change it
           exampleImageFilename: finalImageFilename === 'pending' ? undefined : (finalImageFilename ?? null),
         };
@@ -141,6 +185,7 @@ export default function NewOrEditPromptSlotVariant() {
           promptSlotTypeId: formData.promptSlotTypeId,
           prompt: formData.prompt,
           description: formData.description,
+          llm: formData.llm,
           // Send null to explicitly have no image, undefined to not set it
           exampleImageFilename: finalImageFilename === 'pending' ? undefined : (finalImageFilename ?? null),
         };
@@ -238,23 +283,45 @@ export default function NewOrEditPromptSlotVariant() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="promptSlotType">{t('promptSlotVariant.form.type')}</Label>
-              <Select
-                value={formData.promptSlotTypeId.toString()}
-                onValueChange={(value) => setFormData({ ...formData, promptSlotTypeId: parseInt(value) })}
-              >
-                <SelectTrigger id="promptSlotType">
-                  <SelectValue placeholder={t('promptSlotVariant.form.typePlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {promptSlotTypes.map((type) => (
-                    <SelectItem key={type.id} value={type.id.toString()}>
-                      {type.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="promptSlotType">{t('promptSlotVariant.form.type')}</Label>
+                <Select
+                  value={formData.promptSlotTypeId.toString()}
+                  onValueChange={(value) => setFormData({ ...formData, promptSlotTypeId: parseInt(value) })}
+                >
+                  <SelectTrigger id="promptSlotType">
+                    <SelectValue placeholder={t('promptSlotVariant.form.typePlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {promptSlotTypes.map((type) => (
+                      <SelectItem key={type.id} value={type.id.toString()}>
+                        {type.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="llm">{t('promptSlotVariant.form.llm')}</Label>
+                <Select value={formData.llm} onValueChange={(value) => setFormData({ ...formData, llm: value })} disabled={llmOptions.length === 0}>
+                  <SelectTrigger id="llm">
+                    <SelectValue placeholder={t('promptSlotVariant.form.llmPlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {llmOptions.map((option) => (
+                      <SelectItem key={option.id} value={option.id}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {llmError ? (
+                  <p className="text-sm text-red-600">{llmError}</p>
+                ) : llmOptions.length === 0 ? (
+                  <p className="text-muted-foreground text-sm">{t('promptSlotVariant.form.llmEmpty')}</p>
+                ) : null}
+              </div>
             </div>
 
             <div className="space-y-2">

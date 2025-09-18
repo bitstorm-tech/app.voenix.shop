@@ -14,6 +14,12 @@ export interface PromptSlotVariant {
   prompt: string;
   description?: string;
   exampleImageUrl?: string;
+  llm: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface PromptLLMOption {
+  id: string;
+  label: string;
 }

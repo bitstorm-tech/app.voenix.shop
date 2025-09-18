@@ -12,6 +12,9 @@
     "namePlaceholder": "Enter slot name",
     "type": "Prompt Slot Type",
     "typePlaceholder": "Select a prompt slot type",
+    "llm": "LLM",
+    "llmPlaceholder": "Select an LLM",
+    "llmEmpty": "No LLMs available. Ask an admin to configure LLMs.",
     "prompt": "Prompt",
     "promptPlaceholder": "Enter the prompt text",
     "description": "Description",
@@ -23,10 +26,12 @@
   "errors": {
     "loadTypes": "Failed to load prompt slot types",
     "load": "Failed to load slot",
+    "loadLLMs": "Failed to load LLM options",
     "save": "Failed to save slot. Please try again.",
     "nameRequired": "Name is required",
     "typeRequired": "Prompt slot type is required",
     "promptRequired": "Prompt is required",
+    "llmRequired": "LLM is required",
     "invalidImage": "Please upload an image file",
     "imageTooLarge": "Image size must be less than 5MB",
     "uploadImage": "Failed to upload image. Please try again."

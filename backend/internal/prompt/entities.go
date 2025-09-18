@@ -44,6 +44,7 @@ type PromptSlotVariant struct {
 	Prompt               *string         `gorm:"type:text" json:"prompt"`
 	Description          *string         `gorm:"type:text" json:"description"`
 	ExampleImageFilename *string         `gorm:"size:500" json:"exampleImageFilename"`
+	LLM                  string          `gorm:"size:255" json:"llm"`
 	CreatedAt            time.Time       `json:"createdAt"`
 	UpdatedAt            time.Time       `json:"updatedAt"`
 }

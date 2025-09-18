@@ -17,6 +17,7 @@ type slotVariantCreate struct {
 	Prompt               *string `json:"prompt"`
 	Description          *string `json:"description"`
 	ExampleImageFilename *string `json:"exampleImageFilename"`
+	LLM                  string  `json:"llm"`
 }
 
 type slotVariantUpdate struct {
@@ -25,6 +26,7 @@ type slotVariantUpdate struct {
 	Prompt               *string `json:"prompt"`
 	Description          *string `json:"description"`
 	ExampleImageFilename *string `json:"exampleImageFilename"`
+	LLM                  *string `json:"llm"`
 }
 
 func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
@@ -56,7 +58,7 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 
 	grp.POST("", func(c *gin.Context) {
 		var payload slotVariantCreate
-		if err := c.ShouldBindJSON(&payload); err != nil || strings.TrimSpace(payload.Name) == "" || payload.PromptSlotTypeID <= 0 {
+		if err := c.ShouldBindJSON(&payload); err != nil || strings.TrimSpace(payload.Name) == "" || payload.PromptSlotTypeID <= 0 || strings.TrimSpace(payload.LLM) == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
@@ -69,6 +71,10 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 			var ce conflictError
 			if errors.As(err, &ce) {
 				c.JSON(http.StatusConflict, gin.H{"detail": ce.Detail})
+				return
+			}
+			if errors.Is(err, errInvalidLLM) {
+				c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid llm selection"})
 				return
 			}
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create slot variant"})
@@ -95,6 +101,10 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 				c.JSON(http.StatusConflict, gin.H{"detail": ce.Detail})
 				return
 			}
+			if errors.Is(err, errInvalidLLM) {
+				c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid llm selection"})
+				return
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update slot variant"})
 			return
 		}
@@ -112,5 +122,14 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 			return
 		}
 		c.Status(http.StatusNoContent)
+	})
+}
+
+func registerAdminLLMRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
+	grp := r.Group("/api/admin/prompts/llms")
+	grp.Use(auth.RequireAdmin(db))
+
+	grp.GET("", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"llms": svc.listLLMOptions()})
 	})
 }
