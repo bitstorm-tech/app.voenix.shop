@@ -16,7 +16,7 @@ var providerLLMs = []ProviderLLM{
 	{
 		Provider:     "OpenAI",
 		LLM:          "gpt-image-1",
-		FriendlyName: "GTP-Image-1 (OpenAI)",
+		FriendlyName: "GPT-Image-1 (OpenAI)",
 	},
 	{
 		Provider:     "Black Forest Labs",
