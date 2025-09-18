@@ -25,6 +25,64 @@
     "category": "Kategorie",
     "subcategory": "Unterkategorie"
   },
+  "forms": {
+    "category": {
+      "description": {
+        "create": "Erstelle über das Formular unten eine neue Kategorie",
+        "edit": "Aktualisiere die Kategoriedetails unten"
+      },
+      "errors": {
+        "saveFailed": "Kategorie konnte nicht gespeichert werden. Bitte versuche es erneut."
+      },
+      "placeholders": {
+        "name": "Kategorienamen eingeben"
+      },
+      "title": {
+        "create": "Neue Kategorie",
+        "edit": "Kategorie bearbeiten"
+      }
+    },
+    "common": {
+      "actions": {
+        "cancel": "Abbrechen",
+        "create": "Erstellen",
+        "saving": "Speichern...",
+        "update": "Aktualisieren"
+      },
+      "errors": {
+        "categoryRequired": "Kategorie ist erforderlich",
+        "nameRequired": "Name ist erforderlich",
+        "saveFailed": "Speichern fehlgeschlagen. Bitte versuche es erneut."
+      },
+      "labels": {
+        "category": "Kategorie",
+        "description": "Beschreibung",
+        "name": "Name"
+      },
+      "placeholders": {
+        "category": "Kategorie auswählen",
+        "description": "Beschreibung eingeben (optional)",
+        "name": "Name eingeben"
+      }
+    },
+    "subcategory": {
+      "description": {
+        "create": "Erstelle über das Formular unten eine neue Unterkategorie",
+        "edit": "Aktualisiere die Unterkategoriedetails unten"
+      },
+      "errors": {
+        "saveFailed": "Unterkategorie konnte nicht gespeichert werden. Bitte versuche es erneut."
+      },
+      "placeholders": {
+        "description": "Unterkategoriebeschreibung eingeben (optional)",
+        "name": "Unterkategorienamen eingeben"
+      },
+      "title": {
+        "create": "Neue Unterkategorie",
+        "edit": "Unterkategorie bearbeiten"
+      }
+    }
+  },
   "page": {
     "error": {
       "loadFailed": "Kategorien konnten nicht geladen werden. Bitte versuchen Sie es erneut."

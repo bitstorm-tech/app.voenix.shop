@@ -25,6 +25,64 @@
     "category": "category",
     "subcategory": "subcategory"
   },
+  "forms": {
+    "category": {
+      "description": {
+        "create": "Create a new category with the form below",
+        "edit": "Update the category details below"
+      },
+      "errors": {
+        "saveFailed": "Failed to save category. Please try again."
+      },
+      "placeholders": {
+        "name": "Enter category name"
+      },
+      "title": {
+        "create": "New Category",
+        "edit": "Edit Category"
+      }
+    },
+    "common": {
+      "actions": {
+        "cancel": "Cancel",
+        "create": "Create",
+        "saving": "Saving...",
+        "update": "Update"
+      },
+      "errors": {
+        "categoryRequired": "Category is required",
+        "nameRequired": "Name is required",
+        "saveFailed": "Failed to save. Please try again."
+      },
+      "labels": {
+        "category": "Category",
+        "description": "Description",
+        "name": "Name"
+      },
+      "placeholders": {
+        "category": "Select a category",
+        "description": "Enter description (optional)",
+        "name": "Enter name"
+      }
+    },
+    "subcategory": {
+      "description": {
+        "create": "Create a new subcategory with the form below",
+        "edit": "Update the subcategory details below"
+      },
+      "errors": {
+        "saveFailed": "Failed to save subcategory. Please try again."
+      },
+      "placeholders": {
+        "description": "Enter subcategory description (optional)",
+        "name": "Enter subcategory name"
+      },
+      "title": {
+        "create": "New Subcategory",
+        "edit": "Edit Subcategory"
+      }
+    }
+  },
   "page": {
     "error": {
       "loadFailed": "Failed to load categories. Please try again."

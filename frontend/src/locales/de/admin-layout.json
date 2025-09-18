@@ -1,0 +1,9 @@
+{
+  "mobileMenu": {
+    "toggle": "Menü umschalten"
+  },
+  "navigation": {
+    "description": "Durch die Admin-Bereiche navigieren",
+    "title": "Admin-Navigationsmenü"
+  }
+}
