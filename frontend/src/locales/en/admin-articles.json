@@ -7,6 +7,68 @@
     "variants": "{{count}} variant",
     "variants_plural": "{{count}} variants"
   },
+  "copyVariants": {
+    "actions": {
+      "cancel": "Cancel",
+      "copy": "Copy Variants",
+      "copySelected": "Copy {{count}} Variant",
+      "copySelected_plural": "Copy {{count}} Variants",
+      "copying": "Copying..."
+    },
+    "breadcrumb": {
+      "back": "Back to Article",
+      "current": "Copy Variants"
+    },
+    "description": "Select variants from existing mugs to copy to the current mug. You can select individual variants or use bulk actions.",
+    "empty": {
+      "noOtherMugs": {
+        "description": "There are no other mugs with variants available to copy from. Create some variants on other mugs first.",
+        "title": "No Other Mugs Found"
+      },
+      "noResults": {
+        "description": "No mugs or variants match your search criteria. Try a different search term.",
+        "title": "No Results Found"
+      },
+      "noVariants": {
+        "description": "While there are other mugs in the system, none of them have variants to copy. Create some variants on other mugs first.",
+        "title": "No Variants Available"
+      }
+    },
+    "error": {
+      "fetchFailed": "Failed to load mugs and variants. Please try again.",
+      "retry": "Retry"
+    },
+    "footer": {
+      "noneSelected": "No variants selected",
+      "selected": "{{count}} variant selected",
+      "selected_plural": "{{count}} variants selected"
+    },
+    "loading": "Loading mugs and variants...",
+    "search": {
+      "clear": "Clear",
+      "placeholder": "Search mugs, suppliers, or variants...",
+      "title": "Search and Filter"
+    },
+    "table": {
+      "articleNumber": "Article Number",
+      "colors": "Colors",
+      "imageAlt": "{{name}} example",
+      "insideColorTitle": "Inside: {{color}}",
+      "outsideColorTitle": "Outside: {{color}}",
+      "preview": "Preview",
+      "status": "Status",
+      "supplierLabel": "Supplier: {{supplier}}",
+      "variantName": "Variant Name"
+    },
+    "title": "Copy Mug Variants",
+    "toasts": {
+      "copied": "Successfully copied {{count}} variant",
+      "copied_plural": "Successfully copied {{count}} variants",
+      "copyFailed": "Failed to copy variants. Please try again.",
+      "invalidMug": "Invalid mug ID",
+      "selectVariant": "Please select at least one variant to copy"
+    }
+  },
   "form": {
     "actions": {
       "create": "Create Article",
@@ -145,6 +207,68 @@
       "actions": {
         "add": "Add Variant",
         "copy": "Copy Variants"
+      },
+      "dialog": {
+        "actions": {
+          "add": "Add Variant",
+          "cancel": "Cancel",
+          "saving": "Saving...",
+          "update": "Update Variant",
+          "uploadImage": "Upload Image"
+        },
+        "activeDescription": "Variant is active and visible to customers",
+        "activeStatus": "Active Status",
+        "cropper": {
+          "description": "Select the area you want to use for the variant thumbnail",
+          "title": "Crop your variant image"
+        },
+        "defaultVariant": "Default Variant",
+        "description": {
+          "add": "Create a new mug variant with different colors and settings",
+          "edit": "Update the variant details below"
+        },
+        "errors": {
+          "createFailed": "Failed to add variant",
+          "duplicateName": "A variant with this name already exists",
+          "imageTooLarge": "File size exceeds maximum allowed size of 10MB",
+          "invalidImageType": "Please upload an image file",
+          "nameRequired": "Please enter a variant name",
+          "processCropped": "Failed to process cropped image",
+          "removeImage": "Failed to remove image",
+          "updateFailed": "Failed to update variant",
+          "uploadFailedCreate": "Variant created but image upload failed",
+          "uploadFailedUpdate": "Variant updated but image upload failed"
+        },
+        "exampleImage": "Example Image",
+        "fields": {
+          "articleVariantNumber": {
+            "label": "Article Variant Number",
+            "placeholder": "e.g., MUG-001"
+          },
+          "name": {
+            "label": "Name *",
+            "placeholder": "e.g., Classic White"
+          }
+        },
+        "previewAlt": "Preview",
+        "setAsDefault": "Set as default variant",
+        "title": {
+          "add": "Add New Mug Variant",
+          "edit": "Edit Mug Variant"
+        },
+        "toasts": {
+          "image": {
+            "removed": "Image removed successfully"
+          },
+          "success": {
+            "create": "Variant added successfully",
+            "update": "Variant updated successfully"
+          },
+          "temporary": {
+            "added": "Variant added (will be saved with article)",
+            "updated": "Variant updated (will be saved with article)"
+          }
+        }
       },
       "confirmation": {
         "confirm": "Delete Variant",

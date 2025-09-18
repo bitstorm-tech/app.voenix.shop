@@ -9,6 +9,7 @@ import type { MugWithVariantsSummary } from '@/types/copyVariants';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertCircle, ArrowLeft, Copy, Image as ImageIcon, Loader2, Search } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -17,24 +18,25 @@ export default function CopyVariants() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const currentMugId = id ? parseInt(id) : undefined;
+  const { t } = useTranslation('adminArticles');
 
   const [mugs, setMugs] = useState<MugWithVariantsSummary[]>([]);
   const [filteredMugs, setFilteredMugs] = useState<MugWithVariantsSummary[]>([]);
   const [selectedVariantIds, setSelectedVariantIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [copying, setCopying] = useState(false);
 
   const fetchMugsWithVariants = useCallback(async () => {
     setLoading(true);
-    setError(null);
+    setErrorKey(null);
     try {
       const data = await articlesApi.getVariantsCatalog(currentMugId);
       setMugs(data);
     } catch (err) {
       console.error('Error fetching variants catalog:', err);
-      setError('Failed to load mugs and variants. Please try again.');
+      setErrorKey('fetchFailed');
     } finally {
       setLoading(false);
     }
@@ -83,20 +85,20 @@ export default function CopyVariants() {
 
   const handleCopy = async () => {
     if (!currentMugId) {
-      toast.error('Invalid mug ID');
+      toast.error(t('copyVariants.toasts.invalidMug'));
       return;
     }
 
     const variantIds = Array.from(selectedVariantIds);
     if (variantIds.length === 0) {
-      toast.error('Please select at least one variant to copy');
+      toast.error(t('copyVariants.toasts.selectVariant'));
       return;
     }
 
     setCopying(true);
     try {
       const copiedVariants = await articlesApi.copyVariants(currentMugId, variantIds);
-      toast.success(`Successfully copied ${copiedVariants.length} variant${copiedVariants.length !== 1 ? 's' : ''}`);
+      toast.success(t('copyVariants.toasts.copied', { count: copiedVariants.length }));
 
       // Invalidate the article cache to ensure fresh data is loaded
       queryClient.invalidateQueries({ queryKey: articleKeys.detail(currentMugId) });
@@ -104,7 +106,7 @@ export default function CopyVariants() {
       navigate(`/admin/articles/${currentMugId}/edit`, { state: { activeTab: 'variants' } });
     } catch (error) {
       console.error('Error copying variants:', error);
-      toast.error('Failed to copy variants. Please try again.');
+      toast.error(t('copyVariants.toasts.copyFailed'));
     } finally {
       setCopying(false);
     }
@@ -124,30 +126,28 @@ export default function CopyVariants() {
       <div className="flex items-center gap-4">
         <Link to={`/admin/articles/${currentMugId}/edit`} className="flex items-center gap-2 text-gray-600 transition-colors hover:text-gray-900">
           <ArrowLeft className="h-4 w-4" />
-          Back to Article
+          {t('copyVariants.breadcrumb.back')}
         </Link>
         <div className="flex items-center gap-2 text-sm text-gray-500">
           <span>/</span>
-          <span>Copy Variants</span>
+          <span>{t('copyVariants.breadcrumb.current')}</span>
         </div>
       </div>
 
       {/* Page Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Copy Mug Variants</h1>
-        <p className="mt-1 text-gray-600">
-          Select variants from existing mugs to copy to the current mug. You can select individual variants or use bulk actions.
-        </p>
+        <h1 className="text-2xl font-bold text-gray-900">{t('copyVariants.title')}</h1>
+        <p className="mt-1 text-gray-600">{t('copyVariants.description')}</p>
       </div>
 
       {/* Search and Filter */}
       <div className="pb-6">
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Search and Filter</h2>
+        <h2 className="mb-4 text-lg font-semibold text-gray-900">{t('copyVariants.search.title')}</h2>
         <div className="flex items-center gap-4">
           <div className="relative flex-1">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
             <Input
-              placeholder="Search mugs, suppliers, or variants..."
+              placeholder={t('copyVariants.search.placeholder')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
@@ -155,7 +155,7 @@ export default function CopyVariants() {
           </div>
           {searchTerm && (
             <Button variant="outline" onClick={() => setSearchTerm('')}>
-              Clear
+              {t('copyVariants.search.clear')}
             </Button>
           )}
         </div>
@@ -166,49 +166,45 @@ export default function CopyVariants() {
         {loading && (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin" />
-            <span className="ml-2 text-sm text-gray-600">Loading mugs and variants...</span>
+            <span className="ml-2 text-sm text-gray-600">{t('copyVariants.loading')}</span>
           </div>
         )}
 
-        {error && (
+        {errorKey && (
           <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
-            {error}
+            {t(`copyVariants.error.${errorKey}`)}
             <Button variant="outline" size="sm" onClick={fetchMugsWithVariants} className="ml-auto">
-              Retry
+              {t('copyVariants.error.retry')}
             </Button>
           </div>
         )}
 
-        {!loading && !error && mugs.length === 0 && (
+        {!loading && !errorKey && mugs.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Copy className="mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-medium text-gray-900">No Other Mugs Found</h3>
-            <p className="max-w-sm text-sm text-gray-600">
-              There are no other mugs with variants available to copy from. Create some variants on other mugs first.
-            </p>
+            <h3 className="mb-2 text-lg font-medium text-gray-900">{t('copyVariants.empty.noOtherMugs.title')}</h3>
+            <p className="max-w-sm text-sm text-gray-600">{t('copyVariants.empty.noOtherMugs.description')}</p>
           </div>
         )}
 
-        {!loading && !error && mugs.length > 0 && !hasVariants && (
+        {!loading && !errorKey && mugs.length > 0 && !hasVariants && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Copy className="mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-medium text-gray-900">No Variants Available</h3>
-            <p className="max-w-sm text-sm text-gray-600">
-              While there are other mugs in the system, none of them have variants to copy. Create some variants on other mugs first.
-            </p>
+            <h3 className="mb-2 text-lg font-medium text-gray-900">{t('copyVariants.empty.noVariants.title')}</h3>
+            <p className="max-w-sm text-sm text-gray-600">{t('copyVariants.empty.noVariants.description')}</p>
           </div>
         )}
 
-        {!loading && !error && hasVariants && displayedMugs.length === 0 && searchTerm && (
+        {!loading && !errorKey && hasVariants && displayedMugs.length === 0 && searchTerm && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Search className="mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-medium text-gray-900">No Results Found</h3>
-            <p className="max-w-sm text-sm text-gray-600">No mugs or variants match your search criteria. Try a different search term.</p>
+            <h3 className="mb-2 text-lg font-medium text-gray-900">{t('copyVariants.empty.noResults.title')}</h3>
+            <p className="max-w-sm text-sm text-gray-600">{t('copyVariants.empty.noResults.description')}</p>
           </div>
         )}
 
-        {!loading && !error && hasVariants && displayedMugs.length > 0 && (
+        {!loading && !errorKey && hasVariants && displayedMugs.length > 0 && (
           <>
             {/* Variants by Mug */}
             <div className="space-y-6">
@@ -223,7 +219,9 @@ export default function CopyVariants() {
                     {/* Mug Header */}
                     <div className="mb-4">
                       <h3 className="text-lg font-semibold text-gray-900">{mug.name}</h3>
-                      {mug.supplierArticleName && <p className="mt-1 text-sm text-gray-600">Supplier: {mug.supplierArticleName}</p>}
+                      {mug.supplierArticleName && (
+                        <p className="mt-1 text-sm text-gray-600">{t('copyVariants.table.supplierLabel', { supplier: mug.supplierArticleName })}</p>
+                      )}
                     </div>
 
                     {/* Variants Table */}
@@ -248,11 +246,11 @@ export default function CopyVariants() {
                                 />
                               </div>
                             </TableHead>
-                            <TableHead>Variant Name</TableHead>
-                            <TableHead>Article Number</TableHead>
-                            <TableHead>Colors</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Preview</TableHead>
+                            <TableHead>{t('copyVariants.table.variantName')}</TableHead>
+                            <TableHead>{t('copyVariants.table.articleNumber')}</TableHead>
+                            <TableHead>{t('copyVariants.table.colors')}</TableHead>
+                            <TableHead>{t('copyVariants.table.status')}</TableHead>
+                            <TableHead>{t('copyVariants.table.preview')}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -280,23 +278,23 @@ export default function CopyVariants() {
                                   <div
                                     className="h-4 w-4 rounded border border-gray-300"
                                     style={{ backgroundColor: variant.insideColorCode }}
-                                    title={`Inside: ${variant.insideColorCode}`}
+                                    title={t('copyVariants.table.insideColorTitle', { color: variant.insideColorCode })}
                                   />
                                   <div
                                     className="h-4 w-4 rounded border border-gray-300"
                                     style={{ backgroundColor: variant.outsideColorCode }}
-                                    title={`Outside: ${variant.outsideColorCode}`}
+                                    title={t('copyVariants.table.outsideColorTitle', { color: variant.outsideColorCode })}
                                   />
                                 </div>
                               </TableCell>
                               <TableCell>
                                 {variant.active ? (
                                   <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700">
-                                    Active
+                                    {t('form.common.active')}
                                   </span>
                                 ) : (
                                   <span className="inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600">
-                                    Inactive
+                                    {t('form.common.inactive')}
                                   </span>
                                 )}
                               </TableCell>
@@ -304,7 +302,7 @@ export default function CopyVariants() {
                                 {variant.exampleImageUrl ? (
                                   <img
                                     src={variant.exampleImageUrl}
-                                    alt={`${variant.name} example`}
+                                    alt={t('copyVariants.table.imageAlt', { name: variant.name })}
                                     className="h-12 w-12 rounded border object-cover"
                                   />
                                 ) : (
@@ -333,27 +331,25 @@ export default function CopyVariants() {
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-600">
                 {selectedCount > 0 ? (
-                  <span>
-                    {selectedCount} variant{selectedCount !== 1 ? 's' : ''} selected
-                  </span>
+                  <span>{t('copyVariants.footer.selected', { count: selectedCount })}</span>
                 ) : (
-                  <span>No variants selected</span>
+                  <span>{t('copyVariants.footer.noneSelected')}</span>
                 )}
               </div>
               <div className="flex items-center gap-3">
                 <Button variant="outline" onClick={handleCancel} disabled={copying}>
-                  Cancel
+                  {t('copyVariants.actions.cancel')}
                 </Button>
                 <Button onClick={handleCopy} disabled={selectedCount === 0 || copying} className="min-w-[140px]">
                   {copying ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Copying...
+                      {t('copyVariants.actions.copying')}
                     </>
                   ) : (
                     <>
                       <Copy className="mr-2 h-4 w-4" />
-                      Copy {selectedCount > 0 ? `${selectedCount} ` : ''}Variant{selectedCount !== 1 ? 's' : ''}
+                      {selectedCount > 0 ? t('copyVariants.actions.copySelected', { count: selectedCount }) : t('copyVariants.actions.copy')}
                     </>
                   )}
                 </Button>

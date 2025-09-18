@@ -7,6 +7,68 @@
     "variants": "{{count}} Variante",
     "variants_plural": "{{count}} Varianten"
   },
+  "copyVariants": {
+    "actions": {
+      "cancel": "Abbrechen",
+      "copy": "Varianten kopieren",
+      "copySelected": "{{count}} Variante kopieren",
+      "copySelected_plural": "{{count}} Varianten kopieren",
+      "copying": "Varianten werden kopiert..."
+    },
+    "breadcrumb": {
+      "back": "Zurück zum Artikel",
+      "current": "Varianten kopieren"
+    },
+    "description": "Wähle Varianten bestehender Tassen aus, um sie zum aktuellen Artikel zu kopieren. Du kannst einzelne Varianten auswählen oder Sammelaktionen nutzen.",
+    "empty": {
+      "noOtherMugs": {
+        "description": "Es gibt keine anderen Tassen mit Varianten, von denen kopiert werden kann. Lege zunächst Varianten bei anderen Tassen an.",
+        "title": "Keine weiteren Tassen gefunden"
+      },
+      "noResults": {
+        "description": "Keine Tassen oder Varianten entsprechen deiner Suche. Versuche einen anderen Suchbegriff.",
+        "title": "Keine Ergebnisse gefunden"
+      },
+      "noVariants": {
+        "description": "Es gibt zwar andere Tassen im System, aber keine davon hat Varianten zum Kopieren. Lege zuerst Varianten bei anderen Tassen an.",
+        "title": "Keine Varianten verfügbar"
+      }
+    },
+    "error": {
+      "fetchFailed": "Tassen und Varianten konnten nicht geladen werden. Bitte versuche es erneut.",
+      "retry": "Erneut versuchen"
+    },
+    "footer": {
+      "noneSelected": "Keine Varianten ausgewählt",
+      "selected": "{{count}} Variante ausgewählt",
+      "selected_plural": "{{count}} Varianten ausgewählt"
+    },
+    "loading": "Tassen und Varianten werden geladen...",
+    "search": {
+      "clear": "Zurücksetzen",
+      "placeholder": "Tassen, Lieferanten oder Varianten suchen...",
+      "title": "Suche und Filter"
+    },
+    "table": {
+      "articleNumber": "Artikelnummer",
+      "colors": "Farben",
+      "imageAlt": "Beispiel für {{name}}",
+      "insideColorTitle": "Innen: {{color}}",
+      "outsideColorTitle": "Außen: {{color}}",
+      "preview": "Vorschau",
+      "status": "Status",
+      "supplierLabel": "Lieferant: {{supplier}}",
+      "variantName": "Variantenname"
+    },
+    "title": "Tassenvarianten kopieren",
+    "toasts": {
+      "copied": "{{count}} Variante erfolgreich kopiert",
+      "copied_plural": "{{count}} Varianten erfolgreich kopiert",
+      "copyFailed": "Varianten konnten nicht kopiert werden. Bitte versuche es erneut.",
+      "invalidMug": "Ungültige Tassen-ID",
+      "selectVariant": "Bitte wähle mindestens eine Variante zum Kopieren aus"
+    }
+  },
   "form": {
     "actions": {
       "create": "Artikel erstellen",
@@ -145,6 +207,68 @@
       "actions": {
         "add": "Variante hinzufügen",
         "copy": "Varianten kopieren"
+      },
+      "dialog": {
+        "actions": {
+          "add": "Variante hinzufügen",
+          "cancel": "Abbrechen",
+          "saving": "Speichern...",
+          "update": "Variante aktualisieren",
+          "uploadImage": "Bild hochladen"
+        },
+        "activeDescription": "Variante ist aktiv und für Kund:innen sichtbar",
+        "activeStatus": "Aktiver Status",
+        "cropper": {
+          "description": "Wähle den Bereich aus, der als Varianten-Vorschaubild verwendet werden soll",
+          "title": "Bild für Variante zuschneiden"
+        },
+        "defaultVariant": "Standardvariante",
+        "description": {
+          "add": "Erstelle eine neue Tassenvariante mit unterschiedlichen Farben und Einstellungen",
+          "edit": "Aktualisiere die Variantendaten unten"
+        },
+        "errors": {
+          "createFailed": "Variante konnte nicht hinzugefügt werden",
+          "duplicateName": "Eine Variante mit diesem Namen existiert bereits",
+          "imageTooLarge": "Dateigröße überschreitet die maximal erlaubten 10 MB",
+          "invalidImageType": "Bitte lade eine Bilddatei hoch",
+          "nameRequired": "Bitte gib einen Variantennamen ein",
+          "processCropped": "Zugeschnittenes Bild konnte nicht verarbeitet werden",
+          "removeImage": "Bild konnte nicht entfernt werden",
+          "updateFailed": "Variante konnte nicht aktualisiert werden",
+          "uploadFailedCreate": "Variante erstellt, aber der Bild-Upload ist fehlgeschlagen",
+          "uploadFailedUpdate": "Variante aktualisiert, aber der Bild-Upload ist fehlgeschlagen"
+        },
+        "exampleImage": "Beispielbild",
+        "fields": {
+          "articleVariantNumber": {
+            "label": "Artikelvariantennummer",
+            "placeholder": "z. B. MUG-001"
+          },
+          "name": {
+            "label": "Name *",
+            "placeholder": "z. B. Klassisch Weiß"
+          }
+        },
+        "previewAlt": "Vorschau",
+        "setAsDefault": "Als Standardvariante festlegen",
+        "title": {
+          "add": "Neue Tassenvariante hinzufügen",
+          "edit": "Tassenvariante bearbeiten"
+        },
+        "toasts": {
+          "image": {
+            "removed": "Bild erfolgreich entfernt"
+          },
+          "success": {
+            "create": "Variante erfolgreich hinzugefügt",
+            "update": "Variante erfolgreich aktualisiert"
+          },
+          "temporary": {
+            "added": "Variante hinzugefügt (wird mit dem Artikel gespeichert)",
+            "updated": "Variante aktualisiert (wird mit dem Artikel gespeichert)"
+          }
+        }
       },
       "confirmation": {
         "confirm": "Variante löschen",
