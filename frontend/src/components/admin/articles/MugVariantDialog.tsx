@@ -10,6 +10,7 @@ import { blobUrlToFile } from '@/lib/image-utils';
 import type { ArticleMugVariant, CreateArticleMugVariantRequest } from '@/types/article';
 import { Upload, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { toast } from 'sonner';
 
 interface MugVariantDialogProps {
@@ -42,6 +43,7 @@ export default function MugVariantDialog({
   const isEditing = !!(variant || temporaryVariant);
   const isTemporary = !articleId || !!temporaryVariant;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { t } = useTranslation('adminArticles');
 
   const DEFAULT_FORM_DATA: CreateArticleMugVariantRequest = {
     insideColorCode: '#ffffff',
@@ -88,19 +90,19 @@ export default function MugVariantDialog({
   };
 
   const validateImageFile = (file: File): string | null => {
-    if (!file.type.startsWith('image/')) return 'Please upload an image file';
-    if (file.size > MAX_FILE_SIZE) return 'File size exceeds maximum allowed size of 10MB';
+    if (!file.type.startsWith('image/')) return t('form.mugVariants.dialog.errors.invalidImageType');
+    if (file.size > MAX_FILE_SIZE) return t('form.mugVariants.dialog.errors.imageTooLarge');
     return null;
   };
 
   const validateForm = (): string | null => {
-    if (!formData.name) return 'Please enter a variant name';
+    if (!formData.name) return t('form.mugVariants.dialog.errors.nameRequired');
 
     const isDuplicate = isTemporary
       ? existingTemporaryVariants.some((v, index) => v.name === formData.name && index !== temporaryVariantIndex)
       : existingVariants.some((v) => v.name === formData.name && v.id !== variant?.id);
 
-    if (isDuplicate) return 'A variant with this name already exists';
+    if (isDuplicate) return t('form.mugVariants.dialog.errors.duplicateName');
     return null;
   };
 
@@ -197,7 +199,7 @@ export default function MugVariantDialog({
       }
     } catch (error) {
       console.error('Failed to process cropped image:', error);
-      toast.error('Failed to process cropped image');
+      toast.error(t('form.mugVariants.dialog.errors.processCropped'));
     }
   };
 
@@ -223,7 +225,7 @@ export default function MugVariantDialog({
     const variantToSave = { ...formData };
     if (onTemporaryVariantSaved) {
       onTemporaryVariantSaved(variantToSave, temporaryVariantIndex);
-      toast.success(isEditing ? 'Variant updated (will be saved with article)' : 'Variant added (will be saved with article)');
+      toast.success(isEditing ? t('form.mugVariants.dialog.toasts.temporary.updated') : t('form.mugVariants.dialog.toasts.temporary.added'));
     }
     onOpenChange(false);
   };
@@ -235,10 +237,10 @@ export default function MugVariantDialog({
     if (imageState.isRemoved && imageState.existingUrl && !imageState.file) {
       try {
         response = await articlesApi.removeMugVariantImage(variant.id);
-        toast.success('Image removed successfully');
+        toast.success(t('form.mugVariants.dialog.toasts.image.removed'));
       } catch (error) {
         console.error('Error removing variant image:', error);
-        toast.error('Failed to remove image');
+        toast.error(t('form.mugVariants.dialog.errors.removeImage'));
       }
     }
 
@@ -256,7 +258,7 @@ export default function MugVariantDialog({
       return await articlesApi.uploadMugVariantImage(variantId, imageState.file);
     } catch (imageError) {
       console.error('Error uploading variant image:', imageError);
-      toast.error(isEditing ? 'Variant updated but image upload failed' : 'Variant created but image upload failed');
+      toast.error(isEditing ? t('form.mugVariants.dialog.errors.uploadFailedUpdate') : t('form.mugVariants.dialog.errors.uploadFailedCreate'));
       throw imageError;
     }
   };
@@ -268,7 +270,7 @@ export default function MugVariantDialog({
       onVariantSaved(response);
     }
 
-    toast.success(isEditing ? 'Variant updated successfully' : 'Variant added successfully');
+    toast.success(isEditing ? t('form.mugVariants.dialog.toasts.success.update') : t('form.mugVariants.dialog.toasts.success.create'));
     onOpenChange(false);
   };
 
@@ -296,7 +298,7 @@ export default function MugVariantDialog({
       handleSuccess(response);
     } catch (error) {
       console.error(isEditing ? 'Error updating variant:' : 'Error adding variant:', error);
-      toast.error(isEditing ? 'Failed to update variant' : 'Failed to add variant');
+      toast.error(isEditing ? t('form.mugVariants.dialog.errors.updateFailed') : t('form.mugVariants.dialog.errors.createFailed'));
     } finally {
       setLoading(false);
     }
@@ -330,58 +332,58 @@ export default function MugVariantDialog({
         srcImage={imageState.originalUrl || ''}
         aspectRatio={1}
         onConfirm={handleCropConfirm}
-        title="Crop your variant image"
-        description="Select the area you want to use for the variant thumbnail"
+        title={t('form.mugVariants.dialog.cropper.title')}
+        description={t('form.mugVariants.dialog.cropper.description')}
       />
 
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
           <form onSubmit={handleSubmit}>
             <DialogHeader>
-              <DialogTitle>{isEditing ? 'Edit Mug Variant' : 'Add New Mug Variant'}</DialogTitle>
+              <DialogTitle>{isEditing ? t('form.mugVariants.dialog.title.edit') : t('form.mugVariants.dialog.title.add')}</DialogTitle>
               <DialogDescription>
-                {isEditing ? 'Update the variant details below' : 'Create a new mug variant with different colors and settings'}
+                {isEditing ? t('form.mugVariants.dialog.description.edit') : t('form.mugVariants.dialog.description.add')}
               </DialogDescription>
             </DialogHeader>
 
             <div className="grid gap-6 py-6">
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Name *</Label>
+                  <Label htmlFor="name">{t('form.mugVariants.dialog.fields.name.label')}</Label>
                   <Input
                     id="name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="e.g., Classic White"
+                    placeholder={t('form.mugVariants.dialog.fields.name.placeholder')}
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="articleVariantNumber">Article Variant Number</Label>
+                  <Label htmlFor="articleVariantNumber">{t('form.mugVariants.dialog.fields.articleVariantNumber.label')}</Label>
                   <Input
                     id="articleVariantNumber"
                     value={formData.articleVariantNumber || ''}
                     onChange={(e) => setFormData({ ...formData, articleVariantNumber: e.target.value })}
-                    placeholder="e.g., MUG-001"
+                    placeholder={t('form.mugVariants.dialog.fields.articleVariantNumber.placeholder')}
                     maxLength={100}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Inside Color</Label>
+                  <Label>{t('form.mugVariants.table.insideColor')}</Label>
                   <ColorPicker value={formData.insideColorCode} onChange={(color) => setFormData({ ...formData, insideColorCode: color })} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Outside Color</Label>
+                  <Label>{t('form.mugVariants.table.outsideColor')}</Label>
                   <ColorPicker value={formData.outsideColorCode} onChange={(color) => setFormData({ ...formData, outsideColorCode: color })} />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label>Default Variant</Label>
+                  <Label>{t('form.mugVariants.dialog.defaultVariant')}</Label>
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="default-variant"
@@ -389,13 +391,13 @@ export default function MugVariantDialog({
                       onCheckedChange={(checked) => setFormData({ ...formData, isDefault: checked === true })}
                     />
                     <Label htmlFor="default-variant" className="cursor-pointer text-sm font-normal">
-                      Set as default variant
+                      {t('form.mugVariants.dialog.setAsDefault')}
                     </Label>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Active Status</Label>
+                  <Label>{t('form.mugVariants.dialog.activeStatus')}</Label>
                   <div className="flex items-center space-x-2">
                     <Checkbox
                       id="active-variant"
@@ -403,21 +405,25 @@ export default function MugVariantDialog({
                       onCheckedChange={(checked) => setFormData({ ...formData, active: checked === true })}
                     />
                     <Label htmlFor="active-variant" className="cursor-pointer text-sm font-normal">
-                      Variant is active and visible to customers
+                      {t('form.mugVariants.dialog.activeDescription')}
                     </Label>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <Label>Example Image</Label>
+                <Label>{t('form.mugVariants.dialog.exampleImage')}</Label>
                 <div className="space-y-2">
                   {(() => {
                     const showImagePreview = imageState.previewUrl && !imageState.isRemoved && !imageState.showCropper;
 
                     return showImagePreview ? (
                       <div className="relative inline-block">
-                        <img src={imageState.previewUrl!} alt="Preview" className="h-20 w-20 rounded border object-cover" />
+                        <img
+                          src={imageState.previewUrl!}
+                          alt={t('form.mugVariants.dialog.previewAlt')}
+                          className="h-20 w-20 rounded border object-cover"
+                        />
                         <Button
                           type="button"
                           variant="ghost"
@@ -439,7 +445,7 @@ export default function MugVariantDialog({
                           className="w-full max-w-[200px]"
                         >
                           <Upload className="mr-2 h-4 w-4" />
-                          Upload Image
+                          {t('form.mugVariants.dialog.actions.uploadImage')}
                         </Button>
                       </div>
                     );
@@ -450,10 +456,14 @@ export default function MugVariantDialog({
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={handleCancel}>
-                Cancel
+                {t('form.mugVariants.dialog.actions.cancel')}
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : isEditing ? 'Update Variant' : 'Add Variant'}
+                {loading
+                  ? t('form.mugVariants.dialog.actions.saving')
+                  : isEditing
+                    ? t('form.mugVariants.dialog.actions.update')
+                    : t('form.mugVariants.dialog.actions.add')}
               </Button>
             </DialogFooter>
           </form>
