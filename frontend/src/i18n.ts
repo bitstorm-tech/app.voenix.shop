@@ -4,6 +4,7 @@ import { initReactI18next } from 'react-i18next';
 import deAdminArticleCategories from './locales/de/admin-article-categories.json';
 import deAdminArticles from './locales/de/admin-articles.json';
 import deAdminCompletedOrders from './locales/de/admin-completed-orders.json';
+import deAdminLayout from './locales/de/admin-layout.json';
 import deAdminLogistics from './locales/de/admin-logistics.json';
 import deAdminOpenOrders from './locales/de/admin-open-orders.json';
 import deAdminPromptCategories from './locales/de/admin-prompt-categories.json';
@@ -31,6 +32,7 @@ import deVat from './locales/de/vat.json';
 import enAdminArticleCategories from './locales/en/admin-article-categories.json';
 import enAdminArticles from './locales/en/admin-articles.json';
 import enAdminCompletedOrders from './locales/en/admin-completed-orders.json';
+import enAdminLayout from './locales/en/admin-layout.json';
 import enAdminLogistics from './locales/en/admin-logistics.json';
 import enAdminOpenOrders from './locales/en/admin-open-orders.json';
 import enAdminPromptCategories from './locales/en/admin-prompt-categories.json';
@@ -94,6 +96,7 @@ export const resources = {
     adminSuppliers: enAdminSuppliers,
     adminCompletedOrders: enAdminCompletedOrders,
     adminLogistics: enAdminLogistics,
+    adminLayout: enAdminLayout,
     articleCategory: enAdminArticleCategory,
     articleSubCategory: enAdminArticleSubCategory,
     cart: enCart,
@@ -124,6 +127,7 @@ export const resources = {
     adminSuppliers: deAdminSuppliers,
     adminCompletedOrders: deAdminCompletedOrders,
     adminLogistics: deAdminLogistics,
+    adminLayout: deAdminLayout,
     articleCategory: deAdminArticleCategory,
     articleSubCategory: deAdminArticleSubCategory,
     cart: deCart,

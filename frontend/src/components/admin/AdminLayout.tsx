@@ -3,10 +3,24 @@ import { Button } from '@/components/ui/Button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/Sheet';
 import { Menu } from 'lucide-react';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Outlet } from 'react-router-dom';
 
-export default function AdminLayout() {
+interface AdminLayoutProps {
+  screenReaderLabels?: {
+    navigationDescription?: string;
+    navigationTitle?: string;
+    toggleMenu?: string;
+  };
+}
+
+export default function AdminLayout({ screenReaderLabels }: AdminLayoutProps = {}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { t } = useTranslation('adminLayout');
+
+  const toggleMenuLabel = screenReaderLabels?.toggleMenu ?? t('mobileMenu.toggle');
+  const navigationTitle = screenReaderLabels?.navigationTitle ?? t('navigation.title');
+  const navigationDescription = screenReaderLabels?.navigationDescription ?? t('navigation.description');
 
   const handleMobileMenuClose = () => {
     setMobileMenuOpen(false);
@@ -26,13 +40,13 @@ export default function AdminLayout() {
           <SheetTrigger asChild>
             <Button variant="outline" size="icon" className="absolute top-4 left-4 z-40 bg-white shadow-md md:hidden">
               <Menu className="h-5 w-5" />
-              <span className="sr-only">Toggle menu</span>
+              <span className="sr-only">{toggleMenuLabel}</span>
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-64 p-0">
             <SheetHeader className="sr-only">
-              <SheetTitle>Admin Navigation Menu</SheetTitle>
-              <SheetDescription>Navigate through admin sections</SheetDescription>
+              <SheetTitle>{navigationTitle}</SheetTitle>
+              <SheetDescription>{navigationDescription}</SheetDescription>
             </SheetHeader>
             <AdminSidebar onNavigate={handleMobileMenuClose} />
           </SheetContent>

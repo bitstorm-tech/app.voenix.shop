@@ -1,4 +1,5 @@
 import { lazy } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
 
 // Lazy load all admin components
@@ -26,9 +27,21 @@ const Suppliers = lazy(() => import('@/pages/admin/Suppliers'));
 const Vat = lazy(() => import('@/pages/admin/Vat'));
 
 export function AdminRoutes() {
+  const { t } = useTranslation('adminLayout');
+
   return (
     <Routes>
-      <Route element={<AdminLayout />}>
+      <Route
+        element={
+          <AdminLayout
+            screenReaderLabels={{
+              navigationDescription: t('navigation.description'),
+              navigationTitle: t('navigation.title'),
+              toggleMenu: t('mobileMenu.toggle'),
+            }}
+          />
+        }
+      >
         <Route index element={<Prompts />} />
         <Route path="prompts" element={<Prompts />} />
         <Route path="prompts/new" element={<NewOrEditPrompt />} />

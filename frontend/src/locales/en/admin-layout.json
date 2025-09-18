@@ -1,0 +1,9 @@
+{
+  "mobileMenu": {
+    "toggle": "Toggle menu"
+  },
+  "navigation": {
+    "description": "Navigate through admin sections",
+    "title": "Admin Navigation Menu"
+  }
+}
