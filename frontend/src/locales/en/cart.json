@@ -18,6 +18,12 @@
     "checkout": "Checkout • {{amount}}"
   },
   "currency": "${{value}}",
+  "image": {
+    "error": "Image error",
+    "failed": "Failed to load",
+    "retry": "Retry",
+    "retrying": "Retrying..."
+  },
   "item": {
     "variantLabel": "Variant: {{color}}",
     "priceWas": "(was {{amount}})",

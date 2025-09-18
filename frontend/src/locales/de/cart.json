@@ -18,6 +18,12 @@
     "checkout": "Zur Kasse • {{amount}}"
   },
   "currency": "{{value}} €",
+  "image": {
+    "error": "Bildfehler",
+    "failed": "Laden fehlgeschlagen",
+    "retry": "Erneut versuchen",
+    "retrying": "Erneuter Versuch..."
+  },
   "item": {
     "variantLabel": "Variante: {{color}}",
     "priceWas": "(vorher {{amount}})",

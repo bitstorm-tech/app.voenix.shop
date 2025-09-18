@@ -1,5 +1,6 @@
 import { useImageWithFallback } from '@/hooks/useImageWithFallback';
 import { AlertCircle, RefreshCw, ShoppingBag } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { ImageSkeleton } from './ImageSkeleton';
 import { Button } from './ui/Button';
 
@@ -12,6 +13,7 @@ interface CartItemImageProps {
 }
 
 export function CartItemImage({ src, alt, className = 'h-24 w-24 rounded-md object-cover sm:h-32 sm:w-32', onLoad, onError }: CartItemImageProps) {
+  const { t } = useTranslation('cart');
   const { retryCount, retry, isLoading, isLoaded, isError, isRetrying } = useImageWithFallback(src, {
     maxRetries: 3,
     retryDelay: 1000,
@@ -38,7 +40,7 @@ export function CartItemImage({ src, alt, className = 'h-24 w-24 rounded-md obje
         <div className={`flex items-center justify-center bg-gray-100 ${className}`}>
           <div className="text-center">
             <RefreshCw className="mx-auto h-6 w-6 animate-spin text-gray-400" />
-            <p className="mt-1 text-xs text-gray-500">Retrying...</p>
+            <p className="mt-1 text-xs text-gray-500">{t('image.retrying')}</p>
           </div>
         </div>
       </div>
@@ -51,10 +53,10 @@ export function CartItemImage({ src, alt, className = 'h-24 w-24 rounded-md obje
       <div className={containerClasses}>
         <div className={`flex flex-col items-center justify-center bg-gray-100 ${className} p-2`}>
           <AlertCircle className="mb-1 h-6 w-6 text-red-400" />
-          <p className="mb-2 text-center text-xs text-gray-600">{retryCount > 0 ? 'Failed to load' : 'Image error'}</p>
+          <p className="mb-2 text-center text-xs text-gray-600">{retryCount > 0 ? t('image.failed') : t('image.error')}</p>
           <Button variant="outline" size="sm" onClick={retry} className="h-auto px-2 py-1 text-xs">
             <RefreshCw className="mr-1 h-3 w-3" />
-            Retry
+            {t('image.retry')}
           </Button>
         </div>
       </div>
