@@ -8,18 +8,23 @@ import (
 )
 
 // RequireRoles ensures the current session user has any of the allowed roles.
-func RequireRoles(db *gorm.DB, allowed ...string) gin.HandlerFunc {
+func RequireRoles(_ *gorm.DB, allowed ...string) gin.HandlerFunc {
 	allowedSet := map[string]struct{}{}
 	for _, r := range allowed {
 		allowedSet[r] = struct{}{}
 	}
 	return func(c *gin.Context) {
+		svc := CurrentService()
+		if svc == nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"detail": "Auth service not configured"})
+			return
+		}
 		sid, err := c.Cookie("session_id")
 		if err != nil || sid == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
 			return
 		}
-		u, err := GetUserFromSession(db, sid)
+		u, err := svc.GetUserFromSession(c.Request.Context(), sid)
 		if err != nil || u == nil || !u.IsActive() {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
 			return

@@ -12,6 +12,7 @@ import (
 	"gorm.io/gorm"
 
 	"voenix/backend/internal/auth"
+	"voenix/backend/internal/auth/postgres"
 )
 
 func TestAdminLLMsEndpoint(t *testing.T) {
@@ -20,31 +21,35 @@ func TestAdminLLMsEndpoint(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open db: %v", err)
 	}
-	if err := db.AutoMigrate(&auth.Role{}, &auth.User{}, &auth.Session{}); err != nil {
+	if err := db.AutoMigrate(&postgres.RoleRow{}, &postgres.UserRow{}, &postgres.SessionRow{}); err != nil {
 		t.Fatalf("auto migrate: %v", err)
 	}
-	role := auth.Role{Name: "ADMIN"}
-	if err := db.Create(&role).Error; err != nil {
+	roleRow := postgres.RoleRow{Name: "ADMIN"}
+	if err := db.Create(&roleRow).Error; err != nil {
 		t.Fatalf("create role: %v", err)
 	}
-	user := auth.User{Email: "admin@example.com"}
-	if err := db.Create(&user).Error; err != nil {
+	userRow := postgres.UserRow{Email: "admin@example.com"}
+	if err := db.Create(&userRow).Error; err != nil {
 		t.Fatalf("create user: %v", err)
 	}
-	if err := db.Model(&user).Association("Roles").Append(&role); err != nil {
+	if err := db.Model(&userRow).Association("Roles").Append(&roleRow); err != nil {
 		t.Fatalf("attach role: %v", err)
 	}
 	expiresAt := time.Now().Add(time.Hour)
-	session := auth.Session{ID: "test-session", UserID: user.ID, ExpiresAt: &expiresAt}
-	if err := db.Create(&session).Error; err != nil {
+	sessionRow := postgres.SessionRow{ID: "test-session", UserID: userRow.ID, ExpiresAt: &expiresAt}
+	if err := db.Create(&sessionRow).Error; err != nil {
 		t.Fatalf("create session: %v", err)
 	}
 
+	repo := postgres.NewRepository(db)
+	svc := auth.NewService(repo)
+
 	router := gin.New()
+	auth.RegisterRoutes(router, svc)
 	RegisterRoutes(router, db)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/admin/ai/llms", nil)
-	req.AddCookie(&http.Cookie{Name: "session_id", Value: session.ID})
+	req.AddCookie(&http.Cookie{Name: "session_id", Value: sessionRow.ID})
 	w := httptest.NewRecorder()
 
 	router.ServeHTTP(w, req)

@@ -1,13 +1,13 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"voenix/backend/internal/database"
 )
 
 type userPublic struct {
@@ -43,8 +43,23 @@ func toPublic(u *User) userPublic {
 	}
 }
 
+// SessionTTL returns TTL seconds for sessions; default 7 days.
+func sessionTTL() time.Duration {
+	const def = 7 * 24 * time.Hour
+	if v := os.Getenv("SESSION_TTL_SECONDS"); v != "" {
+		// simple parse
+		var n int64
+		_, err := fmt.Sscan(v, &n)
+		if err == nil && n > 0 {
+			return time.Duration(n) * time.Second
+		}
+	}
+	return def
+}
+
 // RegisterRoutes mounts the auth handlers under /api/auth
-func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
+func RegisterRoutes(r *gin.Engine, svc *Service) {
+	UseService(svc)
 	grp := r.Group("/api/auth")
 
 	grp.POST("/login", func(c *gin.Context) {
@@ -77,7 +92,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 			return
 		}
 
-		u, err := GetUserByEmail(db, email)
+		u, err := svc.GetUserByEmail(c.Request.Context(), email)
 		if err != nil || u == nil || !u.IsActive() {
 			c.Header("WWW-Authenticate", "Bearer")
 			c.JSON(http.StatusUnauthorized, gin.H{"detail": "Incorrect username or password"})
@@ -90,14 +105,15 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 			return
 		}
 
-		sid, err := CreateSessionForUser(db, u.ID, database.SessionTTL())
+		ttl := sessionTTL()
+		sid, err := svc.CreateSessionForUser(c.Request.Context(), u.ID, ttl)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create session"})
 			return
 		}
 
 		// Set cookie: HttpOnly, SameSite Lax, Secure false, 7 days
-		maxAge := int(database.SessionTTL().Seconds())
+		maxAge := int(ttl.Seconds())
 		// gin SetCookie(name, value, maxAge, path, domain, secure, httpOnly)
 		c.SetSameSite(http.SameSiteLaxMode)
 		c.SetCookie("session_id", sid, maxAge, "/", "", false, true)
@@ -112,7 +128,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
 			return
 		}
-		u, err := GetUserFromSession(db, sid)
+		u, err := svc.GetUserFromSession(c.Request.Context(), sid)
 		if err != nil || u == nil || !u.IsActive() {
 			c.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
 			return
@@ -124,7 +140,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	grp.POST("/logout", func(c *gin.Context) {
 		sid, _ := c.Cookie("session_id")
 		if sid != "" {
-			_ = DeleteSession(db, sid)
+			_ = svc.DeleteSession(c.Request.Context(), sid)
 		}
 		// Delete cookie by setting Max-Age=0
 		c.SetCookie("session_id", "", -1, "/", "", false, true)

@@ -12,6 +12,7 @@ import (
 
 	"voenix/backend/internal/article"
 	"voenix/backend/internal/auth"
+	"voenix/backend/internal/auth/postgres"
 	"voenix/backend/internal/prompt"
 )
 
@@ -98,7 +99,7 @@ func setupCartTestDB(t *testing.T) *gorm.DB {
 		&prompt.Prompt{},
 		&Cart{},
 		&CartItem{},
-		&auth.User{},
+		&postgres.UserRow{},
 	); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
@@ -121,10 +122,11 @@ func TestAssembleCartDtoIncludesPromptPricing(t *testing.T) {
 	if err := db.Create(&promptRow).Error; err != nil {
 		t.Fatalf("seed prompt: %v", err)
 	}
-	user := auth.User{ID: 42, Email: "user@example.com"}
-	if err := db.Create(&user).Error; err != nil {
+	userRow := postgres.UserRow{ID: 42, Email: "user@example.com"}
+	if err := db.Create(&userRow).Error; err != nil {
 		t.Fatalf("seed user: %v", err)
 	}
+	user := auth.User{ID: userRow.ID, Email: userRow.Email}
 	cartRow := Cart{UserID: user.ID, Status: string(CartStatusActive)}
 	if err := db.Create(&cartRow).Error; err != nil {
 		t.Fatalf("seed cart: %v", err)
@@ -240,10 +242,11 @@ func TestGetCartSummaryIncludesPromptPrice(t *testing.T) {
 	if err := db.Create(&promptRow).Error; err != nil {
 		t.Fatalf("seed prompt: %v", err)
 	}
-	user := auth.User{ID: 77, Email: "summary@example.com"}
-	if err := db.Create(&user).Error; err != nil {
+	userRow := postgres.UserRow{ID: 77, Email: "summary@example.com"}
+	if err := db.Create(&userRow).Error; err != nil {
 		t.Fatalf("seed user: %v", err)
 	}
+	user := auth.User{ID: userRow.ID, Email: userRow.Email}
 	cartRow := Cart{UserID: user.ID, Status: string(CartStatusActive)}
 	if err := db.Create(&cartRow).Error; err != nil {
 		t.Fatalf("seed cart: %v", err)

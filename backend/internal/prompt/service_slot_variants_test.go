@@ -8,7 +8,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
-	"voenix/backend/internal/auth"
+	"voenix/backend/internal/auth/postgres"
 )
 
 func setupPromptServiceTest(t *testing.T) (*service, *gorm.DB) {
@@ -17,7 +17,7 @@ func setupPromptServiceTest(t *testing.T) (*service, *gorm.DB) {
 	if err != nil {
 		t.Fatalf("open db: %v", err)
 	}
-	if err := db.AutoMigrate(&PromptSlotType{}, &PromptSlotVariant{}, &auth.Role{}, &auth.User{}, &auth.Session{}); err != nil {
+	if err := db.AutoMigrate(&PromptSlotType{}, &PromptSlotVariant{}, &postgres.RoleRow{}, &postgres.UserRow{}, &postgres.SessionRow{}); err != nil {
 		t.Fatalf("auto migrate: %v", err)
 	}
 	allowedLLMs := []string{

@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
@@ -71,20 +70,6 @@ func Open() (*gorm.DB, error) {
 	default:
 		return nil, fmt.Errorf("unsupported driver: %s", driver)
 	}
-}
-
-// SessionTTL returns TTL seconds for sessions; default 7 days.
-func SessionTTL() time.Duration {
-	const def = 7 * 24 * time.Hour
-	if v := os.Getenv("SESSION_TTL_SECONDS"); v != "" {
-		// simple parse
-		var n int64
-		_, err := fmt.Sscan(v, &n)
-		if err == nil && n > 0 {
-			return time.Duration(n) * time.Second
-		}
-	}
-	return def
 }
 
 func DoMigrations() {

@@ -11,8 +11,9 @@ import (
 
 	"voenix/backend/internal/ai"
 	"voenix/backend/internal/article"
-	articlepostgres "voenix/backend/internal/article/postgres"
+	articlePg "voenix/backend/internal/article/postgres"
 	"voenix/backend/internal/auth"
+	authPg "voenix/backend/internal/auth/postgres"
 	"voenix/backend/internal/cart"
 	"voenix/backend/internal/country"
 	"voenix/backend/internal/database"
@@ -82,13 +83,15 @@ func main() {
 	requireAdminMiddleware := auth.RequireAdmin(db)
 
 	// Repositories
-	articleRepo := articlepostgres.NewRepository(db)
+	authRepo := authPg.NewRepository(db)
+	articleRepo := articlePg.NewRepository(db)
 
 	// Services
+	authSvc := auth.NewService(authRepo)
 	articleSvc := article.NewService(articleRepo)
 
 	// Routes
-	auth.RegisterRoutes(r, db)
+	auth.RegisterRoutes(r, authSvc)
 	vat.RegisterRoutes(r, db)
 	country.RegisterRoutes(r, db)
 	supplier.RegisterRoutes(r, db)
