@@ -9,11 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 import { Textarea } from '@/components/ui/Textarea';
 import type { CreatePromptRequest, PromptSlotUpdate, UpdatePromptRequest } from '@/lib/api';
-import { imagesApi, promptCategoriesApi, promptsApi, promptSubCategoriesApi } from '@/lib/api';
+import { imagesApi, promptCategoriesApi, promptLlmsApi, promptsApi, promptSubCategoriesApi } from '@/lib/api';
 import { generatePromptNumber, getArticleNumberPlaceholder } from '@/lib/articleNumberUtils';
 import { convertCostCalculationToCents, convertCostCalculationToEuros } from '@/lib/currency';
 import { usePromptPriceStore } from '@/stores/admin/prompts/usePromptPriceStore';
 import type { PromptCategory, PromptSubCategory } from '@/types/prompt';
+import type { ProviderLLM } from '@/types/promptSlotVariant';
 import { Calculator, FileText, Upload, X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -39,9 +40,12 @@ export default function NewOrEditPrompt() {
   const [selectedSlotIds, setSelectedSlotIds] = useState<number[]>([]);
   const [categories, setCategories] = useState<PromptCategory[]>([]);
   const [subcategories, setSubcategories] = useState<PromptSubCategory[]>([]);
+  const [llmOptions, setLlmOptions] = useState<ProviderLLM[]>([]);
+  const [selectedLlm, setSelectedLlm] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [llmError, setLlmError] = useState<string | null>(null);
   const [exampleImageFilename, setExampleImageFilename] = useState<string | null>(null);
   const [exampleImageUrl, setExampleImageUrl] = useState<string | null>(null);
   const [exampleImageFile, setExampleImageFile] = useState<File | null>(null);
@@ -75,11 +79,21 @@ export default function NewOrEditPrompt() {
     }
   }, []);
 
+  const fetchLlms = useCallback(async () => {
+    try {
+      const response = await promptLlmsApi.getAll();
+      setLlmOptions(response.llms);
+      setLlmError(null);
+    } catch (error) {
+      console.error('Error fetching LLM options:', error);
+      setLlmError(t('prompt.errors.loadLLMs'));
+    }
+  }, [t]);
+
   const fetchPrompt = useCallback(async () => {
     if (!id) return;
 
     try {
-      setInitialLoading(true);
       const prompt = await promptsApi.getById(parseInt(id));
       setPromptId(prompt.id);
       if (typeof prompt.priceId === 'number') {
@@ -96,6 +110,23 @@ export default function NewOrEditPrompt() {
       // Set selected slot IDs
       if (prompt.slots) {
         setSelectedSlotIds(prompt.slots.map((slot) => slot.id));
+        if (prompt.slots.length > 0 && prompt.slots[0].llm) {
+          const slotLlm = prompt.slots[0].llm;
+          setSelectedLlm(slotLlm);
+          setLlmOptions((current) => {
+            if (current.some((option) => option.llm === slotLlm)) {
+              return current;
+            }
+            return [
+              ...current,
+              {
+                llm: slotLlm,
+                provider: 'Unknown',
+                friendlyName: slotLlm,
+              },
+            ];
+          });
+        }
       }
 
       // Set example image if exists
@@ -121,19 +152,41 @@ export default function NewOrEditPrompt() {
     } catch (error) {
       console.error('Error fetching prompt:', error);
       setError(t('prompt.errors.load'));
-    } finally {
-      setInitialLoading(false);
+      throw error;
     }
   }, [fetchSubcategories, id, setCostCalculation, t]);
 
   useEffect(() => {
-    fetchCategories();
-    if (isEditing) {
-      fetchPrompt();
-    } else {
-      setInitialLoading(false);
-    }
-  }, [fetchCategories, fetchPrompt, isEditing]);
+    let isMounted = true;
+
+    const load = async () => {
+      try {
+        setInitialLoading(true);
+        if (isMounted) {
+          setError(null);
+        }
+        await Promise.all([fetchCategories(), fetchLlms()]);
+        if (isEditing) {
+          await fetchPrompt();
+        }
+      } catch (error) {
+        console.error('Error initializing prompt form:', error);
+        if (isMounted) {
+          setError(t('prompt.errors.load'));
+        }
+      } finally {
+        if (isMounted) {
+          setInitialLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchCategories, fetchLlms, fetchPrompt, isEditing, t]);
 
   // Cleanup blob URLs on unmount
   useEffect(() => {
@@ -389,7 +442,28 @@ export default function NewOrEditPrompt() {
                   </div>
 
                   <div className="space-y-2">
-                    <SlotTypeSelector selectedSlotIds={selectedSlotIds} onSelectionChange={setSelectedSlotIds} />
+                    <Label htmlFor="llm">{t('prompt.form.llm')}</Label>
+                    <Select value={selectedLlm} onValueChange={(value) => setSelectedLlm(value)} disabled={llmOptions.length === 0}>
+                      <SelectTrigger id="llm">
+                        <SelectValue placeholder={t('prompt.form.llmPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {llmOptions.map((option) => (
+                          <SelectItem key={option.llm} value={option.llm}>
+                            {option.friendlyName}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {llmError ? (
+                      <p className="text-sm text-red-600">{llmError}</p>
+                    ) : llmOptions.length === 0 ? (
+                      <p className="text-muted-foreground text-sm">{t('prompt.form.llmEmpty')}</p>
+                    ) : null}
+                  </div>
+
+                  <div className="space-y-2">
+                    <SlotTypeSelector selectedSlotIds={selectedSlotIds} onSelectionChange={setSelectedSlotIds} llmFilter={selectedLlm || undefined} />
                   </div>
 
                   <div className="space-y-2">

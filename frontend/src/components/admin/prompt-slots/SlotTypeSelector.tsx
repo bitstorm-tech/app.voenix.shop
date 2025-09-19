@@ -9,9 +9,10 @@ import { useTranslation } from 'react-i18next';
 interface SlotTypeSelectorProps {
   selectedSlotIds: number[];
   onSelectionChange: (slotIds: number[]) => void;
+  llmFilter?: string;
 }
 
-export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTypeSelectorProps) {
+export function SlotTypeSelector({ selectedSlotIds, onSelectionChange, llmFilter }: SlotTypeSelectorProps) {
   const { t } = useTranslation('admin');
   const [slotVariants, setSlotVariants] = useState<PromptSlotVariant[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,8 +36,23 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
     fetchSlotVariants();
   }, [fetchSlotVariants]);
 
+  const filteredSlotVariants = llmFilter ? slotVariants.filter((slot) => slot.llm === llmFilter) : slotVariants;
+
+  useEffect(() => {
+    if (loading || !llmFilter) {
+      return;
+    }
+
+    const validSlotIds = new Set(filteredSlotVariants.map((slot) => slot.id));
+    const filteredSelection = selectedSlotIds.filter((id) => validSlotIds.has(id));
+
+    if (filteredSelection.length !== selectedSlotIds.length) {
+      onSelectionChange(filteredSelection);
+    }
+  }, [filteredSlotVariants, llmFilter, loading, onSelectionChange, selectedSlotIds]);
+
   // Group slot variants by type
-  const slotVariantsByType = slotVariants.reduce(
+  const slotVariantsByType = filteredSlotVariants.reduce(
     (acc, slot) => {
       const typeId = slot.promptSlotType?.id || 0;
 
@@ -76,6 +92,10 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange }: SlotTyp
   }
 
   if (sortedSlotTypes.length === 0) {
+    if (llmFilter) {
+      return <div className="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-gray-600">{t('prompt.slotSelector.filteredEmpty')}</div>;
+    }
+
     return <div className="rounded border border-gray-200 bg-gray-50 px-4 py-3 text-gray-600">{t('prompt.slotSelector.empty')}</div>;
   }
 

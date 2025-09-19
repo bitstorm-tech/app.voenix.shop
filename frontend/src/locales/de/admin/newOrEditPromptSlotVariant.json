@@ -12,6 +12,9 @@
     "namePlaceholder": "Slot-Namen eingeben",
     "type": "Prompt-Slot-Typ",
     "typePlaceholder": "Prompt-Slot-Typ auswählen",
+    "llm": "LLM",
+    "llmPlaceholder": "LLM auswählen",
+    "llmEmpty": "Keine LLMs verfügbar. Bitten Sie einen Admin, LLMs zu konfigurieren.",
     "prompt": "Prompt",
     "promptPlaceholder": "Prompt-Text eingeben",
     "description": "Beschreibung",
@@ -23,10 +26,12 @@
   "errors": {
     "loadTypes": "Prompt-Slot-Typen konnten nicht geladen werden",
     "load": "Slot konnte nicht geladen werden",
+    "loadLLMs": "LLM-Optionen konnten nicht geladen werden",
     "save": "Slot konnte nicht gespeichert werden. Bitte erneut versuchen.",
     "nameRequired": "Name ist erforderlich",
     "typeRequired": "Prompt-Slot-Typ ist erforderlich",
     "promptRequired": "Prompt ist erforderlich",
+    "llmRequired": "LLM ist erforderlich",
     "invalidImage": "Bitte laden Sie eine Bilddatei hoch",
     "imageTooLarge": "Bildgröße muss kleiner als 5 MB sein",
     "uploadImage": "Bild konnte nicht hochgeladen werden. Bitte erneut versuchen."

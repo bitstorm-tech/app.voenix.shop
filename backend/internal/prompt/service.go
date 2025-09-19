@@ -3,6 +3,7 @@ package prompt
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"gorm.io/gorm"
 
@@ -12,14 +13,27 @@ import (
 
 // service centralizes all DB access and business logic for prompts.
 type service struct {
-	db *gorm.DB
+	db          *gorm.DB
+	allowedLLMs map[string]struct{}
 }
 
-func newService(db *gorm.DB) *service { return &service{db: db} }
+func newService(db *gorm.DB, allowedLLMs []string) *service {
+	llmSet := make(map[string]struct{}, len(allowedLLMs))
+	for _, llm := range allowedLLMs {
+		trimmed := strings.TrimSpace(llm)
+		if trimmed == "" {
+			continue
+		}
+		llmSet[trimmed] = struct{}{}
+	}
+	return &service{db: db, allowedLLMs: llmSet}
+}
 
 type conflictError struct{ Detail string }
 
 func (e conflictError) Error() string { return e.Detail }
+
+var errInvalidLLM = errors.New("invalid llm")
 
 // ListSlotTypes returns all slot types.
 func (s *service) listSlotTypes(ctx context.Context) ([]PromptSlotTypeRead, error) {
@@ -130,6 +144,10 @@ func (s *service) createSlotVariant(ctx context.Context, payload slotVariantCrea
 	if !existsByID[PromptSlotType](s.db.WithContext(ctx), payload.PromptSlotTypeID) {
 		return nil, gorm.ErrRecordNotFound
 	}
+	llm := strings.TrimSpace(payload.LLM)
+	if llm == "" || !s.isValidLLM(llm) {
+		return nil, errInvalidLLM
+	}
 	var cnt int64
 	s.db.WithContext(ctx).Model(&PromptSlotVariant{}).Where("name = ?", payload.Name).Count(&cnt)
 	if cnt > 0 {
@@ -141,6 +159,7 @@ func (s *service) createSlotVariant(ctx context.Context, payload slotVariantCrea
 		Prompt:               payload.Prompt,
 		Description:          payload.Description,
 		ExampleImageFilename: payload.ExampleImageFilename,
+		LLM:                  llm,
 	}
 	if err := s.db.WithContext(ctx).Create(&row).Error; err != nil {
 		return nil, err
@@ -160,6 +179,13 @@ func (s *service) updateSlotVariant(ctx context.Context, id int, payload slotVar
 			return nil, gorm.ErrRecordNotFound
 		}
 		existing.PromptSlotTypeID = *payload.PromptSlotTypeID
+	}
+	if payload.LLM != nil {
+		llm := strings.TrimSpace(*payload.LLM)
+		if llm == "" || !s.isValidLLM(llm) {
+			return nil, errInvalidLLM
+		}
+		existing.LLM = llm
 	}
 	if payload.Name != nil && *payload.Name != existing.Name {
 		var cnt int64
@@ -199,6 +225,11 @@ func (s *service) deleteSlotVariant(ctx context.Context, id int) error {
 		safeDeletePublicImage(*existing.ExampleImageFilename, "slot-variant")
 	}
 	return s.db.WithContext(ctx).Delete(&PromptSlotVariant{}, existing.ID).Error
+}
+
+func (s *service) isValidLLM(llm string) bool {
+	_, ok := s.allowedLLMs[llm]
+	return ok
 }
 
 // ---------------
