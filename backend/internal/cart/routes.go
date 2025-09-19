@@ -3,24 +3,24 @@ package cart
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
 	"voenix/backend/internal/auth"
+
+	"github.com/gin-gonic/gin"
 )
 
 // RegisterRoutes mounts user cart routes under /api/user/cart
-func RegisterRoutes(r *gin.Engine, db *gorm.DB, articleSvc ArticleService) {
+func RegisterRoutes(r *gin.Engine, middleware gin.HandlerFunc, svc *Service) {
 	grp := r.Group("/api/user/cart")
-	grp.Use(auth.RequireRoles(db, "USER", "ADMIN"))
 
-	grp.GET("", getCartHandler(db, articleSvc))
-	grp.GET("/summary", getCartSummaryHandler(db))
-	grp.POST("/items", addItemHandler(db, articleSvc))
-	grp.PUT("/items/:itemId", updateItemHandler(db, articleSvc))
-	grp.DELETE("/items/:itemId", deleteItemHandler(db, articleSvc))
-	grp.DELETE("", clearCartHandler(db, articleSvc))
-	grp.POST("/refresh-prices", refreshPricesHandler(db, articleSvc))
+	grp.Use(middleware)
+
+	grp.GET("", getCartHandler(svc))
+	grp.GET("/summary", getCartSummaryHandler(svc))
+	grp.POST("/items", addItemHandler(svc))
+	grp.PUT("/items/:itemId", updateItemHandler(svc))
+	grp.DELETE("/items/:itemId", deleteItemHandler(svc))
+	grp.DELETE("", clearCartHandler(svc))
+	grp.POST("/refresh-prices", refreshPricesHandler(svc))
 }
 
 // currentUser extracts the authenticated user from context.

@@ -15,6 +15,7 @@ import (
 	"voenix/backend/internal/auth"
 	authPg "voenix/backend/internal/auth/postgres"
 	"voenix/backend/internal/cart"
+	cartPg "voenix/backend/internal/cart/postgres"
 	"voenix/backend/internal/country"
 	"voenix/backend/internal/database"
 	"voenix/backend/internal/image"
@@ -79,16 +80,15 @@ func main() {
 
 	serveFrontend(r)
 
-	// Middlewares
-	requireAdminMiddleware := auth.RequireAdmin(db)
-
 	// Repositories
 	authRepo := authPg.NewRepository(db)
 	articleRepo := articlePg.NewRepository(db)
+	cartRepo := cartPg.NewRepository(db)
 
 	// Services
 	authSvc := auth.NewService(authRepo)
 	articleSvc := article.NewService(articleRepo)
+	cartSvc := cart.NewService(cartRepo, articleSvc)
 
 	// Routes
 	auth.RegisterRoutes(r, authSvc)
@@ -98,8 +98,8 @@ func main() {
 	image.RegisterRoutes(r, db)
 	ai.RegisterRoutes(r, db)
 	prompt.RegisterRoutes(r, db, ai.ProviderLLMIDs())
-	article.RegisterRoutes(r, requireAdminMiddleware, articleSvc)
-	cart.RegisterRoutes(r, db, articleSvc)
+	article.RegisterRoutes(r, auth.RequireRoles(db, "ADMIN"), articleSvc)
+	cart.RegisterRoutes(r, auth.RequireRoles(db, "ADMIN", "USER"), cartSvc)
 	order.RegisterRoutes(r, db, articleSvc)
 
 	addr := os.Getenv("ADDR")

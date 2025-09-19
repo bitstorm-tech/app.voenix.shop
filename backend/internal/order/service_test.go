@@ -41,7 +41,7 @@ func TestCreateOrderFromCart(t *testing.T) {
 	}
 
 	// Seed cart + item
-	c := cart.Cart{UserID: 100, Status: string(cart.CartStatusActive)}
+	c := cart.Cart{UserID: 100, Status: cart.CartStatusActive}
 	if err := db.Create(&c).Error; err != nil {
 		t.Fatalf("seed cart: %v", err)
 	}

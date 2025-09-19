@@ -1,18 +1,17 @@
-package cart
+package cart_test
 
 import (
 	"context"
-	"encoding/json"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/gin-gonic/gin"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
 	"voenix/backend/internal/article"
 	"voenix/backend/internal/auth"
-	"voenix/backend/internal/auth/postgres"
+	authpostgres "voenix/backend/internal/auth/postgres"
+	cartpkg "voenix/backend/internal/cart"
+	cartpostgres "voenix/backend/internal/cart/postgres"
 	"voenix/backend/internal/prompt"
 )
 
@@ -97,9 +96,9 @@ func setupCartTestDB(t *testing.T) *gorm.DB {
 		&article.MugVariant{},
 		&article.CostCalculation{},
 		&prompt.Prompt{},
-		&Cart{},
-		&CartItem{},
-		&postgres.UserRow{},
+		&cartpostgres.CartRow{},
+		&cartpostgres.CartItemRow{},
+		&authpostgres.UserRow{},
 	); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
@@ -107,7 +106,6 @@ func setupCartTestDB(t *testing.T) *gorm.DB {
 }
 
 func TestAssembleCartDtoIncludesPromptPricing(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	db := setupCartTestDB(t)
 
 	art := article.Article{ID: 1, Name: "Mug", DescriptionShort: "short", DescriptionLong: "long", Active: true, ArticleType: article.ArticleTypeMug}
@@ -122,56 +120,51 @@ func TestAssembleCartDtoIncludesPromptPricing(t *testing.T) {
 	if err := db.Create(&promptRow).Error; err != nil {
 		t.Fatalf("seed prompt: %v", err)
 	}
-	userRow := postgres.UserRow{ID: 42, Email: "user@example.com"}
+	userRow := authpostgres.UserRow{ID: 42, Email: "user@example.com"}
 	if err := db.Create(&userRow).Error; err != nil {
 		t.Fatalf("seed user: %v", err)
 	}
 	user := auth.User{ID: userRow.ID, Email: userRow.Email}
-	cartRow := Cart{UserID: user.ID, Status: string(CartStatusActive)}
-	if err := db.Create(&cartRow).Error; err != nil {
-		t.Fatalf("seed cart: %v", err)
+	repo := cartpostgres.NewRepository(db)
+	cartDomain, err := repo.GetOrCreateActiveCart(context.Background(), user.ID)
+	if err != nil {
+		t.Fatalf("create cart: %v", err)
 	}
-
+	cartDomain.Status = cartpkg.CartStatusActive
 	promptID := promptRow.ID
-	itemWithPrompt := CartItem{
-		CartID:              cartRow.ID,
-		ArticleID:           art.ID,
-		VariantID:           variant.ID,
-		Quantity:            2,
-		PriceAtTime:         1000,
-		OriginalPrice:       1100,
-		PromptPriceAtTime:   250,
-		PromptOriginalPrice: 300,
-		PromptID:            &promptID,
-		CustomData:          "{}",
-		Position:            0,
+	cartDomain.Items = []cartpkg.CartItem{
+		{
+			CartID:              cartDomain.ID,
+			ArticleID:           art.ID,
+			VariantID:           variant.ID,
+			Quantity:            2,
+			PriceAtTime:         1000,
+			OriginalPrice:       1100,
+			PromptPriceAtTime:   250,
+			PromptOriginalPrice: 300,
+			PromptID:            &promptID,
+			CustomData:          "{}",
+			Position:            0,
+		},
+		{
+			CartID:              cartDomain.ID,
+			ArticleID:           art.ID,
+			VariantID:           variant.ID,
+			Quantity:            1,
+			PriceAtTime:         1500,
+			OriginalPrice:       1500,
+			PromptPriceAtTime:   0,
+			PromptOriginalPrice: 0,
+			CustomData:          "{}",
+			Position:            1,
+		},
 	}
-	if err := db.Create(&itemWithPrompt).Error; err != nil {
-		t.Fatalf("seed item with prompt: %v", err)
-	}
-
-	itemWithoutPrompt := CartItem{
-		CartID:            cartRow.ID,
-		ArticleID:         art.ID,
-		VariantID:         variant.ID,
-		Quantity:          1,
-		PriceAtTime:       1500,
-		OriginalPrice:     1500,
-		PromptPriceAtTime: 0,
-		CustomData:        "{}",
-		Position:          1,
-	}
-	if err := db.Create(&itemWithoutPrompt).Error; err != nil {
-		t.Fatalf("seed item without prompt: %v", err)
-	}
-
-	var loadedCart Cart
-	if err := db.Preload("Items", withItemOrder).First(&loadedCart, cartRow.ID).Error; err != nil {
-		t.Fatalf("load cart: %v", err)
+	if _, err := repo.SaveCart(context.Background(), *cartDomain); err != nil {
+		t.Fatalf("save cart: %v", err)
 	}
 
-	svc := &stubArticleService{db: db}
-	dto, err := assembleCartDto(context.Background(), db, svc, &loadedCart)
+	svc := cartpkg.NewService(repo, &stubArticleService{db: db})
+	dto, err := svc.GetCart(context.Background(), user.ID)
 	if err != nil {
 		t.Fatalf("assemble dto: %v", err)
 	}
@@ -184,8 +177,8 @@ func TestAssembleCartDtoIncludesPromptPricing(t *testing.T) {
 		t.Fatalf("total item count = %d", dto.TotalItemCount)
 	}
 
-	var promptItem *CartItemDto
-	var plainItem *CartItemDto
+	var promptItem *cartpkg.CartItemDto
+	var plainItem *cartpkg.CartItemDto
 	for i := range dto.Items {
 		it := dto.Items[i]
 		if it.PromptID != nil {
@@ -227,7 +220,6 @@ func TestAssembleCartDtoIncludesPromptPricing(t *testing.T) {
 }
 
 func TestGetCartSummaryIncludesPromptPrice(t *testing.T) {
-	gin.SetMode(gin.TestMode)
 	db := setupCartTestDB(t)
 
 	art := article.Article{ID: 5, Name: "Another Mug", DescriptionShort: "s", DescriptionLong: "l", Active: true, ArticleType: article.ArticleTypeMug}
@@ -242,56 +234,47 @@ func TestGetCartSummaryIncludesPromptPrice(t *testing.T) {
 	if err := db.Create(&promptRow).Error; err != nil {
 		t.Fatalf("seed prompt: %v", err)
 	}
-	userRow := postgres.UserRow{ID: 77, Email: "summary@example.com"}
+	userRow := authpostgres.UserRow{ID: 77, Email: "summary@example.com"}
 	if err := db.Create(&userRow).Error; err != nil {
 		t.Fatalf("seed user: %v", err)
 	}
 	user := auth.User{ID: userRow.ID, Email: userRow.Email}
-	cartRow := Cart{UserID: user.ID, Status: string(CartStatusActive)}
-	if err := db.Create(&cartRow).Error; err != nil {
-		t.Fatalf("seed cart: %v", err)
+	repo := cartpostgres.NewRepository(db)
+	cartDomain, err := repo.GetOrCreateActiveCart(context.Background(), user.ID)
+	if err != nil {
+		t.Fatalf("create cart: %v", err)
 	}
-
 	promptID := promptRow.ID
-	item := CartItem{
-		CartID:              cartRow.ID,
-		ArticleID:           art.ID,
-		VariantID:           variant.ID,
-		Quantity:            3,
-		PriceAtTime:         800,
-		OriginalPrice:       800,
-		PromptPriceAtTime:   150,
-		PromptOriginalPrice: 150,
-		PromptID:            &promptID,
-		CustomData:          "{}",
-		Position:            0,
+	cartDomain.Items = []cartpkg.CartItem{
+		{
+			CartID:              cartDomain.ID,
+			ArticleID:           art.ID,
+			VariantID:           variant.ID,
+			Quantity:            3,
+			PriceAtTime:         800,
+			OriginalPrice:       800,
+			PromptPriceAtTime:   150,
+			PromptOriginalPrice: 150,
+			PromptID:            &promptID,
+			CustomData:          "{}",
+			Position:            0,
+		},
 	}
-	if err := db.Create(&item).Error; err != nil {
-		t.Fatalf("seed item: %v", err)
+	if _, err := repo.SaveCart(context.Background(), *cartDomain); err != nil {
+		t.Fatalf("save cart: %v", err)
 	}
 
-	w := httptest.NewRecorder()
-	ctx, _ := gin.CreateTestContext(w)
-	ctx.Request = httptest.NewRequest("GET", "/api/user/cart/summary", nil)
-	ctx.Set("currentUser", &user)
-
-	handler := getCartSummaryHandler(db)
-	handler(ctx)
-
-	if w.Code != 200 {
-		t.Fatalf("status code = %d", w.Code)
+	summary, err := cartpkg.NewService(repo, &stubArticleService{db: db}).GetCartSummary(context.Background(), user.ID)
+	if err != nil {
+		t.Fatalf("get summary: %v", err)
 	}
-	var resp CartSummaryDto
-	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
-		t.Fatalf("unmarshal: %v", err)
+	if summary.TotalPrice != (800+150)*3 {
+		t.Fatalf("total price = %d", summary.TotalPrice)
 	}
-	if resp.TotalPrice != (800+150)*3 {
-		t.Fatalf("total price = %d", resp.TotalPrice)
+	if summary.ItemCount != 3 {
+		t.Fatalf("item count = %d", summary.ItemCount)
 	}
-	if resp.ItemCount != 3 {
-		t.Fatalf("item count = %d", resp.ItemCount)
-	}
-	if !resp.HasItems {
+	if !summary.HasItems {
 		t.Fatalf("expected hasItems true")
 	}
 }

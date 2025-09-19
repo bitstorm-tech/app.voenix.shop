@@ -4,67 +4,21 @@ import (
 	"context"
 	"path/filepath"
 
-	"gorm.io/gorm"
-
 	"voenix/backend/internal/article"
 	img "voenix/backend/internal/image"
 )
 
 // assembleCartDto converts a Cart+Items into a response DTO.
-func assembleCartDto(ctx context.Context, db *gorm.DB, articleSvc ArticleService, c *Cart) (*CartDto, error) {
+func assembleCartDto(
+	ctx context.Context,
+	articleSvc ArticleService,
+	c *Cart,
+	generatedImageFilenames map[int]string,
+	promptTitles map[int]string,
+) (*CartDto, error) {
 	items := make([]CartItemDto, 0, len(c.Items))
 	totalCount := 0
 	totalPrice := 0
-	// Preload generated image filenames for any items with GeneratedImageID
-	genIDToFilename := map[int]string{}
-	{
-		ids := make([]int, 0, len(c.Items))
-		for i := range c.Items {
-			if c.Items[i].GeneratedImageID != nil {
-				ids = append(ids, *c.Items[i].GeneratedImageID)
-			}
-		}
-		if len(ids) > 0 {
-			type row struct {
-				ID       int
-				Filename string
-			}
-			var rows []row
-			if err := db.Table("generated_images").Select("id, filename").Where("id IN ?", ids).Scan(&rows).Error; err == nil {
-				for _, r := range rows {
-					genIDToFilename[r.ID] = r.Filename
-				}
-			}
-		}
-	}
-	// Preload prompt titles to avoid repeated lookups
-	promptIDToTitle := map[int]string{}
-	{
-		seen := make(map[int]struct{}, len(c.Items))
-		ids := make([]int, 0, len(c.Items))
-		for i := range c.Items {
-			if c.Items[i].PromptID != nil {
-				pid := *c.Items[i].PromptID
-				if _, ok := seen[pid]; ok {
-					continue
-				}
-				seen[pid] = struct{}{}
-				ids = append(ids, pid)
-			}
-		}
-		if len(ids) > 0 {
-			type row struct {
-				ID    int
-				Title string
-			}
-			var rows []row
-			if err := db.Table("prompts").Select("id, title").Where("id IN ?", ids).Scan(&rows).Error; err == nil {
-				for _, r := range rows {
-					promptIDToTitle[r.ID] = r.Title
-				}
-			}
-		}
-	}
 	for i := range c.Items {
 		ci := c.Items[i]
 		art, err := loadArticleResponse(ctx, articleSvc, ci.ArticleID)
@@ -74,8 +28,8 @@ func assembleCartDto(ctx context.Context, db *gorm.DB, articleSvc ArticleService
 		mv, _ := loadMugVariantDto(ctx, articleSvc, ci.VariantID)
 		cd := parseJSONMap(ci.CustomData)
 		var genFilename *string
-		if ci.GeneratedImageID != nil {
-			if fn, ok := genIDToFilename[*ci.GeneratedImageID]; ok && fn != "" {
+		if ci.GeneratedImageID != nil && generatedImageFilenames != nil {
+			if fn, ok := generatedImageFilenames[*ci.GeneratedImageID]; ok && fn != "" {
 				genFilename = &fn
 			}
 		}
@@ -88,8 +42,8 @@ func assembleCartDto(ctx context.Context, db *gorm.DB, articleSvc ArticleService
 		hasPromptPriceChanged := promptPriceAtTime != promptOriginalPrice
 		hasPriceChanged := hasArticlePriceChanged || hasPromptPriceChanged
 		var promptTitle *string
-		if ci.PromptID != nil {
-			if title, ok := promptIDToTitle[*ci.PromptID]; ok && title != "" {
+		if ci.PromptID != nil && promptTitles != nil {
+			if title, ok := promptTitles[*ci.PromptID]; ok && title != "" {
 				t := title
 				promptTitle = &t
 			}
@@ -124,7 +78,7 @@ func assembleCartDto(ctx context.Context, db *gorm.DB, articleSvc ArticleService
 	dto := &CartDto{
 		ID:             c.ID,
 		UserID:         c.UserID,
-		Status:         c.Status,
+		Status:         string(c.Status),
 		Version:        c.Version,
 		ExpiresAt:      c.ExpiresAt,
 		Items:          items,
