@@ -1,12 +1,12 @@
 package cart
 
 import (
+	"context"
 	"errors"
 	"time"
 
 	"gorm.io/gorm"
 
-	"voenix/backend/internal/article"
 	"voenix/backend/internal/prompt"
 )
 
@@ -48,21 +48,24 @@ func loadActiveCart(db *gorm.DB, userID int) (*Cart, error) {
 }
 
 // currentGrossPrice returns SalesTotalGross (cents) for articleID, or 0 if not found.
-func currentGrossPrice(db *gorm.DB, articleID int) (int, error) {
-	var cc article.CostCalculation
-	if err := db.First(&cc, "article_id = ?", articleID).Error; err != nil {
+func currentGrossPrice(ctx context.Context, articleSvc ArticleService, articleID int) (int, error) {
+	cc, err := articleSvc.GetCostCalculation(ctx, articleID)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return 0, nil
 		}
 		return 0, err
 	}
+	if cc == nil {
+		return 0, nil
+	}
 	return cc.SalesTotalGross, nil
 }
 
 // promptCurrentGrossPrice returns prompt SalesTotalGross (cents) or 0 when no price linked.
-func promptCurrentGrossPrice(db *gorm.DB, promptID int) (int, error) {
+func promptCurrentGrossPrice(ctx context.Context, db *gorm.DB, articleSvc ArticleService, promptID int) (int, error) {
 	var p prompt.Prompt
-	if err := db.Preload("Price").First(&p, "id = ?", promptID).Error; err != nil {
+	if err := db.First(&p, "id = ?", promptID).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return 0, nil
 		}
@@ -72,8 +75,11 @@ func promptCurrentGrossPrice(db *gorm.DB, promptID int) (int, error) {
 		return p.Price.SalesTotalGross, nil
 	}
 	if p.PriceID != nil {
-		var cc article.CostCalculation
-		if err := db.First(&cc, "id = ?", *p.PriceID).Error; err == nil {
+		cc, err := articleSvc.GetCostCalculationByID(ctx, *p.PriceID)
+		if err != nil {
+			return 0, err
+		}
+		if cc != nil {
 			return cc.SalesTotalGross, nil
 		}
 	}

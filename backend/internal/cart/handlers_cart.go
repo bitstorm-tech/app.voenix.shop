@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func getCartHandler(db *gorm.DB) gin.HandlerFunc {
+func getCartHandler(db *gorm.DB, articleSvc ArticleService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, ok := requireUser(c)
 		if !ok {
@@ -18,7 +18,7 @@ func getCartHandler(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to load cart"})
 			return
 		}
-		dto, err := assembleCartDto(db, cart)
+		dto, err := assembleCartDto(c.Request.Context(), db, articleSvc, cart)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble cart"})
 			return
@@ -52,7 +52,7 @@ func getCartSummaryHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func clearCartHandler(db *gorm.DB) gin.HandlerFunc {
+func clearCartHandler(db *gorm.DB, articleSvc ArticleService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, ok := requireUser(c)
 		if !ok {
@@ -72,7 +72,7 @@ func clearCartHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		_ = db.Preload("Items", withItemOrder).First(cart, cart.ID).Error
-		dto, err := assembleCartDto(db, cart)
+		dto, err := assembleCartDto(c.Request.Context(), db, articleSvc, cart)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble cart"})
 			return
@@ -81,7 +81,7 @@ func clearCartHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func refreshPricesHandler(db *gorm.DB) gin.HandlerFunc {
+func refreshPricesHandler(db *gorm.DB, articleSvc ArticleService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, ok := requireUser(c)
 		if !ok {
@@ -98,7 +98,7 @@ func refreshPricesHandler(db *gorm.DB) gin.HandlerFunc {
 		}
 		changed := false
 		for i := range cart.Items {
-			articleCurrent, err := currentGrossPrice(db, cart.Items[i].ArticleID)
+			articleCurrent, err := currentGrossPrice(c.Request.Context(), articleSvc, cart.Items[i].ArticleID)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to refresh prices"})
 				return
@@ -113,7 +113,7 @@ func refreshPricesHandler(db *gorm.DB) gin.HandlerFunc {
 			}
 			promptCurrent := 0
 			if cart.Items[i].PromptID != nil {
-				pc, perr := promptCurrentGrossPrice(db, *cart.Items[i].PromptID)
+				pc, perr := promptCurrentGrossPrice(c.Request.Context(), db, articleSvc, *cart.Items[i].PromptID)
 				if perr != nil {
 					c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to refresh prompt prices"})
 					return
@@ -132,7 +132,7 @@ func refreshPricesHandler(db *gorm.DB) gin.HandlerFunc {
 		if changed {
 			_ = db.Preload("Items", withItemOrder).First(cart, cart.ID).Error
 		}
-		dto, err := assembleCartDto(db, cart)
+		dto, err := assembleCartDto(c.Request.Context(), db, articleSvc, cart)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble cart"})
 			return

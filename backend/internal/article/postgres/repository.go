@@ -475,6 +475,19 @@ func (r *Repository) GetCostCalculation(ctx context.Context, articleID int) (*ar
 	return &res, nil
 }
 
+func (r *Repository) GetCostCalculationByID(ctx context.Context, id int) (*article.CostCalculation, error) {
+	var row costCalculationRow
+	err := r.db.WithContext(ctx).First(&row, "id = ?", id).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	res := toCostCalculation(&row)
+	return &res, nil
+}
+
 func (r *Repository) UpsertCostCalculation(ctx context.Context, articleID int, calc *article.CostCalculation) error {
 	if calc == nil {
 		return nil

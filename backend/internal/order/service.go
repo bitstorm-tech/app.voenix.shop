@@ -1,6 +1,7 @@
 package order
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
@@ -15,7 +16,6 @@ import (
 	"voenix/backend/internal/article"
 	"voenix/backend/internal/cart"
 	img "voenix/backend/internal/image"
-	"voenix/backend/internal/supplier"
 )
 
 const (
@@ -200,7 +200,7 @@ func toAddressDtoFromOrder(o *Order) (AddressDto, *AddressDto) {
 	return ship, bill
 }
 
-func toOrderDto(db *gorm.DB, o *Order, baseURL string) (OrderDto, error) {
+func toOrderDto(ctx context.Context, db *gorm.DB, articleSvc ArticleService, o *Order, baseURL string) (OrderDto, error) {
 	ship, bill := toAddressDtoFromOrder(o)
 	items := make([]OrderItemDto, 0, len(o.Items))
 	// Preload generated image filenames for any items with GeneratedImageID
@@ -227,11 +227,11 @@ func toOrderDto(db *gorm.DB, o *Order, baseURL string) (OrderDto, error) {
 	}
 	for i := range o.Items {
 		it := o.Items[i]
-		art, err := loadArticleResponse(db, it.ArticleID)
+		art, err := loadArticleResponse(ctx, articleSvc, it.ArticleID)
 		if err != nil {
 			return OrderDto{}, err
 		}
-		mv, _ := loadMugVariantDto(db, it.VariantID)
+		mv, _ := loadMugVariantDto(ctx, articleSvc, it.VariantID)
 		var genFilename *string
 		if it.GeneratedImageID != nil {
 			if fn, ok := genIDToFilename[*it.GeneratedImageID]; ok && fn != "" {
@@ -294,60 +294,18 @@ func loadActiveCartForOrder(db *gorm.DB, userID int) (*cart.Cart, error) {
 }
 
 // loadArticleResponse replicates cart.loadArticleResponse to avoid cross-package exposure.
-func loadArticleResponse(db *gorm.DB, id int) (article.ArticleResponse, error) {
-	var a article.Article
-	if err := db.First(&a, "id = ?", id).Error; err != nil {
+func loadArticleResponse(ctx context.Context, articleSvc ArticleService, id int) (article.ArticleResponse, error) {
+	resp, err := articleSvc.GetArticleSummary(ctx, id)
+	if err != nil {
 		return article.ArticleResponse{}, err
 	}
-	var catName string
-	if a.CategoryID != 0 {
-		var cat article.ArticleCategory
-		if err := db.First(&cat, "id = ?", a.CategoryID).Error; err == nil {
-			catName = cat.Name
-		}
-	}
-	var subName *string
-	if a.SubcategoryID != nil {
-		var sub article.ArticleSubCategory
-		if err := db.First(&sub, "id = ?", *a.SubcategoryID).Error; err == nil {
-			subName = &sub.Name
-		}
-	}
-	var suppName *string
-	if a.SupplierID != nil {
-		var s supplier.Supplier
-		if err := db.First(&s, "id = ?", *a.SupplierID).Error; err == nil {
-			suppName = s.Name
-		}
-	}
-	out := article.ArticleResponse{
-		ID:                    a.ID,
-		Name:                  a.Name,
-		DescriptionShort:      a.DescriptionShort,
-		DescriptionLong:       a.DescriptionLong,
-		Active:                a.Active,
-		ArticleType:           a.ArticleType,
-		CategoryID:            a.CategoryID,
-		CategoryName:          catName,
-		SubcategoryID:         a.SubcategoryID,
-		SubcategoryName:       subName,
-		SupplierID:            a.SupplierID,
-		SupplierName:          suppName,
-		SupplierArticleName:   a.SupplierArticleName,
-		SupplierArticleNumber: a.SupplierArticleNumber,
-		MugDetails:            nil,
-		ShirtDetails:          nil,
-		CostCalculation:       nil,
-		CreatedAt:             &a.CreatedAt,
-		UpdatedAt:             &a.UpdatedAt,
-	}
-	return out, nil
+	return resp, nil
 }
 
 // loadMugVariantDto replicates cart.loadMugVariantDto
-func loadMugVariantDto(db *gorm.DB, id int) (*cart.MugVariantDto, error) {
-	var v article.MugVariant
-	if err := db.First(&v, "id = ?", id).Error; err != nil {
+func loadMugVariantDto(ctx context.Context, articleSvc ArticleService, id int) (*cart.MugVariantDto, error) {
+	v, err := articleSvc.GetMugVariant(ctx, id)
+	if err != nil {
 		return nil, err
 	}
 	url := publicMugVariantExampleURL(v.ExampleImageFilename)

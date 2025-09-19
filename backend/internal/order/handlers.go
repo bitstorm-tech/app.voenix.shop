@@ -15,17 +15,17 @@ import (
 )
 
 // RegisterRoutes mounts user order routes under /api/user
-func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
+func RegisterRoutes(r *gin.Engine, db *gorm.DB, articleSvc ArticleService) {
 	grp := r.Group("/api/user")
 	grp.Use(auth.RequireRoles(db, "USER", "ADMIN"))
 
-	grp.POST("/checkout", createOrderHandler(db))
-	grp.GET("/orders", listOrdersHandler(db))
-	grp.GET("/orders/:orderId", getOrderHandler(db))
-	grp.GET("/orders/:orderId/pdf", downloadOrderPDFHandler(db))
+	grp.POST("/checkout", createOrderHandler(db, articleSvc))
+	grp.GET("/orders", listOrdersHandler(db, articleSvc))
+	grp.GET("/orders/:orderId", getOrderHandler(db, articleSvc))
+	grp.GET("/orders/:orderId/pdf", downloadOrderPDFHandler(db, articleSvc))
 }
 
-func createOrderHandler(db *gorm.DB) gin.HandlerFunc {
+func createOrderHandler(db *gorm.DB, articleSvc ArticleService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, ok := requireUser(c)
 		if !ok {
@@ -41,7 +41,7 @@ func createOrderHandler(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
 			return
 		}
-		dto, err := toOrderDto(db, ord, BaseURL())
+		dto, err := toOrderDto(c.Request.Context(), db, articleSvc, ord, BaseURL())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble order"})
 			return
@@ -50,7 +50,7 @@ func createOrderHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func listOrdersHandler(db *gorm.DB) gin.HandlerFunc {
+func listOrdersHandler(db *gorm.DB, articleSvc ArticleService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, ok := requireUser(c)
 		if !ok {
@@ -72,7 +72,7 @@ func listOrdersHandler(db *gorm.DB) gin.HandlerFunc {
 			Size:          pageResult.Size,
 		}
 		for i := range pageResult.Content {
-			dto, err := toOrderDto(db, &pageResult.Content[i], BaseURL())
+			dto, err := toOrderDto(c.Request.Context(), db, articleSvc, &pageResult.Content[i], BaseURL())
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble orders"})
 				return
@@ -83,7 +83,7 @@ func listOrdersHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func getOrderHandler(db *gorm.DB) gin.HandlerFunc {
+func getOrderHandler(db *gorm.DB, articleSvc ArticleService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, ok := requireUser(c)
 		if !ok {
@@ -95,7 +95,7 @@ func getOrderHandler(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusNotFound, gin.H{"detail": "Order not found"})
 			return
 		}
-		dto, err := toOrderDto(db, ord, BaseURL())
+		dto, err := toOrderDto(c.Request.Context(), db, articleSvc, ord, BaseURL())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble order"})
 			return
@@ -104,7 +104,7 @@ func getOrderHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func downloadOrderPDFHandler(db *gorm.DB) gin.HandlerFunc {
+func downloadOrderPDFHandler(db *gorm.DB, articleSvc ArticleService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, ok := requireUser(c)
 		if !ok {
@@ -117,7 +117,7 @@ func downloadOrderPDFHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		// Build DTO for pdf module
-		dto, derr := buildOrderPdfData(db, ord)
+		dto, derr := buildOrderPdfData(c.Request.Context(), articleSvc, db, ord)
 		if derr != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to prepare PDF"})
 			return

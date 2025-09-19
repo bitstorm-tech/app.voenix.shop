@@ -274,6 +274,19 @@ func (s *Service) GetArticle(ctx context.Context, id int) (Article, error) {
 	return s.repo.GetArticle(ctx, id)
 }
 
+// GetArticleSummary returns basic article metadata used by downstream consumers.
+func (s *Service) GetArticleSummary(ctx context.Context, id int) (ArticleResponse, error) {
+	art, err := s.repo.GetArticle(ctx, id)
+	if err != nil {
+		return ArticleResponse{}, err
+	}
+	catName, subName, suppName, err := s.articleNames(ctx, &art)
+	if err != nil {
+		return ArticleResponse{}, err
+	}
+	return toArticleResponse(&art, catName, subName, suppName, nil, nil), nil
+}
+
 func (s *Service) CreateArticle(ctx context.Context, art *Article, mugDetails *MugDetails, shirtDetails *ShirtDetails, cost *CostCalculation, mugVariants []MugVariant, shirtVariants []ShirtVariant) (ArticleDetail, error) {
 	if err := s.validateArticleReferences(ctx, art.CategoryID, art.SubcategoryID, art.SupplierID); err != nil {
 		return ArticleDetail{}, err
@@ -449,6 +462,10 @@ func (s *Service) UpsertShirtDetails(ctx context.Context, details *ShirtDetails)
 
 func (s *Service) GetCostCalculation(ctx context.Context, articleID int) (*CostCalculation, error) {
 	return s.repo.GetCostCalculation(ctx, articleID)
+}
+
+func (s *Service) GetCostCalculationByID(ctx context.Context, id int) (*CostCalculation, error) {
+	return s.repo.GetCostCalculationByID(ctx, id)
 }
 
 func (s *Service) UpsertCostCalculation(ctx context.Context, articleID int, calc *CostCalculation) error {

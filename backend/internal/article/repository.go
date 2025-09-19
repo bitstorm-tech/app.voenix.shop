@@ -70,6 +70,7 @@ type Repository interface {
 	DeleteShirtDetails(ctx context.Context, articleID int) error
 
 	GetCostCalculation(ctx context.Context, articleID int) (*CostCalculation, error)
+	GetCostCalculationByID(ctx context.Context, id int) (*CostCalculation, error)
 	UpsertCostCalculation(ctx context.Context, articleID int, calc *CostCalculation) error
 	DeleteCostCalculation(ctx context.Context, articleID int) error
 

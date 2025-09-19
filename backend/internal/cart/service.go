@@ -1,12 +1,12 @@
 package cart
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 
 	"gorm.io/gorm"
 
-	"voenix/backend/internal/article"
 	"voenix/backend/internal/prompt"
 )
 
@@ -57,22 +57,22 @@ func canonicalizeJSON(s string) string {
 
 // Validation
 
-func validateArticleAndVariant(db *gorm.DB, articleID, variantID int) error {
-	var a article.Article
-	if err := db.First(&a, "id = ?", articleID).Error; err != nil {
+func validateArticleAndVariant(ctx context.Context, articleSvc ArticleService, articleID, variantID int) error {
+	art, err := articleSvc.GetArticle(ctx, articleID)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("article not found")
 		}
 		return err
 	}
-	var v article.MugVariant
-	if err := db.First(&v, "id = ?", variantID).Error; err != nil {
+	variant, err := articleSvc.GetMugVariant(ctx, variantID)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return errors.New("variant not found")
 		}
 		return err
 	}
-	if v.ArticleID != a.ID {
+	if variant.ArticleID != art.ID {
 		return errors.New("variant does not belong to article")
 	}
 	return nil

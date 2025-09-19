@@ -1,6 +1,7 @@
 package cart
 
 import (
+	"context"
 	"encoding/json"
 	"net/http/httptest"
 	"testing"
@@ -13,6 +14,74 @@ import (
 	"voenix/backend/internal/auth"
 	"voenix/backend/internal/prompt"
 )
+
+type stubArticleService struct {
+	db *gorm.DB
+}
+
+func (s *stubArticleService) GetArticleSummary(ctx context.Context, id int) (article.ArticleResponse, error) {
+	var a article.Article
+	if err := s.db.WithContext(ctx).First(&a, "id = ?", id).Error; err != nil {
+		return article.ArticleResponse{}, err
+	}
+	created := a.CreatedAt
+	updated := a.UpdatedAt
+	return article.ArticleResponse{
+		ID:                    a.ID,
+		Name:                  a.Name,
+		DescriptionShort:      a.DescriptionShort,
+		DescriptionLong:       a.DescriptionLong,
+		Active:                a.Active,
+		ArticleType:           a.ArticleType,
+		CategoryID:            a.CategoryID,
+		SubcategoryID:         a.SubcategoryID,
+		SupplierID:            a.SupplierID,
+		SupplierArticleName:   a.SupplierArticleName,
+		SupplierArticleNumber: a.SupplierArticleNumber,
+		CreatedAt:             &created,
+		UpdatedAt:             &updated,
+	}, nil
+}
+
+func (s *stubArticleService) GetArticle(ctx context.Context, id int) (article.Article, error) {
+	var a article.Article
+	if err := s.db.WithContext(ctx).First(&a, "id = ?", id).Error; err != nil {
+		return article.Article{}, err
+	}
+	return a, nil
+}
+
+func (s *stubArticleService) GetMugVariant(ctx context.Context, id int) (article.MugVariant, error) {
+	var v article.MugVariant
+	if err := s.db.WithContext(ctx).First(&v, "id = ?", id).Error; err != nil {
+		return article.MugVariant{}, err
+	}
+	return v, nil
+}
+
+func (s *stubArticleService) GetCostCalculation(ctx context.Context, articleID int) (*article.CostCalculation, error) {
+	var cc article.CostCalculation
+	err := s.db.WithContext(ctx).First(&cc, "article_id = ?", articleID).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &cc, nil
+}
+
+func (s *stubArticleService) GetCostCalculationByID(ctx context.Context, id int) (*article.CostCalculation, error) {
+	var cc article.CostCalculation
+	err := s.db.WithContext(ctx).First(&cc, "id = ?", id).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &cc, nil
+}
 
 func setupCartTestDB(t *testing.T) *gorm.DB {
 	t.Helper()
@@ -99,7 +168,8 @@ func TestAssembleCartDtoIncludesPromptPricing(t *testing.T) {
 		t.Fatalf("load cart: %v", err)
 	}
 
-	dto, err := assembleCartDto(db, &loadedCart)
+	svc := &stubArticleService{db: db}
+	dto, err := assembleCartDto(context.Background(), db, svc, &loadedCart)
 	if err != nil {
 		t.Fatalf("assemble dto: %v", err)
 	}

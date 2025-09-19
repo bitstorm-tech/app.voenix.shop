@@ -10,17 +10,17 @@ import (
 )
 
 // RegisterRoutes mounts user cart routes under /api/user/cart
-func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
+func RegisterRoutes(r *gin.Engine, db *gorm.DB, articleSvc ArticleService) {
 	grp := r.Group("/api/user/cart")
 	grp.Use(auth.RequireRoles(db, "USER", "ADMIN"))
 
-	grp.GET("", getCartHandler(db))
+	grp.GET("", getCartHandler(db, articleSvc))
 	grp.GET("/summary", getCartSummaryHandler(db))
-	grp.POST("/items", addItemHandler(db))
-	grp.PUT("/items/:itemId", updateItemHandler(db))
-	grp.DELETE("/items/:itemId", deleteItemHandler(db))
-	grp.DELETE("", clearCartHandler(db))
-	grp.POST("/refresh-prices", refreshPricesHandler(db))
+	grp.POST("/items", addItemHandler(db, articleSvc))
+	grp.PUT("/items/:itemId", updateItemHandler(db, articleSvc))
+	grp.DELETE("/items/:itemId", deleteItemHandler(db, articleSvc))
+	grp.DELETE("", clearCartHandler(db, articleSvc))
+	grp.POST("/refresh-prices", refreshPricesHandler(db, articleSvc))
 }
 
 // currentUser extracts the authenticated user from context.

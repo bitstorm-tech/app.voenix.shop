@@ -1,6 +1,8 @@
 package order
 
 import (
+	"context"
+
 	"gorm.io/gorm"
 
 	"voenix/backend/internal/article"
@@ -8,7 +10,7 @@ import (
 )
 
 // buildOrderPdfData constructs the pdf.OrderPdfData from Order and related records.
-func buildOrderPdfData(db *gorm.DB, o *Order) (pdf.OrderPdfData, error) {
+func buildOrderPdfData(ctx context.Context, articleSvc ArticleService, db *gorm.DB, o *Order) (pdf.OrderPdfData, error) {
 	out := pdf.OrderPdfData{
 		ID:          o.ID,
 		OrderNumber: &o.OrderNumber,
@@ -30,22 +32,25 @@ func buildOrderPdfData(db *gorm.DB, o *Order) (pdf.OrderPdfData, error) {
 	variants := make(map[int]article.MugVariant)
 
 	for id := range artIDs {
-		var a article.Article
-		if err := db.First(&a, "id = ?", id).Error; err == nil {
-			articles[id] = a
-			// fetch mug details (optional)
-			var md article.MugDetails
-			if err := db.First(&md, "article_id = ?", id).Error; err == nil {
-				mugDetails[id] = md
-			}
+		a, err := articleSvc.GetArticle(ctx, id)
+		if err != nil {
+			return pdf.OrderPdfData{}, err
+		}
+		articles[id] = a
+		md, err := articleSvc.GetMugDetails(ctx, id)
+		if err != nil {
+			return pdf.OrderPdfData{}, err
+		}
+		if md != nil {
+			mugDetails[id] = *md
 		}
 	}
 	for id := range varIDs {
-		var v article.MugVariant
-		_ = db.First(&v, "id = ?", id).Error
-		if v.ID != 0 {
-			variants[id] = v
+		v, err := articleSvc.GetMugVariant(ctx, id)
+		if err != nil {
+			return pdf.OrderPdfData{}, err
 		}
+		variants[id] = v
 	}
 
 	// Preload generated image filenames for any items with GeneratedImageID

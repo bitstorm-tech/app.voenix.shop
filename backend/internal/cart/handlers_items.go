@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func addItemHandler(db *gorm.DB) gin.HandlerFunc {
+func addItemHandler(db *gorm.DB, articleSvc ArticleService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, ok := requireUser(c)
 		if !ok {
@@ -27,7 +27,7 @@ func addItemHandler(db *gorm.DB) gin.HandlerFunc {
 		if req.CustomData == nil {
 			req.CustomData = map[string]any{}
 		}
-		if err := validateArticleAndVariant(db, req.ArticleID, req.VariantID); err != nil {
+		if err := validateArticleAndVariant(c.Request.Context(), articleSvc, req.ArticleID, req.VariantID); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
 			return
 		}
@@ -40,14 +40,14 @@ func addItemHandler(db *gorm.DB) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to load cart"})
 			return
 		}
-		price, err := currentGrossPrice(db, req.ArticleID)
+		price, err := currentGrossPrice(c.Request.Context(), articleSvc, req.ArticleID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch price"})
 			return
 		}
 		promptPriceAtTime := 0
 		if req.PromptID != nil {
-			pp, perr := promptCurrentGrossPrice(db, *req.PromptID)
+			pp, perr := promptCurrentGrossPrice(c.Request.Context(), db, articleSvc, *req.PromptID)
 			if perr != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch prompt price"})
 				return
@@ -79,7 +79,7 @@ func addItemHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		_ = db.Preload("Items", withItemOrder).First(cart, cart.ID).Error
-		dto, err := assembleCartDto(db, cart)
+		dto, err := assembleCartDto(c.Request.Context(), db, articleSvc, cart)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble cart"})
 			return
@@ -88,7 +88,7 @@ func addItemHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func updateItemHandler(db *gorm.DB) gin.HandlerFunc {
+func updateItemHandler(db *gorm.DB, articleSvc ArticleService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, ok := requireUser(c)
 		if !ok {
@@ -137,7 +137,7 @@ func updateItemHandler(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 		_ = db.Preload("Items", withItemOrder).First(cart, cart.ID).Error
-		dto, err := assembleCartDto(db, cart)
+		dto, err := assembleCartDto(c.Request.Context(), db, articleSvc, cart)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble cart"})
 			return
@@ -146,7 +146,7 @@ func updateItemHandler(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func deleteItemHandler(db *gorm.DB) gin.HandlerFunc {
+func deleteItemHandler(db *gorm.DB, articleSvc ArticleService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		u, ok := requireUser(c)
 		if !ok {
@@ -191,7 +191,7 @@ func deleteItemHandler(db *gorm.DB) gin.HandlerFunc {
 			}
 		}
 		_ = db.Preload("Items", withItemOrder).First(cart, cart.ID).Error
-		dto, err := assembleCartDto(db, cart)
+		dto, err := assembleCartDto(c.Request.Context(), db, articleSvc, cart)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble cart"})
 			return

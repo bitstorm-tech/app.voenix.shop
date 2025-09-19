@@ -81,6 +81,7 @@ func TestDownloadOrderPDFHandler_UploadsBeforeResponding(t *testing.T) {
 	db := setupTestDB(t)
 	userID := 500
 	ord := seedOrderForPDF(t, db, userID)
+	svc := &stubArticleService{db: db}
 
 	var calls []ftpCall
 	uploadPDFToFTPSave := uploadPDFToFTP
@@ -109,7 +110,7 @@ func TestDownloadOrderPDFHandler_UploadsBeforeResponding(t *testing.T) {
 	ctx.Set("currentUser", &auth.User{ID: userID})
 	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: ord.ID}}
 
-	handler := downloadOrderPDFHandler(db)
+	handler := downloadOrderPDFHandler(db, svc)
 	handler(ctx)
 
 	if w.Code != http.StatusOK {
@@ -141,6 +142,7 @@ func TestDownloadOrderPDFHandler_MissingConfig(t *testing.T) {
 	db := setupTestDB(t)
 	userID := 42
 	ord := seedOrderForPDF(t, db, userID)
+	svc := &stubArticleService{db: db}
 
 	uploadPDFToFTPSave := uploadPDFToFTP
 	uploadPDFToFTP = func(pdf []byte, server, user, password string, opts *utility.FTPUploadOptions) error {
@@ -159,7 +161,7 @@ func TestDownloadOrderPDFHandler_MissingConfig(t *testing.T) {
 	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: ord.ID}}
 	ctx.Set("currentUser", &auth.User{ID: userID})
 
-	handler := downloadOrderPDFHandler(db)
+	handler := downloadOrderPDFHandler(db, svc)
 	handler(ctx)
 
 	if w.Code != http.StatusInternalServerError {
@@ -179,6 +181,7 @@ func TestDownloadOrderPDFHandler_UploadFailure(t *testing.T) {
 	db := setupTestDB(t)
 	userID := 12
 	ord := seedOrderForPDF(t, db, userID)
+	svc := &stubArticleService{db: db}
 
 	uploadPDFToFTPSave := uploadPDFToFTP
 	uploadPDFToFTP = func(pdf []byte, server, user, password string, opts *utility.FTPUploadOptions) error {
@@ -196,7 +199,7 @@ func TestDownloadOrderPDFHandler_UploadFailure(t *testing.T) {
 	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: ord.ID}}
 	ctx.Set("currentUser", &auth.User{ID: userID})
 
-	handler := downloadOrderPDFHandler(db)
+	handler := downloadOrderPDFHandler(db, svc)
 	handler(ctx)
 
 	if w.Code != http.StatusBadGateway {

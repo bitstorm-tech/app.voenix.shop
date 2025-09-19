@@ -78,30 +78,26 @@ func main() {
 
 	serveFrontend(r)
 
+	// Middlewares
 	requireAdminMiddleware := auth.RequireAdmin(db)
 
-	// Auth routes
-	auth.RegisterRoutes(r, db)
-	// VAT admin routes
-	vat.RegisterRoutes(r, db)
-	// Country public routes
-	country.RegisterRoutes(r, db)
-	// Supplier admin routes
-	supplier.RegisterRoutes(r, db)
-	// Image admin/user routes
-	image.RegisterRoutes(r, db)
-	// AI image routes (admin)
-	ai.RegisterRoutes(r, db)
-	// Prompt module routes (admin + public)
-	prompt.RegisterRoutes(r, db, ai.ProviderLLMIDs())
-	// Article module routes (admin + public)
+	// Repositories
 	articleRepo := articlepostgres.NewRepository(db)
+
+	// Services
 	articleSvc := article.NewService(articleRepo)
+
+	// Routes
+	auth.RegisterRoutes(r, db)
+	vat.RegisterRoutes(r, db)
+	country.RegisterRoutes(r, db)
+	supplier.RegisterRoutes(r, db)
+	image.RegisterRoutes(r, db)
+	ai.RegisterRoutes(r, db)
+	prompt.RegisterRoutes(r, db, ai.ProviderLLMIDs())
 	article.RegisterRoutes(r, requireAdminMiddleware, articleSvc)
-	// Cart routes (user)
-	cart.RegisterRoutes(r, db)
-	// Order routes (user)
-	order.RegisterRoutes(r, db)
+	cart.RegisterRoutes(r, db, articleSvc)
+	order.RegisterRoutes(r, db, articleSvc)
 
 	addr := os.Getenv("ADDR")
 	if addr == "" {
