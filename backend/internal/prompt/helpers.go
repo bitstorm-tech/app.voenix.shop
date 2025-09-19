@@ -110,7 +110,7 @@ func toPromptRead(db *gorm.DB, p *Prompt) PromptRead {
 		}
 	} else if p.PriceID != nil {
 		var pr article.CostCalculation
-		if err := db.First(&pr, "id = ?", *p.PriceID).Error; err == nil {
+		if err := db.Table("prices").First(&pr, "id = ?", *p.PriceID).Error; err == nil {
 			price = &costCalculationRequest{
 				PurchasePriceNet:         pr.PurchasePriceNet,
 				PurchasePriceTax:         pr.PurchasePriceTax,
@@ -212,7 +212,9 @@ func loadPromptWithRelations(db *gorm.DB, id int) (*Prompt, error) {
 	err := db.Where("id = ?", id).
 		Preload("Category").
 		Preload("Subcategory").
-		Preload("Price").
+		Preload("Price", func(tx *gorm.DB) *gorm.DB {
+			return tx.Table("prices")
+		}).
 		Preload("PromptSlotVariantMappings").
 		Preload("PromptSlotVariantMappings.PromptSlotVariant").
 		Preload("PromptSlotVariantMappings.PromptSlotVariant.PromptSlotType").
@@ -231,7 +233,9 @@ func allPromptsWithRelations(db *gorm.DB) ([]Prompt, error) {
 	err := db.
 		Preload("Category").
 		Preload("Subcategory").
-		Preload("Price").
+		Preload("Price", func(tx *gorm.DB) *gorm.DB {
+			return tx.Table("prices")
+		}).
 		Preload("PromptSlotVariantMappings").
 		Preload("PromptSlotVariantMappings.PromptSlotVariant").
 		Preload("PromptSlotVariantMappings.PromptSlotVariant.PromptSlotType").

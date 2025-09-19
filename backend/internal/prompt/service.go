@@ -29,6 +29,10 @@ func newService(db *gorm.DB, allowedLLMs []string) *service {
 	return &service{db: db, allowedLLMs: llmSet}
 }
 
+func (s *service) priceTable(ctx context.Context) *gorm.DB {
+	return s.db.WithContext(ctx).Table("prices")
+}
+
 type conflictError struct{ Detail string }
 
 func (e conflictError) Error() string { return e.Detail }
@@ -441,7 +445,7 @@ func (s *service) createPrompt(ctx context.Context, payload promptCreate) (*Prom
 	} else if payload.PriceID != nil && *payload.PriceID > 0 {
 		// Validate referenced price if provided without calculation
 		var pr article.CostCalculation
-		if err := s.db.WithContext(ctx).First(&pr, "id = ?", *payload.PriceID).Error; err != nil {
+		if err := s.priceTable(ctx).First(&pr, "id = ?", *payload.PriceID).Error; err != nil {
 			return nil, err
 		}
 		if pr.ArticleID != nil {
@@ -511,7 +515,7 @@ func (s *service) updatePrompt(ctx context.Context, id int, payload promptUpdate
 	} else if payload.PriceID != nil && *payload.PriceID > 0 {
 		// Just relink to a provided price id without content changes
 		var pr article.CostCalculation
-		if err := s.db.WithContext(ctx).First(&pr, "id = ?", *payload.PriceID).Error; err != nil {
+		if err := s.priceTable(ctx).First(&pr, "id = ?", *payload.PriceID).Error; err != nil {
 			return nil, err
 		}
 		if pr.ArticleID != nil {
@@ -571,21 +575,21 @@ func (s *service) createOrUpdatePrice(ctx context.Context, priceID *int, req *co
 		row := article.CostCalculation{}
 		// ArticleID left nil for prompt-linked prices
 		s.applyCostCalculation(&row, req)
-		if err := s.db.WithContext(ctx).Create(&row).Error; err != nil {
+		if err := s.priceTable(ctx).Create(&row).Error; err != nil {
 			return 0, err
 		}
 		return row.ID, nil
 	}
 
 	var row article.CostCalculation
-	if err := s.db.WithContext(ctx).First(&row, "id = ?", *priceID).Error; err != nil {
+	if err := s.priceTable(ctx).First(&row, "id = ?", *priceID).Error; err != nil {
 		return 0, err
 	}
 	if row.ArticleID != nil {
 		return 0, conflictError{Detail: "price is already linked to an article"}
 	}
 	s.applyCostCalculation(&row, req)
-	if err := s.db.WithContext(ctx).Save(&row).Error; err != nil {
+	if err := s.priceTable(ctx).Save(&row).Error; err != nil {
 		return 0, err
 	}
 	return row.ID, nil
