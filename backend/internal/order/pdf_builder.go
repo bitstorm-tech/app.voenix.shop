@@ -3,6 +3,7 @@ package order
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 
 	"voenix/backend/internal/article"
@@ -107,7 +108,7 @@ func buildOrderPdfData(ctx context.Context, articleSvc ArticleService, db *gorm.
 		}
 
 		out.Items = append(out.Items, pdf.OrderItemPdfData{
-			ID:                     newUUIDv4(),
+			ID:                     uuid.New().String(),
 			Quantity:               it.Quantity,
 			GeneratedImageFilename: genFilename,
 			Article: pdf.ArticlePdfData{

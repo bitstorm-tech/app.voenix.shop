@@ -2,14 +2,13 @@ package order
 
 import (
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 
 	"voenix/backend/internal/article"
@@ -60,7 +59,7 @@ func CreateOrderFromCart(db *gorm.DB, userID int, req CreateOrderRequest) (*Orde
 	}
 
 	ord := &Order{
-		ID:              newUUIDv4(),
+		ID:              uuid.New().String(),
 		UserID:          userID,
 		CustomerEmail:   req.CustomerEmail,
 		CustomerFirst:   req.CustomerFirstName,
@@ -92,7 +91,7 @@ func CreateOrderFromCart(db *gorm.DB, userID int, req CreateOrderRequest) (*Orde
 	for _, ci := range c.Items {
 		cd := canonicalizeJSON(ci.CustomData)
 		itm := OrderItem{
-			ID:                 newUUIDv4(),
+			ID:                 uuid.New().String(),
 			OrderID:            ord.ID,
 			ArticleID:          ci.ArticleID,
 			VariantID:          ci.VariantID,
@@ -343,18 +342,6 @@ func canonicalizeJSON(s string) string {
 		return "{}"
 	}
 	return string(b)
-}
-
-// UUID and order number generators without external deps
-func newUUIDv4() string {
-	b := make([]byte, 16)
-	_, _ = rand.Read(b)
-	// Set version (4) and variant (RFC 4122)
-	b[6] = (b[6] & 0x0f) | 0x40
-	b[8] = (b[8] & 0x3f) | 0x80
-	// Format 8-4-4-4-12
-	hexs := hex.EncodeToString(b)
-	return fmt.Sprintf("%s-%s-%s-%s-%s", hexs[0:8], hexs[8:12], hexs[12:16], hexs[16:20], hexs[20:32])
 }
 
 func strPtrOrNil(s string) *string {
