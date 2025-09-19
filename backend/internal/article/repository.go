@@ -69,9 +69,9 @@ type Repository interface {
 	UpsertShirtDetails(ctx context.Context, details *ShirtDetails) error
 	DeleteShirtDetails(ctx context.Context, articleID int) error
 
-	GetCostCalculation(ctx context.Context, articleID int) (*CostCalculation, error)
-	GetCostCalculationByID(ctx context.Context, id int) (*CostCalculation, error)
-	UpsertCostCalculation(ctx context.Context, articleID int, calc *CostCalculation) error
+	GetCostCalculation(ctx context.Context, articleID int) (*Price, error)
+	GetCostCalculationByID(ctx context.Context, id int) (*Price, error)
+	UpsertCostCalculation(ctx context.Context, articleID int, calc *Price) error
 	DeleteCostCalculation(ctx context.Context, articleID int) error
 
 	// Listings & helpers

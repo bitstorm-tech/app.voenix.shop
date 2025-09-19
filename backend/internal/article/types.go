@@ -42,7 +42,7 @@ type Article struct {
 	SupplierArticleNumber *string
 	MugVariants           []MugVariant
 	ShirtVariants         []ShirtVariant
-	CostCalculation       *CostCalculation
+	CostCalculation       *Price
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
 }
@@ -99,7 +99,7 @@ type ShirtDetails struct {
 	UpdatedAt      time.Time
 }
 
-type CostCalculation struct {
+type Price struct {
 	ID        int
 	ArticleID *int
 	Article   *Article

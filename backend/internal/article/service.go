@@ -190,7 +190,7 @@ type ArticleDetail struct {
 	ArticleAdminItem
 	MugDetails      *MugDetails
 	ShirtDetails    *ShirtDetails
-	CostCalculation *CostCalculation
+	CostCalculation *Price
 }
 
 func (s *Service) ListArticles(ctx context.Context, opts ArticleListOptions) ([]ArticleAdminItem, int64, error) {
@@ -287,7 +287,7 @@ func (s *Service) GetArticleSummary(ctx context.Context, id int) (ArticleRespons
 	return toArticleResponse(&art, catName, subName, suppName, nil, nil), nil
 }
 
-func (s *Service) CreateArticle(ctx context.Context, art *Article, mugDetails *MugDetails, shirtDetails *ShirtDetails, cost *CostCalculation, mugVariants []MugVariant, shirtVariants []ShirtVariant) (ArticleDetail, error) {
+func (s *Service) CreateArticle(ctx context.Context, art *Article, mugDetails *MugDetails, shirtDetails *ShirtDetails, cost *Price, mugVariants []MugVariant, shirtVariants []ShirtVariant) (ArticleDetail, error) {
 	if err := s.validateArticleReferences(ctx, art.CategoryID, art.SubcategoryID, art.SupplierID); err != nil {
 		return ArticleDetail{}, err
 	}
@@ -303,7 +303,7 @@ func (s *Service) CreateArticle(ctx context.Context, art *Article, mugDetails *M
 	return s.GetArticleDetail(ctx, art.ID)
 }
 
-func (s *Service) UpdateArticle(ctx context.Context, art *Article, mugDetails *MugDetails, shirtDetails *ShirtDetails, cost *CostCalculation) (ArticleDetail, error) {
+func (s *Service) UpdateArticle(ctx context.Context, art *Article, mugDetails *MugDetails, shirtDetails *ShirtDetails, cost *Price) (ArticleDetail, error) {
 	if err := s.validateArticleReferences(ctx, art.CategoryID, art.SubcategoryID, art.SupplierID); err != nil {
 		return ArticleDetail{}, err
 	}
@@ -460,15 +460,15 @@ func (s *Service) UpsertShirtDetails(ctx context.Context, details *ShirtDetails)
 	return s.repo.UpsertShirtDetails(ctx, details)
 }
 
-func (s *Service) GetCostCalculation(ctx context.Context, articleID int) (*CostCalculation, error) {
+func (s *Service) GetCostCalculation(ctx context.Context, articleID int) (*Price, error) {
 	return s.repo.GetCostCalculation(ctx, articleID)
 }
 
-func (s *Service) GetCostCalculationByID(ctx context.Context, id int) (*CostCalculation, error) {
+func (s *Service) GetCostCalculationByID(ctx context.Context, id int) (*Price, error) {
 	return s.repo.GetCostCalculationByID(ctx, id)
 }
 
-func (s *Service) UpsertCostCalculation(ctx context.Context, articleID int, calc *CostCalculation) error {
+func (s *Service) UpsertCostCalculation(ctx context.Context, articleID int, calc *Price) error {
 	if calc == nil {
 		return nil
 	}

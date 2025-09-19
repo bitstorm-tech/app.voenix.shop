@@ -42,7 +42,7 @@ type articleRow struct {
 	SupplierArticleNumber *string                `gorm:"column:supplier_article_number;size:100"`
 	MugVariants           []mugVariantRow        `gorm:"foreignKey:ArticleID;references:ID"`
 	ShirtVariants         []shirtVariantRow      `gorm:"foreignKey:ArticleID;references:ID"`
-	CostCalculation       *costCalculationRow    `gorm:"foreignKey:ArticleID;references:ID"`
+	CostCalculation       *priceRow              `gorm:"foreignKey:ArticleID;references:ID"`
 	CreatedAt             time.Time
 	UpdatedAt             time.Time
 }
@@ -109,7 +109,7 @@ type shirtDetailsRow struct {
 
 func (shirtDetailsRow) TableName() string { return "article_shirt_details" }
 
-type costCalculationRow struct {
+type priceRow struct {
 	ID        int  `gorm:"primaryKey"`
 	ArticleID *int `gorm:"uniqueIndex;column:article_id"`
 	Article   *articleRow
@@ -149,4 +149,4 @@ type costCalculationRow struct {
 	UpdatedAt                time.Time
 }
 
-func (costCalculationRow) TableName() string { return "prices" }
+func (priceRow) TableName() string { return "prices" }

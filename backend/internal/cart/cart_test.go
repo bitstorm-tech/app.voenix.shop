@@ -59,8 +59,8 @@ func (s *stubArticleService) GetMugVariant(ctx context.Context, id int) (article
 	return v, nil
 }
 
-func (s *stubArticleService) GetCostCalculation(ctx context.Context, articleID int) (*article.CostCalculation, error) {
-	var cc article.CostCalculation
+func (s *stubArticleService) GetCostCalculation(ctx context.Context, articleID int) (*article.Price, error) {
+	var cc article.Price
 	err := s.db.WithContext(ctx).First(&cc, "article_id = ?", articleID).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -71,8 +71,8 @@ func (s *stubArticleService) GetCostCalculation(ctx context.Context, articleID i
 	return &cc, nil
 }
 
-func (s *stubArticleService) GetCostCalculationByID(ctx context.Context, id int) (*article.CostCalculation, error) {
-	var cc article.CostCalculation
+func (s *stubArticleService) GetCostCalculationByID(ctx context.Context, id int) (*article.Price, error) {
+	var cc article.Price
 	err := s.db.WithContext(ctx).First(&cc, "id = ?", id).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -94,7 +94,7 @@ func setupCartTestDB(t *testing.T) *gorm.DB {
 		&article.ArticleCategory{},
 		&article.ArticleSubCategory{},
 		&article.MugVariant{},
-		&article.CostCalculation{},
+		&article.Price{},
 		&prompt.Prompt{},
 		&cartpostgres.CartRow{},
 		&cartpostgres.CartItemRow{},

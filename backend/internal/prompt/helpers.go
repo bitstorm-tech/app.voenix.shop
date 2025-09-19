@@ -109,7 +109,7 @@ func toPromptRead(db *gorm.DB, p *Prompt) PromptRead {
 			SalesActiveRow:           pr.SalesActiveRow,
 		}
 	} else if p.PriceID != nil {
-		var pr article.CostCalculation
+		var pr article.Price
 		if err := db.Table("prices").First(&pr, "id = ?", *p.PriceID).Error; err == nil {
 			price = &costCalculationRequest{
 				PurchasePriceNet:         pr.PurchasePriceNet,

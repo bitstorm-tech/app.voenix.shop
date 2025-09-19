@@ -569,11 +569,11 @@ func mapCreateShirtDetails(req *createShirtDetailsRequest) *ShirtDetails {
 	}
 }
 
-func mapCostCalculation(req *costCalculationRequest) *CostCalculation {
+func mapCostCalculation(req *costCalculationRequest) *Price {
 	if req == nil {
 		return nil
 	}
-	return &CostCalculation{
+	return &Price{
 		PurchasePriceNet:         req.PurchasePriceNet,
 		PurchasePriceTax:         req.PurchasePriceTax,
 		PurchasePriceGross:       req.PurchasePriceGross,

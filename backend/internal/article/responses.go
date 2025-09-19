@@ -83,7 +83,7 @@ func toArticleShirtDetailsResponse(d *ShirtDetails) *articleShirtDetailsResponse
 	}
 }
 
-func toCostCalculationResponse(c *CostCalculation) *costCalculationResponse {
+func toCostCalculationResponse(c *Price) *costCalculationResponse {
 	if c == nil {
 		return nil
 	}

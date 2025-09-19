@@ -444,7 +444,7 @@ func (s *service) createPrompt(ctx context.Context, payload promptCreate) (*Prom
 		row.PriceID = &priceID
 	} else if payload.PriceID != nil && *payload.PriceID > 0 {
 		// Validate referenced price if provided without calculation
-		var pr article.CostCalculation
+		var pr article.Price
 		if err := s.priceTable(ctx).First(&pr, "id = ?", *payload.PriceID).Error; err != nil {
 			return nil, err
 		}
@@ -514,7 +514,7 @@ func (s *service) updatePrompt(ctx context.Context, id int, payload promptUpdate
 		existing.PriceID = &priceID
 	} else if payload.PriceID != nil && *payload.PriceID > 0 {
 		// Just relink to a provided price id without content changes
-		var pr article.CostCalculation
+		var pr article.Price
 		if err := s.priceTable(ctx).First(&pr, "id = ?", *payload.PriceID).Error; err != nil {
 			return nil, err
 		}
@@ -572,7 +572,7 @@ func (s *service) createOrUpdatePrice(ctx context.Context, priceID *int, req *co
 	}
 
 	if priceID == nil {
-		row := article.CostCalculation{}
+		row := article.Price{}
 		// ArticleID left nil for prompt-linked prices
 		s.applyCostCalculation(&row, req)
 		if err := s.priceTable(ctx).Create(&row).Error; err != nil {
@@ -581,7 +581,7 @@ func (s *service) createOrUpdatePrice(ctx context.Context, priceID *int, req *co
 		return row.ID, nil
 	}
 
-	var row article.CostCalculation
+	var row article.Price
 	if err := s.priceTable(ctx).First(&row, "id = ?", *priceID).Error; err != nil {
 		return 0, err
 	}
@@ -595,7 +595,7 @@ func (s *service) createOrUpdatePrice(ctx context.Context, priceID *int, req *co
 	return row.ID, nil
 }
 
-func (s *service) applyCostCalculation(row *article.CostCalculation, req *costCalculationRequest) {
+func (s *service) applyCostCalculation(row *article.Price, req *costCalculationRequest) {
 	row.PurchasePriceNet = req.PurchasePriceNet
 	row.PurchasePriceTax = req.PurchasePriceTax
 	row.PurchasePriceGross = req.PurchasePriceGross

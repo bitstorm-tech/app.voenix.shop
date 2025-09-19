@@ -268,7 +268,7 @@ func (r *Repository) DeleteArticle(ctx context.Context, id int) error {
 	if err := tx.Delete(&shirtDetailsRow{}, "article_id = ?", id).Error; err != nil {
 		return err
 	}
-	if err := tx.Delete(&costCalculationRow{}, "article_id = ?", id).Error; err != nil {
+	if err := tx.Delete(&priceRow{}, "article_id = ?", id).Error; err != nil {
 		return err
 	}
 	return tx.Delete(&articleRow{}, id).Error
@@ -462,8 +462,8 @@ func (r *Repository) DeleteShirtDetails(ctx context.Context, articleID int) erro
 	return r.db.WithContext(ctx).Delete(&shirtDetailsRow{}, "article_id = ?", articleID).Error
 }
 
-func (r *Repository) GetCostCalculation(ctx context.Context, articleID int) (*article.CostCalculation, error) {
-	var row costCalculationRow
+func (r *Repository) GetCostCalculation(ctx context.Context, articleID int) (*article.Price, error) {
+	var row priceRow
 	err := r.db.WithContext(ctx).First(&row, "article_id = ?", articleID).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -475,8 +475,8 @@ func (r *Repository) GetCostCalculation(ctx context.Context, articleID int) (*ar
 	return &res, nil
 }
 
-func (r *Repository) GetCostCalculationByID(ctx context.Context, id int) (*article.CostCalculation, error) {
-	var row costCalculationRow
+func (r *Repository) GetCostCalculationByID(ctx context.Context, id int) (*article.Price, error) {
+	var row priceRow
 	err := r.db.WithContext(ctx).First(&row, "id = ?", id).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, nil
@@ -488,13 +488,13 @@ func (r *Repository) GetCostCalculationByID(ctx context.Context, id int) (*artic
 	return &res, nil
 }
 
-func (r *Repository) UpsertCostCalculation(ctx context.Context, articleID int, calc *article.CostCalculation) error {
+func (r *Repository) UpsertCostCalculation(ctx context.Context, articleID int, calc *article.Price) error {
 	if calc == nil {
 		return nil
 	}
 	row := fromCostCalculation(calc)
 	row.ArticleID = &articleID
-	var existing costCalculationRow
+	var existing priceRow
 	err := r.db.WithContext(ctx).First(&existing, "article_id = ?", articleID).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		if err := r.db.WithContext(ctx).Create(row).Error; err != nil {
@@ -522,7 +522,7 @@ func (r *Repository) UpsertCostCalculation(ctx context.Context, articleID int, c
 }
 
 func (r *Repository) DeleteCostCalculation(ctx context.Context, articleID int) error {
-	return r.db.WithContext(ctx).Delete(&costCalculationRow{}, "article_id = ?", articleID).Error
+	return r.db.WithContext(ctx).Delete(&priceRow{}, "article_id = ?", articleID).Error
 }
 
 // --- Listings & helpers ---
@@ -761,8 +761,8 @@ func fromShirtDetails(d *article.ShirtDetails) *shirtDetailsRow {
 	}
 }
 
-func toCostCalculation(row *costCalculationRow) article.CostCalculation {
-	return article.CostCalculation{
+func toCostCalculation(row *priceRow) article.Price {
+	return article.Price{
 		ID:                       row.ID,
 		ArticleID:                row.ArticleID,
 		PurchasePriceNet:         row.PurchasePriceNet,
@@ -799,11 +799,11 @@ func toCostCalculation(row *costCalculationRow) article.CostCalculation {
 	}
 }
 
-func fromCostCalculation(c *article.CostCalculation) *costCalculationRow {
+func fromCostCalculation(c *article.Price) *priceRow {
 	if c == nil {
 		return nil
 	}
-	return &costCalculationRow{
+	return &priceRow{
 		ID:                       c.ID,
 		ArticleID:                c.ArticleID,
 		PurchasePriceNet:         c.PurchasePriceNet,

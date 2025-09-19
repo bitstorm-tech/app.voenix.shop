@@ -18,7 +18,7 @@ func setupTestDB(t *testing.T) *gorm.DB {
 	}
 	// Migrate minimal models used
 	if err := db.AutoMigrate(
-		&article.ArticleCategory{}, &article.ArticleSubCategory{}, &article.Article{}, &article.MugVariant{}, &article.ShirtVariant{}, &article.MugDetails{}, &article.ShirtDetails{}, &article.CostCalculation{},
+		&article.ArticleCategory{}, &article.ArticleSubCategory{}, &article.Article{}, &article.MugVariant{}, &article.ShirtVariant{}, &article.MugDetails{}, &article.ShirtDetails{}, &article.Price{},
 		&cart.Cart{}, &cart.CartItem{},
 		&Order{}, &OrderItem{},
 	); err != nil {
