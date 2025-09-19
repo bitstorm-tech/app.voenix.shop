@@ -105,7 +105,7 @@ func setupCartTestDB(t *testing.T) *gorm.DB {
 	return db
 }
 
-func TestAssembleCartDtoIncludesPromptPricing(t *testing.T) {
+func TestCartResponseIncludesPromptPricing(t *testing.T) {
 	db := setupCartTestDB(t)
 
 	art := article.Article{ID: 1, Name: "Mug", DescriptionShort: "short", DescriptionLong: "long", Active: true, ArticleType: article.ArticleTypeMug}
@@ -164,7 +164,11 @@ func TestAssembleCartDtoIncludesPromptPricing(t *testing.T) {
 	}
 
 	svc := cartpkg.NewService(repo, &stubArticleService{db: db})
-	dto, err := svc.GetCart(context.Background(), user.ID)
+	detail, err := svc.GetCart(context.Background(), user.ID)
+	if err != nil {
+		t.Fatalf("load cart: %v", err)
+	}
+	dto, err := svc.ToCartResponse(context.Background(), detail)
 	if err != nil {
 		t.Fatalf("assemble dto: %v", err)
 	}
@@ -177,8 +181,8 @@ func TestAssembleCartDtoIncludesPromptPricing(t *testing.T) {
 		t.Fatalf("total item count = %d", dto.TotalItemCount)
 	}
 
-	var promptItem *cartpkg.CartItemDto
-	var plainItem *cartpkg.CartItemDto
+	var promptItem *cartpkg.CartItemResponse
+	var plainItem *cartpkg.CartItemResponse
 	for i := range dto.Items {
 		it := dto.Items[i]
 		if it.PromptID != nil {

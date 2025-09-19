@@ -8,14 +8,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"gorm.io/gorm"
 
 	"voenix/backend/internal/article"
 	"voenix/backend/internal/cart"
-	img "voenix/backend/internal/image"
 )
 
 const (
@@ -303,42 +301,19 @@ func loadArticleResponse(ctx context.Context, articleSvc ArticleService, id int)
 }
 
 // loadMugVariantDto replicates cart.loadMugVariantDto
-func loadMugVariantDto(ctx context.Context, articleSvc ArticleService, id int) (*cart.MugVariantDto, error) {
+func loadMugVariantDto(ctx context.Context, articleSvc ArticleService, id int) (*article.MugVariant, error) {
 	v, err := articleSvc.GetMugVariant(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	url := publicMugVariantExampleURL(v.ExampleImageFilename)
-	return &cart.MugVariantDto{
-		ID:                    v.ID,
-		ArticleID:             v.ArticleID,
-		ColorCode:             v.OutsideColorCode,
-		ExampleImageURL:       strPtr(url),
-		SupplierArticleNumber: v.ArticleVariantNumber,
-		IsDefault:             v.IsDefault,
-		ExampleImageFilename:  v.ExampleImageFilename,
+	return &article.MugVariant{
+		ID:                   v.ID,
+		ArticleID:            v.ArticleID,
+		OutsideColorCode:     v.OutsideColorCode,
+		ArticleVariantNumber: v.ArticleVariantNumber,
+		IsDefault:            v.IsDefault,
+		ExampleImageFilename: v.ExampleImageFilename,
 	}, nil
-}
-
-func publicMugVariantExampleURL(filename *string) string {
-	if filename == nil || *filename == "" {
-		return ""
-	}
-	if loc, err := img.NewStorageLocations(); err == nil {
-		dir := loc.MugVariantExample()
-		if rel, rerr := filepath.Rel(loc.Root, dir); rerr == nil {
-			relURL := filepath.ToSlash(rel)
-			return "/" + relURL + "/" + filepath.Base(*filename)
-		}
-	}
-	return "/public/images/articles/mugs/variant-example-images/" + filepath.Base(*filename)
-}
-
-func strPtr(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
 }
 
 func parseJSONMap(s string) map[string]any {

@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"voenix/backend/internal/article"
-	"voenix/backend/internal/cart"
 )
 
 // Requests
@@ -34,7 +33,7 @@ type CreateOrderRequest struct {
 type OrderItemDto struct {
 	ID                     string                  `json:"id"`
 	Article                article.ArticleResponse `json:"article"`
-	Variant                *cart.MugVariantDto     `json:"variant"`
+	Variant                *article.MugVariant     `json:"variant"`
 	Quantity               int                     `json:"quantity"`
 	PricePerItem           int64                   `json:"pricePerItem"`
 	TotalPrice             int64                   `json:"totalPrice"`

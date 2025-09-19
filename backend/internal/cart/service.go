@@ -35,21 +35,21 @@ func NewService(repo Repository, articleSvc ArticleService) *Service {
 	return &Service{repo: repo, articleSvc: articleSvc}
 }
 
-func (s *Service) GetCart(ctx context.Context, userID int) (*CartDto, error) {
+func (s *Service) GetCart(ctx context.Context, userID int) (*CartDetail, error) {
 	cart, err := s.repo.GetOrCreateActiveCart(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	return s.prepareCartResponse(ctx, cart)
+	return s.buildCartDetail(ctx, cart)
 }
 
-func (s *Service) GetCartSummary(ctx context.Context, userID int) (CartSummaryDto, error) {
+func (s *Service) GetCartSummary(ctx context.Context, userID int) (CartSummary, error) {
 	cart, err := s.repo.LoadActiveCart(ctx, userID)
 	if err != nil {
-		return CartSummaryDto{}, err
+		return CartSummary{}, err
 	}
 	if cart == nil || len(cart.Items) == 0 {
-		return CartSummaryDto{ItemCount: 0, TotalPrice: 0, HasItems: false}, nil
+		return CartSummary{ItemCount: 0, TotalPrice: 0, HasItems: false}, nil
 	}
 	itemCount := 0
 	total := 0
@@ -58,67 +58,67 @@ func (s *Service) GetCartSummary(ctx context.Context, userID int) (CartSummaryDt
 		itemCount += it.Quantity
 		total += (it.PriceAtTime + it.PromptPriceAtTime) * it.Quantity
 	}
-	return CartSummaryDto{ItemCount: itemCount, TotalPrice: total, HasItems: itemCount > 0}, nil
+	return CartSummary{ItemCount: itemCount, TotalPrice: total, HasItems: itemCount > 0}, nil
 }
 
-func (s *Service) AddItem(ctx context.Context, userID int, req AddToCartRequest) (*CartDto, error) {
-	quantity := req.Quantity
+func (s *Service) AddItem(ctx context.Context, userID int, input AddItemInput) (*CartDetail, error) {
+	quantity := input.Quantity
 	if quantity <= 0 {
 		quantity = 1
 	}
-	if req.CustomData == nil {
-		req.CustomData = map[string]any{}
+	if input.CustomData == nil {
+		input.CustomData = map[string]any{}
 	}
-	if err := validateArticleAndVariant(ctx, s.articleSvc, req.ArticleID, req.VariantID); err != nil {
+	if err := validateArticleAndVariant(ctx, s.articleSvc, input.ArticleID, input.VariantID); err != nil {
 		return nil, err
 	}
-	if err := validatePromptIfProvided(ctx, s.repo, req.PromptID); err != nil {
+	if err := validatePromptIfProvided(ctx, s.repo, input.PromptID); err != nil {
 		return nil, err
 	}
 	cart, err := s.repo.GetOrCreateActiveCart(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
-	price, err := currentGrossPrice(ctx, s.articleSvc, req.ArticleID)
+	price, err := currentGrossPrice(ctx, s.articleSvc, input.ArticleID)
 	if err != nil {
 		return nil, err
 	}
 	promptPriceAtTime := 0
-	if req.PromptID != nil {
-		promptPriceAtTime, err = promptCurrentGrossPrice(ctx, s.repo, s.articleSvc, *req.PromptID)
+	if input.PromptID != nil {
+		promptPriceAtTime, err = promptCurrentGrossPrice(ctx, s.repo, s.articleSvc, *input.PromptID)
 		if err != nil {
 			return nil, err
 		}
 	}
 	cdStr := "{}"
-	if len(req.CustomData) > 0 {
-		if b, err := json.Marshal(req.CustomData); err == nil {
+	if len(input.CustomData) > 0 {
+		if b, err := json.Marshal(input.CustomData); err == nil {
 			cdStr = string(b)
 		}
 	}
 	item := CartItem{
 		CartID:              cart.ID,
-		ArticleID:           req.ArticleID,
-		VariantID:           req.VariantID,
+		ArticleID:           input.ArticleID,
+		VariantID:           input.VariantID,
 		Quantity:            quantity,
 		PriceAtTime:         price,
 		OriginalPrice:       price,
 		PromptPriceAtTime:   promptPriceAtTime,
 		PromptOriginalPrice: promptPriceAtTime,
 		CustomData:          cdStr,
-		GeneratedImageID:    req.GeneratedImageID,
-		PromptID:            req.PromptID,
+		GeneratedImageID:    input.GeneratedImageID,
+		PromptID:            input.PromptID,
 	}
 	mergeOrAppendItem(cart, item)
 	saved, err := s.repo.SaveCart(ctx, *cart)
 	if err != nil {
 		return nil, err
 	}
-	return s.prepareCartResponse(ctx, saved)
+	return s.buildCartDetail(ctx, saved)
 }
 
-func (s *Service) UpdateItemQuantity(ctx context.Context, userID, itemID, quantity int) (*CartDto, error) {
-	if quantity <= 0 {
+func (s *Service) UpdateItemQuantity(ctx context.Context, userID int, input UpdateItemQuantityInput) (*CartDetail, error) {
+	if input.Quantity <= 0 {
 		return nil, newValidationError("quantity must be at least 1")
 	}
 	cart, err := s.repo.LoadActiveCart(ctx, userID)
@@ -130,7 +130,7 @@ func (s *Service) UpdateItemQuantity(ctx context.Context, userID, itemID, quanti
 	}
 	found := false
 	for i := range cart.Items {
-		if cart.Items[i].ID == itemID {
+		if cart.Items[i].ID == input.ItemID {
 			found = true
 			break
 		}
@@ -138,7 +138,7 @@ func (s *Service) UpdateItemQuantity(ctx context.Context, userID, itemID, quanti
 	if !found {
 		return nil, ErrCartItemNotFound
 	}
-	updated, err := s.repo.UpdateItemQuantity(ctx, cart.ID, itemID, quantity)
+	updated, err := s.repo.UpdateItemQuantity(ctx, cart.ID, input.ItemID, input.Quantity)
 	if err != nil {
 		return nil, err
 	}
@@ -149,10 +149,10 @@ func (s *Service) UpdateItemQuantity(ctx context.Context, userID, itemID, quanti
 	if err != nil {
 		return nil, err
 	}
-	return s.prepareCartResponse(ctx, refreshed)
+	return s.buildCartDetail(ctx, refreshed)
 }
 
-func (s *Service) DeleteItem(ctx context.Context, userID, itemID int) (*CartDto, error) {
+func (s *Service) DeleteItem(ctx context.Context, userID, itemID int) (*CartDetail, error) {
 	cart, err := s.repo.LoadActiveCart(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -171,10 +171,10 @@ func (s *Service) DeleteItem(ctx context.Context, userID, itemID int) (*CartDto,
 	if err != nil {
 		return nil, err
 	}
-	return s.prepareCartResponse(ctx, refreshed)
+	return s.buildCartDetail(ctx, refreshed)
 }
 
-func (s *Service) ClearCart(ctx context.Context, userID int) (*CartDto, error) {
+func (s *Service) ClearCart(ctx context.Context, userID int) (*CartDetail, error) {
 	cart, err := s.repo.LoadActiveCart(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -189,10 +189,10 @@ func (s *Service) ClearCart(ctx context.Context, userID int) (*CartDto, error) {
 	if err != nil {
 		return nil, err
 	}
-	return s.prepareCartResponse(ctx, refreshed)
+	return s.buildCartDetail(ctx, refreshed)
 }
 
-func (s *Service) RefreshPrices(ctx context.Context, userID int) (*CartDto, error) {
+func (s *Service) RefreshPrices(ctx context.Context, userID int) (*CartDetail, error) {
 	cart, err := s.repo.LoadActiveCart(ctx, userID)
 	if err != nil {
 		return nil, err
@@ -223,16 +223,16 @@ func (s *Service) RefreshPrices(ctx context.Context, userID int) (*CartDto, erro
 		}
 	}
 	if !changed {
-		return s.prepareCartResponse(ctx, cart)
+		return s.buildCartDetail(ctx, cart)
 	}
 	saved, err := s.repo.SaveCart(ctx, *cart)
 	if err != nil {
 		return nil, err
 	}
-	return s.prepareCartResponse(ctx, saved)
+	return s.buildCartDetail(ctx, saved)
 }
 
-func (s *Service) prepareCartResponse(ctx context.Context, cart *Cart) (*CartDto, error) {
+func (s *Service) buildCartDetail(ctx context.Context, cart *Cart) (*CartDetail, error) {
 	generatedImageIDs := make([]int, 0, len(cart.Items))
 	promptIDs := make([]int, 0, len(cart.Items))
 	seenPrompt := make(map[int]struct{}, len(cart.Items))
@@ -256,7 +256,19 @@ func (s *Service) prepareCartResponse(ctx context.Context, cart *Cart) (*CartDto
 	if err != nil {
 		return nil, err
 	}
-	return assembleCartDto(ctx, s.articleSvc, cart, generated, titles)
+	return &CartDetail{
+		Cart:                    cart,
+		GeneratedImageFilenames: generated,
+		PromptTitles:            titles,
+	}, nil
+}
+
+// ToCartResponse converts a cart detail into an API response structure.
+func (s *Service) ToCartResponse(ctx context.Context, detail *CartDetail) (*CartResponse, error) {
+	if detail == nil || detail.Cart == nil {
+		return nil, nil
+	}
+	return buildCartResponse(ctx, s.articleSvc, detail.Cart, detail.GeneratedImageFilenames, detail.PromptTitles)
 }
 
 // mergeOrAppendItem merges quantity if an item with same articleId, variantId and customData exists; otherwise appends.

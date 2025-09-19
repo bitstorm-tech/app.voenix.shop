@@ -8,15 +8,15 @@ import (
 	img "voenix/backend/internal/image"
 )
 
-// assembleCartDto converts a Cart+Items into a response DTO.
-func assembleCartDto(
+// buildCartResponse converts a Cart and related lookup data into an API response.
+func buildCartResponse(
 	ctx context.Context,
 	articleSvc ArticleService,
 	c *Cart,
 	generatedImageFilenames map[int]string,
 	promptTitles map[int]string,
-) (*CartDto, error) {
-	items := make([]CartItemDto, 0, len(c.Items))
+) (*CartResponse, error) {
+	items := make([]CartItemResponse, 0, len(c.Items))
 	totalCount := 0
 	totalPrice := 0
 	for i := range c.Items {
@@ -25,7 +25,7 @@ func assembleCartDto(
 		if err != nil {
 			return nil, err
 		}
-		mv, _ := loadMugVariantDto(ctx, articleSvc, ci.VariantID)
+		mv, _ := loadMugVariantResponse(ctx, articleSvc, ci.VariantID)
 		cd := parseJSONMap(ci.CustomData)
 		var genFilename *string
 		if ci.GeneratedImageID != nil && generatedImageFilenames != nil {
@@ -48,7 +48,7 @@ func assembleCartDto(
 				promptTitle = &t
 			}
 		}
-		item := CartItemDto{
+		item := CartItemResponse{
 			ID:                     ci.ID,
 			Article:                art,
 			Variant:                mv,
@@ -75,7 +75,7 @@ func assembleCartDto(
 		totalCount += ci.Quantity
 		totalPrice += item.TotalPrice
 	}
-	dto := &CartDto{
+	dto := &CartResponse{
 		ID:             c.ID,
 		UserID:         c.UserID,
 		Status:         string(c.Status),
@@ -100,14 +100,14 @@ func loadArticleResponse(ctx context.Context, articleSvc ArticleService, id int)
 	return resp, nil
 }
 
-// loadMugVariantDto builds a simplified variant DTO for cart.
-func loadMugVariantDto(ctx context.Context, articleSvc ArticleService, id int) (*MugVariantDto, error) {
+// loadMugVariantResponse builds a simplified variant response for cart.
+func loadMugVariantResponse(ctx context.Context, articleSvc ArticleService, id int) (*MugVariantResponse, error) {
 	v, err := articleSvc.GetMugVariant(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 	url := publicMugVariantExampleURL(v.ExampleImageFilename)
-	return &MugVariantDto{
+	return &MugVariantResponse{
 		ID:                    v.ID,
 		ArticleID:             v.ArticleID,
 		ColorCode:             v.OutsideColorCode,
