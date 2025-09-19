@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // Responses for public mug endpoints
@@ -39,39 +38,44 @@ type publicMugResponse struct {
 	Variants              []publicMugVariantResponse `json:"variants"`
 }
 
-func registerPublicMugRoutes(r *gin.Engine, db *gorm.DB) {
+func registerPublicMugRoutes(r *gin.Engine, svc *Service) {
 	grp := r.Group("/api/mugs")
 
 	grp.GET("", func(c *gin.Context) {
-		var mugs []Article
-		if err := db.Where("article_type = ? AND active = ?", ArticleTypeMug, true).Order("id desc").Find(&mugs).Error; err != nil {
+		mugs, err := svc.ListMugArticles(c.Request.Context(), true, nil)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch mugs"})
 			return
 		}
 		out := make([]publicMugResponse, 0, len(mugs))
 		for i := range mugs {
 			a := mugs[i]
-			// Load mug details
-			var md MugDetails
-			if err := db.First(&md, "article_id = ?", a.ID).Error; err != nil {
-				// skip mugs without details
+			md, err := svc.GetMugDetails(c.Request.Context(), a.ID)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch mug details"})
+				return
+			}
+			if md == nil {
 				continue
 			}
-			// Load only active variants
-			var vs []MugVariant
-			_ = db.Where("article_id = ? AND active = ?", a.ID, true).Order("id asc").Find(&vs).Error
+			vs, err := svc.ListMugVariants(c.Request.Context(), a.ID, true)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch variants"})
+				return
+			}
 			def := ""
 			if dv := defaultMugVariant(vs); dv != nil {
 				def = publicMugVariantExampleURL(dv.ExampleImageFilename)
 			}
-			// price in euros: salesTotalGross is in cents
-			var cc CostCalculation
-			_ = db.First(&cc, "article_id = ?", a.ID).Error
-			price := 0.0
-			if cc.ID != 0 {
-				price = float64(cc.SalesTotalGross) / 100.0
+			calc, err := svc.GetCostCalculation(c.Request.Context(), a.ID)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch pricing"})
+				return
 			}
-			// variants mapping
+			price := 0.0
+			if calc != nil && calc.SalesTotalGross != 0 {
+				price = float64(calc.SalesTotalGross) / 100.0
+			}
 			variants := make([]publicMugVariantResponse, 0, len(vs))
 			for j := range vs {
 				v := vs[j]
@@ -89,12 +93,11 @@ func registerPublicMugRoutes(r *gin.Engine, db *gorm.DB) {
 					UpdatedAt:            timePtr(v.UpdatedAt),
 				})
 			}
-			imageURL := def
 			out = append(out, publicMugResponse{
 				ID:                    a.ID,
 				Name:                  a.Name,
 				Price:                 price,
-				Image:                 strPtrOrNil(imageURL),
+				Image:                 strPtrOrNil(def),
 				FillingQuantity:       md.FillingQuantity,
 				DescriptionShort:      &a.DescriptionShort,
 				DescriptionLong:       &a.DescriptionLong,

@@ -1,16 +1,13 @@
 package article
 
-import (
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-)
+import "github.com/gin-gonic/gin"
 
 // RegisterRoutes mounts admin + public article routes.
-func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
-	registerAdminCategoryRoutes(r, db)
-	registerAdminSubCategoryRoutes(r, db)
-	registerAdminArticleRoutes(r, db)
-	registerAdminMugVariantRoutes(r, db)
-	registerAdminShirtVariantRoutes(r, db)
-	registerPublicMugRoutes(r, db)
+func RegisterRoutes(r *gin.Engine, adminMiddleware gin.HandlerFunc, svc *Service) {
+	registerAdminCategoryRoutes(r, adminMiddleware, svc)
+	registerAdminSubCategoryRoutes(r, adminMiddleware, svc)
+	registerAdminArticleRoutes(r, adminMiddleware, svc)
+	registerAdminMugVariantRoutes(r, adminMiddleware, svc)
+	registerAdminShirtVariantRoutes(r, adminMiddleware, svc)
+	registerPublicMugRoutes(r, svc)
 }

@@ -9,9 +9,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 
-	"voenix/backend/internal/auth"
 	img "voenix/backend/internal/image"
 )
 
@@ -46,14 +44,18 @@ type mugVariantSummaryResponse struct {
 	Active               bool    `json:"active"`
 }
 
-func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
+func registerAdminMugVariantRoutes(r *gin.Engine, adminMiddleware gin.HandlerFunc, svc *Service) {
 	grp := r.Group("/api/admin/articles/mugs")
-	grp.Use(auth.RequireAdmin(db))
+	grp.Use(adminMiddleware)
 
 	grp.POST("/:articleId/variants", func(c *gin.Context) {
-		aid, _ := strconv.Atoi(c.Param("articleId"))
-		var a Article
-		if err := db.First(&a, "id = ?", aid).Error; err != nil {
+		aid, err := strconv.Atoi(c.Param("articleId"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid article id"})
+			return
+		}
+		articleDomain, err := svc.GetArticle(c.Request.Context(), aid)
+		if err != nil {
 			if errorsIsNotFound(err) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "Article not found"})
 				return
@@ -61,31 +63,46 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch article"})
 			return
 		}
+		if articleDomain.ArticleType != ArticleTypeMug {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Variants allowed only for MUG articles"})
+			return
+		}
 		var payload mugVariantCreate
 		if err := c.ShouldBindJSON(&payload); err != nil || strings.TrimSpace(payload.Name) == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		v := MugVariant{ArticleID: a.ID, InsideColorCode: payload.InsideColorCode, OutsideColorCode: payload.OutsideColorCode, Name: payload.Name}
-		if payload.ArticleVariantNumber != nil {
-			v.ArticleVariantNumber = payload.ArticleVariantNumber
+		variant := MugVariant{
+			ArticleID:        articleDomain.ID,
+			InsideColorCode:  payload.InsideColorCode,
+			OutsideColorCode: payload.OutsideColorCode,
+			Name:             payload.Name,
 		}
+		variant.ArticleVariantNumber = payload.ArticleVariantNumber
 		if payload.IsDefault != nil {
-			v.IsDefault = *payload.IsDefault
+			variant.IsDefault = *payload.IsDefault
 		}
 		if payload.Active != nil {
-			v.Active = *payload.Active
+			variant.Active = *payload.Active
+		} else {
+			variant.Active = true
 		}
-		if err := db.Create(&v).Error; err != nil {
+		created, err := svc.CreateMugVariant(c.Request.Context(), &variant)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create variant"})
 			return
 		}
-		c.JSON(http.StatusCreated, toArticleMugVariantResponse(&v))
+		c.JSON(http.StatusCreated, toArticleMugVariantResponse(&created))
 	})
 
 	grp.PUT("/variants/:variantId", func(c *gin.Context) {
-		var existing MugVariant
-		if err := db.First(&existing, "id = ?", c.Param("variantId")).Error; err != nil {
+		id, err := strconv.Atoi(c.Param("variantId"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid variant id"})
+			return
+		}
+		existing, err := svc.GetMugVariant(c.Request.Context(), id)
+		if err != nil {
 			if errorsIsNotFound(err) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "Variant not found"})
 				return
@@ -108,15 +125,21 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 		if payload.Active != nil {
 			existing.Active = *payload.Active
 		}
-		if err := db.Save(&existing).Error; err != nil {
+		updated, err := svc.UpdateMugVariant(c.Request.Context(), &existing)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update variant"})
 			return
 		}
-		c.JSON(http.StatusOK, toArticleMugVariantResponse(&existing))
+		c.JSON(http.StatusOK, toArticleMugVariantResponse(&updated))
 	})
 
 	grp.DELETE("/variants/:variantId", func(c *gin.Context) {
-		if err := db.Delete(&MugVariant{}, "id = ?", c.Param("variantId")).Error; err != nil {
+		id, err := strconv.Atoi(c.Param("variantId"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid variant id"})
+			return
+		}
+		if err := svc.DeleteMugVariant(c.Request.Context(), id); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete variant"})
 			return
 		}
@@ -125,8 +148,13 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 
 	// Upload variant image: expects form field "image" and optional crop fields
 	grp.POST("/variants/:variantId/image", func(c *gin.Context) {
-		var existing MugVariant
-		if err := db.First(&existing, "id = ?", c.Param("variantId")).Error; err != nil {
+		id, err := strconv.Atoi(c.Param("variantId"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid variant id"})
+			return
+		}
+		existing, err := svc.GetMugVariant(c.Request.Context(), id)
+		if err != nil {
 			if errorsIsNotFound(err) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "Variant not found"})
 				return
@@ -189,16 +217,22 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 		}
 		filename := filepath.Base(path)
 		existing.ExampleImageFilename = &filename
-		if err := db.Save(&existing).Error; err != nil {
+		updated, err := svc.UpdateMugVariant(c.Request.Context(), &existing)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update variant"})
 			return
 		}
-		c.JSON(http.StatusOK, toArticleMugVariantResponse(&existing))
+		c.JSON(http.StatusOK, toArticleMugVariantResponse(&updated))
 	})
 
 	grp.DELETE("/variants/:variantId/image", func(c *gin.Context) {
-		var existing MugVariant
-		if err := db.First(&existing, "id = ?", c.Param("variantId")).Error; err != nil {
+		id, err := strconv.Atoi(c.Param("variantId"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid variant id"})
+			return
+		}
+		existing, err := svc.GetMugVariant(c.Request.Context(), id)
+		if err != nil {
 			if errorsIsNotFound(err) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "Variant not found"})
 				return
@@ -213,11 +247,12 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			}
 		}
 		existing.ExampleImageFilename = nil
-		if err := db.Save(&existing).Error; err != nil {
+		updated, err := svc.UpdateMugVariant(c.Request.Context(), &existing)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update variant"})
 			return
 		}
-		c.JSON(http.StatusOK, toArticleMugVariantResponse(&existing))
+		c.JSON(http.StatusOK, toArticleMugVariantResponse(&updated))
 	})
 
 	// Variants catalog (summary of all mugs with their variants)
@@ -229,23 +264,22 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 				excludeID = &n
 			}
 		}
-		var mugs []Article
-		q := db.Where("article_type = ?", ArticleTypeMug)
-		if excludeID != nil {
-			q = q.Where("id <> ?", *excludeID)
-		}
-		if err := q.Find(&mugs).Error; err != nil {
+		mugs, err := svc.ListMugArticles(c.Request.Context(), false, excludeID)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch mugs"})
 			return
 		}
 		out := make([]mugWithVariantsSummaryResponse, 0, len(mugs))
 		for i := range mugs {
 			m := mugs[i]
-			var vs []MugVariant
-			_ = db.Where("article_id = ?", m.ID).Order("id asc").Find(&vs).Error
-			items := make([]mugVariantSummaryResponse, 0, len(vs))
-			for j := range vs {
-				v := vs[j]
+			variants, err := svc.ListMugVariants(c.Request.Context(), m.ID, false)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch variants"})
+				return
+			}
+			items := make([]mugVariantSummaryResponse, 0, len(variants))
+			for j := range variants {
+				v := variants[j]
 				items = append(items, mugVariantSummaryResponse{
 					ID:                   v.ID,
 					Name:                 v.Name,
@@ -263,9 +297,13 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 
 	// Copy variants to target mug
 	grp.POST("/:articleId/copy-variants", func(c *gin.Context) {
-		mid, _ := strconv.Atoi(c.Param("articleId"))
-		var target Article
-		if err := db.First(&target, "id = ?", mid).Error; err != nil {
+		mid, err := strconv.Atoi(c.Param("articleId"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid article id"})
+			return
+		}
+		target, err := svc.GetArticle(c.Request.Context(), mid)
+		if err != nil {
 			if errorsIsNotFound(err) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "Target mug not found"})
 				return
@@ -273,20 +311,38 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch mug"})
 			return
 		}
+		if target.ArticleType != ArticleTypeMug {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Target must be a mug"})
+			return
+		}
 		var req mugVariantCopyRequest
 		if err := c.ShouldBindJSON(&req); err != nil || len(req.VariantIDs) == 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		created := []articleMugVariantResponse{}
+		created := make([]articleMugVariantResponse, 0, len(req.VariantIDs))
 		for _, id := range req.VariantIDs {
-			var v MugVariant
-			if err := db.First(&v, "id = ?", id).Error; err != nil {
-				continue
+			variant, err := svc.GetMugVariant(c.Request.Context(), id)
+			if err != nil {
+				if errorsIsNotFound(err) {
+					continue
+				}
+				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch source variant"})
+				return
 			}
-			nv := MugVariant{ArticleID: target.ID, InsideColorCode: v.InsideColorCode, OutsideColorCode: v.OutsideColorCode, Name: v.Name, ArticleVariantNumber: v.ArticleVariantNumber, ExampleImageFilename: v.ExampleImageFilename, IsDefault: v.IsDefault, Active: v.Active}
-			if err := db.Create(&nv).Error; err == nil {
-				created = append(created, toArticleMugVariantResponse(&nv))
+			copyVariant := MugVariant{
+				ArticleID:            target.ID,
+				InsideColorCode:      variant.InsideColorCode,
+				OutsideColorCode:     variant.OutsideColorCode,
+				Name:                 variant.Name,
+				ArticleVariantNumber: variant.ArticleVariantNumber,
+				ExampleImageFilename: variant.ExampleImageFilename,
+				IsDefault:            variant.IsDefault,
+				Active:               variant.Active,
+			}
+			copyCreated, err := svc.CreateMugVariant(c.Request.Context(), &copyVariant)
+			if err == nil {
+				created = append(created, toArticleMugVariantResponse(&copyCreated))
 			}
 		}
 		c.JSON(http.StatusCreated, created)

@@ -2,13 +2,11 @@ package article
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"voenix/backend/internal/auth"
 )
 
 type articleSubCategoryCreate struct {
@@ -23,13 +21,13 @@ type articleSubCategoryUpdate struct {
 	Description       *string `json:"description"`
 }
 
-func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB) {
+func registerAdminSubCategoryRoutes(r *gin.Engine, adminMiddleware gin.HandlerFunc, svc *Service) {
 	grp := r.Group("/api/admin/articles/subcategories")
-	grp.Use(auth.RequireAdmin(db))
+	grp.Use(adminMiddleware)
 
 	grp.GET("", func(c *gin.Context) {
-		var rows []ArticleSubCategory
-		if err := db.Order("id desc").Find(&rows).Error; err != nil {
+		summaries, err := svc.ListSubcategories(c.Request.Context())
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch subcategories"})
 			return
 		}
@@ -42,15 +40,15 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 			CreatedAt         *time.Time `json:"createdAt"`
 			UpdatedAt         *time.Time `json:"updatedAt"`
 		}
-		out := make([]Row, 0, len(rows))
-		for i := range rows {
-			sc := rows[i]
+		out := make([]Row, 0, len(summaries))
+		for _, summary := range summaries {
+			sc := summary.Subcategory
 			out = append(out, Row{
 				ID:                sc.ID,
 				ArticleCategoryID: sc.ArticleCategoryID,
 				Name:              sc.Name,
 				Description:       sc.Description,
-				ArticlesCount:     countArticlesBySubcategory(db, sc.ID),
+				ArticlesCount:     summary.ArticlesCount,
 				CreatedAt:         timePtr(sc.CreatedAt),
 				UpdatedAt:         timePtr(sc.UpdatedAt),
 			})
@@ -59,8 +57,13 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 	})
 
 	grp.GET("/:id", func(c *gin.Context) {
-		var row ArticleSubCategory
-		if err := db.First(&row, "id = ?", c.Param("id")).Error; err != nil {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid subcategory id"})
+			return
+		}
+		row, err := svc.GetSubcategory(c.Request.Context(), id)
+		if err != nil {
 			if errorsIsNotFound(err) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "ArticleSubCategory not found"})
 				return
@@ -79,20 +82,25 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 	})
 
 	grp.GET("/category/:categoryId", func(c *gin.Context) {
-		var rows []ArticleSubCategory
-		if err := db.Where("article_category_id = ?", c.Param("categoryId")).Order("id desc").Find(&rows).Error; err != nil {
+		categoryID, err := strconv.Atoi(c.Param("categoryId"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid category id"})
+			return
+		}
+		summaries, err := svc.ListSubcategoriesByCategory(c.Request.Context(), categoryID)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch subcategories"})
 			return
 		}
-		out := make([]gin.H, 0, len(rows))
-		for i := range rows {
-			sc := rows[i]
+		out := make([]gin.H, 0, len(summaries))
+		for _, summary := range summaries {
+			sc := summary.Subcategory
 			out = append(out, gin.H{
 				"id":                sc.ID,
 				"articleCategoryId": sc.ArticleCategoryID,
 				"name":              sc.Name,
 				"description":       sc.Description,
-				"articlesCount":     countArticlesBySubcategory(db, sc.ID),
+				"articlesCount":     summary.ArticlesCount,
 				"createdAt":         timePtr(sc.CreatedAt),
 				"updatedAt":         timePtr(sc.UpdatedAt),
 			})
@@ -106,18 +114,18 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		// Ensure category exists
-		var cat ArticleCategory
-		if err := db.First(&cat, "id = ?", payload.ArticleCategoryID).Error; err != nil {
-			if errorsIsNotFound(err) {
-				c.JSON(http.StatusBadRequest, gin.H{"detail": "Category not found"})
-				return
-			}
+		exists, err := svc.CategoryExists(c.Request.Context(), payload.ArticleCategoryID)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to validate category"})
 			return
 		}
-		row := ArticleSubCategory{ArticleCategoryID: payload.ArticleCategoryID, Name: payload.Name, Description: payload.Description}
-		if err := db.Create(&row).Error; err != nil {
+		if !exists {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Category not found"})
+			return
+		}
+		name := strings.TrimSpace(payload.Name)
+		row, err := svc.CreateSubcategory(c.Request.Context(), payload.ArticleCategoryID, name, payload.Description)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create subcategory"})
 			return
 		}
@@ -132,13 +140,9 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 	})
 
 	grp.PUT("/:id", func(c *gin.Context) {
-		var existing ArticleSubCategory
-		if err := db.First(&existing, "id = ?", c.Param("id")).Error; err != nil {
-			if errorsIsNotFound(err) {
-				c.JSON(http.StatusNotFound, gin.H{"detail": "ArticleSubCategory not found"})
-				return
-			}
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch subcategory"})
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid subcategory id"})
 			return
 		}
 		var payload articleSubCategoryUpdate
@@ -147,31 +151,47 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 			return
 		}
 		if payload.ArticleCategoryID != nil {
-			existing.ArticleCategoryID = *payload.ArticleCategoryID
+			exists, err := svc.CategoryExists(c.Request.Context(), *payload.ArticleCategoryID)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to validate category"})
+				return
+			}
+			if !exists {
+				c.JSON(http.StatusBadRequest, gin.H{"detail": "Category not found"})
+				return
+			}
 		}
+		var namePtr *string
 		if payload.Name != nil {
-			existing.Name = strings.TrimSpace(*payload.Name)
+			t := strings.TrimSpace(*payload.Name)
+			namePtr = &t
 		}
-		if payload.Description != nil {
-			existing.Description = payload.Description
-		}
-		if err := db.Save(&existing).Error; err != nil {
+		row, err := svc.UpdateSubcategory(c.Request.Context(), id, payload.ArticleCategoryID, namePtr, payload.Description)
+		if err != nil {
+			if errorsIsNotFound(err) {
+				c.JSON(http.StatusNotFound, gin.H{"detail": "ArticleSubCategory not found"})
+				return
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update subcategory"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"id":                existing.ID,
-			"articleCategoryId": existing.ArticleCategoryID,
-			"name":              existing.Name,
-			"description":       existing.Description,
-			"createdAt":         timePtr(existing.CreatedAt),
-			"updatedAt":         timePtr(existing.UpdatedAt),
+			"id":                row.ID,
+			"articleCategoryId": row.ArticleCategoryID,
+			"name":              row.Name,
+			"description":       row.Description,
+			"createdAt":         timePtr(row.CreatedAt),
+			"updatedAt":         timePtr(row.UpdatedAt),
 		})
 	})
 
 	grp.DELETE("/:id", func(c *gin.Context) {
-		var existing ArticleSubCategory
-		if err := db.First(&existing, "id = ?", c.Param("id")).Error; err != nil {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid subcategory id"})
+			return
+		}
+		if _, err := svc.GetSubcategory(c.Request.Context(), id); err != nil {
 			if errorsIsNotFound(err) {
 				c.Status(http.StatusNoContent)
 				return
@@ -179,7 +199,7 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch subcategory"})
 			return
 		}
-		if err := db.Delete(&ArticleSubCategory{}, existing.ID).Error; err != nil {
+		if err := svc.DeleteSubcategory(c.Request.Context(), id); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete subcategory"})
 			return
 		}

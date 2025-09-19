@@ -2,13 +2,11 @@ package article
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"voenix/backend/internal/auth"
 )
 
 type articleCategoryCreate struct {
@@ -21,13 +19,13 @@ type articleCategoryUpdate struct {
 	Description *string `json:"description"`
 }
 
-func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB) {
+func registerAdminCategoryRoutes(r *gin.Engine, adminMiddleware gin.HandlerFunc, svc *Service) {
 	grp := r.Group("/api/admin/articles/categories")
-	grp.Use(auth.RequireAdmin(db))
+	grp.Use(adminMiddleware)
 
 	grp.GET("", func(c *gin.Context) {
-		var rows []ArticleCategory
-		if err := db.Order("id desc").Find(&rows).Error; err != nil {
+		summaries, err := svc.ListCategories(c.Request.Context())
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch categories"})
 			return
 		}
@@ -40,24 +38,29 @@ func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 			UpdatedAt     *time.Time `json:"updatedAt"`
 			ArticlesCount int        `json:"articles_count"`
 		}
-		out := make([]Row, 0, len(rows))
-		for i := range rows {
-			cat := rows[i]
+		out := make([]Row, 0, len(summaries))
+		for _, summary := range summaries {
+			cat := summary.Category
 			out = append(out, Row{
 				ID:            cat.ID,
 				Name:          cat.Name,
 				Description:   cat.Description,
 				CreatedAt:     timePtr(cat.CreatedAt),
 				UpdatedAt:     timePtr(cat.UpdatedAt),
-				ArticlesCount: countArticlesByCategory(db, cat.ID),
+				ArticlesCount: summary.ArticlesCount,
 			})
 		}
 		c.JSON(http.StatusOK, out)
 	})
 
 	grp.GET("/:id", func(c *gin.Context) {
-		var row ArticleCategory
-		if err := db.First(&row, "id = ?", c.Param("id")).Error; err != nil {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid category id"})
+			return
+		}
+		row, err := svc.GetCategory(c.Request.Context(), id)
+		if err != nil {
 			if errorsIsNotFound(err) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "ArticleCategory not found"})
 				return
@@ -80,8 +83,8 @@ func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		row := ArticleCategory{Name: payload.Name, Description: payload.Description}
-		if err := db.Create(&row).Error; err != nil {
+		row, err := svc.CreateCategory(c.Request.Context(), strings.TrimSpace(payload.Name), payload.Description)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create category"})
 			return
 		}
@@ -95,13 +98,9 @@ func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 	})
 
 	grp.PUT("/:id", func(c *gin.Context) {
-		var existing ArticleCategory
-		if err := db.First(&existing, "id = ?", c.Param("id")).Error; err != nil {
-			if errorsIsNotFound(err) {
-				c.JSON(http.StatusNotFound, gin.H{"detail": "ArticleCategory not found"})
-				return
-			}
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch category"})
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid category id"})
 			return
 		}
 		var payload articleCategoryUpdate
@@ -109,28 +108,36 @@ func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
+		var namePtr *string
 		if payload.Name != nil {
-			existing.Name = *payload.Name
+			t := strings.TrimSpace(*payload.Name)
+			namePtr = &t
 		}
-		if payload.Description != nil {
-			existing.Description = payload.Description
-		}
-		if err := db.Save(&existing).Error; err != nil {
+		row, err := svc.UpdateCategory(c.Request.Context(), id, namePtr, payload.Description)
+		if err != nil {
+			if errorsIsNotFound(err) {
+				c.JSON(http.StatusNotFound, gin.H{"detail": "ArticleCategory not found"})
+				return
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update category"})
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{
-			"id":          existing.ID,
-			"name":        existing.Name,
-			"description": existing.Description,
-			"createdAt":   timePtr(existing.CreatedAt),
-			"updatedAt":   timePtr(existing.UpdatedAt),
+			"id":          row.ID,
+			"name":        row.Name,
+			"description": row.Description,
+			"createdAt":   timePtr(row.CreatedAt),
+			"updatedAt":   timePtr(row.UpdatedAt),
 		})
 	})
 
 	grp.DELETE("/:id", func(c *gin.Context) {
-		var existing ArticleCategory
-		if err := db.First(&existing, "id = ?", c.Param("id")).Error; err != nil {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid category id"})
+			return
+		}
+		if _, err := svc.GetCategory(c.Request.Context(), id); err != nil {
 			if errorsIsNotFound(err) {
 				c.Status(http.StatusNoContent)
 				return
@@ -138,7 +145,7 @@ func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch category"})
 			return
 		}
-		if err := db.Delete(&ArticleCategory{}, existing.ID).Error; err != nil {
+		if err := svc.DeleteCategory(c.Request.Context(), id); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete category"})
 			return
 		}

@@ -2,12 +2,10 @@ package article
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
-
-	"voenix/backend/internal/auth"
 )
 
 type shirtVariantCreate struct {
@@ -16,18 +14,23 @@ type shirtVariantCreate struct {
 	ExampleImageFilename *string `json:"exampleImageFilename"`
 }
 
-func registerAdminShirtVariantRoutes(r *gin.Engine, db *gorm.DB) {
+func registerAdminShirtVariantRoutes(r *gin.Engine, adminMiddleware gin.HandlerFunc, svc *Service) {
 	grp := r.Group("/api/admin/articles/shirts")
-	grp.Use(auth.RequireAdmin(db))
+	grp.Use(adminMiddleware)
 
 	grp.POST("/:articleId/variants", func(c *gin.Context) {
+		aid, err := strconv.Atoi(c.Param("articleId"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid article id"})
+			return
+		}
 		var payload shirtVariantCreate
 		if err := c.ShouldBindJSON(&payload); err != nil || strings.TrimSpace(payload.Color) == "" || strings.TrimSpace(payload.Size) == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		var a Article
-		if err := db.First(&a, "id = ?", c.Param("articleId")).Error; err != nil {
+		articleDomain, err := svc.GetArticle(c.Request.Context(), aid)
+		if err != nil {
 			if errorsIsNotFound(err) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "Article not found"})
 				return
@@ -35,17 +38,27 @@ func registerAdminShirtVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch article"})
 			return
 		}
-		v := ShirtVariant{ArticleID: a.ID, Color: payload.Color, Size: payload.Size, ExampleImageFilename: payload.ExampleImageFilename}
-		if err := db.Create(&v).Error; err != nil {
+		if articleDomain.ArticleType != ArticleTypeShirt {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Variants allowed only for SHIRT articles"})
+			return
+		}
+		variant := ShirtVariant{ArticleID: articleDomain.ID, Color: payload.Color, Size: payload.Size, ExampleImageFilename: payload.ExampleImageFilename}
+		created, err := svc.CreateShirtVariant(c.Request.Context(), &variant)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create variant"})
 			return
 		}
-		c.JSON(http.StatusCreated, toArticleShirtVariantResponse(&v))
+		c.JSON(http.StatusCreated, toArticleShirtVariantResponse(&created))
 	})
 
 	grp.PUT("/variants/:variantId", func(c *gin.Context) {
-		var existing ShirtVariant
-		if err := db.First(&existing, "id = ?", c.Param("variantId")).Error; err != nil {
+		id, err := strconv.Atoi(c.Param("variantId"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid variant id"})
+			return
+		}
+		existing, err := svc.GetShirtVariant(c.Request.Context(), id)
+		if err != nil {
 			if errorsIsNotFound(err) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "Variant not found"})
 				return
@@ -61,15 +74,21 @@ func registerAdminShirtVariantRoutes(r *gin.Engine, db *gorm.DB) {
 		existing.Color = payload.Color
 		existing.Size = payload.Size
 		existing.ExampleImageFilename = payload.ExampleImageFilename
-		if err := db.Save(&existing).Error; err != nil {
+		updated, err := svc.UpdateShirtVariant(c.Request.Context(), &existing)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update variant"})
 			return
 		}
-		c.JSON(http.StatusOK, toArticleShirtVariantResponse(&existing))
+		c.JSON(http.StatusOK, toArticleShirtVariantResponse(&updated))
 	})
 
 	grp.DELETE("/variants/:variantId", func(c *gin.Context) {
-		if err := db.Delete(&ShirtVariant{}, "id = ?", c.Param("variantId")).Error; err != nil {
+		id, err := strconv.Atoi(c.Param("variantId"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid variant id"})
+			return
+		}
+		if err := svc.DeleteShirtVariant(c.Request.Context(), id); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete variant"})
 			return
 		}

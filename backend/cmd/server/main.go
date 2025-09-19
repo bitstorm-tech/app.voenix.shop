@@ -11,6 +11,7 @@ import (
 
 	"voenix/backend/internal/ai"
 	"voenix/backend/internal/article"
+	articlepostgres "voenix/backend/internal/article/postgres"
 	"voenix/backend/internal/auth"
 	"voenix/backend/internal/cart"
 	"voenix/backend/internal/country"
@@ -77,6 +78,8 @@ func main() {
 
 	serveFrontend(r)
 
+	requireAdminMiddleware := auth.RequireAdmin(db)
+
 	// Auth routes
 	auth.RegisterRoutes(r, db)
 	// VAT admin routes
@@ -92,7 +95,9 @@ func main() {
 	// Prompt module routes (admin + public)
 	prompt.RegisterRoutes(r, db, ai.ProviderLLMIDs())
 	// Article module routes (admin + public)
-	article.RegisterRoutes(r, db)
+	articleRepo := articlepostgres.NewRepository(db)
+	articleSvc := article.NewService(articleRepo)
+	article.RegisterRoutes(r, requireAdminMiddleware, articleSvc)
 	// Cart routes (user)
 	cart.RegisterRoutes(r, db)
 	// Order routes (user)
