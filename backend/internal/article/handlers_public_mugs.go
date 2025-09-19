@@ -2,10 +2,42 @@ package article
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
+
+// Responses for public mug endpoints
+type publicMugVariantResponse struct {
+	ID                   int        `json:"id"`
+	MugID                int        `json:"mugId"`
+	ColorCode            string     `json:"colorCode"`
+	Name                 string     `json:"name"`
+	ExampleImageURL      *string    `json:"exampleImageUrl"`
+	ArticleVariantNumber *string    `json:"articleVariantNumber"`
+	IsDefault            bool       `json:"isDefault"`
+	Active               bool       `json:"active"`
+	ExampleImageFilename *string    `json:"exampleImageFilename"`
+	CreatedAt            *time.Time `json:"createdAt"`
+	UpdatedAt            *time.Time `json:"updatedAt"`
+}
+
+type publicMugResponse struct {
+	ID                    int                        `json:"id"`
+	Name                  string                     `json:"name"`
+	Price                 float64                    `json:"price"`
+	Image                 *string                    `json:"image"`
+	FillingQuantity       *string                    `json:"fillingQuantity"`
+	DescriptionShort      *string                    `json:"descriptionShort"`
+	DescriptionLong       *string                    `json:"descriptionLong"`
+	HeightMm              int                        `json:"heightMm"`
+	DiameterMm            int                        `json:"diameterMm"`
+	PrintTemplateWidthMm  int                        `json:"printTemplateWidthMm"`
+	PrintTemplateHeightMm int                        `json:"printTemplateHeightMm"`
+	DishwasherSafe        bool                       `json:"dishwasherSafe"`
+	Variants              []publicMugVariantResponse `json:"variants"`
+}
 
 func registerPublicMugRoutes(r *gin.Engine, db *gorm.DB) {
 	grp := r.Group("/api/mugs")
@@ -16,7 +48,7 @@ func registerPublicMugRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch mugs"})
 			return
 		}
-		out := make([]PublicMugRead, 0, len(mugs))
+		out := make([]publicMugResponse, 0, len(mugs))
 		for i := range mugs {
 			a := mugs[i]
 			// Load mug details
@@ -40,10 +72,10 @@ func registerPublicMugRoutes(r *gin.Engine, db *gorm.DB) {
 				price = float64(cc.SalesTotalGross) / 100.0
 			}
 			// variants mapping
-			variants := make([]PublicMugVariantRead, 0, len(vs))
+			variants := make([]publicMugVariantResponse, 0, len(vs))
 			for j := range vs {
 				v := vs[j]
-				variants = append(variants, PublicMugVariantRead{
+				variants = append(variants, publicMugVariantResponse{
 					ID:                   v.ID,
 					MugID:                a.ID,
 					ColorCode:            v.OutsideColorCode,
@@ -58,7 +90,7 @@ func registerPublicMugRoutes(r *gin.Engine, db *gorm.DB) {
 				})
 			}
 			imageURL := def
-			out = append(out, PublicMugRead{
+			out = append(out, publicMugResponse{
 				ID:                    a.ID,
 				Name:                  a.Name,
 				Price:                 price,

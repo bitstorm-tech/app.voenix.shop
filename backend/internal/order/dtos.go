@@ -32,17 +32,17 @@ type CreateOrderRequest struct {
 // DTOs matching frontend expectations (frontend/src/types/order.ts)
 
 type OrderItemDto struct {
-	ID                     string              `json:"id"`
-	Article                article.ArticleRead `json:"article"`
-	Variant                *cart.MugVariantDto `json:"variant"`
-	Quantity               int                 `json:"quantity"`
-	PricePerItem           int64               `json:"pricePerItem"`
-	TotalPrice             int64               `json:"totalPrice"`
-	GeneratedImageID       *int                `json:"generatedImageId,omitempty"`
-	GeneratedImageFilename *string             `json:"generatedImageFilename,omitempty"`
-	PromptID               *int                `json:"promptId,omitempty"`
-	CustomData             map[string]any      `json:"customData"`
-	CreatedAt              time.Time           `json:"createdAt"`
+	ID                     string                  `json:"id"`
+	Article                article.ArticleResponse `json:"article"`
+	Variant                *cart.MugVariantDto     `json:"variant"`
+	Quantity               int                     `json:"quantity"`
+	PricePerItem           int64                   `json:"pricePerItem"`
+	TotalPrice             int64                   `json:"totalPrice"`
+	GeneratedImageID       *int                    `json:"generatedImageId,omitempty"`
+	GeneratedImageFilename *string                 `json:"generatedImageFilename,omitempty"`
+	PromptID               *int                    `json:"promptId,omitempty"`
+	CustomData             map[string]any          `json:"customData"`
+	CreatedAt              time.Time               `json:"createdAt"`
 }
 
 type OrderDto struct {

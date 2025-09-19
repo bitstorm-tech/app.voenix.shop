@@ -40,7 +40,7 @@ func registerAdminShirtVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create variant"})
 			return
 		}
-		c.JSON(http.StatusCreated, toShirtVariantRead(&v))
+		c.JSON(http.StatusCreated, toArticleShirtVariantResponse(&v))
 	})
 
 	grp.PUT("/variants/:variantId", func(c *gin.Context) {
@@ -65,7 +65,7 @@ func registerAdminShirtVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update variant"})
 			return
 		}
-		c.JSON(http.StatusOK, toShirtVariantRead(&existing))
+		c.JSON(http.StatusOK, toArticleShirtVariantResponse(&existing))
 	})
 
 	grp.DELETE("/variants/:variantId", func(c *gin.Context) {

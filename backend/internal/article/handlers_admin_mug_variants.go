@@ -28,6 +28,24 @@ type mugVariantCopyRequest struct {
 	VariantIDs []int `json:"variantIds"`
 }
 
+// Responses
+type mugWithVariantsSummaryResponse struct {
+	ID                  int                         `json:"id"`
+	Name                string                      `json:"name"`
+	SupplierArticleName *string                     `json:"supplierArticleName"`
+	Variants            []mugVariantSummaryResponse `json:"variants"`
+}
+
+type mugVariantSummaryResponse struct {
+	ID                   int     `json:"id"`
+	Name                 string  `json:"name"`
+	InsideColorCode      string  `json:"insideColorCode"`
+	OutsideColorCode     string  `json:"outsideColorCode"`
+	ArticleVariantNumber *string `json:"articleVariantNumber"`
+	ExampleImageURL      *string `json:"exampleImageUrl"`
+	Active               bool    `json:"active"`
+}
+
 func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 	grp := r.Group("/api/admin/articles/mugs")
 	grp.Use(auth.RequireAdmin(db))
@@ -62,7 +80,7 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create variant"})
 			return
 		}
-		c.JSON(http.StatusCreated, toMugVariantRead(&v))
+		c.JSON(http.StatusCreated, toArticleMugVariantResponse(&v))
 	})
 
 	grp.PUT("/variants/:variantId", func(c *gin.Context) {
@@ -94,7 +112,7 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update variant"})
 			return
 		}
-		c.JSON(http.StatusOK, toMugVariantRead(&existing))
+		c.JSON(http.StatusOK, toArticleMugVariantResponse(&existing))
 	})
 
 	grp.DELETE("/variants/:variantId", func(c *gin.Context) {
@@ -175,7 +193,7 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update variant"})
 			return
 		}
-		c.JSON(http.StatusOK, toMugVariantRead(&existing))
+		c.JSON(http.StatusOK, toArticleMugVariantResponse(&existing))
 	})
 
 	grp.DELETE("/variants/:variantId/image", func(c *gin.Context) {
@@ -199,7 +217,7 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update variant"})
 			return
 		}
-		c.JSON(http.StatusOK, toMugVariantRead(&existing))
+		c.JSON(http.StatusOK, toArticleMugVariantResponse(&existing))
 	})
 
 	// Variants catalog (summary of all mugs with their variants)
@@ -220,15 +238,15 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch mugs"})
 			return
 		}
-		out := make([]MugWithVariantsSummary, 0, len(mugs))
+		out := make([]mugWithVariantsSummaryResponse, 0, len(mugs))
 		for i := range mugs {
 			m := mugs[i]
 			var vs []MugVariant
 			_ = db.Where("article_id = ?", m.ID).Order("id asc").Find(&vs).Error
-			items := make([]MugVariantSummary, 0, len(vs))
+			items := make([]mugVariantSummaryResponse, 0, len(vs))
 			for j := range vs {
 				v := vs[j]
-				items = append(items, MugVariantSummary{
+				items = append(items, mugVariantSummaryResponse{
 					ID:                   v.ID,
 					Name:                 v.Name,
 					InsideColorCode:      v.InsideColorCode,
@@ -238,7 +256,7 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 					Active:               v.Active,
 				})
 			}
-			out = append(out, MugWithVariantsSummary{ID: m.ID, Name: m.Name, SupplierArticleName: m.SupplierArticleName, Variants: items})
+			out = append(out, mugWithVariantsSummaryResponse{ID: m.ID, Name: m.Name, SupplierArticleName: m.SupplierArticleName, Variants: items})
 		}
 		c.JSON(http.StatusOK, out)
 	})
@@ -260,7 +278,7 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		created := []ArticleMugVariantRead{}
+		created := []articleMugVariantResponse{}
 		for _, id := range req.VariantIDs {
 			var v MugVariant
 			if err := db.First(&v, "id = ?", id).Error; err != nil {
@@ -268,7 +286,7 @@ func registerAdminMugVariantRoutes(r *gin.Engine, db *gorm.DB) {
 			}
 			nv := MugVariant{ArticleID: target.ID, InsideColorCode: v.InsideColorCode, OutsideColorCode: v.OutsideColorCode, Name: v.Name, ArticleVariantNumber: v.ArticleVariantNumber, ExampleImageFilename: v.ExampleImageFilename, IsDefault: v.IsDefault, Active: v.Active}
 			if err := db.Create(&nv).Error; err == nil {
-				created = append(created, toMugVariantRead(&nv))
+				created = append(created, toArticleMugVariantResponse(&nv))
 			}
 		}
 		c.JSON(http.StatusCreated, created)

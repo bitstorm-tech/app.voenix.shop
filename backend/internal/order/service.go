@@ -227,7 +227,7 @@ func toOrderDto(db *gorm.DB, o *Order, baseURL string) (OrderDto, error) {
 	}
 	for i := range o.Items {
 		it := o.Items[i]
-		art, err := loadArticleRead(db, it.ArticleID)
+		art, err := loadArticleResponse(db, it.ArticleID)
 		if err != nil {
 			return OrderDto{}, err
 		}
@@ -293,11 +293,11 @@ func loadActiveCartForOrder(db *gorm.DB, userID int) (*cart.Cart, error) {
 	return &c, nil
 }
 
-// loadArticleRead replicates cart.loadArticleRead to avoid cross-package exposure.
-func loadArticleRead(db *gorm.DB, id int) (article.ArticleRead, error) {
+// loadArticleResponse replicates cart.loadArticleResponse to avoid cross-package exposure.
+func loadArticleResponse(db *gorm.DB, id int) (article.ArticleResponse, error) {
 	var a article.Article
 	if err := db.First(&a, "id = ?", id).Error; err != nil {
-		return article.ArticleRead{}, err
+		return article.ArticleResponse{}, err
 	}
 	var catName string
 	if a.CategoryID != 0 {
@@ -320,7 +320,7 @@ func loadArticleRead(db *gorm.DB, id int) (article.ArticleRead, error) {
 			suppName = s.Name
 		}
 	}
-	out := article.ArticleRead{
+	out := article.ArticleResponse{
 		ID:                    a.ID,
 		Name:                  a.Name,
 		DescriptionShort:      a.DescriptionShort,

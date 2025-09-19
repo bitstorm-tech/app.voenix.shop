@@ -68,7 +68,7 @@ func assembleCartDto(db *gorm.DB, c *Cart) (*CartDto, error) {
 	}
 	for i := range c.Items {
 		ci := c.Items[i]
-		art, err := loadArticleRead(db, ci.ArticleID)
+		art, err := loadArticleResponse(db, ci.ArticleID)
 		if err != nil {
 			return nil, err
 		}
@@ -138,11 +138,11 @@ func assembleCartDto(db *gorm.DB, c *Cart) (*CartDto, error) {
 	return dto, nil
 }
 
-// loadArticleRead produces article.ArticleRead for the given ID.
-func loadArticleRead(db *gorm.DB, id int) (article.ArticleRead, error) {
+// loadArticleResponse produces article.ArticleResponse for the given ID.
+func loadArticleResponse(db *gorm.DB, id int) (article.ArticleResponse, error) {
 	var a article.Article
 	if err := db.First(&a, "id = ?", id).Error; err != nil {
-		return article.ArticleRead{}, err
+		return article.ArticleResponse{}, err
 	}
 	// fetch names
 	var catName string
@@ -166,7 +166,7 @@ func loadArticleRead(db *gorm.DB, id int) (article.ArticleRead, error) {
 			suppName = s.Name
 		}
 	}
-	out := article.ArticleRead{
+	out := article.ArticleResponse{
 		ID:                    a.ID,
 		Name:                  a.Name,
 		DescriptionShort:      a.DescriptionShort,

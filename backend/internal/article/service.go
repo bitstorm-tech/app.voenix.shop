@@ -36,22 +36,22 @@ func articleNames(db *gorm.DB, a *Article) (catName string, subName *string, sup
 }
 
 // listArticleVariantsRead returns typed variant DTOs for the given article.
-func listArticleVariantsRead(db *gorm.DB, a *Article) ([]ArticleMugVariantRead, []ArticleShirtVariantRead) {
+func listArticleVariantsRead(db *gorm.DB, a *Article) ([]articleMugVariantResponse, []articleShirtVariantResponse) {
 	if a.ArticleType == ArticleTypeMug {
 		var mvs []MugVariant
 		_ = db.Where("article_id = ?", a.ID).Order("id asc").Find(&mvs).Error
-		out := make([]ArticleMugVariantRead, 0, len(mvs))
+		out := make([]articleMugVariantResponse, 0, len(mvs))
 		for i := range mvs {
-			out = append(out, toMugVariantRead(&mvs[i]))
+			out = append(out, toArticleMugVariantResponse(&mvs[i]))
 		}
 		return out, nil
 	}
 	if a.ArticleType == ArticleTypeShirt {
 		var svs []ShirtVariant
 		_ = db.Where("article_id = ?", a.ID).Order("id asc").Find(&svs).Error
-		out := make([]ArticleShirtVariantRead, 0, len(svs))
+		out := make([]articleShirtVariantResponse, 0, len(svs))
 		for i := range svs {
-			out = append(out, toShirtVariantRead(&svs[i]))
+			out = append(out, toArticleShirtVariantResponse(&svs[i]))
 		}
 		return nil, out
 	}

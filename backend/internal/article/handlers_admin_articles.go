@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -77,6 +78,125 @@ type costCalculationRequest struct {
 	SalesPriceCorresponds    string  `json:"salesPriceCorresponds"`
 	PurchaseActiveRow        string  `json:"purchaseActiveRow"`
 	SalesActiveRow           string  `json:"salesActiveRow"`
+}
+
+// Responses
+type articleMugVariantResponse struct {
+	ID                   int        `json:"id"`
+	ArticleID            int        `json:"articleId"`
+	InsideColorCode      string     `json:"insideColorCode"`
+	OutsideColorCode     string     `json:"outsideColorCode"`
+	Name                 string     `json:"name"`
+	ExampleImageURL      *string    `json:"exampleImageUrl"`
+	ArticleVariantNumber *string    `json:"articleVariantNumber"`
+	IsDefault            bool       `json:"isDefault"`
+	Active               bool       `json:"active"`
+	ExampleImageFilename *string    `json:"exampleImageFilename"`
+	CreatedAt            *time.Time `json:"createdAt"`
+	UpdatedAt            *time.Time `json:"updatedAt"`
+}
+
+type articleShirtVariantResponse struct {
+	ID              int        `json:"id"`
+	ArticleID       int        `json:"articleId"`
+	Color           string     `json:"color"`
+	Size            string     `json:"size"`
+	ExampleImageURL *string    `json:"exampleImageUrl"`
+	CreatedAt       *time.Time `json:"createdAt"`
+	UpdatedAt       *time.Time `json:"updatedAt"`
+}
+
+type articleMugDetailsResponse struct {
+	ArticleID                    int        `json:"articleId"`
+	HeightMm                     int        `json:"heightMm"`
+	DiameterMm                   int        `json:"diameterMm"`
+	PrintTemplateWidthMm         int        `json:"printTemplateWidthMm"`
+	PrintTemplateHeightMm        int        `json:"printTemplateHeightMm"`
+	DocumentFormatWidthMm        *int       `json:"documentFormatWidthMm"`
+	DocumentFormatHeightMm       *int       `json:"documentFormatHeightMm"`
+	DocumentFormatMarginBottomMm *int       `json:"documentFormatMarginBottomMm"`
+	FillingQuantity              *string    `json:"fillingQuantity"`
+	DishwasherSafe               bool       `json:"dishwasherSafe"`
+	CreatedAt                    *time.Time `json:"createdAt"`
+	UpdatedAt                    *time.Time `json:"updatedAt"`
+}
+
+type articleShirtDetailsResponse struct {
+	ArticleID        int        `json:"articleId"`
+	Material         string     `json:"material"`
+	CareInstructions *string    `json:"careInstructions"`
+	FitType          string     `json:"fitType"`
+	AvailableSizes   []string   `json:"availableSizes"`
+	CreatedAt        *time.Time `json:"createdAt"`
+	UpdatedAt        *time.Time `json:"updatedAt"`
+}
+
+type costCalculationResponse struct {
+	ID                       int        `json:"id"`
+	ArticleID                int        `json:"articleId"`
+	PurchasePriceNet         int        `json:"purchasePriceNet"`
+	PurchasePriceTax         int        `json:"purchasePriceTax"`
+	PurchasePriceGross       int        `json:"purchasePriceGross"`
+	PurchaseCostNet          int        `json:"purchaseCostNet"`
+	PurchaseCostTax          int        `json:"purchaseCostTax"`
+	PurchaseCostGross        int        `json:"purchaseCostGross"`
+	PurchaseCostPercent      float64    `json:"purchaseCostPercent"`
+	PurchaseTotalNet         int        `json:"purchaseTotalNet"`
+	PurchaseTotalTax         int        `json:"purchaseTotalTax"`
+	PurchaseTotalGross       int        `json:"purchaseTotalGross"`
+	PurchasePriceUnit        string     `json:"purchasePriceUnit"`
+	PurchaseVatRateID        *int       `json:"purchaseVatRateId"`
+	PurchaseVatRatePercent   float64    `json:"purchaseVatRatePercent"`
+	PurchaseCalculationMode  string     `json:"purchaseCalculationMode"`
+	SalesVatRateID           *int       `json:"salesVatRateId"`
+	SalesVatRatePercent      float64    `json:"salesVatRatePercent"`
+	SalesMarginNet           int        `json:"salesMarginNet"`
+	SalesMarginTax           int        `json:"salesMarginTax"`
+	SalesMarginGross         int        `json:"salesMarginGross"`
+	SalesMarginPercent       float64    `json:"salesMarginPercent"`
+	SalesTotalNet            int        `json:"salesTotalNet"`
+	SalesTotalTax            int        `json:"salesTotalTax"`
+	SalesTotalGross          int        `json:"salesTotalGross"`
+	SalesPriceUnit           string     `json:"salesPriceUnit"`
+	SalesCalculationMode     string     `json:"salesCalculationMode"`
+	PurchasePriceCorresponds string     `json:"purchasePriceCorresponds"`
+	SalesPriceCorresponds    string     `json:"salesPriceCorresponds"`
+	PurchaseActiveRow        string     `json:"purchaseActiveRow"`
+	SalesActiveRow           string     `json:"salesActiveRow"`
+	CreatedAt                *time.Time `json:"createdAt"`
+	UpdatedAt                *time.Time `json:"updatedAt"`
+}
+
+type ArticleResponse struct {
+	ID                    int                           `json:"id"`
+	Name                  string                        `json:"name"`
+	DescriptionShort      string                        `json:"descriptionShort"`
+	DescriptionLong       string                        `json:"descriptionLong"`
+	Active                bool                          `json:"active"`
+	ArticleType           string                        `json:"articleType"`
+	CategoryID            int                           `json:"categoryId"`
+	CategoryName          string                        `json:"categoryName"`
+	SubcategoryID         *int                          `json:"subcategoryId"`
+	SubcategoryName       *string                       `json:"subcategoryName"`
+	SupplierID            *int                          `json:"supplierId"`
+	SupplierName          *string                       `json:"supplierName"`
+	SupplierArticleName   *string                       `json:"supplierArticleName"`
+	SupplierArticleNumber *string                       `json:"supplierArticleNumber"`
+	MugVariants           []articleMugVariantResponse   `json:"mugVariants"`
+	ShirtVariants         []articleShirtVariantResponse `json:"shirtVariants"`
+	MugDetails            *articleMugDetailsResponse    `json:"mugDetails"`
+	ShirtDetails          *articleShirtDetailsResponse  `json:"shirtDetails"`
+	CostCalculation       *costCalculationResponse      `json:"costCalculation"`
+	CreatedAt             *time.Time                    `json:"createdAt"`
+	UpdatedAt             *time.Time                    `json:"updatedAt"`
+}
+
+type paginatedResponse[T any] struct {
+	Content       []T   `json:"content"`
+	CurrentPage   int   `json:"currentPage"`
+	TotalPages    int   `json:"totalPages"`
+	TotalElements int64 `json:"totalElements"`
+	Size          int   `json:"size"`
 }
 
 type createArticleRequest struct {
@@ -158,20 +278,20 @@ func registerAdminArticleRoutes(r *gin.Engine, db *gorm.DB) {
 			return
 		}
 		// load categories, subcategories, supplier names and variant summaries
-		out := make([]ArticleRead, 0, len(rows))
+		out := make([]ArticleResponse, 0, len(rows))
 		for i := range rows {
 			a := rows[i]
 			catName, subName, suppName := articleNames(db, &a)
-			ar := toArticleRead(&a, catName, subName, suppName, nil, nil)
+			ar := toArticleResponse(&a, catName, subName, suppName, nil, nil)
 			mv, sv := listArticleVariantsRead(db, &a)
 			ar.MugVariants = mv
 			ar.ShirtVariants = sv
 			out = append(out, ar)
 		}
-		resp := PaginatedResponse[ArticleRead]{
+		resp := paginatedResponse[ArticleResponse]{
 			Content:       out,
 			CurrentPage:   page,
-			TotalPages:    (int((total + int64(size) - 1) / int64(size))),
+			TotalPages:    int((total + int64(size) - 1) / int64(size)),
 			TotalElements: total,
 			Size:          size,
 		}
@@ -211,10 +331,10 @@ func registerAdminArticleRoutes(r *gin.Engine, db *gorm.DB) {
 			}
 		}
 
-		ar := toArticleRead(&art, catName, subName, suppName, mugDetails, shirtDetails)
+		ar := toArticleResponse(&art, catName, subName, suppName, mugDetails, shirtDetails)
 		ar.MugVariants = mv
 		ar.ShirtVariants = sv
-		ar.CostCalculation = toCostRead(cc)
+		ar.CostCalculation = toCostCalculationResponse(cc)
 		c.JSON(http.StatusOK, ar)
 	})
 

@@ -1,6 +1,7 @@
 # Repository Guidelines
 
-We prefer simple, lean solutions delivered quickly over overengineered complexity.
+- We prefer simple, lean solutions delivered quickly over overengineered complexity.
+- When renaming or moving tracked files or directories, always use `git mv` instead of `mv` so history stays intact.
 
 ## AGENTS Compliance (Nested AGENTS.md)
 - Before editing any file, the agent must perform an "AGENTS check":
