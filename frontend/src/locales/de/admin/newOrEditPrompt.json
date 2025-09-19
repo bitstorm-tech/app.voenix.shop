@@ -22,6 +22,9 @@
     "noSubcategory": "Keine Subkategorie",
     "promptStyle": "Prompt-Stil (optional)",
     "promptStylePlaceholder": "Prompt-Text eingeben...",
+    "llm": "LLM",
+    "llmPlaceholder": "LLM auswählen",
+    "llmEmpty": "Keine LLMs verfügbar. Bitte einen Admin zur Konfiguration bitten.",
     "status": "Status",
     "statusHint": "Diesen Prompt zur Nutzung freigeben"
   },
@@ -34,6 +37,7 @@
     "loadCategories": "Kategorien konnten nicht geladen werden",
     "loadSubcategories": "Unterkategorien konnten nicht geladen werden",
     "load": "Prompt konnte nicht geladen werden",
+    "loadLLMs": "LLM-Optionen konnten nicht geladen werden",
     "save": "Prompt konnte nicht gespeichert werden. Bitte erneut versuchen.",
     "titleRequired": "Titel ist erforderlich",
     "categoryRequired": "Kategorie ist erforderlich",
@@ -52,6 +56,7 @@
       "load": "Slot-Varianten konnten nicht geladen werden"
     },
     "empty": "Keine Slot-Varianten vorhanden. Bitte erstellen Sie zuerst Slot-Varianten.",
+    "filteredEmpty": "Für das ausgewählte LLM sind keine Slot-Varianten vorhanden.",
     "badge": "{{selected}} von {{total}} Typen ausgewählt",
     "selectedBadge": "Ausgewählt",
     "fallbackType": "Andere",

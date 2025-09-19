@@ -39,6 +39,7 @@ func toSlotVariantRead(v *PromptSlotVariant) PromptSlotVariantRead {
 		Prompt:           v.Prompt,
 		Description:      v.Description,
 		ExampleImageURL:  strPtrOrNil(publicSlotVariantExampleURL(v.ExampleImageFilename)),
+		LLM:              v.LLM,
 		CreatedAt:        timePtr(v.CreatedAt),
 		UpdatedAt:        timePtr(v.UpdatedAt),
 	}

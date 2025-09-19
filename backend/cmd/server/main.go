@@ -90,7 +90,7 @@ func main() {
 	// AI image routes (admin)
 	ai.RegisterRoutes(r, db)
 	// Prompt module routes (admin + public)
-	prompt.RegisterRoutes(r, db)
+	prompt.RegisterRoutes(r, db, ai.ProviderLLMIDs())
 	// Article module routes (admin + public)
 	article.RegisterRoutes(r, db)
 	// Cart routes (user)

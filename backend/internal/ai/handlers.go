@@ -67,6 +67,10 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 	admin := r.Group("/api/admin/ai")
 	admin.Use(auth.RequireAdmin(db))
 
+	admin.GET("/llms", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{"llms": ProviderLLMs()})
+	})
+
 	// POST /api/admin/ai/test-prompt
 	// Multipart form:
 	// - image: file (required)

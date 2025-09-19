@@ -22,6 +22,9 @@
     "noSubcategory": "No subcategory",
     "promptStyle": "Prompt Style (optional)",
     "promptStylePlaceholder": "Enter the prompt text content...",
+    "llm": "LLM",
+    "llmPlaceholder": "Select an LLM",
+    "llmEmpty": "No LLMs available. Ask an admin to configure LLMs.",
     "status": "Status",
     "statusHint": "Make this prompt available for use"
   },
@@ -34,6 +37,7 @@
     "loadCategories": "Failed to load categories",
     "loadSubcategories": "Failed to load subcategories",
     "load": "Failed to load prompt",
+    "loadLLMs": "Failed to load LLM options",
     "save": "Failed to save prompt. Please try again.",
     "titleRequired": "Title is required",
     "categoryRequired": "Category is required",
@@ -52,6 +56,7 @@
       "load": "Failed to load slot variants"
     },
     "empty": "No slot variants available. Please create slot variants first.",
+    "filteredEmpty": "No slot variants are available for the selected LLM.",
     "badge": "{{selected}} of {{total}} types selected",
     "selectedBadge": "Selected",
     "fallbackType": "Other",
