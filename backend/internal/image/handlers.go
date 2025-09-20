@@ -3,8 +3,6 @@ package image
 import (
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -18,182 +16,118 @@ func RegisterRoutes(router *gin.Engine, database *gorm.DB, service *Service) {
 	admin := router.Group("/api/admin/images")
 	admin.Use(auth.RequireAdmin(database))
 
-	admin.POST("", func(context *gin.Context) {
-		fileHeader, err := context.FormFile("file")
+	admin.POST("", func(ctx *gin.Context) {
+		fileHeader, err := ctx.FormFile("file")
 		if err != nil || fileHeader == nil {
-			context.JSON(http.StatusBadRequest, gin.H{"detail": "Missing file"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"detail": "Missing file"})
 			return
 		}
 
 		var requestJSON string
-		if requestFileHeader, err := context.FormFile("request"); err == nil && requestFileHeader != nil {
-			file, err := requestFileHeader.Open()
+		if requestFileHeader, err := ctx.FormFile("request"); err == nil && requestFileHeader != nil {
+			requestFile, err := requestFileHeader.Open()
 			if err == nil {
-				defer func() { _ = file.Close() }()
-				bytes, _ := io.ReadAll(file)
-				requestJSON = string(bytes)
+				defer func() { _ = requestFile.Close() }()
+				requestBytes, _ := io.ReadAll(requestFile)
+				requestJSON = string(requestBytes)
 			}
 		} else {
-			requestJSON = context.PostForm("request")
+			requestJSON = ctx.PostForm("request")
 		}
 
-		imageType := context.PostForm("imageType")
-		cropX := context.PostForm("cropX")
-		cropY := context.PostForm("cropY")
-		cropWidth := context.PostForm("cropWidth")
-		cropHeight := context.PostForm("cropHeight")
+		imageType := ctx.PostForm("imageType")
+		cropX := ctx.PostForm("cropX")
+		cropY := ctx.PostForm("cropY")
+		cropWidth := ctx.PostForm("cropWidth")
+		cropHeight := ctx.PostForm("cropHeight")
 
-		request, parseErr := ParseUploadRequest(requestJSON, imageType, &cropX, &cropY, &cropWidth, &cropHeight)
+		uploadRequest, parseErr := ParseUploadRequest(requestJSON, imageType, &cropX, &cropY, &cropWidth, &cropHeight)
 		if parseErr != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"detail": parseErr.Error()})
+			ctx.JSON(http.StatusBadRequest, gin.H{"detail": parseErr.Error()})
 			return
 		}
 
 		if contentType := fileHeader.Header.Get("Content-Type"); contentType != "" && !strings.HasPrefix(contentType, "image/") {
-			context.JSON(http.StatusBadRequest, gin.H{"detail": "Uploaded file must be an image"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"detail": "Uploaded file must be an image"})
 			return
 		}
 
-		file, err := fileHeader.Open()
+		uploadedFile, err := fileHeader.Open()
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"detail": "Failed to read upload"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"detail": "Failed to read upload"})
 			return
 		}
-		defer func() { _ = file.Close() }()
-		data, err := io.ReadAll(file)
+		defer func() { _ = uploadedFile.Close() }()
+
+		filename, imageTypeResult, err := service.UploadAdminImage(ctx.Request.Context(), uploadedFile, uploadRequest.ImageType, uploadRequest.CropArea)
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"detail": "Failed to read upload"})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"detail": err.Error()})
 			return
 		}
 
-		if request.CropArea != nil {
-			data = CropImageBytes(data, request.CropArea.X, request.CropArea.Y, request.CropArea.Width, request.CropArea.Height)
-		}
-
-		pngBytes, err := ConvertImageToPNGBytes(data)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"detail": "Failed to process image"})
-			return
-		}
-
-		storageLocations, err := NewStorageLocations()
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"detail": err.Error()})
-			return
-		}
-		directory, err := storageLocations.ResolveAdminDir(request.ImageType)
-		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
-			return
-		}
-		path, err := StoreImageBytes(pngBytes, directory, "", "png", false)
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to store image"})
-			return
-		}
-
-		context.JSON(http.StatusCreated, gin.H{"filename": filepath.Base(path), "imageType": request.ImageType})
+		ctx.JSON(http.StatusCreated, gin.H{"filename": filename, "imageType": imageTypeResult})
 	})
 
-	admin.GET("/prompt-test/:filename", func(context *gin.Context) {
-		filename, err := SafeFilename(context.Param("filename"))
+	admin.GET("/prompt-test/:filename", func(ctx *gin.Context) {
+		filename := ctx.Param("filename")
+		imageBytes, contentType, err := service.GetPromptTestImage(ctx.Request.Context(), filename)
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
+			ctx.JSON(http.StatusNotFound, gin.H{"detail": "Not found"})
 			return
 		}
-		storageLocations, err := NewStorageLocations()
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"detail": err.Error()})
-			return
-		}
-		path := filepath.Join(storageLocations.PromptTest(), filename)
-		if _, err := os.Stat(path); err != nil {
-			context.JSON(http.StatusNotFound, gin.H{"detail": "Not found"})
-			return
-		}
-		bytes, contentType, err := LoadImageBytesAndType(path)
-		if err != nil {
-			context.JSON(http.StatusNotFound, gin.H{"detail": "Not found"})
-			return
-		}
-		context.Header("Content-Disposition", "inline; filename=\""+filepath.Base(path)+"\"")
-		context.Data(http.StatusOK, contentType, bytes)
+		ctx.Header("Content-Disposition", "inline; filename=\""+filename+"\"")
+		ctx.Data(http.StatusOK, contentType, imageBytes)
 	})
 
-	admin.DELETE("/prompt-test/:filename", func(context *gin.Context) {
-		filename, err := SafeFilename(context.Param("filename"))
+	admin.DELETE("/prompt-test/:filename", func(ctx *gin.Context) {
+		filename := ctx.Param("filename")
+		err := service.DeletePromptTestImage(ctx.Request.Context(), filename)
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"detail": "Delete failed"})
 			return
 		}
-		storageLocations, err := NewStorageLocations()
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"detail": err.Error()})
-			return
-		}
-		path := filepath.Join(storageLocations.PromptTest(), filename)
-		if _, err := os.Stat(path); err == nil {
-			if err := os.Remove(path); err != nil {
-				context.JSON(http.StatusInternalServerError, gin.H{"detail": "Delete failed"})
-				return
-			}
-		}
-		context.Status(http.StatusNoContent)
+		ctx.Status(http.StatusNoContent)
 	})
 
 	userGroup := router.Group("/api/user/images")
 	userGroup.Use(auth.RequireRoles(database, "USER", "ADMIN"))
 
-	userGroup.GET("/:filename", func(context *gin.Context) {
-		userValue, _ := context.Get("currentUser")
+	userGroup.GET("/:filename", func(ctx *gin.Context) {
+		userValue, _ := ctx.Get("currentUser")
 		currentUser, _ := userValue.(*auth.User)
 		if currentUser == nil {
-			context.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
 			return
 		}
-		filename, err := SafeFilename(context.Param("filename"))
+		filename := ctx.Param("filename")
+		imageBytes, contentType, err := service.GetUserImage(ctx.Request.Context(), currentUser.ID, filename)
 		if err != nil {
-			context.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
+			ctx.JSON(http.StatusNotFound, gin.H{"detail": "Not found"})
 			return
 		}
-		base, err := UserImagesDir(currentUser.ID)
-		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"detail": err.Error()})
-			return
-		}
-		path := filepath.Join(base, filename)
-		if _, err := os.Stat(path); err != nil {
-			context.JSON(http.StatusNotFound, gin.H{"detail": "Not found"})
-			return
-		}
-		bytes, contentType, err := LoadImageBytesAndType(path)
-		if err != nil {
-			context.JSON(http.StatusNotFound, gin.H{"detail": "Not found"})
-			return
-		}
-		context.Header("Content-Disposition", "inline; filename=\""+filepath.Base(path)+"\"")
-		context.Data(http.StatusOK, contentType, bytes)
+		ctx.Header("Content-Disposition", "inline; filename=\""+filename+"\"")
+		ctx.Data(http.StatusOK, contentType, imageBytes)
 	})
 
-	userGroup.GET("", func(context *gin.Context) {
-		userValue, _ := context.Get("currentUser")
+	userGroup.GET("", func(ctx *gin.Context) {
+		userValue, _ := ctx.Get("currentUser")
 		currentUser, _ := userValue.(*auth.User)
 		if currentUser == nil {
-			context.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
+			ctx.JSON(http.StatusUnauthorized, gin.H{"detail": "Not authenticated"})
 			return
 		}
-		page, _ := strconv.Atoi(context.DefaultQuery("page", "0"))
-		size, _ := strconv.Atoi(context.DefaultQuery("size", "20"))
-		typeFilter := context.DefaultQuery("type", "all")
-		sortBy := context.DefaultQuery("sortBy", "createdAt")
-		sortDirection := context.DefaultQuery("sortDirection", "DESC")
+		page, _ := strconv.Atoi(ctx.DefaultQuery("page", "0"))
+		pageSize, _ := strconv.Atoi(ctx.DefaultQuery("size", "20"))
+		typeFilter := ctx.DefaultQuery("type", "all")
+		sortBy := ctx.DefaultQuery("sortBy", "createdAt")
+		sortDirection := ctx.DefaultQuery("sortDirection", "DESC")
 
-		items, err := service.ListUserImages(currentUser.ID)
+		userImages, err := service.ListUserImages(currentUser.ID)
 		if err != nil {
-			context.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to scan images"})
+			ctx.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to scan images"})
 			return
 		}
-		response := service.BuildUserImagesPage(items, typeFilter, sortBy, sortDirection, page, size)
-		context.JSON(http.StatusOK, response)
+		paginatedResponse := service.BuildUserImagesPage(userImages, typeFilter, sortBy, sortDirection, page, pageSize)
+		ctx.JSON(http.StatusOK, paginatedResponse)
 	})
 }

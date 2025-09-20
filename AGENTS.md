@@ -1,6 +1,6 @@
 # Repository Guidelines
 
-- We prefer simple, lean solutions delivered quickly over overengineered complexity.
+- We prefer simple, lean solutions delivered quickly over over-engineered complexity.
 - When renaming or moving tracked files or directories, always use `git mv` instead of `mv` so history stays intact.
 
 ## AGENTS Compliance (Nested AGENTS.md)
@@ -14,7 +14,6 @@
 - `backend/`: Go services in `cmd/server`, `cmd/migrate`, with internal app logic under `internal/`. Temporary build artifacts in `bin/` and `tmp/`.
 - `frontend/`: Vite + React storefront; source under `src/`, build output under `dist/` for nginx.
 - `frontend-nextjs/`: Next.js exploration; keep shared types in sync before promoting features.
-- `requirements/`: Product requirement docs; link relevant `REQ-*` files in work items and PRs.
 - `storage/`: Local dev assets (`public/` seeds, `private/` uploads). Keep large generated files out of git.
 
 ## Build, Test, and Development Commands

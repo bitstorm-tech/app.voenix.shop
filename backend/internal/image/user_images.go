@@ -178,21 +178,7 @@ func (item UserImageItem) MarshalJSON() ([]byte, error) {
 		ThumbnailURL     *string `json:"thumbnailUrl"`
 	}
 
-	payload := userImageItemJSON{
-		ID:               item.ID,
-		UUID:             item.UUID,
-		Filename:         item.Filename,
-		OriginalFilename: item.OriginalFilename,
-		Type:             item.Type,
-		ContentType:      item.ContentType,
-		FileSize:         item.FileSize,
-		PromptID:         item.PromptID,
-		UploadedImageID:  item.UploadedImageID,
-		UserID:           item.UserID,
-		CreatedAt:        item.CreatedAt,
-		ImageURL:         item.ImageURL,
-		ThumbnailURL:     item.ThumbnailURL,
-	}
+	payload := userImageItemJSON(item)
 
 	return json.Marshal(payload)
 }
@@ -206,13 +192,7 @@ func (page UserImagesPage) MarshalJSON() ([]byte, error) {
 		Size          int             `json:"size"`
 	}
 
-	payload := userImagesPageJSON{
-		Content:       page.Content,
-		CurrentPage:   page.CurrentPage,
-		TotalPages:    page.TotalPages,
-		TotalElements: page.TotalElements,
-		Size:          page.Size,
-	}
+	payload := userImagesPageJSON(page)
 
 	return json.Marshal(payload)
 }
