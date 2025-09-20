@@ -101,10 +101,7 @@ func (f *fakeRepository) ListOrdersForUser(_ context.Context, userID int, page, 
 		end = total
 	}
 	pageOrders := append([]Order(nil), orders[start:end]...)
-	totalPages := 0
-	if size > 0 {
-		totalPages = (total + size - 1) / size
-	}
+	totalPages := (total + size - 1) / size
 	return OrderPage{
 		Orders:        pageOrders,
 		CurrentPage:   page,

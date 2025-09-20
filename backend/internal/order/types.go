@@ -3,11 +3,7 @@ package order
 import "time"
 
 const (
-	StatusPending    = "PENDING"
-	StatusProcessing = "PROCESSING"
-	StatusShipped    = "SHIPPED"
-	StatusDelivered  = "DELIVERED"
-	StatusCancelled  = "CANCELLED"
+	StatusPending = "PENDING"
 )
 
 // Order captures the domain representation of a customer order.

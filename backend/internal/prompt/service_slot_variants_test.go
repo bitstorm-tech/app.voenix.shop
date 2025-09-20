@@ -36,24 +36,24 @@ func (m *mockRepository) addSlotType(name string, position int) PromptSlotType {
 }
 
 func (m *mockRepository) cloneVariant(v PromptSlotVariant) PromptSlotVariant {
-	copy := v
+	clone := v
 	if v.Prompt != nil {
 		p := *v.Prompt
-		copy.Prompt = &p
+		clone.Prompt = &p
 	}
 	if v.Description != nil {
 		d := *v.Description
-		copy.Description = &d
+		clone.Description = &d
 	}
 	if v.ExampleImageFilename != nil {
 		f := *v.ExampleImageFilename
-		copy.ExampleImageFilename = &f
+		clone.ExampleImageFilename = &f
 	}
 	if v.PromptSlotType != nil {
 		st := *v.PromptSlotType
-		copy.PromptSlotType = &st
+		clone.PromptSlotType = &st
 	}
-	return copy
+	return clone
 }
 
 func (m *mockRepository) ListSlotTypes(context.Context) ([]PromptSlotType, error) {
