@@ -255,23 +255,45 @@ func (r *Repository) UpdateArticle(ctx context.Context, art *article.Article) er
 }
 
 func (r *Repository) DeleteArticle(ctx context.Context, id int) error {
-	tx := r.db.WithContext(ctx)
-	if err := tx.Delete(&mugVariantRow{}, "article_id = ?", id).Error; err != nil {
+	var orderItemsForArticleCount int64
+	if err := r.db.WithContext(ctx).Table("order_items").Where("article_id = ?", id).Count(&orderItemsForArticleCount).Error; err != nil {
 		return err
 	}
-	if err := tx.Delete(&shirtVariantRow{}, "article_id = ?", id).Error; err != nil {
+	if orderItemsForArticleCount > 0 {
+		return article.ErrArticleHasOrders
+	}
+	var orderItemsForVariantCount int64
+	orderItemsForVariantQuery := r.db.WithContext(ctx).
+		Table("order_items").
+		Joins("JOIN article_mug_variants ON article_mug_variants.id = order_items.variant_id").
+		Where("article_mug_variants.article_id = ?", id)
+	if err := orderItemsForVariantQuery.Count(&orderItemsForVariantCount).Error; err != nil {
 		return err
 	}
-	if err := tx.Delete(&mugDetailsRow{}, "article_id = ?", id).Error; err != nil {
-		return err
+	if orderItemsForVariantCount > 0 {
+		return article.ErrArticleHasOrders
 	}
-	if err := tx.Delete(&shirtDetailsRow{}, "article_id = ?", id).Error; err != nil {
-		return err
-	}
-	if err := tx.Delete(&priceRow{}, "article_id = ?", id).Error; err != nil {
-		return err
-	}
-	return tx.Delete(&articleRow{}, id).Error
+	return r.db.WithContext(ctx).Transaction(func(transaction *gorm.DB) error {
+		if err := transaction.Exec("DELETE FROM cart_items WHERE article_id = ?", id).Error; err != nil {
+			return err
+		}
+		if err := transaction.Delete(&mugVariantRow{}, "article_id = ?", id).Error; err != nil {
+			return err
+		}
+		if err := transaction.Delete(&shirtVariantRow{}, "article_id = ?", id).Error; err != nil {
+			return err
+		}
+		if err := transaction.Delete(&mugDetailsRow{}, "article_id = ?", id).Error; err != nil {
+			return err
+		}
+		if err := transaction.Delete(&shirtDetailsRow{}, "article_id = ?", id).Error; err != nil {
+			return err
+		}
+		if err := transaction.Delete(&priceRow{}, "article_id = ?", id).Error; err != nil {
+			return err
+		}
+		return transaction.Delete(&articleRow{}, id).Error
+	})
 }
 
 // --- Mug variants ---

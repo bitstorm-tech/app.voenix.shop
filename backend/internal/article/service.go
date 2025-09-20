@@ -20,6 +20,7 @@ var (
 	ErrSubcategoryNotFound = errors.New("subcategory not found")
 	ErrSupplierNotFound    = errors.New("supplier not found")
 	ErrVatNotFound         = errors.New("vat not found")
+	ErrArticleHasOrders    = errors.New("article has orders")
 )
 
 // --- Category operations ---

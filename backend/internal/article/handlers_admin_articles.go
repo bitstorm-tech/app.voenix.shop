@@ -497,7 +497,12 @@ func registerAdminArticleRoutes(r *gin.Engine, adminMiddleware gin.HandlerFunc, 
 			return
 		}
 		if err := svc.DeleteArticle(c.Request.Context(), id); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete article"})
+			switch {
+			case errors.Is(err, ErrArticleHasOrders):
+				c.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
+			default:
+				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete article"})
+			}
 			return
 		}
 		c.Status(http.StatusNoContent)
