@@ -3,6 +3,7 @@ package prompt
 import (
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,7 @@ func registerAdminSlotTypeRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	})
 
 	grp.GET("/:id", func(c *gin.Context) {
-		id, _ := strconvAtoi(c.Param("id"))
+		id, _ := strconv.Atoi(c.Param("id"))
 		row, err := svc.GetSlotType(c.Request.Context(), id)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) || row == nil {
@@ -68,7 +69,7 @@ func registerAdminSlotTypeRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	})
 
 	grp.PUT("/:id", func(c *gin.Context) {
-		id, _ := strconvAtoi(c.Param("id"))
+		id, _ := strconv.Atoi(c.Param("id"))
 		var payload slotTypeUpdate
 		if err := c.ShouldBindJSON(&payload); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
@@ -92,7 +93,7 @@ func registerAdminSlotTypeRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	})
 
 	grp.DELETE("/:id", func(c *gin.Context) {
-		id, _ := strconvAtoi(c.Param("id"))
+		id, _ := strconv.Atoi(c.Param("id"))
 		if err := svc.DeleteSlotType(c.Request.Context(), id); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete slot type"})
 			return

@@ -3,6 +3,7 @@ package prompt
 import (
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -47,7 +48,7 @@ func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	})
 
 	grp.PUT("/:id", func(c *gin.Context) {
-		id, _ := strconvAtoi(c.Param("id"))
+		id, _ := strconv.Atoi(c.Param("id"))
 		var payload categoryUpdate
 		if err := c.ShouldBindJSON(&payload); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
@@ -66,7 +67,7 @@ func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	})
 
 	grp.DELETE("/:id", func(c *gin.Context) {
-		id, _ := strconvAtoi(c.Param("id"))
+		id, _ := strconv.Atoi(c.Param("id"))
 		if err := svc.DeleteCategory(c.Request.Context(), id); err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.Status(http.StatusNoContent)

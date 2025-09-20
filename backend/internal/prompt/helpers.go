@@ -182,8 +182,8 @@ func priceToCostCalculation(pr *article.Price) *costCalculationRequest {
 		SalesTotalGross:          pr.SalesTotalGross,
 		SalesPriceUnit:           pr.SalesPriceUnit,
 		SalesCalculationMode:     pr.SalesCalculationMode,
-		PurchasePriceCorresponds: strToBoolPtr(pr.PurchasePriceCorresponds),
-		SalesPriceCorresponds:    strToBoolPtr(pr.SalesPriceCorresponds),
+		PurchasePriceCorresponds: stringToNetGrossChoice(pr.PurchasePriceCorresponds),
+		SalesPriceCorresponds:    stringToNetGrossChoice(pr.SalesPriceCorresponds),
 		PurchaseActiveRow:        pr.PurchaseActiveRow,
 		SalesActiveRow:           pr.SalesActiveRow,
 	}
@@ -208,7 +208,7 @@ func parseIDs(repeated []string, commaSep string) []int {
 	uniq := map[int]struct{}{}
 	out := []int{}
 	for _, v := range vals {
-		if n, err := strconvAtoi(v); err == nil {
+		if n, err := strconv.Atoi(v); err == nil {
 			if _, ok := uniq[n]; !ok {
 				uniq[n] = struct{}{}
 				out = append(out, n)
@@ -270,19 +270,4 @@ func strPtrOrNil(s string) *string {
 		return nil
 	}
 	return &s
-}
-
-func strconvAtoi(s string) (int, error) { return strconv.Atoi(s) }
-
-func strToBoolPtr(s string) *bool {
-	var b bool
-	switch strings.ToUpper(strings.TrimSpace(s)) {
-	case "NET":
-		b = true
-	case "GROSS":
-		b = false
-	default:
-		return nil
-	}
-	return &b
 }

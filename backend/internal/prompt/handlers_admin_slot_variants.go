@@ -3,6 +3,7 @@ package prompt
 import (
 	"errors"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +44,7 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	})
 
 	grp.GET("/:id", func(c *gin.Context) {
-		id, _ := strconvAtoi(c.Param("id"))
+		id, _ := strconv.Atoi(c.Param("id"))
 		row, err := svc.GetSlotVariant(c.Request.Context(), id)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) || row == nil {
@@ -84,7 +85,7 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	})
 
 	grp.PUT("/:id", func(c *gin.Context) {
-		id, _ := strconvAtoi(c.Param("id"))
+		id, _ := strconv.Atoi(c.Param("id"))
 		var payload slotVariantUpdate
 		if err := c.ShouldBindJSON(&payload); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
@@ -112,7 +113,7 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	})
 
 	grp.DELETE("/:id", func(c *gin.Context) {
-		id, _ := strconvAtoi(c.Param("id"))
+		id, _ := strconv.Atoi(c.Param("id"))
 		if err := svc.DeleteSlotVariant(c.Request.Context(), id); err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.Status(http.StatusNoContent)
