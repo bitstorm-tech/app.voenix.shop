@@ -106,16 +106,24 @@ func loadMugVariantResponse(ctx context.Context, articleSvc ArticleService, id i
 	if err != nil {
 		return nil, err
 	}
-	url := publicMugVariantExampleURL(v.ExampleImageFilename)
+	return BuildMugVariantResponse(&v), nil
+}
+
+// BuildMugVariantResponse converts an article mug variant into the response schema shared with the order API.
+func BuildMugVariantResponse(variant *article.MugVariant) *MugVariantResponse {
+	if variant == nil {
+		return nil
+	}
+	url := publicMugVariantExampleURL(variant.ExampleImageFilename)
 	return &MugVariantResponse{
-		ID:                    v.ID,
-		ArticleID:             v.ArticleID,
-		ColorCode:             v.OutsideColorCode,
+		ID:                    variant.ID,
+		ArticleID:             variant.ArticleID,
+		ColorCode:             variant.OutsideColorCode,
 		ExampleImageURL:       strPtrOrNil(url),
-		SupplierArticleNumber: v.ArticleVariantNumber,
-		IsDefault:             v.IsDefault,
-		ExampleImageFilename:  v.ExampleImageFilename,
-	}, nil
+		SupplierArticleNumber: variant.ArticleVariantNumber,
+		IsDefault:             variant.IsDefault,
+		ExampleImageFilename:  variant.ExampleImageFilename,
+	}
 }
 
 func strPtrOrNil(s string) *string {

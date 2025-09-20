@@ -11,6 +11,8 @@ import (
 	"github.com/google/uuid"
 
 	"voenix/backend/internal/article"
+	"voenix/backend/internal/cart"
+
 	"voenix/backend/internal/pdf"
 )
 
@@ -215,19 +217,12 @@ func (s *Service) loadArticleResponse(ctx context.Context, id int) (article.Arti
 	return resp, nil
 }
 
-func (s *Service) loadMugVariantDto(ctx context.Context, id int) (*article.MugVariant, error) {
+func (s *Service) loadMugVariantDto(ctx context.Context, id int) (*cart.MugVariantResponse, error) {
 	v, err := s.articleSvc.GetMugVariant(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return &article.MugVariant{
-		ID:                   v.ID,
-		ArticleID:            v.ArticleID,
-		OutsideColorCode:     v.OutsideColorCode,
-		ArticleVariantNumber: v.ArticleVariantNumber,
-		IsDefault:            v.IsDefault,
-		ExampleImageFilename: v.ExampleImageFilename,
-	}, nil
+	return cart.BuildMugVariantResponse(&v), nil
 }
 
 func toAddressDtoFromOrder(o Order) (AddressDto, *AddressDto) {
