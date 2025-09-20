@@ -60,7 +60,7 @@ func (m *mockRepository) ListSlotTypes(context.Context) ([]PromptSlotType, error
 	panic("not implemented")
 }
 
-func (m *mockRepository) SlotTypeByID(ctx context.Context, id int) (*PromptSlotType, error) {
+func (m *mockRepository) SlotTypeByID(_ context.Context, id int) (*PromptSlotType, error) {
 	st, ok := m.slotTypes[id]
 	if !ok {
 		return nil, gorm.ErrRecordNotFound
@@ -69,7 +69,7 @@ func (m *mockRepository) SlotTypeByID(ctx context.Context, id int) (*PromptSlotT
 	return &copy, nil
 }
 
-func (m *mockRepository) SlotTypeNameExists(ctx context.Context, name string, excludeID *int) (bool, error) {
+func (m *mockRepository) SlotTypeNameExists(_ context.Context, name string, excludeID *int) (bool, error) {
 	for id, st := range m.slotTypes {
 		if excludeID != nil && id == *excludeID {
 			continue
@@ -81,7 +81,7 @@ func (m *mockRepository) SlotTypeNameExists(ctx context.Context, name string, ex
 	return false, nil
 }
 
-func (m *mockRepository) SlotTypePositionExists(ctx context.Context, position int, excludeID *int) (bool, error) {
+func (m *mockRepository) SlotTypePositionExists(_ context.Context, position int, excludeID *int) (bool, error) {
 	for id, st := range m.slotTypes {
 		if excludeID != nil && id == *excludeID {
 			continue
@@ -93,7 +93,7 @@ func (m *mockRepository) SlotTypePositionExists(ctx context.Context, position in
 	return false, nil
 }
 
-func (m *mockRepository) CreateSlotType(ctx context.Context, slotType *PromptSlotType) error {
+func (m *mockRepository) CreateSlotType(_ context.Context, slotType *PromptSlotType) error {
 	st := m.addSlotType(slotType.Name, slotType.Position)
 	*slotType = st
 	return nil
@@ -111,7 +111,7 @@ func (m *mockRepository) ListSlotVariants(context.Context) ([]PromptSlotVariant,
 	panic("not implemented")
 }
 
-func (m *mockRepository) SlotVariantByID(ctx context.Context, id int) (*PromptSlotVariant, error) {
+func (m *mockRepository) SlotVariantByID(_ context.Context, id int) (*PromptSlotVariant, error) {
 	variant, ok := m.slotVariants[id]
 	if !ok {
 		return nil, gorm.ErrRecordNotFound
@@ -120,7 +120,7 @@ func (m *mockRepository) SlotVariantByID(ctx context.Context, id int) (*PromptSl
 	return &copy, nil
 }
 
-func (m *mockRepository) SlotVariantNameExists(ctx context.Context, name string, excludeID *int) (bool, error) {
+func (m *mockRepository) SlotVariantNameExists(_ context.Context, name string, excludeID *int) (bool, error) {
 	for id, v := range m.slotVariants {
 		if excludeID != nil && id == *excludeID {
 			continue
@@ -132,7 +132,7 @@ func (m *mockRepository) SlotVariantNameExists(ctx context.Context, name string,
 	return false, nil
 }
 
-func (m *mockRepository) CreateSlotVariant(ctx context.Context, variant *PromptSlotVariant) error {
+func (m *mockRepository) CreateSlotVariant(_ context.Context, variant *PromptSlotVariant) error {
 	id := m.nextVarID
 	m.nextVarID++
 	now := time.Now()
@@ -144,7 +144,7 @@ func (m *mockRepository) CreateSlotVariant(ctx context.Context, variant *PromptS
 	return nil
 }
 
-func (m *mockRepository) SaveSlotVariant(ctx context.Context, variant *PromptSlotVariant) error {
+func (m *mockRepository) SaveSlotVariant(_ context.Context, variant *PromptSlotVariant) error {
 	if _, ok := m.slotVariants[variant.ID]; !ok {
 		return gorm.ErrRecordNotFound
 	}
@@ -158,12 +158,12 @@ func (m *mockRepository) DeleteSlotVariant(context.Context, int) error {
 	panic("not implemented")
 }
 
-func (m *mockRepository) SlotTypeExists(ctx context.Context, id int) (bool, error) {
+func (m *mockRepository) SlotTypeExists(_ context.Context, id int) (bool, error) {
 	_, ok := m.slotTypes[id]
 	return ok, nil
 }
 
-func (m *mockRepository) SlotVariantsExist(ctx context.Context, ids []int) (bool, error) {
+func (m *mockRepository) SlotVariantsExist(_ context.Context, ids []int) (bool, error) {
 	for _, id := range ids {
 		if _, ok := m.slotVariants[id]; !ok {
 			return false, nil

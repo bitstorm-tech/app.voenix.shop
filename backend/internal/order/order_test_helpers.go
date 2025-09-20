@@ -28,7 +28,7 @@ func newFakeRepository() *fakeRepository {
 	}
 }
 
-func (f *fakeRepository) ActiveCart(ctx context.Context, userID int) (*cart.Cart, error) {
+func (f *fakeRepository) ActiveCart(_ context.Context, userID int) (*cart.Cart, error) {
 	if c, ok := f.activeCarts[userID]; ok {
 		clone := *c
 		clone.Items = append([]cart.CartItem(nil), c.Items...)
@@ -37,12 +37,12 @@ func (f *fakeRepository) ActiveCart(ctx context.Context, userID int) (*cart.Cart
 	return nil, nil
 }
 
-func (f *fakeRepository) OrderExistsForCart(ctx context.Context, cartID int) (bool, error) {
+func (f *fakeRepository) OrderExistsForCart(_ context.Context, cartID int) (bool, error) {
 	_, ok := f.ordersByCart[cartID]
 	return ok, nil
 }
 
-func (f *fakeRepository) CreateOrder(ctx context.Context, ord *Order) error {
+func (f *fakeRepository) CreateOrder(_ context.Context, ord *Order) error {
 	if ord == nil {
 		return errors.New("order nil")
 	}
@@ -65,7 +65,7 @@ func (f *fakeRepository) CreateOrder(ctx context.Context, ord *Order) error {
 	return nil
 }
 
-func (f *fakeRepository) OrderByIDForUser(ctx context.Context, userID int, orderID string) (*Order, error) {
+func (f *fakeRepository) OrderByIDForUser(_ context.Context, userID int, orderID string) (*Order, error) {
 	ord, ok := f.orders[orderID]
 	if !ok || ord.UserID != userID {
 		return nil, ErrNotFound
@@ -75,7 +75,7 @@ func (f *fakeRepository) OrderByIDForUser(ctx context.Context, userID int, order
 	return &clone, nil
 }
 
-func (f *fakeRepository) ListOrdersForUser(ctx context.Context, userID int, page, size int) (OrderPage, error) {
+func (f *fakeRepository) ListOrdersForUser(_ context.Context, userID int, page, size int) (OrderPage, error) {
 	orders := make([]Order, 0)
 	for _, ord := range f.orders {
 		if ord.UserID == userID {
@@ -114,7 +114,7 @@ func (f *fakeRepository) ListOrdersForUser(ctx context.Context, userID int, page
 	}, nil
 }
 
-func (f *fakeRepository) FetchGeneratedImageFilenames(ctx context.Context, ids []int) (map[int]string, error) {
+func (f *fakeRepository) FetchGeneratedImageFilenames(_ context.Context, ids []int) (map[int]string, error) {
 	result := make(map[int]string, len(ids))
 	for _, id := range ids {
 		if fn, ok := f.generated[id]; ok {
@@ -161,28 +161,28 @@ func newFakeArticleService() *fakeArticleService {
 	}
 }
 
-func (s *fakeArticleService) GetArticleSummary(ctx context.Context, id int) (article.ArticleResponse, error) {
+func (s *fakeArticleService) GetArticleSummary(_ context.Context, id int) (article.ArticleResponse, error) {
 	if resp, ok := s.summaries[id]; ok {
 		return resp, nil
 	}
 	return article.ArticleResponse{}, errors.New("not found")
 }
 
-func (s *fakeArticleService) GetArticle(ctx context.Context, id int) (article.Article, error) {
+func (s *fakeArticleService) GetArticle(_ context.Context, id int) (article.Article, error) {
 	if a, ok := s.articles[id]; ok {
 		return a, nil
 	}
 	return article.Article{}, errors.New("not found")
 }
 
-func (s *fakeArticleService) GetMugVariant(ctx context.Context, id int) (article.MugVariant, error) {
+func (s *fakeArticleService) GetMugVariant(_ context.Context, id int) (article.MugVariant, error) {
 	if v, ok := s.variants[id]; ok {
 		return v, nil
 	}
 	return article.MugVariant{}, errors.New("not found")
 }
 
-func (s *fakeArticleService) GetMugDetails(ctx context.Context, articleID int) (*article.MugDetails, error) {
+func (s *fakeArticleService) GetMugDetails(_ context.Context, articleID int) (*article.MugDetails, error) {
 	if md, ok := s.details[articleID]; ok {
 		clone := md
 		return &clone, nil
