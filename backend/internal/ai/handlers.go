@@ -62,7 +62,7 @@ type createImageEditRequest struct {
 	N          int    `json:"n"`
 }
 
-func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
+func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service) {
 	// Admin AI routes
 	admin := r.Group("/api/admin/ai")
 	admin.Use(auth.RequireAdmin(db))
@@ -411,7 +411,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 			UserID:           u.ID,
 			CreatedAt:        time.Now().UTC(),
 		}
-		if err := db.Create(&uploaded).Error; err != nil {
+		if err := imageService.CreateUploadedImage(c.Request.Context(), &uploaded); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to persist uploaded image"})
 			return
 		}
@@ -464,7 +464,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
 				CreatedAt:       time.Now().UTC(),
 				IPAddress:       stringPtrNonEmpty(ip),
 			}
-			if err := db.Create(&gi).Error; err != nil {
+			if err := imageService.CreateGeneratedImage(c.Request.Context(), &gi); err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to persist generated image"})
 				return
 			}

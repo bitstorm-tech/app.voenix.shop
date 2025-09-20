@@ -12,128 +12,126 @@ import (
 )
 
 func UserImagesDir(userID int) (string, error) {
-	loc, err := NewStorageLocations()
+	storageLocations, err := NewStorageLocations()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(loc.PrivateImages(), strconv.Itoa(userID)), nil
+	return filepath.Join(storageLocations.PrivateImages(), strconv.Itoa(userID)), nil
 }
 
 func ScanUserImages(userID int) ([]UserImageItem, error) {
-	dir, err := UserImagesDir(userID)
+	directory, err := UserImagesDir(userID)
 	if err != nil {
 		return nil, err
 	}
-	if _, err := os.Stat(dir); err != nil {
-		// Directory missing -> empty list
+	if _, err := os.Stat(directory); err != nil {
 		return []UserImageItem{}, nil
 	}
-	entries, err := os.ReadDir(dir)
+	entries, err := os.ReadDir(directory)
 	if err != nil {
 		return nil, err
 	}
 	var items []UserImageItem
-	i := 1
-	for _, e := range entries {
-		if !e.Type().IsRegular() {
+	index := 1
+	for _, entry := range entries {
+		if !entry.Type().IsRegular() {
 			continue
 		}
-		name := e.Name()
-		var imgType, uuidStr string
+		name := entry.Name()
+		var imageType string
+		var identifier string
 		if strings.Contains(name, "_generated_") {
-			imgType = "generated"
-			uuidStr = strings.SplitN(name, "_generated_", 2)[0]
+			imageType = "generated"
+			identifier = strings.SplitN(name, "_generated_", 2)[0]
 		} else if strings.Contains(name, "_original") {
-			imgType = "uploaded"
-			uuidStr = strings.SplitN(name, "_original", 2)[0]
+			imageType = "uploaded"
+			identifier = strings.SplitN(name, "_original", 2)[0]
 		} else {
-			imgType = "uploaded"
-			uuidStr = strings.TrimSuffix(name, filepath.Ext(name))
+			imageType = "uploaded"
+			identifier = strings.TrimSuffix(name, filepath.Ext(name))
 		}
 
-		// Validate UUID-ish: accept hex with dashes length 36, else generate random placeholder
-		if !looksLikeUUID(uuidStr) {
-			// generate pseudo-uuid (not strictly UUID, good enough for UI keying)
-			uuidStr = randomHex(16)
+		if !looksLikeUUID(identifier) {
+			identifier = randomHex(16)
 		}
 
-		fullPath := filepath.Join(dir, name)
-		info, err := os.Stat(fullPath)
+		fullPath := filepath.Join(directory, name)
+		information, err := os.Stat(fullPath)
 		if err != nil {
 			continue
 		}
-		ctime := info.ModTime().Format(time.RFC3339)
-		ct := mime.TypeByExtension(filepath.Ext(name))
-		sz := info.Size()
-		it := UserImageItem{
-			ID:               i,
-			UUID:             uuidStr,
+		createdAt := information.ModTime().Format(time.RFC3339)
+		contentType := mime.TypeByExtension(filepath.Ext(name))
+		size := information.Size()
+		item := UserImageItem{
+			ID:               index,
+			UUID:             identifier,
 			Filename:         name,
 			OriginalFilename: nil,
-			Type:             imgType,
-			ContentType:      stringPtrOrNil(ct),
-			FileSize:         &sz,
+			Type:             imageType,
+			ContentType:      stringPtrOrNil(contentType),
+			FileSize:         &size,
 			PromptID:         nil,
 			UploadedImageID:  nil,
 			UserID:           userID,
-			CreatedAt:        ctime,
+			CreatedAt:        createdAt,
 			ImageURL:         "/api/user/images/" + name,
 			ThumbnailURL:     nil,
 		}
-		items = append(items, it)
-		i++
+		items = append(items, item)
+		index++
 	}
 	return items, nil
 }
 
-func looksLikeUUID(s string) bool {
-	if len(s) == 36 && strings.Count(s, "-") == 4 {
+func looksLikeUUID(value string) bool {
+	if len(value) == 36 && strings.Count(value, "-") == 4 {
 		return true
 	}
 	return false
 }
 
-func randomHex(n int) string {
-	// We already have a cryptographic random in storage.go; reuse minimal impl here by calling randomName
-	if rn, err := randomName(); err == nil {
-		if len(rn) >= n*2 {
-			return rn[:n*2]
+func randomHex(length int) string {
+	if randomNameValue, err := randomName(); err == nil {
+		if len(randomNameValue) >= length*2 {
+			return randomNameValue[:length*2]
 		}
-		return rn
+		return randomNameValue
 	}
-	// worst-case fallback
 	return strconv.FormatInt(time.Now().UnixNano(), 16)
 }
 
-func stringPtrOrNil(s string) *string {
-	if s == "" {
+func stringPtrOrNil(value string) *string {
+	if value == "" {
 		return nil
 	}
-	return &s
+	return &value
 }
 
-func SortFilterPaginate(items []UserImageItem, typeFilter, sortBy, sortDir string, page, size int) UserImagesPage {
-	t := strings.ToLower(typeFilter)
-	if t == "uploaded" || t == "generated" {
+func SortFilterPaginate(items []UserImageItem, typeFilter, sortBy, sortDirection string, page, size int) UserImagesPage {
+	filter := strings.ToLower(typeFilter)
+	if filter == "uploaded" || filter == "generated" {
 		filtered := make([]UserImageItem, 0, len(items))
-		for _, it := range items {
-			if it.Type == t {
-				filtered = append(filtered, it)
+		for _, item := range items {
+			if item.Type == filter {
+				filtered = append(filtered, item)
 			}
 		}
 		items = filtered
 	}
 
 	if sortBy == "type" {
-		sort.Slice(items, func(i, j int) bool { return items[i].Type < items[j].Type })
+		sort.Slice(items, func(firstIndex, secondIndex int) bool {
+			return items[firstIndex].Type < items[secondIndex].Type
+		})
 	} else {
-		// createdAt
-		sort.Slice(items, func(i, j int) bool { return items[i].CreatedAt < items[j].CreatedAt })
+		sort.Slice(items, func(firstIndex, secondIndex int) bool {
+			return items[firstIndex].CreatedAt < items[secondIndex].CreatedAt
+		})
 	}
-	if strings.ToUpper(sortDir) == "DESC" {
-		// reverse
-		for i, j := 0, len(items)-1; i < j; i, j = i+1, j-1 {
-			items[i], items[j] = items[j], items[i]
+	if strings.ToUpper(sortDirection) == "DESC" {
+		for left, right := 0, len(items)-1; left < right; left, right = left+1, right-1 {
+			items[left], items[right] = items[right], items[left]
 		}
 	}
 
@@ -163,8 +161,58 @@ func SortFilterPaginate(items []UserImageItem, typeFilter, sortBy, sortDir strin
 	}
 }
 
-// MarshalJSON ensures deterministic key order if needed (not strictly necessary).
-func (p UserImagesPage) MarshalJSON() ([]byte, error) {
-	type alias UserImagesPage
-	return json.Marshal(alias(p))
+func (item UserImageItem) MarshalJSON() ([]byte, error) {
+	type userImageItemJSON struct {
+		ID               int     `json:"id"`
+		UUID             string  `json:"uuid"`
+		Filename         string  `json:"filename"`
+		OriginalFilename *string `json:"originalFilename"`
+		Type             string  `json:"type"`
+		ContentType      *string `json:"contentType"`
+		FileSize         *int64  `json:"fileSize"`
+		PromptID         *int    `json:"promptId"`
+		UploadedImageID  *int    `json:"uploadedImageId"`
+		UserID           int     `json:"userId"`
+		CreatedAt        string  `json:"createdAt"`
+		ImageURL         string  `json:"imageUrl"`
+		ThumbnailURL     *string `json:"thumbnailUrl"`
+	}
+
+	payload := userImageItemJSON{
+		ID:               item.ID,
+		UUID:             item.UUID,
+		Filename:         item.Filename,
+		OriginalFilename: item.OriginalFilename,
+		Type:             item.Type,
+		ContentType:      item.ContentType,
+		FileSize:         item.FileSize,
+		PromptID:         item.PromptID,
+		UploadedImageID:  item.UploadedImageID,
+		UserID:           item.UserID,
+		CreatedAt:        item.CreatedAt,
+		ImageURL:         item.ImageURL,
+		ThumbnailURL:     item.ThumbnailURL,
+	}
+
+	return json.Marshal(payload)
+}
+
+func (page UserImagesPage) MarshalJSON() ([]byte, error) {
+	type userImagesPageJSON struct {
+		Content       []UserImageItem `json:"content"`
+		CurrentPage   int             `json:"currentPage"`
+		TotalPages    int             `json:"totalPages"`
+		TotalElements int             `json:"totalElements"`
+		Size          int             `json:"size"`
+	}
+
+	payload := userImagesPageJSON{
+		Content:       page.Content,
+		CurrentPage:   page.CurrentPage,
+		TotalPages:    page.TotalPages,
+		TotalElements: page.TotalElements,
+		Size:          page.Size,
+	}
+
+	return json.Marshal(payload)
 }

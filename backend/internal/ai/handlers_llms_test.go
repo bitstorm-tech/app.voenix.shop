@@ -12,7 +12,9 @@ import (
 	"gorm.io/gorm"
 
 	"voenix/backend/internal/auth"
-	"voenix/backend/internal/auth/postgres"
+	authpg "voenix/backend/internal/auth/postgres"
+	img "voenix/backend/internal/image"
+	imagepg "voenix/backend/internal/image/postgres"
 )
 
 func TestAdminLLMsEndpoint(t *testing.T) {
@@ -21,14 +23,14 @@ func TestAdminLLMsEndpoint(t *testing.T) {
 	if err != nil {
 		t.Fatalf("open db: %v", err)
 	}
-	if err := db.AutoMigrate(&postgres.RoleRow{}, &postgres.UserRow{}, &postgres.SessionRow{}); err != nil {
+	if err := db.AutoMigrate(&authpg.RoleRow{}, &authpg.UserRow{}, &authpg.SessionRow{}); err != nil {
 		t.Fatalf("auto migrate: %v", err)
 	}
-	roleRow := postgres.RoleRow{Name: "ADMIN"}
+	roleRow := authpg.RoleRow{Name: "ADMIN"}
 	if err := db.Create(&roleRow).Error; err != nil {
 		t.Fatalf("create role: %v", err)
 	}
-	userRow := postgres.UserRow{Email: "admin@example.com"}
+	userRow := authpg.UserRow{Email: "admin@example.com"}
 	if err := db.Create(&userRow).Error; err != nil {
 		t.Fatalf("create user: %v", err)
 	}
@@ -36,17 +38,20 @@ func TestAdminLLMsEndpoint(t *testing.T) {
 		t.Fatalf("attach role: %v", err)
 	}
 	expiresAt := time.Now().Add(time.Hour)
-	sessionRow := postgres.SessionRow{ID: "test-session", UserID: userRow.ID, ExpiresAt: &expiresAt}
+	sessionRow := authpg.SessionRow{ID: "test-session", UserID: userRow.ID, ExpiresAt: &expiresAt}
 	if err := db.Create(&sessionRow).Error; err != nil {
 		t.Fatalf("create session: %v", err)
 	}
 
-	repo := postgres.NewRepository(db)
-	svc := auth.NewService(repo)
+	authRepository := authpg.NewRepository(db)
+	authService := auth.NewService(authRepository)
+
+	imageRepository := imagepg.NewRepository(db)
+	imageService := img.NewService(imageRepository)
 
 	router := gin.New()
-	auth.RegisterRoutes(router, svc)
-	RegisterRoutes(router, db)
+	auth.RegisterRoutes(router, authService)
+	RegisterRoutes(router, db, imageService)
 
 	req := httptest.NewRequest(http.MethodGet, "/api/admin/ai/llms", nil)
 	req.AddCookie(&http.Cookie{Name: "session_id", Value: sessionRow.ID})
