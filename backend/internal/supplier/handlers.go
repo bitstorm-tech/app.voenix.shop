@@ -11,91 +11,163 @@ import (
 	"voenix/backend/internal/auth"
 )
 
+type SupplierCreateRequest struct {
+	Name         *string `json:"name"`
+	Title        *string `json:"title"`
+	FirstName    *string `json:"firstName"`
+	LastName     *string `json:"lastName"`
+	Street       *string `json:"street"`
+	HouseNumber  *string `json:"houseNumber"`
+	City         *string `json:"city"`
+	PostalCode   *int    `json:"postalCode"`
+	CountryID    *int    `json:"countryId"`
+	PhoneNumber1 *string `json:"phoneNumber1"`
+	PhoneNumber2 *string `json:"phoneNumber2"`
+	PhoneNumber3 *string `json:"phoneNumber3"`
+	Email        *string `json:"email"`
+	Website      *string `json:"website"`
+}
+
+func (payload SupplierCreateRequest) ToDomain() Supplier {
+	domainSupplier := Supplier{
+		Name:         payload.Name,
+		Title:        payload.Title,
+		FirstName:    payload.FirstName,
+		LastName:     payload.LastName,
+		Street:       payload.Street,
+		HouseNumber:  payload.HouseNumber,
+		City:         payload.City,
+		PostalCode:   payload.PostalCode,
+		CountryID:    payload.CountryID,
+		PhoneNumber1: payload.PhoneNumber1,
+		PhoneNumber2: payload.PhoneNumber2,
+		PhoneNumber3: payload.PhoneNumber3,
+		Email:        payload.Email,
+		Website:      payload.Website,
+	}
+	return domainSupplier
+}
+
+type SupplierUpdateRequest struct {
+	Name         *string `json:"name"`
+	Title        *string `json:"title"`
+	FirstName    *string `json:"firstName"`
+	LastName     *string `json:"lastName"`
+	Street       *string `json:"street"`
+	HouseNumber  *string `json:"houseNumber"`
+	City         *string `json:"city"`
+	PostalCode   *int    `json:"postalCode"`
+	CountryID    *int    `json:"countryId"`
+	PhoneNumber1 *string `json:"phoneNumber1"`
+	PhoneNumber2 *string `json:"phoneNumber2"`
+	PhoneNumber3 *string `json:"phoneNumber3"`
+	Email        *string `json:"email"`
+	Website      *string `json:"website"`
+}
+
+func (payload SupplierUpdateRequest) ToDomain() Supplier {
+	domainSupplier := Supplier{
+		Name:         payload.Name,
+		Title:        payload.Title,
+		FirstName:    payload.FirstName,
+		LastName:     payload.LastName,
+		Street:       payload.Street,
+		HouseNumber:  payload.HouseNumber,
+		City:         payload.City,
+		PostalCode:   payload.PostalCode,
+		CountryID:    payload.CountryID,
+		PhoneNumber1: payload.PhoneNumber1,
+		PhoneNumber2: payload.PhoneNumber2,
+		PhoneNumber3: payload.PhoneNumber3,
+		Email:        payload.Email,
+		Website:      payload.Website,
+	}
+	return domainSupplier
+}
+
 // RegisterRoutes mounts Supplier admin routes under /api/admin/suppliers.
-func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
-	svc := NewService(db)
-	grp := r.Group("/api/admin/suppliers")
-	grp.Use(auth.RequireAdmin(db))
+func RegisterRoutes(router *gin.Engine, database *gorm.DB, service *Service) {
+	supplierGroup := router.Group("/api/admin/suppliers")
+	supplierGroup.Use(auth.RequireAdmin(database))
 
-	// GET /api/admin/suppliers -> list all
-	grp.GET("", func(c *gin.Context) {
-		rows, err := svc.ListSuppliers(c.Request.Context())
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch suppliers"})
+	supplierGroup.GET("", func(ginContext *gin.Context) {
+		supplierList, errorValue := service.ListSuppliers(ginContext.Request.Context())
+		if errorValue != nil {
+			ginContext.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch suppliers"})
 			return
 		}
-		c.JSON(http.StatusOK, rows)
+		ginContext.JSON(http.StatusOK, supplierList)
 	})
 
-	// GET /api/admin/suppliers/:id -> single by id
-	grp.GET("/:id", func(c *gin.Context) {
-		id, err := strconv.Atoi(c.Param("id"))
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
+	supplierGroup.GET("/:id", func(ginContext *gin.Context) {
+		supplierIdentifier, errorValue := strconv.Atoi(ginContext.Param("id"))
+		if errorValue != nil {
+			ginContext.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
 			return
 		}
-		row, err := svc.GetSupplierByID(c.Request.Context(), id)
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				c.JSON(http.StatusNotFound, gin.H{"detail": "Supplier not found"})
+		supplierValue, errorValue := service.GetSupplierByID(ginContext.Request.Context(), supplierIdentifier)
+		if errorValue != nil {
+			if errors.Is(errorValue, gorm.ErrRecordNotFound) {
+				ginContext.JSON(http.StatusNotFound, gin.H{"detail": "Supplier not found"})
 				return
 			}
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch supplier"})
+			ginContext.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch supplier"})
 			return
 		}
-		c.JSON(http.StatusOK, row)
+		ginContext.JSON(http.StatusOK, supplierValue)
 	})
 
-	// POST /api/admin/suppliers -> create
-	grp.POST("", func(c *gin.Context) {
-		var payload SupplierCreate
-		if err := c.ShouldBindJSON(&payload); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
+	supplierGroup.POST("", func(ginContext *gin.Context) {
+		var payload SupplierCreateRequest
+		if errorValue := ginContext.ShouldBindJSON(&payload); errorValue != nil {
+			ginContext.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		created, err := svc.CreateSupplier(c.Request.Context(), payload)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create supplier"})
+
+		supplierInput := payload.ToDomain()
+		createdSupplier, errorValue := service.CreateSupplier(ginContext.Request.Context(), supplierInput)
+		if errorValue != nil {
+			ginContext.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create supplier"})
 			return
 		}
-		c.JSON(http.StatusCreated, created)
+		ginContext.JSON(http.StatusCreated, createdSupplier)
 	})
 
-	// PUT /api/admin/suppliers/:id -> update
-	grp.PUT("/:id", func(c *gin.Context) {
-		id, err := strconv.Atoi(c.Param("id"))
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
+	supplierGroup.PUT("/:id", func(ginContext *gin.Context) {
+		supplierIdentifier, errorValue := strconv.Atoi(ginContext.Param("id"))
+		if errorValue != nil {
+			ginContext.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
 			return
 		}
-		var payload SupplierUpdate
-		if err := c.ShouldBindJSON(&payload); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
+		var payload SupplierUpdateRequest
+		if errorValue := ginContext.ShouldBindJSON(&payload); errorValue != nil {
+			ginContext.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		updated, err := svc.UpdateSupplier(c.Request.Context(), id, payload)
-		if err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				c.JSON(http.StatusNotFound, gin.H{"detail": "Supplier not found"})
+
+		updatesSupplier := payload.ToDomain()
+		updatedSupplier, errorValue := service.UpdateSupplier(ginContext.Request.Context(), supplierIdentifier, updatesSupplier)
+		if errorValue != nil {
+			if errors.Is(errorValue, gorm.ErrRecordNotFound) {
+				ginContext.JSON(http.StatusNotFound, gin.H{"detail": "Supplier not found"})
 				return
 			}
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update supplier"})
+			ginContext.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update supplier"})
 			return
 		}
-		c.JSON(http.StatusOK, updated)
+		ginContext.JSON(http.StatusOK, updatedSupplier)
 	})
 
-	// DELETE /api/admin/suppliers/:id -> delete
-	grp.DELETE("/:id", func(c *gin.Context) {
-		id, err := strconv.Atoi(c.Param("id"))
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
+	supplierGroup.DELETE("/:id", func(ginContext *gin.Context) {
+		supplierIdentifier, errorValue := strconv.Atoi(ginContext.Param("id"))
+		if errorValue != nil {
+			ginContext.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
 			return
 		}
-		if err := svc.DeleteSupplier(c.Request.Context(), id); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete supplier"})
+		if errorValue := service.DeleteSupplier(ginContext.Request.Context(), supplierIdentifier); errorValue != nil {
+			ginContext.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete supplier"})
 			return
 		}
-		c.Status(http.StatusNoContent)
+		ginContext.Status(http.StatusNoContent)
 	})
 }

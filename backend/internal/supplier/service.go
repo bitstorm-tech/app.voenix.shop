@@ -1,96 +1,65 @@
 package supplier
 
-import (
-	"context"
+import "context"
 
-	"gorm.io/gorm"
-)
-
-// Service encapsulates all Supplier-related data access and business logic.
 type Service struct {
-	db *gorm.DB
+	repository Repository
 }
 
-// NewService constructs a new Supplier service instance.
-func NewService(db *gorm.DB) *Service {
-	return &Service{db: db}
+func NewService(repository Repository) *Service {
+	return &Service{repository: repository}
 }
 
-// ListSuppliers returns all suppliers with their associated country preloaded.
-func (s *Service) ListSuppliers(ctx context.Context) ([]Supplier, error) {
-	var rows []Supplier
-	if err := s.db.WithContext(ctx).Preload("Country").Find(&rows).Error; err != nil {
-		return nil, err
-	}
-	return rows, nil
+func (s *Service) ListSuppliers(contextValue context.Context) ([]Supplier, error) {
+	return s.repository.List(contextValue)
 }
 
-// GetSupplierByID returns a single supplier by id with country preloaded.
-func (s *Service) GetSupplierByID(ctx context.Context, id int) (*Supplier, error) {
-	var row Supplier
-	if err := s.db.WithContext(ctx).Preload("Country").First(&row, "id = ?", id).Error; err != nil {
-		return nil, err
+func (s *Service) GetSupplierByID(contextValue context.Context, supplierID int) (*Supplier, error) {
+	supplierValue, errorValue := s.repository.ByID(contextValue, supplierID)
+	if errorValue != nil {
+		return nil, errorValue
 	}
-	return &row, nil
+
+	return &supplierValue, nil
 }
 
-// CreateSupplier inserts a new supplier and returns it with country preloaded.
-func (s *Service) CreateSupplier(ctx context.Context, payload SupplierCreate) (*Supplier, error) {
-	sup := Supplier{
-		Name:         payload.Name,
-		Title:        payload.Title,
-		FirstName:    payload.FirstName,
-		LastName:     payload.LastName,
-		Street:       payload.Street,
-		HouseNumber:  payload.HouseNumber,
-		City:         payload.City,
-		PostalCode:   payload.PostalCode,
-		CountryID:    payload.CountryID,
-		PhoneNumber1: payload.PhoneNumber1,
-		PhoneNumber2: payload.PhoneNumber2,
-		PhoneNumber3: payload.PhoneNumber3,
-		Email:        payload.Email,
-		Website:      payload.Website,
+func (s *Service) CreateSupplier(contextValue context.Context, supplier Supplier) (*Supplier, error) {
+	supplierCopy := supplier
+	if errorValue := s.repository.Create(contextValue, &supplierCopy); errorValue != nil {
+		return nil, errorValue
 	}
-	if err := s.db.WithContext(ctx).Create(&sup).Error; err != nil {
-		return nil, err
-	}
-	// best-effort preload of country
-	_ = s.db.WithContext(ctx).Preload("Country").First(&sup, sup.ID).Error
-	return &sup, nil
+
+	return &supplierCopy, nil
 }
 
-// UpdateSupplier updates an existing supplier by id and returns it with country preloaded.
-func (s *Service) UpdateSupplier(ctx context.Context, id int, payload SupplierUpdate) (*Supplier, error) {
-	var existing Supplier
-	if err := s.db.WithContext(ctx).First(&existing, "id = ?", id).Error; err != nil {
-		return nil, err
+func (s *Service) UpdateSupplier(contextValue context.Context, supplierID int, updates Supplier) (*Supplier, error) {
+	existingSupplier, errorValue := s.repository.ByID(contextValue, supplierID)
+	if errorValue != nil {
+		return nil, errorValue
 	}
 
-	existing.Name = payload.Name
-	existing.Title = payload.Title
-	existing.FirstName = payload.FirstName
-	existing.LastName = payload.LastName
-	existing.Street = payload.Street
-	existing.HouseNumber = payload.HouseNumber
-	existing.City = payload.City
-	existing.PostalCode = payload.PostalCode
-	existing.CountryID = payload.CountryID
-	existing.PhoneNumber1 = payload.PhoneNumber1
-	existing.PhoneNumber2 = payload.PhoneNumber2
-	existing.PhoneNumber3 = payload.PhoneNumber3
-	existing.Email = payload.Email
-	existing.Website = payload.Website
+	existingSupplier.Name = updates.Name
+	existingSupplier.Title = updates.Title
+	existingSupplier.FirstName = updates.FirstName
+	existingSupplier.LastName = updates.LastName
+	existingSupplier.Street = updates.Street
+	existingSupplier.HouseNumber = updates.HouseNumber
+	existingSupplier.City = updates.City
+	existingSupplier.PostalCode = updates.PostalCode
+	existingSupplier.CountryID = updates.CountryID
+	existingSupplier.PhoneNumber1 = updates.PhoneNumber1
+	existingSupplier.PhoneNumber2 = updates.PhoneNumber2
+	existingSupplier.PhoneNumber3 = updates.PhoneNumber3
+	existingSupplier.Email = updates.Email
+	existingSupplier.Website = updates.Website
 
-	if err := s.db.WithContext(ctx).Save(&existing).Error; err != nil {
-		return nil, err
+	if errorValue := s.repository.Update(contextValue, &existingSupplier); errorValue != nil {
+		return nil, errorValue
 	}
-	// refresh with preloaded country
-	_ = s.db.WithContext(ctx).Preload("Country").First(&existing, existing.ID).Error
-	return &existing, nil
+
+	return &existingSupplier, nil
 }
 
-// DeleteSupplier deletes a supplier by id.
-func (s *Service) DeleteSupplier(ctx context.Context, id int) error {
-	return s.db.WithContext(ctx).Delete(&Supplier{}, "id = ?", id).Error
+func (s *Service) DeleteSupplier(contextValue context.Context, supplierID int) error {
+	return s.repository.Delete(contextValue, supplierID)
 }
