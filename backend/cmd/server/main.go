@@ -17,6 +17,7 @@ import (
 	"voenix/backend/internal/cart"
 	cartPg "voenix/backend/internal/cart/postgres"
 	"voenix/backend/internal/country"
+	countryPg "voenix/backend/internal/country/postgres"
 	"voenix/backend/internal/database"
 	"voenix/backend/internal/image"
 	"voenix/backend/internal/order"
@@ -84,16 +85,18 @@ func main() {
 	authRepo := authPg.NewRepository(db)
 	articleRepo := articlePg.NewRepository(db)
 	cartRepo := cartPg.NewRepository(db)
+	countryRepo := countryPg.NewRepository(db)
 
 	// Services
 	authSvc := auth.NewService(authRepo)
 	articleSvc := article.NewService(articleRepo)
 	cartSvc := cart.NewService(cartRepo, articleSvc)
+	countrySvc := country.NewService(countryRepo)
 
 	// Routes
 	auth.RegisterRoutes(r, authSvc)
 	vat.RegisterRoutes(r, db)
-	country.RegisterRoutes(r, db)
+	country.RegisterRoutes(r, countrySvc)
 	supplier.RegisterRoutes(r, db)
 	image.RegisterRoutes(r, db)
 	ai.RegisterRoutes(r, db)

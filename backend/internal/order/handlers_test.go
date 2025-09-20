@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 
 	"voenix/backend/internal/article"
@@ -34,7 +35,7 @@ func seedOrderForPDF(t *testing.T, db *gorm.DB, userID int) *Order {
 	if err := db.Create(&variant).Error; err != nil {
 		t.Fatalf("seed variant: %v", err)
 	}
-	orderID := newUUIDv4()
+	orderID := uuid.New().String()
 	order := Order{
 		ID:              orderID,
 		UserID:          userID,
@@ -60,7 +61,7 @@ func seedOrderForPDF(t *testing.T, db *gorm.DB, userID int) *Order {
 		t.Fatalf("set order number: %v", err)
 	}
 	item := OrderItem{
-		ID:         newUUIDv4(),
+		ID:         uuid.New().String(),
 		OrderID:    order.ID,
 		ArticleID:  art.ID,
 		VariantID:  variant.ID,

@@ -2,22 +2,43 @@ package country
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
+type listCountriesRequest struct{}
+
+type countryResponse struct {
+	ID        int       `json:"id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
+
 // RegisterRoutes mounts public country routes under /api/public/countries.
-func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
+func RegisterRoutes(r *gin.Engine, svc *Service) {
 	grp := r.Group("/api/public/countries")
 
 	// GET /api/public/countries -> list all countries (public)
 	grp.GET("", func(c *gin.Context) {
-		var rows []Country
-		if err := db.Find(&rows).Error; err != nil {
+		var req listCountriesRequest
+		if err := c.ShouldBindQuery(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid query"})
+			return
+		}
+
+		countries, err := svc.All(c.Request.Context())
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch countries"})
 			return
 		}
-		c.JSON(http.StatusOK, rows)
+
+		resp := make([]countryResponse, len(countries))
+		for i := range countries {
+			resp[i] = countryResponse(countries[i])
+		}
+
+		c.JSON(http.StatusOK, resp)
 	})
 }

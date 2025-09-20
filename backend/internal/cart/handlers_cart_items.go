@@ -33,14 +33,7 @@ func addItemHandler(svc *Service) gin.HandlerFunc {
 			return
 		}
 
-		input := AddItemInput{
-			ArticleID:        req.ArticleID,
-			VariantID:        req.VariantID,
-			Quantity:         req.Quantity,
-			CustomData:       req.CustomData,
-			GeneratedImageID: req.GeneratedImageID,
-			PromptID:         req.PromptID,
-		}
+		input := AddItemInput(req)
 		detail, err := svc.AddItem(c.Request.Context(), u.ID, input)
 		if err != nil {
 			writeServiceError(c, err)

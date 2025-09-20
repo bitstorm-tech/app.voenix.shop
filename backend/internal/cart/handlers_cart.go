@@ -10,7 +10,7 @@ import (
 	"voenix/backend/internal/article"
 )
 
-type CartSummaryResponse struct {
+type cartSummaryResponse struct {
 	ItemCount  int  `json:"itemCount"`
 	TotalPrice int  `json:"totalPrice"`
 	HasItems   bool `json:"hasItems"`
@@ -136,14 +136,6 @@ func refreshPricesHandler(svc *Service) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, dto)
-	}
-}
-
-func cartSummaryResponse(summary CartSummary) CartSummaryResponse {
-	return CartSummaryResponse{
-		ItemCount:  summary.ItemCount,
-		TotalPrice: summary.TotalPrice,
-		HasItems:   summary.HasItems,
 	}
 }
 
