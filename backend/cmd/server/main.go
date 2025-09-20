@@ -28,6 +28,7 @@ import (
 	"voenix/backend/internal/supplier"
 	supplierPg "voenix/backend/internal/supplier/postgres"
 	"voenix/backend/internal/vat"
+	vatPg "voenix/backend/internal/vat/postgres"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -94,6 +95,7 @@ func main() {
 	orderRepo := orderPg.NewRepository(db)
 	promptRepo := promptPg.NewRepository(db)
 	supplierRepo := supplierPg.NewRepository(db)
+	vatRepo := vatPg.NewRepository(db)
 
 	// Services
 	authSvc := auth.NewService(authRepo)
@@ -103,11 +105,12 @@ func main() {
 	countrySvc := country.NewService(countryRepo)
 	supplierSvc := supplier.NewService(supplierRepo)
 	orderSvc := order.NewService(orderRepo, articleSvc)
+	vatSvc := vat.NewService(vatRepo)
 	promptSvc := prompt.NewService(promptRepo, ai.ProviderLLMIDs())
 
 	// Routes
 	auth.RegisterRoutes(r, authSvc)
-	vat.RegisterRoutes(r, db)
+	vat.RegisterRoutes(r, db, vatSvc)
 	country.RegisterRoutes(r, countrySvc)
 	supplier.RegisterRoutes(r, db, supplierSvc)
 	image.RegisterRoutes(r, db, imageSvc)

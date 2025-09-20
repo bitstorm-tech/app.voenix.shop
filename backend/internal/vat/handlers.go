@@ -12,98 +12,126 @@ import (
 )
 
 // RegisterRoutes mounts VAT admin routes under /api/admin/vat, guarded by RequireAdmin.
-func RegisterRoutes(r *gin.Engine, db *gorm.DB) {
-	group := r.Group("/api/admin/vat")
-	group.Use(auth.RequireAdmin(db))
-	vatService := NewVATService(db)
+func RegisterRoutes(engine *gin.Engine, database *gorm.DB, vatService Service) {
+	group := engine.Group("/api/admin/vat")
+	group.Use(auth.RequireAdmin(database))
 
-	// GET /api/admin/vat/ -> list all
-	group.GET("", func(c *gin.Context) {
-		rows, err := vatService.List(c.Request.Context())
+	group.GET("", func(context *gin.Context) {
+		values, err := vatService.List(context.Request.Context())
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch VATs"})
+			context.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch VATs"})
 			return
 		}
-		c.JSON(http.StatusOK, rows)
+		context.JSON(http.StatusOK, makeValueAddedTaxListResponse(values))
 	})
 
-	// GET /api/admin/vat/:id -> single by id
-	group.GET("/:id", func(c *gin.Context) {
-		id, err := strconv.Atoi(c.Param("id"))
+	group.GET("/:id", func(context *gin.Context) {
+		identifier, err := strconv.Atoi(context.Param("id"))
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
+			context.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
 			return
 		}
-		row, err := vatService.Get(c.Request.Context(), id)
+		value, err := vatService.Get(context.Request.Context(), identifier)
 		if err != nil {
 			if errors.Is(err, ErrNotFound) {
-				c.JSON(http.StatusNotFound, gin.H{"detail": "VAT not found"})
+				context.JSON(http.StatusNotFound, gin.H{"detail": "VAT not found"})
 				return
 			}
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch VAT"})
+			context.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch VAT"})
 			return
 		}
-		c.JSON(http.StatusOK, row)
+		context.JSON(http.StatusOK, createValueAddedTaxResponse(value))
 	})
 
-	// POST /api/admin/vat/ -> create
-	group.POST("", func(c *gin.Context) {
-		var payload ValueAddedTaxCreate
-		if err := c.ShouldBindJSON(&payload); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
+	group.POST("", func(context *gin.Context) {
+		var request updateValueAddedTaxRequest
+		if err := context.ShouldBindJSON(&request); err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		created, err := vatService.Create(c.Request.Context(), payload)
+		created, err := vatService.Create(context.Request.Context(), request.toCreate())
 		if err != nil {
 			if errors.Is(err, ErrConflict) {
-				c.JSON(http.StatusConflict, gin.H{"detail": "A VAT with this name already exists."})
+				context.JSON(http.StatusConflict, gin.H{"detail": "A VAT with this name already exists."})
 				return
 			}
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create VAT"})
+			context.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create VAT"})
 			return
 		}
-		c.JSON(http.StatusCreated, created)
+		context.JSON(http.StatusCreated, createValueAddedTaxResponse(created))
 	})
 
-	// PUT /api/admin/vat/:id -> update
-	group.PUT("/:id", func(c *gin.Context) {
-		id, err := strconv.Atoi(c.Param("id"))
+	group.PUT("/:id", func(context *gin.Context) {
+		identifier, err := strconv.Atoi(context.Param("id"))
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
+			context.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
 			return
 		}
-		var payload ValueAddedTaxUpdate
-		if err := c.ShouldBindJSON(&payload); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
+		var request updateValueAddedTaxRequest
+		if err := context.ShouldBindJSON(&request); err != nil {
+			context.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		updated, err := vatService.Update(c.Request.Context(), id, payload)
+		updated, err := vatService.Update(context.Request.Context(), identifier, request.toCreate())
 		if err != nil {
 			if errors.Is(err, ErrNotFound) {
-				c.JSON(http.StatusNotFound, gin.H{"detail": "VAT not found"})
+				context.JSON(http.StatusNotFound, gin.H{"detail": "VAT not found"})
 				return
 			}
 			if errors.Is(err, ErrConflict) {
-				c.JSON(http.StatusConflict, gin.H{"detail": "A VAT with this name already exists."})
+				context.JSON(http.StatusConflict, gin.H{"detail": "A VAT with this name already exists."})
 				return
 			}
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update VAT"})
+			context.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update VAT"})
 			return
 		}
-		c.JSON(http.StatusOK, updated)
+		context.JSON(http.StatusOK, createValueAddedTaxResponse(updated))
 	})
 
-	// DELETE /api/admin/vat/:id -> delete
-	group.DELETE("/:id", func(c *gin.Context) {
-		id, err := strconv.Atoi(c.Param("id"))
+	group.DELETE("/:id", func(context *gin.Context) {
+		identifier, err := strconv.Atoi(context.Param("id"))
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
+			context.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid id"})
 			return
 		}
-		if err := vatService.Delete(c.Request.Context(), id); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete VAT"})
+		if err := vatService.Delete(context.Request.Context(), identifier); err != nil {
+			context.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete VAT"})
 			return
 		}
-		c.Status(http.StatusNoContent)
+		context.Status(http.StatusNoContent)
 	})
+}
+
+type updateValueAddedTaxRequest struct {
+	Name        string  `json:"name" binding:"required"`
+	Percent     int     `json:"percent" binding:"required"`
+	Description *string `json:"description"`
+	IsDefault   bool    `json:"isDefault"`
+}
+
+func (request updateValueAddedTaxRequest) toCreate() ValueAddedTaxCreate {
+	return ValueAddedTaxCreate(request)
+}
+
+func makeValueAddedTaxListResponse(values []ValueAddedTax) []gin.H {
+	responses := make([]gin.H, 0, len(values))
+	for _, value := range values {
+		responses = append(responses, createValueAddedTaxResponse(value))
+	}
+	return responses
+}
+
+func createValueAddedTaxResponse(value ValueAddedTax) gin.H {
+	response := gin.H{
+		"id":        value.ID,
+		"name":      value.Name,
+		"percent":   value.Percent,
+		"isDefault": value.IsDefault,
+		"createdAt": value.CreatedAt,
+		"updatedAt": value.UpdatedAt,
+	}
+	if value.Description != nil {
+		response["description"] = value.Description
+	}
+	return response
 }
