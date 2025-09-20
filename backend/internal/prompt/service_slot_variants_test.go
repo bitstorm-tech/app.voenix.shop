@@ -65,8 +65,8 @@ func (m *mockRepository) SlotTypeByID(_ context.Context, id int) (*PromptSlotTyp
 	if !ok {
 		return nil, gorm.ErrRecordNotFound
 	}
-	copy := st
-	return &copy, nil
+	clone := st
+	return &clone, nil
 }
 
 func (m *mockRepository) SlotTypeNameExists(_ context.Context, name string, excludeID *int) (bool, error) {
@@ -116,8 +116,8 @@ func (m *mockRepository) SlotVariantByID(_ context.Context, id int) (*PromptSlot
 	if !ok {
 		return nil, gorm.ErrRecordNotFound
 	}
-	copy := m.cloneVariant(variant)
-	return &copy, nil
+	clone := m.cloneVariant(variant)
+	return &clone, nil
 }
 
 func (m *mockRepository) SlotVariantNameExists(_ context.Context, name string, excludeID *int) (bool, error) {
@@ -139,8 +139,8 @@ func (m *mockRepository) CreateSlotVariant(_ context.Context, variant *PromptSlo
 	variant.ID = id
 	variant.CreatedAt = now
 	variant.UpdatedAt = now
-	copy := m.cloneVariant(*variant)
-	m.slotVariants[id] = copy
+	clone := m.cloneVariant(*variant)
+	m.slotVariants[id] = clone
 	return nil
 }
 
@@ -149,8 +149,8 @@ func (m *mockRepository) SaveSlotVariant(_ context.Context, variant *PromptSlotV
 		return gorm.ErrRecordNotFound
 	}
 	variant.UpdatedAt = time.Now()
-	copy := m.cloneVariant(*variant)
-	m.slotVariants[variant.ID] = copy
+	clone := m.cloneVariant(*variant)
+	m.slotVariants[variant.ID] = clone
 	return nil
 }
 
