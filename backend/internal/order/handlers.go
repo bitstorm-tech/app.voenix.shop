@@ -6,13 +6,88 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"voenix/backend/internal/article"
 	"voenix/backend/internal/auth"
 	"voenix/backend/internal/pdf"
 )
+
+type AddressRequest struct {
+	StreetAddress1 string  `json:"streetAddress1" binding:"required"`
+	StreetAddress2 *string `json:"streetAddress2"`
+	City           string  `json:"city" binding:"required"`
+	State          string  `json:"state" binding:"required"`
+	PostalCode     string  `json:"postalCode" binding:"required"`
+	Country        string  `json:"country" binding:"required"`
+}
+
+type AddressResponse struct {
+	StreetAddress1 string  `json:"streetAddress1"`
+	StreetAddress2 *string `json:"streetAddress2"`
+	City           string  `json:"city"`
+	State          string  `json:"state"`
+	PostalCode     string  `json:"postalCode"`
+	Country        string  `json:"country"`
+}
+
+type CreateOrderRequest struct {
+	CustomerEmail        string          `json:"customerEmail" binding:"required,email"`
+	CustomerFirstName    string          `json:"customerFirstName" binding:"required"`
+	CustomerLastName     string          `json:"customerLastName" binding:"required"`
+	CustomerPhone        *string         `json:"customerPhone"`
+	ShippingAddress      AddressRequest  `json:"shippingAddress" binding:"required"`
+	BillingAddress       *AddressRequest `json:"billingAddress"`
+	UseShippingAsBilling *bool           `json:"useShippingAsBilling"`
+	Notes                *string         `json:"notes"`
+}
+
+type OrderItemResponse struct {
+	ID                     string                  `json:"id"`
+	Article                article.ArticleResponse `json:"article"`
+	Variant                *article.MugVariant     `json:"variant"`
+	Quantity               int                     `json:"quantity"`
+	PricePerItem           int64                   `json:"pricePerItem"`
+	TotalPrice             int64                   `json:"totalPrice"`
+	GeneratedImageID       *int                    `json:"generatedImageId,omitempty"`
+	GeneratedImageFilename *string                 `json:"generatedImageFilename,omitempty"`
+	PromptID               *int                    `json:"promptId,omitempty"`
+	CustomData             map[string]any          `json:"customData"`
+	CreatedAt              time.Time               `json:"createdAt"`
+}
+
+type OrderResponse struct {
+	ID              string              `json:"id"`
+	OrderNumber     string              `json:"orderNumber"`
+	CustomerEmail   string              `json:"customerEmail"`
+	CustomerFirst   string              `json:"customerFirstName"`
+	CustomerLast    string              `json:"customerLastName"`
+	CustomerPhone   *string             `json:"customerPhone,omitempty"`
+	ShippingAddress AddressResponse     `json:"shippingAddress"`
+	BillingAddress  *AddressResponse    `json:"billingAddress,omitempty"`
+	Subtotal        int64               `json:"subtotal"`
+	TaxAmount       int64               `json:"taxAmount"`
+	ShippingAmount  int64               `json:"shippingAmount"`
+	TotalAmount     int64               `json:"totalAmount"`
+	Status          string              `json:"status"`
+	CartID          int                 `json:"cartId"`
+	Notes           *string             `json:"notes,omitempty"`
+	Items           []OrderItemResponse `json:"items"`
+	PDFURL          string              `json:"pdfUrl"`
+	CreatedAt       time.Time           `json:"createdAt"`
+	UpdatedAt       time.Time           `json:"updatedAt"`
+}
+
+type PaginatedResponse[T any] struct {
+	Content       []T   `json:"content"`
+	CurrentPage   int   `json:"currentPage"`
+	TotalPages    int   `json:"totalPages"`
+	TotalElements int64 `json:"totalElements"`
+	Size          int   `json:"size"`
+}
 
 // RegisterRoutes mounts user order routes under /api/user.
 func RegisterRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
@@ -41,12 +116,12 @@ func createOrderHandler(svc *Service) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": err.Error()})
 			return
 		}
-		dto, err := svc.OrderDTO(c.Request.Context(), *ord, BaseURL())
+		response, err := svc.BuildOrderResponse(c.Request.Context(), *ord, BaseURL())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble order"})
 			return
 		}
-		c.JSON(http.StatusCreated, dto)
+		c.JSON(http.StatusCreated, response)
 	}
 }
 
@@ -63,20 +138,20 @@ func listOrdersHandler(svc *Service) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to list orders"})
 			return
 		}
-		out := PaginatedResponse[OrderDto]{
-			Content:       make([]OrderDto, 0, len(pageResult.Orders)),
+		out := PaginatedResponse[OrderResponse]{
+			Content:       make([]OrderResponse, 0, len(pageResult.Orders)),
 			CurrentPage:   pageResult.CurrentPage,
 			TotalPages:    pageResult.TotalPages,
 			TotalElements: pageResult.TotalElements,
 			Size:          pageResult.Size,
 		}
 		for _, ord := range pageResult.Orders {
-			dto, err := svc.OrderDTO(c.Request.Context(), ord, BaseURL())
+			resp, err := svc.BuildOrderResponse(c.Request.Context(), ord, BaseURL())
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble orders"})
 				return
 			}
-			out.Content = append(out.Content, dto)
+			out.Content = append(out.Content, resp)
 		}
 		c.JSON(http.StatusOK, out)
 	}
@@ -98,12 +173,12 @@ func getOrderHandler(svc *Service) gin.HandlerFunc {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to load order"})
 			return
 		}
-		dto, err := svc.OrderDTO(c.Request.Context(), *ord, BaseURL())
+		resp, err := svc.BuildOrderResponse(c.Request.Context(), *ord, BaseURL())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to assemble order"})
 			return
 		}
-		c.JSON(http.StatusOK, dto)
+		c.JSON(http.StatusOK, resp)
 	}
 }
 

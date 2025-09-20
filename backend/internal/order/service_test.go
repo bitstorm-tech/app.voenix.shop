@@ -25,7 +25,7 @@ func TestCreateOrderFromCart(t *testing.T) {
 		CustomerEmail:     "john@example.com",
 		CustomerFirstName: "John",
 		CustomerLastName:  "Doe",
-		ShippingAddress:   AddressDto{StreetAddress1: "123 Main", City: "City", State: "ST", PostalCode: "00000", Country: "USA"},
+		ShippingAddress:   AddressRequest{StreetAddress1: "123 Main", City: "City", State: "ST", PostalCode: "00000", Country: "USA"},
 	}
 
 	ord, err := svc.CreateOrderFromCart(context.Background(), userID, req)

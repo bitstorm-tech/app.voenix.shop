@@ -11,8 +11,6 @@ import (
 	"github.com/google/uuid"
 
 	"voenix/backend/internal/article"
-	"voenix/backend/internal/cart"
-
 	"voenix/backend/internal/pdf"
 )
 
@@ -135,16 +133,16 @@ func (s *Service) GetOrder(ctx context.Context, userID int, orderID string) (*Or
 	return o, nil
 }
 
-func (s *Service) OrderDTO(ctx context.Context, o Order, baseURL string) (OrderDto, error) {
-	return s.toOrderDto(ctx, o, baseURL)
+func (s *Service) BuildOrderResponse(ctx context.Context, o Order, baseURL string) (OrderResponse, error) {
+	return s.buildOrderResponse(ctx, o, baseURL)
 }
 
 func (s *Service) BuildOrderPDFData(ctx context.Context, o Order) (pdf.OrderPdfData, error) {
 	return buildOrderPdfData(ctx, s.articleSvc, s.repo, &o)
 }
 
-func (s *Service) toOrderDto(ctx context.Context, o Order, baseURL string) (OrderDto, error) {
-	ship, bill := toAddressDtoFromOrder(o)
+func (s *Service) buildOrderResponse(ctx context.Context, o Order, baseURL string) (OrderResponse, error) {
+	ship, bill := toAddressResponsesFromOrder(o)
 
 	generatedImageIDs := make([]int, 0, len(o.Items))
 	for _, it := range o.Items {
@@ -154,23 +152,23 @@ func (s *Service) toOrderDto(ctx context.Context, o Order, baseURL string) (Orde
 	}
 	generatedFilenames, err := s.repo.FetchGeneratedImageFilenames(ctx, generatedImageIDs)
 	if err != nil {
-		return OrderDto{}, err
+		return OrderResponse{}, err
 	}
 
-	items := make([]OrderItemDto, 0, len(o.Items))
+	items := make([]OrderItemResponse, 0, len(o.Items))
 	for _, it := range o.Items {
 		art, err := s.loadArticleResponse(ctx, it.ArticleID)
 		if err != nil {
-			return OrderDto{}, err
+			return OrderResponse{}, err
 		}
-		mv, _ := s.loadMugVariantDto(ctx, it.VariantID)
+		mv, _ := s.loadMugVariant(ctx, it.VariantID)
 		var genFilename *string
 		if it.GeneratedImageID != nil {
 			if fn, ok := generatedFilenames[*it.GeneratedImageID]; ok && fn != "" {
 				genFilename = &fn
 			}
 		}
-		items = append(items, OrderItemDto{
+		items = append(items, OrderItemResponse{
 			ID:                     it.ID,
 			Article:                art,
 			Variant:                mv,
@@ -186,7 +184,7 @@ func (s *Service) toOrderDto(ctx context.Context, o Order, baseURL string) (Orde
 	}
 
 	pdfURL := fmt.Sprintf("%s/api/user/orders/%s/pdf", strings.TrimRight(baseURL, "/"), o.ID)
-	return OrderDto{
+	return OrderResponse{
 		ID:              o.ID,
 		OrderNumber:     o.OrderNumber,
 		CustomerEmail:   o.CustomerEmail,
@@ -217,16 +215,23 @@ func (s *Service) loadArticleResponse(ctx context.Context, id int) (article.Arti
 	return resp, nil
 }
 
-func (s *Service) loadMugVariantDto(ctx context.Context, id int) (*cart.MugVariantResponse, error) {
+func (s *Service) loadMugVariant(ctx context.Context, id int) (*article.MugVariant, error) {
 	v, err := s.articleSvc.GetMugVariant(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return cart.BuildMugVariantResponse(&v), nil
+	return &article.MugVariant{
+		ID:                   v.ID,
+		ArticleID:            v.ArticleID,
+		OutsideColorCode:     v.OutsideColorCode,
+		ArticleVariantNumber: v.ArticleVariantNumber,
+		IsDefault:            v.IsDefault,
+		ExampleImageFilename: v.ExampleImageFilename,
+	}, nil
 }
 
-func toAddressDtoFromOrder(o Order) (AddressDto, *AddressDto) {
-	ship := AddressDto{
+func toAddressResponsesFromOrder(o Order) (AddressResponse, *AddressResponse) {
+	ship := AddressResponse{
 		StreetAddress1: o.ShippingStreet1,
 		StreetAddress2: o.ShippingStreet2,
 		City:           o.ShippingCity,
@@ -234,9 +239,9 @@ func toAddressDtoFromOrder(o Order) (AddressDto, *AddressDto) {
 		PostalCode:     o.ShippingPostal,
 		Country:        o.ShippingCountry,
 	}
-	var bill *AddressDto
+	var bill *AddressResponse
 	if o.BillingStreet1 != nil || o.BillingCity != nil || o.BillingState != nil || o.BillingPostal != nil || o.BillingCountry != nil {
-		b := AddressDto{
+		b := AddressResponse{
 			StreetAddress1: deref(o.BillingStreet1),
 			StreetAddress2: o.BillingStreet2,
 			City:           deref(o.BillingCity),
