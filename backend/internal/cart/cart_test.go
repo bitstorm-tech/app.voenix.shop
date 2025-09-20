@@ -13,6 +13,7 @@ import (
 	cartpkg "voenix/backend/internal/cart"
 	cartpostgres "voenix/backend/internal/cart/postgres"
 	"voenix/backend/internal/prompt"
+	promptpostgres "voenix/backend/internal/prompt/postgres"
 )
 
 type stubArticleService struct {
@@ -89,17 +90,25 @@ func setupCartTestDB(t *testing.T) *gorm.DB {
 	if err != nil {
 		t.Fatalf("open db: %v", err)
 	}
-	if err := db.AutoMigrate(
+	models := []any{
 		&article.Article{},
 		&article.ArticleCategory{},
 		&article.ArticleSubCategory{},
 		&article.MugVariant{},
 		&article.Price{},
-		&prompt.Prompt{},
 		&cartpostgres.CartRow{},
 		&cartpostgres.CartItemRow{},
 		&authpostgres.UserRow{},
-	); err != nil {
+	}
+	models = append(models,
+		&promptpostgres.PromptCategoryRow{},
+		&promptpostgres.PromptSubCategoryRow{},
+		&promptpostgres.PromptSlotTypeRow{},
+		&promptpostgres.PromptSlotVariantRow{},
+		&promptpostgres.PromptSlotVariantMappingRow{},
+		&promptpostgres.PromptRow{},
+	)
+	if err := db.AutoMigrate(models...); err != nil {
 		t.Fatalf("migrate: %v", err)
 	}
 	return db
@@ -116,8 +125,9 @@ func TestCartResponseIncludesPromptPricing(t *testing.T) {
 	if err := db.Create(&variant).Error; err != nil {
 		t.Fatalf("seed variant: %v", err)
 	}
-	promptRow := prompt.Prompt{ID: 1, Title: "Snowy Scene", Active: true}
-	if err := db.Create(&promptRow).Error; err != nil {
+	promptRepo := promptpostgres.NewRepository(db)
+	promptRow := prompt.Prompt{Title: "Snowy Scene", Active: true}
+	if err := promptRepo.CreatePrompt(context.Background(), &promptRow); err != nil {
 		t.Fatalf("seed prompt: %v", err)
 	}
 	userRow := authpostgres.UserRow{ID: 42, Email: "user@example.com"}
@@ -234,8 +244,9 @@ func TestGetCartSummaryIncludesPromptPrice(t *testing.T) {
 	if err := db.Create(&variant).Error; err != nil {
 		t.Fatalf("seed variant: %v", err)
 	}
-	promptRow := prompt.Prompt{ID: 7, Title: "Starry", Active: true}
-	if err := db.Create(&promptRow).Error; err != nil {
+	promptRepo := promptpostgres.NewRepository(db)
+	promptRow := prompt.Prompt{Title: "Starry", Active: true}
+	if err := promptRepo.CreatePrompt(context.Background(), &promptRow); err != nil {
 		t.Fatalf("seed prompt: %v", err)
 	}
 	userRow := authpostgres.UserRow{ID: 77, Email: "summary@example.com"}

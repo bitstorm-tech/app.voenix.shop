@@ -50,7 +50,7 @@ func (r *Repository) promptQuery(ctx context.Context) *gorm.DB {
 // Slot types
 
 func (r *Repository) ListSlotTypes(ctx context.Context) ([]prompt.PromptSlotType, error) {
-	var rows []promptSlotTypeRow
+	var rows []PromptSlotTypeRow
 	if err := r.with(ctx).Order("id desc").Find(&rows).Error; err != nil {
 		return nil, err
 	}
@@ -62,7 +62,7 @@ func (r *Repository) ListSlotTypes(ctx context.Context) ([]prompt.PromptSlotType
 }
 
 func (r *Repository) SlotTypeByID(ctx context.Context, id int) (*prompt.PromptSlotType, error) {
-	var row promptSlotTypeRow
+	var row PromptSlotTypeRow
 	if err := r.with(ctx).First(&row, "id = ?", id).Error; err != nil {
 		return nil, wrapNotFound(err)
 	}
@@ -71,7 +71,7 @@ func (r *Repository) SlotTypeByID(ctx context.Context, id int) (*prompt.PromptSl
 }
 
 func (r *Repository) SlotTypeNameExists(ctx context.Context, name string, excludeID *int) (bool, error) {
-	query := r.with(ctx).Model(&promptSlotTypeRow{}).Where("name = ?", name)
+	query := r.with(ctx).Model(&PromptSlotTypeRow{}).Where("name = ?", name)
 	if excludeID != nil {
 		query = query.Where("id <> ?", *excludeID)
 	}
@@ -83,7 +83,7 @@ func (r *Repository) SlotTypeNameExists(ctx context.Context, name string, exclud
 }
 
 func (r *Repository) SlotTypePositionExists(ctx context.Context, position int, excludeID *int) (bool, error) {
-	query := r.with(ctx).Model(&promptSlotTypeRow{}).Where("position = ?", position)
+	query := r.with(ctx).Model(&PromptSlotTypeRow{}).Where("position = ?", position)
 	if excludeID != nil {
 		query = query.Where("id <> ?", *excludeID)
 	}
@@ -113,7 +113,7 @@ func (r *Repository) SaveSlotType(ctx context.Context, slotType *prompt.PromptSl
 }
 
 func (r *Repository) DeleteSlotType(ctx context.Context, id int) error {
-	res := r.with(ctx).Delete(&promptSlotTypeRow{}, "id = ?", id)
+	res := r.with(ctx).Delete(&PromptSlotTypeRow{}, "id = ?", id)
 	if res.Error != nil {
 		return wrapNotFound(res.Error)
 	}
@@ -126,7 +126,7 @@ func (r *Repository) DeleteSlotType(ctx context.Context, id int) error {
 // Slot variants
 
 func (r *Repository) ListSlotVariants(ctx context.Context) ([]prompt.PromptSlotVariant, error) {
-	var rows []promptSlotVariantRow
+	var rows []PromptSlotVariantRow
 	if err := r.with(ctx).Preload("PromptSlotType").Order("id desc").Find(&rows).Error; err != nil {
 		return nil, err
 	}
@@ -138,7 +138,7 @@ func (r *Repository) ListSlotVariants(ctx context.Context) ([]prompt.PromptSlotV
 }
 
 func (r *Repository) SlotVariantByID(ctx context.Context, id int) (*prompt.PromptSlotVariant, error) {
-	var row promptSlotVariantRow
+	var row PromptSlotVariantRow
 	if err := r.with(ctx).Preload("PromptSlotType").First(&row, "id = ?", id).Error; err != nil {
 		return nil, wrapNotFound(err)
 	}
@@ -147,7 +147,7 @@ func (r *Repository) SlotVariantByID(ctx context.Context, id int) (*prompt.Promp
 }
 
 func (r *Repository) SlotVariantNameExists(ctx context.Context, name string, excludeID *int) (bool, error) {
-	query := r.with(ctx).Model(&promptSlotVariantRow{}).Where("name = ?", name)
+	query := r.with(ctx).Model(&PromptSlotVariantRow{}).Where("name = ?", name)
 	if excludeID != nil {
 		query = query.Where("id <> ?", *excludeID)
 	}
@@ -177,7 +177,7 @@ func (r *Repository) SaveSlotVariant(ctx context.Context, variant *prompt.Prompt
 }
 
 func (r *Repository) DeleteSlotVariant(ctx context.Context, id int) error {
-	res := r.with(ctx).Delete(&promptSlotVariantRow{}, "id = ?", id)
+	res := r.with(ctx).Delete(&PromptSlotVariantRow{}, "id = ?", id)
 	if res.Error != nil {
 		return wrapNotFound(res.Error)
 	}
@@ -189,7 +189,7 @@ func (r *Repository) DeleteSlotVariant(ctx context.Context, id int) error {
 
 func (r *Repository) SlotTypeExists(ctx context.Context, id int) (bool, error) {
 	var cnt int64
-	if err := r.with(ctx).Model(&promptSlotTypeRow{}).Where("id = ?", id).Count(&cnt).Error; err != nil {
+	if err := r.with(ctx).Model(&PromptSlotTypeRow{}).Where("id = ?", id).Count(&cnt).Error; err != nil {
 		return false, err
 	}
 	return cnt > 0, nil
@@ -200,7 +200,7 @@ func (r *Repository) SlotVariantsExist(ctx context.Context, ids []int) (bool, er
 		return true, nil
 	}
 	var cnt int64
-	if err := r.with(ctx).Model(&promptSlotVariantRow{}).Where("id IN ?", ids).Count(&cnt).Error; err != nil {
+	if err := r.with(ctx).Model(&PromptSlotVariantRow{}).Where("id IN ?", ids).Count(&cnt).Error; err != nil {
 		return false, err
 	}
 	return cnt == int64(len(ids)), nil
@@ -209,7 +209,7 @@ func (r *Repository) SlotVariantsExist(ctx context.Context, ids []int) (bool, er
 // Categories
 
 func (r *Repository) ListCategories(ctx context.Context) ([]prompt.PromptCategory, error) {
-	var rows []promptCategoryRow
+	var rows []PromptCategoryRow
 	if err := r.with(ctx).Order("id desc").Find(&rows).Error; err != nil {
 		return nil, err
 	}
@@ -230,7 +230,7 @@ func (r *Repository) CreateCategory(ctx context.Context, category *prompt.Prompt
 }
 
 func (r *Repository) CategoryByID(ctx context.Context, id int) (*prompt.PromptCategory, error) {
-	var row promptCategoryRow
+	var row PromptCategoryRow
 	if err := r.with(ctx).First(&row, "id = ?", id).Error; err != nil {
 		return nil, wrapNotFound(err)
 	}
@@ -248,7 +248,7 @@ func (r *Repository) SaveCategory(ctx context.Context, category *prompt.PromptCa
 }
 
 func (r *Repository) DeleteCategory(ctx context.Context, id int) error {
-	res := r.with(ctx).Delete(&promptCategoryRow{}, "id = ?", id)
+	res := r.with(ctx).Delete(&PromptCategoryRow{}, "id = ?", id)
 	if res.Error != nil {
 		return wrapNotFound(res.Error)
 	}
@@ -260,7 +260,7 @@ func (r *Repository) DeleteCategory(ctx context.Context, id int) error {
 
 func (r *Repository) CountPromptsByCategory(ctx context.Context, categoryID int) (int, error) {
 	var cnt int64
-	if err := r.with(ctx).Model(&promptRow{}).Where("category_id = ?", categoryID).Count(&cnt).Error; err != nil {
+	if err := r.with(ctx).Model(&PromptRow{}).Where("category_id = ?", categoryID).Count(&cnt).Error; err != nil {
 		return 0, err
 	}
 	return int(cnt), nil
@@ -268,7 +268,7 @@ func (r *Repository) CountPromptsByCategory(ctx context.Context, categoryID int)
 
 func (r *Repository) CountSubCategoriesByCategory(ctx context.Context, categoryID int) (int, error) {
 	var cnt int64
-	if err := r.with(ctx).Model(&promptSubCategoryRow{}).Where("prompt_category_id = ?", categoryID).Count(&cnt).Error; err != nil {
+	if err := r.with(ctx).Model(&PromptSubCategoryRow{}).Where("prompt_category_id = ?", categoryID).Count(&cnt).Error; err != nil {
 		return 0, err
 	}
 	return int(cnt), nil
@@ -277,7 +277,7 @@ func (r *Repository) CountSubCategoriesByCategory(ctx context.Context, categoryI
 // Subcategories
 
 func (r *Repository) ListSubCategories(ctx context.Context) ([]prompt.PromptSubCategory, error) {
-	var rows []promptSubCategoryRow
+	var rows []PromptSubCategoryRow
 	if err := r.with(ctx).Order("id desc").Find(&rows).Error; err != nil {
 		return nil, err
 	}
@@ -289,7 +289,7 @@ func (r *Repository) ListSubCategories(ctx context.Context) ([]prompt.PromptSubC
 }
 
 func (r *Repository) ListSubCategoriesByCategory(ctx context.Context, categoryID int) ([]prompt.PromptSubCategory, error) {
-	var rows []promptSubCategoryRow
+	var rows []PromptSubCategoryRow
 	if err := r.with(ctx).Where("prompt_category_id = ?", categoryID).Order("id desc").Find(&rows).Error; err != nil {
 		return nil, err
 	}
@@ -310,7 +310,7 @@ func (r *Repository) CreateSubCategory(ctx context.Context, subcategory *prompt.
 }
 
 func (r *Repository) SubCategoryByID(ctx context.Context, id int) (*prompt.PromptSubCategory, error) {
-	var row promptSubCategoryRow
+	var row PromptSubCategoryRow
 	if err := r.with(ctx).Preload("PromptCategory").First(&row, "id = ?", id).Error; err != nil {
 		return nil, wrapNotFound(err)
 	}
@@ -328,7 +328,7 @@ func (r *Repository) SaveSubCategory(ctx context.Context, subcategory *prompt.Pr
 }
 
 func (r *Repository) DeleteSubCategory(ctx context.Context, id int) error {
-	res := r.with(ctx).Delete(&promptSubCategoryRow{}, "id = ?", id)
+	res := r.with(ctx).Delete(&PromptSubCategoryRow{}, "id = ?", id)
 	if res.Error != nil {
 		return wrapNotFound(res.Error)
 	}
@@ -340,7 +340,7 @@ func (r *Repository) DeleteSubCategory(ctx context.Context, id int) error {
 
 func (r *Repository) CountPromptsBySubCategory(ctx context.Context, subCategoryID int) (int, error) {
 	var cnt int64
-	if err := r.with(ctx).Model(&promptRow{}).Where("subcategory_id = ?", subCategoryID).Count(&cnt).Error; err != nil {
+	if err := r.with(ctx).Model(&PromptRow{}).Where("subcategory_id = ?", subCategoryID).Count(&cnt).Error; err != nil {
 		return 0, err
 	}
 	return int(cnt), nil
@@ -348,7 +348,7 @@ func (r *Repository) CountPromptsBySubCategory(ctx context.Context, subCategoryI
 
 func (r *Repository) CategoryExists(ctx context.Context, id int) (bool, error) {
 	var cnt int64
-	if err := r.with(ctx).Model(&promptCategoryRow{}).Where("id = ?", id).Count(&cnt).Error; err != nil {
+	if err := r.with(ctx).Model(&PromptCategoryRow{}).Where("id = ?", id).Count(&cnt).Error; err != nil {
 		return false, err
 	}
 	return cnt > 0, nil
@@ -357,7 +357,7 @@ func (r *Repository) CategoryExists(ctx context.Context, id int) (bool, error) {
 // Prompts
 
 func (r *Repository) ListPrompts(ctx context.Context) ([]prompt.Prompt, error) {
-	var rows []promptRow
+	var rows []PromptRow
 	if err := r.promptQuery(ctx).Order("id desc").Find(&rows).Error; err != nil {
 		return nil, err
 	}
@@ -369,7 +369,7 @@ func (r *Repository) ListPrompts(ctx context.Context) ([]prompt.Prompt, error) {
 }
 
 func (r *Repository) ListPublicPrompts(ctx context.Context) ([]prompt.Prompt, error) {
-	var rows []promptRow
+	var rows []PromptRow
 	if err := r.promptQuery(ctx).Where("active = ?", true).Order("id desc").Find(&rows).Error; err != nil {
 		return nil, err
 	}
@@ -381,7 +381,7 @@ func (r *Repository) ListPublicPrompts(ctx context.Context) ([]prompt.Prompt, er
 }
 
 func (r *Repository) PromptByID(ctx context.Context, id int) (*prompt.Prompt, error) {
-	var row promptRow
+	var row PromptRow
 	if err := r.promptQuery(ctx).First(&row, "id = ?", id).Error; err != nil {
 		return nil, wrapNotFound(err)
 	}
@@ -393,7 +393,7 @@ func (r *Repository) PromptsByIDs(ctx context.Context, ids []int) ([]prompt.Prom
 	if len(ids) == 0 {
 		return []prompt.Prompt{}, nil
 	}
-	var rows []promptRow
+	var rows []PromptRow
 	if err := r.promptQuery(ctx).Where("id IN ?", ids).Find(&rows).Error; err != nil {
 		return nil, err
 	}
@@ -423,7 +423,7 @@ func (r *Repository) SavePrompt(ctx context.Context, p *prompt.Prompt) error {
 }
 
 func (r *Repository) DeletePrompt(ctx context.Context, id int) error {
-	res := r.with(ctx).Delete(&promptRow{}, "id = ?", id)
+	res := r.with(ctx).Delete(&PromptRow{}, "id = ?", id)
 	if res.Error != nil {
 		return wrapNotFound(res.Error)
 	}
@@ -435,15 +435,15 @@ func (r *Repository) DeletePrompt(ctx context.Context, id int) error {
 
 func (r *Repository) ReplacePromptSlotVariantMappings(ctx context.Context, promptID int, slotIDs []int) error {
 	tx := r.with(ctx)
-	if err := tx.Where("prompt_id = ?", promptID).Delete(&promptSlotVariantMappingRow{}).Error; err != nil {
+	if err := tx.Where("prompt_id = ?", promptID).Delete(&PromptSlotVariantMappingRow{}).Error; err != nil {
 		return err
 	}
 	if len(slotIDs) == 0 {
 		return nil
 	}
-	rows := make([]promptSlotVariantMappingRow, 0, len(slotIDs))
+	rows := make([]PromptSlotVariantMappingRow, 0, len(slotIDs))
 	for _, id := range slotIDs {
-		rows = append(rows, promptSlotVariantMappingRow{PromptID: promptID, SlotID: id})
+		rows = append(rows, PromptSlotVariantMappingRow{PromptID: promptID, SlotID: id})
 	}
 	return tx.Create(&rows).Error
 }

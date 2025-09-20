@@ -10,16 +10,18 @@ import (
 // Database representations used by the Postgres repository. These structs keep
 // GORM configuration isolated from the rest of the prompt package.
 
-type promptCategoryRow struct {
+type PromptCategoryRow struct {
 	ID        int    `gorm:"primaryKey"`
 	Name      string `gorm:"size:255;uniqueIndex;not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-func (promptCategoryRow) TableName() string { return "prompt_categories" }
+func (PromptCategoryRow) TableName() string {
+	return "prompt_categories"
+}
 
-func (r promptCategoryRow) toDomain() prompt.PromptCategory {
+func (r PromptCategoryRow) toDomain() prompt.PromptCategory {
 	return prompt.PromptCategory{
 		ID:        r.ID,
 		Name:      r.Name,
@@ -28,8 +30,8 @@ func (r promptCategoryRow) toDomain() prompt.PromptCategory {
 	}
 }
 
-func promptCategoryRowFromDomain(v *prompt.PromptCategory) promptCategoryRow {
-	return promptCategoryRow{
+func promptCategoryRowFromDomain(v *prompt.PromptCategory) PromptCategoryRow {
+	return PromptCategoryRow{
 		ID:        v.ID,
 		Name:      v.Name,
 		CreatedAt: v.CreatedAt,
@@ -37,19 +39,21 @@ func promptCategoryRowFromDomain(v *prompt.PromptCategory) promptCategoryRow {
 	}
 }
 
-type promptSubCategoryRow struct {
+type PromptSubCategoryRow struct {
 	ID               int                `gorm:"primaryKey"`
 	PromptCategoryID int                `gorm:"not null"`
-	PromptCategory   *promptCategoryRow `gorm:"foreignKey:PromptCategoryID"`
+	PromptCategory   *PromptCategoryRow `gorm:"foreignKey:PromptCategoryID"`
 	Name             string             `gorm:"size:255;not null"`
 	Description      *string            `gorm:"type:text"`
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 }
 
-func (promptSubCategoryRow) TableName() string { return "prompt_subcategories" }
+func (PromptSubCategoryRow) TableName() string {
+	return "prompt_subcategories"
+}
 
-func (r promptSubCategoryRow) toDomain() prompt.PromptSubCategory {
+func (r PromptSubCategoryRow) toDomain() prompt.PromptSubCategory {
 	var category *prompt.PromptCategory
 	if r.PromptCategory != nil {
 		cat := r.PromptCategory.toDomain()
@@ -66,13 +70,13 @@ func (r promptSubCategoryRow) toDomain() prompt.PromptSubCategory {
 	}
 }
 
-func promptSubCategoryRowFromDomain(v *prompt.PromptSubCategory) promptSubCategoryRow {
-	var category *promptCategoryRow
+func promptSubCategoryRowFromDomain(v *prompt.PromptSubCategory) PromptSubCategoryRow {
+	var category *PromptCategoryRow
 	if v.PromptCategory != nil {
 		cat := promptCategoryRowFromDomain(v.PromptCategory)
 		category = &cat
 	}
-	return promptSubCategoryRow{
+	return PromptSubCategoryRow{
 		ID:               v.ID,
 		PromptCategoryID: v.PromptCategoryID,
 		PromptCategory:   category,
@@ -83,7 +87,7 @@ func promptSubCategoryRowFromDomain(v *prompt.PromptSubCategory) promptSubCatego
 	}
 }
 
-type promptSlotTypeRow struct {
+type PromptSlotTypeRow struct {
 	ID        int    `gorm:"primaryKey"`
 	Name      string `gorm:"size:255;uniqueIndex;not null"`
 	Position  int    `gorm:"uniqueIndex;not null"`
@@ -91,9 +95,11 @@ type promptSlotTypeRow struct {
 	UpdatedAt time.Time
 }
 
-func (promptSlotTypeRow) TableName() string { return "prompt_slot_types" }
+func (PromptSlotTypeRow) TableName() string {
+	return "prompt_slot_types"
+}
 
-func (r promptSlotTypeRow) toDomain() prompt.PromptSlotType {
+func (r PromptSlotTypeRow) toDomain() prompt.PromptSlotType {
 	return prompt.PromptSlotType{
 		ID:        r.ID,
 		Name:      r.Name,
@@ -103,8 +109,8 @@ func (r promptSlotTypeRow) toDomain() prompt.PromptSlotType {
 	}
 }
 
-func promptSlotTypeRowFromDomain(v *prompt.PromptSlotType) promptSlotTypeRow {
-	return promptSlotTypeRow{
+func promptSlotTypeRowFromDomain(v *prompt.PromptSlotType) PromptSlotTypeRow {
+	return PromptSlotTypeRow{
 		ID:        v.ID,
 		Name:      v.Name,
 		Position:  v.Position,
@@ -113,10 +119,10 @@ func promptSlotTypeRowFromDomain(v *prompt.PromptSlotType) promptSlotTypeRow {
 	}
 }
 
-type promptSlotVariantRow struct {
+type PromptSlotVariantRow struct {
 	ID                   int                `gorm:"primaryKey"`
 	PromptSlotTypeID     int                `gorm:"column:slot_type_id;not null"`
-	PromptSlotType       *promptSlotTypeRow `gorm:"foreignKey:PromptSlotTypeID;references:ID"`
+	PromptSlotType       *PromptSlotTypeRow `gorm:"foreignKey:PromptSlotTypeID;references:ID"`
 	Name                 string             `gorm:"size:255;uniqueIndex;not null"`
 	Prompt               *string            `gorm:"type:text"`
 	Description          *string            `gorm:"type:text"`
@@ -126,9 +132,11 @@ type promptSlotVariantRow struct {
 	UpdatedAt            time.Time
 }
 
-func (promptSlotVariantRow) TableName() string { return "prompt_slot_variants" }
+func (PromptSlotVariantRow) TableName() string {
+	return "prompt_slot_variants"
+}
 
-func (r promptSlotVariantRow) toDomain() prompt.PromptSlotVariant {
+func (r PromptSlotVariantRow) toDomain() prompt.PromptSlotVariant {
 	var slotType *prompt.PromptSlotType
 	if r.PromptSlotType != nil {
 		st := r.PromptSlotType.toDomain()
@@ -148,13 +156,13 @@ func (r promptSlotVariantRow) toDomain() prompt.PromptSlotVariant {
 	}
 }
 
-func promptSlotVariantRowFromDomain(v *prompt.PromptSlotVariant) promptSlotVariantRow {
-	var slotType *promptSlotTypeRow
+func promptSlotVariantRowFromDomain(v *prompt.PromptSlotVariant) PromptSlotVariantRow {
+	var slotType *PromptSlotTypeRow
 	if v.PromptSlotType != nil {
 		st := promptSlotTypeRowFromDomain(v.PromptSlotType)
 		slotType = &st
 	}
-	return promptSlotVariantRow{
+	return PromptSlotVariantRow{
 		ID:                   v.ID,
 		PromptSlotTypeID:     v.PromptSlotTypeID,
 		PromptSlotType:       slotType,
@@ -168,17 +176,19 @@ func promptSlotVariantRowFromDomain(v *prompt.PromptSlotVariant) promptSlotVaria
 	}
 }
 
-type promptSlotVariantMappingRow struct {
+type PromptSlotVariantMappingRow struct {
 	PromptID          int                   `gorm:"primaryKey;column:prompt_id"`
 	SlotID            int                   `gorm:"primaryKey;column:slot_id"`
-	Prompt            *promptRow            `gorm:"foreignKey:PromptID;references:ID"`
-	PromptSlotVariant *promptSlotVariantRow `gorm:"foreignKey:SlotID;references:ID"`
+	Prompt            *PromptRow            `gorm:"foreignKey:PromptID;references:ID"`
+	PromptSlotVariant *PromptSlotVariantRow `gorm:"foreignKey:SlotID;references:ID"`
 	CreatedAt         time.Time
 }
 
-func (promptSlotVariantMappingRow) TableName() string { return "prompt_slot_variant_mappings" }
+func (PromptSlotVariantMappingRow) TableName() string {
+	return "prompt_slot_variant_mappings"
+}
 
-func (r promptSlotVariantMappingRow) toDomain() prompt.PromptSlotVariantMapping {
+func (r PromptSlotVariantMappingRow) toDomain() prompt.PromptSlotVariantMapping {
 	var p *prompt.Prompt
 	if r.Prompt != nil {
 		pDomain := r.Prompt.toDomain(false)
@@ -198,10 +208,10 @@ func (r promptSlotVariantMappingRow) toDomain() prompt.PromptSlotVariantMapping 
 	}
 }
 
-func promptSlotVariantMappingRowsFromDomain(v []prompt.PromptSlotVariantMapping) []promptSlotVariantMappingRow {
-	rows := make([]promptSlotVariantMappingRow, 0, len(v))
+func promptSlotVariantMappingRowsFromDomain(v []prompt.PromptSlotVariantMapping) []PromptSlotVariantMappingRow {
+	rows := make([]PromptSlotVariantMappingRow, 0, len(v))
 	for i := range v {
-		rows = append(rows, promptSlotVariantMappingRow{
+		rows = append(rows, PromptSlotVariantMappingRow{
 			PromptID:  v[i].PromptID,
 			SlotID:    v[i].SlotID,
 			CreatedAt: v[i].CreatedAt,
@@ -210,26 +220,28 @@ func promptSlotVariantMappingRowsFromDomain(v []prompt.PromptSlotVariantMapping)
 	return rows
 }
 
-type promptRow struct {
+type PromptRow struct {
 	ID                        int                           `gorm:"primaryKey"`
 	Title                     string                        `gorm:"size:500;not null"`
 	PromptText                *string                       `gorm:"type:text"`
 	CategoryID                *int                          `gorm:"column:category_id"`
-	Category                  *promptCategoryRow            `gorm:"foreignKey:CategoryID;references:ID"`
+	Category                  *PromptCategoryRow            `gorm:"foreignKey:CategoryID;references:ID"`
 	SubcategoryID             *int                          `gorm:"column:subcategory_id"`
-	Subcategory               *promptSubCategoryRow         `gorm:"foreignKey:SubcategoryID;references:ID"`
+	Subcategory               *PromptSubCategoryRow         `gorm:"foreignKey:SubcategoryID;references:ID"`
 	PriceID                   *int                          `gorm:"column:price_id"`
 	Price                     *article.Price                `gorm:"foreignKey:PriceID;references:ID"`
 	Active                    bool                          `gorm:"not null;default:true"`
 	ExampleImageFilename      *string                       `gorm:"size:500"`
-	PromptSlotVariantMappings []promptSlotVariantMappingRow `gorm:"foreignKey:PromptID;references:ID"`
+	PromptSlotVariantMappings []PromptSlotVariantMappingRow `gorm:"foreignKey:PromptID;references:ID"`
 	CreatedAt                 time.Time
 	UpdatedAt                 time.Time
 }
 
-func (promptRow) TableName() string { return "prompts" }
+func (PromptRow) TableName() string {
+	return "prompts"
+}
 
-func (r promptRow) toDomain(includeMappings bool) prompt.Prompt {
+func (r PromptRow) toDomain(includeMappings bool) prompt.Prompt {
 	var category *prompt.PromptCategory
 	if r.Category != nil {
 		cat := r.Category.toDomain()
@@ -264,18 +276,18 @@ func (r promptRow) toDomain(includeMappings bool) prompt.Prompt {
 	}
 }
 
-func promptRowFromDomain(v *prompt.Prompt) promptRow {
-	var category *promptCategoryRow
+func promptRowFromDomain(v *prompt.Prompt) PromptRow {
+	var category *PromptCategoryRow
 	if v.Category != nil {
 		cat := promptCategoryRowFromDomain(v.Category)
 		category = &cat
 	}
-	var subcategory *promptSubCategoryRow
+	var subcategory *PromptSubCategoryRow
 	if v.Subcategory != nil {
 		sub := promptSubCategoryRowFromDomain(v.Subcategory)
 		subcategory = &sub
 	}
-	return promptRow{
+	return PromptRow{
 		ID:                        v.ID,
 		Title:                     v.Title,
 		PromptText:                v.PromptText,
@@ -290,17 +302,5 @@ func promptRowFromDomain(v *prompt.Prompt) promptRow {
 		PromptSlotVariantMappings: promptSlotVariantMappingRowsFromDomain(v.PromptSlotVariantMappings),
 		CreatedAt:                 v.CreatedAt,
 		UpdatedAt:                 v.UpdatedAt,
-	}
-}
-
-// Models returns the list of GORM models required for migrations.
-func Models() []any {
-	return []any{
-		&promptCategoryRow{},
-		&promptSubCategoryRow{},
-		&promptSlotTypeRow{},
-		&promptSlotVariantRow{},
-		&promptSlotVariantMappingRow{},
-		&promptRow{},
 	}
 }
