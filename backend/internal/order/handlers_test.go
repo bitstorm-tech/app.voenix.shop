@@ -1,16 +1,17 @@
 package order
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
 	"voenix/backend/internal/article"
 	"voenix/backend/internal/auth"
@@ -24,20 +25,18 @@ type ftpCall struct {
 	path   string
 }
 
-func seedOrderForPDF(t *testing.T, db *gorm.DB, userID int) *Order {
+func seedOrderForPDF(t *testing.T, repo *fakeRepository, articleSvc *fakeArticleService, userID int) *Order {
 	t.Helper()
 
-	art := article.Article{ID: 101, Name: "Test Article", ArticleType: article.ArticleTypeMug, Active: true}
-	if err := db.Create(&art).Error; err != nil {
-		t.Fatalf("seed article: %v", err)
-	}
-	variant := article.MugVariant{ID: 201, ArticleID: art.ID, Name: "Default", Active: true}
-	if err := db.Create(&variant).Error; err != nil {
-		t.Fatalf("seed variant: %v", err)
-	}
+	articleID := 101
+	variantID := 201
+	generatedID := 301
+
+	now := time.Now()
 	orderID := uuid.New().String()
 	order := Order{
 		ID:              orderID,
+		OrderNumber:     "ORD-1001",
 		UserID:          userID,
 		CustomerEmail:   "user@example.com",
 		CustomerFirst:   "Test",
@@ -53,36 +52,53 @@ func seedOrderForPDF(t *testing.T, db *gorm.DB, userID int) *Order {
 		TotalAmount:     1280,
 		Status:          StatusPending,
 		CartID:          1,
+		CreatedAt:       now,
+		UpdatedAt:       now,
+		Items: []OrderItem{
+			{
+				ID:               uuid.New().String(),
+				OrderID:          orderID,
+				ArticleID:        articleID,
+				VariantID:        variantID,
+				Quantity:         1,
+				PricePerItem:     1000,
+				TotalPrice:       1000,
+				GeneratedImageID: &generatedID,
+				CustomData:       "{}",
+				CreatedAt:        now,
+			},
+		},
 	}
-	if err := db.Create(&order).Error; err != nil {
-		t.Fatalf("create order: %v", err)
+	repo.addOrder(order)
+	repo.setGenerated(generatedID, "orders/generated.png")
+
+	supplierName := "Supplier"
+	supplierNumber := "SUP-001"
+	articleSvc.articles[articleID] = article.Article{
+		ID:                    articleID,
+		Name:                  "Test Article",
+		SupplierArticleName:   &supplierName,
+		SupplierArticleNumber: &supplierNumber,
+		ArticleType:           article.ArticleTypeMug,
 	}
-	if err := db.Model(&order).Update("order_number", "ORD-1001").Error; err != nil {
-		t.Fatalf("set order number: %v", err)
-	}
-	item := OrderItem{
-		ID:         uuid.New().String(),
-		OrderID:    order.ID,
-		ArticleID:  art.ID,
-		VariantID:  variant.ID,
-		Quantity:   1,
-		CustomData: "{}",
-	}
-	if err := db.Create(&item).Error; err != nil {
-		t.Fatalf("create order item: %v", err)
-	}
-	if err := db.Preload("Items").First(&order, "id = ?", order.ID).Error; err != nil {
+	articleSvc.summaries[articleID] = article.ArticleResponse{ID: articleID, Name: "Test Article"}
+	articleSvc.variants[variantID] = article.MugVariant{ID: variantID, ArticleID: articleID, Name: "Default"}
+	articleSvc.details[articleID] = article.MugDetails{PrintTemplateWidthMm: 100, PrintTemplateHeightMm: 50}
+
+	ord, err := repo.OrderByIDForUser(context.Background(), userID, orderID)
+	if err != nil {
 		t.Fatalf("reload order: %v", err)
 	}
-	return &order
+	return ord
 }
 
 func TestDownloadOrderPDFHandler_UploadsBeforeResponding(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	db := setupTestDB(t)
+	repo := newFakeRepository()
+	articleSvc := newFakeArticleService()
+	svc := NewService(repo, articleSvc)
 	userID := 500
-	ord := seedOrderForPDF(t, db, userID)
-	svc := &stubArticleService{db: db}
+	ord := seedOrderForPDF(t, repo, articleSvc, userID)
 
 	var calls []ftpCall
 	uploadPDFToFTPSave := uploadPDFToFTP
@@ -111,7 +127,7 @@ func TestDownloadOrderPDFHandler_UploadsBeforeResponding(t *testing.T) {
 	ctx.Set("currentUser", &auth.User{ID: userID})
 	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: ord.ID}}
 
-	handler := downloadOrderPDFHandler(db, svc)
+	handler := downloadOrderPDFHandler(svc)
 	handler(ctx)
 
 	if w.Code != http.StatusOK {
@@ -140,10 +156,11 @@ func TestDownloadOrderPDFHandler_UploadsBeforeResponding(t *testing.T) {
 
 func TestDownloadOrderPDFHandler_MissingConfig(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	db := setupTestDB(t)
+	repo := newFakeRepository()
+	articleSvc := newFakeArticleService()
+	svc := NewService(repo, articleSvc)
 	userID := 42
-	ord := seedOrderForPDF(t, db, userID)
-	svc := &stubArticleService{db: db}
+	ord := seedOrderForPDF(t, repo, articleSvc, userID)
 
 	uploadPDFToFTPSave := uploadPDFToFTP
 	uploadPDFToFTP = func(pdf []byte, server, user, password string, opts *utility.FTPUploadOptions) error {
@@ -162,7 +179,7 @@ func TestDownloadOrderPDFHandler_MissingConfig(t *testing.T) {
 	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: ord.ID}}
 	ctx.Set("currentUser", &auth.User{ID: userID})
 
-	handler := downloadOrderPDFHandler(db, svc)
+	handler := downloadOrderPDFHandler(svc)
 	handler(ctx)
 
 	if w.Code != http.StatusInternalServerError {
@@ -179,10 +196,11 @@ func TestDownloadOrderPDFHandler_MissingConfig(t *testing.T) {
 
 func TestDownloadOrderPDFHandler_UploadFailure(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	db := setupTestDB(t)
+	repo := newFakeRepository()
+	articleSvc := newFakeArticleService()
+	svc := NewService(repo, articleSvc)
 	userID := 12
-	ord := seedOrderForPDF(t, db, userID)
-	svc := &stubArticleService{db: db}
+	ord := seedOrderForPDF(t, repo, articleSvc, userID)
 
 	uploadPDFToFTPSave := uploadPDFToFTP
 	uploadPDFToFTP = func(pdf []byte, server, user, password string, opts *utility.FTPUploadOptions) error {
@@ -200,7 +218,7 @@ func TestDownloadOrderPDFHandler_UploadFailure(t *testing.T) {
 	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: ord.ID}}
 	ctx.Set("currentUser", &auth.User{ID: userID})
 
-	handler := downloadOrderPDFHandler(db, svc)
+	handler := downloadOrderPDFHandler(svc)
 	handler(ctx)
 
 	if w.Code != http.StatusBadGateway {
@@ -210,7 +228,7 @@ func TestDownloadOrderPDFHandler_UploadFailure(t *testing.T) {
 	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
 		t.Fatalf("unmarshal: %v", err)
 	}
-	if body["detail"] != "Failed to upload order PDF" {
+	if !strings.Contains(body["detail"], "Failed to upload") {
 		t.Fatalf("unexpected detail: %s", body["detail"])
 	}
 }

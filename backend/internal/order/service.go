@@ -9,10 +9,9 @@ import (
 	"strings"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 
 	"voenix/backend/internal/article"
-	"voenix/backend/internal/cart"
+	"voenix/backend/internal/pdf"
 )
 
 const (
@@ -20,26 +19,33 @@ const (
 	shippingFlatCents = 499
 )
 
+// Service coordinates order workflows with repositories and downstream services.
+type Service struct {
+	repo       Repository
+	articleSvc ArticleService
+}
+
+func NewService(repo Repository, articleSvc ArticleService) *Service {
+	return &Service{repo: repo, articleSvc: articleSvc}
+}
+
 // CreateOrderFromCart creates an order from the user's active cart.
-func CreateOrderFromCart(db *gorm.DB, userID int, req CreateOrderRequest) (*Order, error) {
-	// Validate cart exists and has items
-	c, err := loadActiveCartForOrder(db, userID)
+func (s *Service) CreateOrderFromCart(ctx context.Context, userID int, req CreateOrderRequest) (*Order, error) {
+	c, err := s.repo.ActiveCart(ctx, userID)
 	if err != nil {
 		return nil, err
 	}
 	if c == nil || len(c.Items) == 0 {
 		return nil, fmt.Errorf("no active cart found or cart is empty")
 	}
-	// Ensure no existing order for this cart
-	var count int64
-	if err := db.Model(&Order{}).Where("cart_id = ?", c.ID).Count(&count).Error; err != nil {
+	exists, err := s.repo.OrderExistsForCart(ctx, c.ID)
+	if err != nil {
 		return nil, err
 	}
-	if count > 0 {
+	if exists {
 		return nil, fmt.Errorf("order already exists for cart: %d", c.ID)
 	}
 
-	// Totals
 	subtotal := int64(0)
 	for _, it := range c.Items {
 		subtotal += int64(it.PriceAtTime * it.Quantity)
@@ -51,10 +57,9 @@ func CreateOrderFromCart(db *gorm.DB, userID int, req CreateOrderRequest) (*Orde
 	}
 	total := subtotal + tax + shipping
 
-	// Build order entity
 	ship := req.ShippingAddress
 	bill := req.BillingAddress
-	if (bill == nil) || (req.UseShippingAsBilling != nil && *req.UseShippingAsBilling) {
+	if bill == nil || (req.UseShippingAsBilling != nil && *req.UseShippingAsBilling) {
 		bill = &ship
 	}
 
@@ -86,152 +91,80 @@ func CreateOrderFromCart(db *gorm.DB, userID int, req CreateOrderRequest) (*Orde
 		Notes:           req.Notes,
 	}
 
-	// Items
 	items := make([]OrderItem, 0, len(c.Items))
 	for _, ci := range c.Items {
 		cd := canonicalizeJSON(ci.CustomData)
-		itm := OrderItem{
-			ID:                 uuid.New().String(),
-			OrderID:            ord.ID,
-			ArticleID:          ci.ArticleID,
-			VariantID:          ci.VariantID,
-			Quantity:           ci.Quantity,
-			PricePerItem:       int64(ci.PriceAtTime),
-			TotalPrice:         int64(ci.PriceAtTime * ci.Quantity),
-			GeneratedImageID:   ci.GeneratedImageID,
-			GeneratedImageFile: nil,
-			PromptID:           ci.PromptID,
-			CustomData:         cd,
+		item := OrderItem{
+			ID:               uuid.New().String(),
+			OrderID:          ord.ID,
+			ArticleID:        ci.ArticleID,
+			VariantID:        ci.VariantID,
+			Quantity:         ci.Quantity,
+			PricePerItem:     int64(ci.PriceAtTime),
+			TotalPrice:       int64(ci.PriceAtTime * ci.Quantity),
+			GeneratedImageID: ci.GeneratedImageID,
+			PromptID:         ci.PromptID,
+			CustomData:       cd,
 		}
-		items = append(items, itm)
+		items = append(items, item)
 	}
+	ord.Items = items
 
-	// Transaction: save order + items, mark cart converted
-	err = db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(ord).Error; err != nil {
-			return err
-		}
-		for i := range items {
-			if err := tx.Create(&items[i]).Error; err != nil {
-				return err
-			}
-		}
-		// Mark cart as converted
-		if err := tx.Model(c).Update("status", string(cart.CartStatusConverted)).Error; err != nil {
-			return err
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	// Reload with items
-	if err := db.Preload("Items").First(ord, "id = ?", ord.ID).Error; err != nil {
+	if err := s.repo.CreateOrder(ctx, ord); err != nil {
 		return nil, err
 	}
 	return ord, nil
 }
 
-// FindOrder ensures order belongs to user and returns it with items.
-func FindOrder(db *gorm.DB, userID int, orderID string) (*Order, error) {
-	var o Order
-	if err := db.Preload("Items").First(&o, "id = ? AND user_id = ?", orderID, userID).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, fmt.Errorf("order not found")
+// ListOrders returns paginated orders for a user.
+func (s *Service) ListOrders(ctx context.Context, userID int, page, size int) (OrderPage, error) {
+	return s.repo.ListOrdersForUser(ctx, userID, page, size)
+}
+
+// GetOrder fetches a single order for a user.
+func (s *Service) GetOrder(ctx context.Context, userID int, orderID string) (*Order, error) {
+	o, err := s.repo.OrderByIDForUser(ctx, userID, orderID)
+	if err != nil {
+		if errors.Is(err, ErrNotFound) {
+			return nil, ErrNotFound
 		}
 		return nil, err
 	}
-	return &o, nil
+	return o, nil
 }
 
-// ListOrders returns a page of orders (newest first) for user.
-func ListOrders(db *gorm.DB, userID int, page, size int) (PaginatedResponse[Order], error) {
-	if size <= 0 {
-		size = 20
-	}
-	if page < 0 {
-		page = 0
-	}
-	var total int64
-	if err := db.Model(&Order{}).Where("user_id = ?", userID).Count(&total).Error; err != nil {
-		return PaginatedResponse[Order]{}, err
-	}
-	var orders []Order
-	if err := db.Preload("Items").Where("user_id = ?", userID).Order("created_at desc").Limit(size).Offset(page * size).Find(&orders).Error; err != nil {
-		return PaginatedResponse[Order]{}, err
-	}
-	tp := int((total + int64(size) - 1) / int64(size))
-	return PaginatedResponse[Order]{
-		Content:       orders,
-		CurrentPage:   page,
-		TotalPages:    tp,
-		TotalElements: total,
-		Size:          size,
-	}, nil
+func (s *Service) OrderDTO(ctx context.Context, o Order, baseURL string) (OrderDto, error) {
+	return s.toOrderDto(ctx, o, baseURL)
 }
 
-// Mapping
-
-func toAddressDtoFromOrder(o *Order) (AddressDto, *AddressDto) {
-	ship := AddressDto{
-		StreetAddress1: o.ShippingStreet1,
-		StreetAddress2: o.ShippingStreet2,
-		City:           o.ShippingCity,
-		State:          o.ShippingState,
-		PostalCode:     o.ShippingPostal,
-		Country:        o.ShippingCountry,
-	}
-	var bill *AddressDto
-	if o.BillingStreet1 != nil || o.BillingCity != nil || o.BillingState != nil || o.BillingPostal != nil || o.BillingCountry != nil {
-		b := AddressDto{
-			StreetAddress1: deref(o.BillingStreet1),
-			StreetAddress2: o.BillingStreet2,
-			City:           deref(o.BillingCity),
-			State:          deref(o.BillingState),
-			PostalCode:     deref(o.BillingPostal),
-			Country:        deref(o.BillingCountry),
-		}
-		bill = &b
-	}
-	return ship, bill
+func (s *Service) BuildOrderPDFData(ctx context.Context, o Order) (pdf.OrderPdfData, error) {
+	return buildOrderPdfData(ctx, s.articleSvc, s.repo, &o)
 }
 
-func toOrderDto(ctx context.Context, db *gorm.DB, articleSvc ArticleService, o *Order, baseURL string) (OrderDto, error) {
+func (s *Service) toOrderDto(ctx context.Context, o Order, baseURL string) (OrderDto, error) {
 	ship, bill := toAddressDtoFromOrder(o)
-	items := make([]OrderItemDto, 0, len(o.Items))
-	// Preload generated image filenames for any items with GeneratedImageID
-	genIDToFilename := map[int]string{}
-	{
-		ids := make([]int, 0, len(o.Items))
-		for i := range o.Items {
-			if o.Items[i].GeneratedImageID != nil {
-				ids = append(ids, *o.Items[i].GeneratedImageID)
-			}
-		}
-		if len(ids) > 0 {
-			type row struct {
-				ID       int
-				Filename string
-			}
-			var rows []row
-			if err := db.Table("generated_images").Select("id, filename").Where("id IN ?", ids).Scan(&rows).Error; err == nil {
-				for _, r := range rows {
-					genIDToFilename[r.ID] = r.Filename
-				}
-			}
+
+	generatedImageIDs := make([]int, 0, len(o.Items))
+	for _, it := range o.Items {
+		if it.GeneratedImageID != nil {
+			generatedImageIDs = append(generatedImageIDs, *it.GeneratedImageID)
 		}
 	}
-	for i := range o.Items {
-		it := o.Items[i]
-		art, err := loadArticleResponse(ctx, articleSvc, it.ArticleID)
+	generatedFilenames, err := s.repo.FetchGeneratedImageFilenames(ctx, generatedImageIDs)
+	if err != nil {
+		return OrderDto{}, err
+	}
+
+	items := make([]OrderItemDto, 0, len(o.Items))
+	for _, it := range o.Items {
+		art, err := s.loadArticleResponse(ctx, it.ArticleID)
 		if err != nil {
 			return OrderDto{}, err
 		}
-		mv, _ := loadMugVariantDto(ctx, articleSvc, it.VariantID)
+		mv, _ := s.loadMugVariantDto(ctx, it.VariantID)
 		var genFilename *string
 		if it.GeneratedImageID != nil {
-			if fn, ok := genIDToFilename[*it.GeneratedImageID]; ok && fn != "" {
+			if fn, ok := generatedFilenames[*it.GeneratedImageID]; ok && fn != "" {
 				genFilename = &fn
 			}
 		}
@@ -274,34 +207,16 @@ func toOrderDto(ctx context.Context, db *gorm.DB, articleSvc ArticleService, o *
 	}, nil
 }
 
-// Helpers reusing cart package utilities
-// loadActiveCartForOrder replicates cart.loadActiveCart with items preload
-func loadActiveCartForOrder(db *gorm.DB, userID int) (*cart.Cart, error) {
-	var c cart.Cart
-	err := db.Preload("Items", func(tx *gorm.DB) *gorm.DB { return tx.Order("position asc, created_at asc") }).
-		Where("user_id = ? AND status = ?", userID, string(cart.CartStatusActive)).
-		First(&c).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &c, nil
-}
-
-// loadArticleResponse replicates cart.loadArticleResponse to avoid cross-package exposure.
-func loadArticleResponse(ctx context.Context, articleSvc ArticleService, id int) (article.ArticleResponse, error) {
-	resp, err := articleSvc.GetArticleSummary(ctx, id)
+func (s *Service) loadArticleResponse(ctx context.Context, id int) (article.ArticleResponse, error) {
+	resp, err := s.articleSvc.GetArticleSummary(ctx, id)
 	if err != nil {
 		return article.ArticleResponse{}, err
 	}
 	return resp, nil
 }
 
-// loadMugVariantDto replicates cart.loadMugVariantDto
-func loadMugVariantDto(ctx context.Context, articleSvc ArticleService, id int) (*article.MugVariant, error) {
-	v, err := articleSvc.GetMugVariant(ctx, id)
+func (s *Service) loadMugVariantDto(ctx context.Context, id int) (*article.MugVariant, error) {
+	v, err := s.articleSvc.GetMugVariant(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -313,6 +228,30 @@ func loadMugVariantDto(ctx context.Context, articleSvc ArticleService, id int) (
 		IsDefault:            v.IsDefault,
 		ExampleImageFilename: v.ExampleImageFilename,
 	}, nil
+}
+
+func toAddressDtoFromOrder(o Order) (AddressDto, *AddressDto) {
+	ship := AddressDto{
+		StreetAddress1: o.ShippingStreet1,
+		StreetAddress2: o.ShippingStreet2,
+		City:           o.ShippingCity,
+		State:          o.ShippingState,
+		PostalCode:     o.ShippingPostal,
+		Country:        o.ShippingCountry,
+	}
+	var bill *AddressDto
+	if o.BillingStreet1 != nil || o.BillingCity != nil || o.BillingState != nil || o.BillingPostal != nil || o.BillingCountry != nil {
+		b := AddressDto{
+			StreetAddress1: deref(o.BillingStreet1),
+			StreetAddress2: o.BillingStreet2,
+			City:           deref(o.BillingCity),
+			State:          deref(o.BillingState),
+			PostalCode:     deref(o.BillingPostal),
+			Country:        deref(o.BillingCountry),
+		}
+		bill = &b
+	}
+	return ship, bill
 }
 
 func parseJSONMap(s string) map[string]any {
@@ -366,6 +305,5 @@ func BaseURL() string {
 	if v := os.Getenv("PUBLIC_APP_BASE_URL"); v != "" {
 		return v
 	}
-	// Default to Go server http port
 	return "http://localhost:8081"
 }

@@ -22,6 +22,7 @@ import (
 	"voenix/backend/internal/image"
 	imagePg "voenix/backend/internal/image/postgres"
 	"voenix/backend/internal/order"
+	orderPg "voenix/backend/internal/order/postgres"
 	"voenix/backend/internal/prompt"
 	"voenix/backend/internal/supplier"
 	"voenix/backend/internal/vat"
@@ -88,6 +89,7 @@ func main() {
 	cartRepo := cartPg.NewRepository(db)
 	countryRepo := countryPg.NewRepository(db)
 	imageRepo := imagePg.NewRepository(db)
+	orderRepo := orderPg.NewRepository(db)
 
 	// Services
 	authSvc := auth.NewService(authRepo)
@@ -95,6 +97,7 @@ func main() {
 	imageSvc := image.NewService(imageRepo)
 	cartSvc := cart.NewService(cartRepo, articleSvc)
 	countrySvc := country.NewService(countryRepo)
+	orderSvc := order.NewService(orderRepo, articleSvc)
 
 	// Routes
 	auth.RegisterRoutes(r, authSvc)
@@ -106,7 +109,7 @@ func main() {
 	prompt.RegisterRoutes(r, db, ai.ProviderLLMIDs())
 	article.RegisterRoutes(r, auth.RequireRoles(db, "ADMIN"), articleSvc)
 	cart.RegisterRoutes(r, auth.RequireRoles(db, "ADMIN", "USER"), cartSvc)
-	order.RegisterRoutes(r, db, articleSvc)
+	order.RegisterRoutes(r, db, orderSvc)
 
 	addr := os.Getenv("ADDR")
 	if addr == "" {
