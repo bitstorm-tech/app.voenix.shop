@@ -28,7 +28,7 @@
 - Errors: return `error` values; prefer wrapping/context where helpful; avoid panics in handlers.
 - HTTP handlers should validate input and return structured JSON errors (`{"detail": "..."}`).
 - We prefer simple solutions over complex and over-engineered solutions
-- DO NOT use abbreviations for variable names! Example instead of `mv` use `mugVariant` or instead of `imgW` use `imageWidth`
+- DO NOT use abbreviations for variable names anywhere. Even if a file currently uses shortcuts, any new or modified variables must use full words (e.g., use `mugVariant` instead of `mv`, `imageWidth` instead of `imgW`).
 - No one-line functions: never write single-line function definitions like `func a() int { return 1 }`; always use a multi-line body for readability.
 - Prefer unexported identifiers: keep functions, types, variables, and constants private (lowercase) unless they must be used from another package. Minimize the public API surface and export only when necessary.
 
