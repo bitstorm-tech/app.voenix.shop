@@ -24,12 +24,12 @@ type subcatUpdate struct {
 	Description      *string `json:"description"`
 }
 
-func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
+func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	grp := r.Group("/api/admin/prompts/subcategories")
 	grp.Use(auth.RequireAdmin(db))
 
 	grp.GET("", func(c *gin.Context) {
-		rows, err := svc.listSubCategories(c.Request.Context())
+		rows, err := svc.ListSubCategories(c.Request.Context())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch subcategories"})
 			return
@@ -39,7 +39,7 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 
 	grp.GET("/category/:categoryId", func(c *gin.Context) {
 		cid, _ := strconv.Atoi(c.Param("categoryId"))
-		rows, err := svc.listSubCategoriesByCategory(c.Request.Context(), cid)
+		rows, err := svc.ListSubCategoriesByCategory(c.Request.Context(), cid)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch subcategories"})
 			return
@@ -53,7 +53,7 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		created, err := svc.createSubCategory(c.Request.Context(), payload)
+		created, err := svc.CreateSubCategory(c.Request.Context(), payload)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "PromptCategory not found"})
@@ -72,7 +72,7 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		updated, err := svc.updateSubCategory(c.Request.Context(), id, payload)
+		updated, err := svc.UpdateSubCategory(c.Request.Context(), id, payload)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "PromptCategory or PromptSubCategory not found"})
@@ -86,7 +86,7 @@ func registerAdminSubCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 
 	grp.DELETE("/:id", func(c *gin.Context) {
 		id, _ := strconv.Atoi(c.Param("id"))
-		if err := svc.deleteSubCategory(c.Request.Context(), id); err != nil {
+		if err := svc.DeleteSubCategory(c.Request.Context(), id); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete subcategory"})
 			return
 		}

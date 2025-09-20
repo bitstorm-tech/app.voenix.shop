@@ -40,12 +40,12 @@ type promptUpdate struct {
 	CostCalculation      *costCalculationRequest `json:"costCalculation"`
 }
 
-func registerAdminPromptRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
+func registerAdminPromptRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	grp := r.Group("/api/admin/prompts")
 	grp.Use(auth.RequireAdmin(db))
 
 	grp.GET("", func(c *gin.Context) {
-		rows, err := svc.listPrompts(c.Request.Context())
+		rows, err := svc.ListPrompts(c.Request.Context())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch prompts"})
 			return
@@ -55,7 +55,7 @@ func registerAdminPromptRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 
 	grp.GET("/:id", func(c *gin.Context) {
 		id, _ := strconv.Atoi(c.Param("id"))
-		row, err := svc.getPrompt(c.Request.Context(), id)
+		row, err := svc.GetPrompt(c.Request.Context(), id)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch prompt"})
 			return
@@ -73,7 +73,7 @@ func registerAdminPromptRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		created, err := svc.createPrompt(c.Request.Context(), payload)
+		created, err := svc.CreatePrompt(c.Request.Context(), payload)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "PromptCategory/Subcategory or SlotVariant not found"})
@@ -96,7 +96,7 @@ func registerAdminPromptRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		updated, err := svc.updatePrompt(c.Request.Context(), id, payload)
+		updated, err := svc.UpdatePrompt(c.Request.Context(), id, payload)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "Prompt/Category/Subcategory or SlotVariant not found"})
@@ -114,7 +114,7 @@ func registerAdminPromptRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 
 	grp.DELETE("/:id", func(c *gin.Context) {
 		id, _ := strconv.Atoi(c.Param("id"))
-		if err := svc.deletePrompt(c.Request.Context(), id); err != nil {
+		if err := svc.DeletePrompt(c.Request.Context(), id); err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.Status(http.StatusNoContent)
 				return

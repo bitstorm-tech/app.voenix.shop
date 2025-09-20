@@ -21,12 +21,12 @@ type slotTypeUpdate struct {
 	Position *int    `json:"position"`
 }
 
-func registerAdminSlotTypeRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
+func registerAdminSlotTypeRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	grp := r.Group("/api/admin/prompts/prompt-slot-types")
 	grp.Use(auth.RequireAdmin(db))
 
 	grp.GET("", func(c *gin.Context) {
-		rows, err := svc.listSlotTypes(c.Request.Context())
+		rows, err := svc.ListSlotTypes(c.Request.Context())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch slot types"})
 			return
@@ -36,7 +36,7 @@ func registerAdminSlotTypeRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 
 	grp.GET("/:id", func(c *gin.Context) {
 		id, _ := strconvAtoi(c.Param("id"))
-		row, err := svc.getSlotType(c.Request.Context(), id)
+		row, err := svc.GetSlotType(c.Request.Context(), id)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) || row == nil {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "PromptSlotType not found"})
@@ -54,7 +54,7 @@ func registerAdminSlotTypeRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		created, err := svc.createSlotType(c.Request.Context(), payload.Name, payload.Position)
+		created, err := svc.CreateSlotType(c.Request.Context(), payload.Name, payload.Position)
 		if err != nil {
 			var ce conflictError
 			if errors.As(err, &ce) {
@@ -74,7 +74,7 @@ func registerAdminSlotTypeRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		updated, err := svc.updateSlotType(c.Request.Context(), id, payload.Name, payload.Position)
+		updated, err := svc.UpdateSlotType(c.Request.Context(), id, payload.Name, payload.Position)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "PromptSlotType not found"})
@@ -93,7 +93,7 @@ func registerAdminSlotTypeRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 
 	grp.DELETE("/:id", func(c *gin.Context) {
 		id, _ := strconvAtoi(c.Param("id"))
-		if err := svc.deleteSlotType(c.Request.Context(), id); err != nil {
+		if err := svc.DeleteSlotType(c.Request.Context(), id); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete slot type"})
 			return
 		}

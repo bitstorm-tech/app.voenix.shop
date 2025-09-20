@@ -29,12 +29,12 @@ type slotVariantUpdate struct {
 	LLM                  *string `json:"llm"`
 }
 
-func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
+func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	grp := r.Group("/api/admin/prompts/slot-variants")
 	grp.Use(auth.RequireAdmin(db))
 
 	grp.GET("", func(c *gin.Context) {
-		rows, err := svc.listSlotVariants(c.Request.Context())
+		rows, err := svc.ListSlotVariants(c.Request.Context())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch slot variants"})
 			return
@@ -44,7 +44,7 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 
 	grp.GET("/:id", func(c *gin.Context) {
 		id, _ := strconvAtoi(c.Param("id"))
-		row, err := svc.getSlotVariant(c.Request.Context(), id)
+		row, err := svc.GetSlotVariant(c.Request.Context(), id)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) || row == nil {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "PromptSlotVariant not found"})
@@ -62,7 +62,7 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		created, err := svc.createSlotVariant(c.Request.Context(), payload)
+		created, err := svc.CreateSlotVariant(c.Request.Context(), payload)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "PromptSlotType not found"})
@@ -90,7 +90,7 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		updated, err := svc.updateSlotVariant(c.Request.Context(), id, payload)
+		updated, err := svc.UpdateSlotVariant(c.Request.Context(), id, payload)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "PromptSlotType or PromptSlotVariant not found"})
@@ -113,7 +113,7 @@ func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 
 	grp.DELETE("/:id", func(c *gin.Context) {
 		id, _ := strconvAtoi(c.Param("id"))
-		if err := svc.deleteSlotVariant(c.Request.Context(), id); err != nil {
+		if err := svc.DeleteSlotVariant(c.Request.Context(), id); err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.Status(http.StatusNoContent)
 				return

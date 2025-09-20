@@ -8,16 +8,14 @@ import (
 	"gorm.io/gorm"
 
 	"voenix/backend/internal/article"
-	"voenix/backend/internal/vat"
 )
 
-// service centralizes all DB access and business logic for prompts.
-type service struct {
-	db          *gorm.DB
+type Service struct {
+	repo        Repository
 	allowedLLMs map[string]struct{}
 }
 
-func newService(db *gorm.DB, allowedLLMs []string) *service {
+func NewService(repo Repository, allowedLLMs []string) *Service {
 	llmSet := make(map[string]struct{}, len(allowedLLMs))
 	for _, llm := range allowedLLMs {
 		trimmed := strings.TrimSpace(llm)
@@ -26,11 +24,7 @@ func newService(db *gorm.DB, allowedLLMs []string) *service {
 		}
 		llmSet[trimmed] = struct{}{}
 	}
-	return &service{db: db, allowedLLMs: llmSet}
-}
-
-func (s *service) priceTable(ctx context.Context) *gorm.DB {
-	return s.db.WithContext(ctx).Table("prices")
+	return &Service{repo: repo, allowedLLMs: llmSet}
 }
 
 type conflictError struct{ Detail string }
@@ -39,10 +33,14 @@ func (e conflictError) Error() string { return e.Detail }
 
 var errInvalidLLM = errors.New("invalid llm")
 
-// ListSlotTypes returns all slot types.
-func (s *service) listSlotTypes(ctx context.Context) ([]PromptSlotTypeRead, error) {
-	var rows []PromptSlotType
-	if err := s.db.WithContext(ctx).Order("id desc").Find(&rows).Error; err != nil {
+func (s *Service) isValidLLM(llm string) bool {
+	_, ok := s.allowedLLMs[llm]
+	return ok
+}
+
+func (s *Service) ListSlotTypes(ctx context.Context) ([]PromptSlotTypeRead, error) {
+	rows, err := s.repo.ListSlotTypes(ctx)
+	if err != nil {
 		return nil, err
 	}
 	out := make([]PromptSlotTypeRead, 0, len(rows))
@@ -52,77 +50,91 @@ func (s *service) listSlotTypes(ctx context.Context) ([]PromptSlotTypeRead, erro
 	return out, nil
 }
 
-// GetSlotType returns a slot type by id. Returns (nil, nil) if not found.
-func (s *service) getSlotType(ctx context.Context, id int) (*PromptSlotTypeRead, error) {
-	var row PromptSlotType
-	if err := s.db.WithContext(ctx).First(&row, "id = ?", id).Error; err != nil {
+func (s *Service) GetSlotType(ctx context.Context, id int) (*PromptSlotTypeRead, error) {
+	row, err := s.repo.SlotTypeByID(ctx, id)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	v := toSlotTypeRead(&row)
+	v := toSlotTypeRead(row)
 	return &v, nil
 }
 
-func (s *service) createSlotType(ctx context.Context, name string, position int) (*PromptSlotTypeRead, error) {
-	// unique checks
-	var cnt int64
-	s.db.WithContext(ctx).Model(&PromptSlotType{}).Where("name = ?", name).Count(&cnt)
-	if cnt > 0 {
+func (s *Service) CreateSlotType(ctx context.Context, name string, position int) (*PromptSlotTypeRead, error) {
+	exists, err := s.repo.SlotTypeNameExists(ctx, name, nil)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
 		return nil, conflictError{Detail: "PromptSlotType name already exists"}
 	}
-	s.db.WithContext(ctx).Model(&PromptSlotType{}).Where("position = ?", position).Count(&cnt)
-	if cnt > 0 {
+	exists, err = s.repo.SlotTypePositionExists(ctx, position, nil)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
 		return nil, conflictError{Detail: "PromptSlotType position already exists"}
 	}
 	row := PromptSlotType{Name: name, Position: position}
-	if err := s.db.WithContext(ctx).Create(&row).Error; err != nil {
+	if err := s.repo.CreateSlotType(ctx, &row); err != nil {
 		return nil, err
 	}
-	v := toSlotTypeRead(&row)
+	created, err := s.repo.SlotTypeByID(ctx, row.ID)
+	if err != nil {
+		return nil, err
+	}
+	v := toSlotTypeRead(created)
 	return &v, nil
 }
 
-func (s *service) updateSlotType(ctx context.Context, id int, name *string, position *int) (*PromptSlotTypeRead, error) {
-	var existing PromptSlotType
-	if err := s.db.WithContext(ctx).First(&existing, "id = ?", id).Error; err != nil {
+func (s *Service) UpdateSlotType(ctx context.Context, id int, name *string, position *int) (*PromptSlotTypeRead, error) {
+	existing, err := s.repo.SlotTypeByID(ctx, id)
+	if err != nil {
 		return nil, err
 	}
 	if name != nil && *name != existing.Name {
-		var cnt int64
-		s.db.WithContext(ctx).Model(&PromptSlotType{}).Where("name = ? AND id <> ?", *name, existing.ID).Count(&cnt)
-		if cnt > 0 {
+		exists, err := s.repo.SlotTypeNameExists(ctx, *name, &existing.ID)
+		if err != nil {
+			return nil, err
+		}
+		if exists {
 			return nil, conflictError{Detail: "PromptSlotType name already exists"}
 		}
 		existing.Name = *name
 	}
 	if position != nil && *position != existing.Position {
-		var cnt int64
-		s.db.WithContext(ctx).Model(&PromptSlotType{}).Where("position = ? AND id <> ?", *position, existing.ID).Count(&cnt)
-		if cnt > 0 {
+		exists, err := s.repo.SlotTypePositionExists(ctx, *position, &existing.ID)
+		if err != nil {
+			return nil, err
+		}
+		if exists {
 			return nil, conflictError{Detail: "PromptSlotType position already exists"}
 		}
 		existing.Position = *position
 	}
-	if err := s.db.WithContext(ctx).Save(&existing).Error; err != nil {
+	if err := s.repo.SaveSlotType(ctx, existing); err != nil {
 		return nil, err
 	}
-	v := toSlotTypeRead(&existing)
+	updated, err := s.repo.SlotTypeByID(ctx, existing.ID)
+	if err != nil {
+		return nil, err
+	}
+	v := toSlotTypeRead(updated)
 	return &v, nil
 }
 
-func (s *service) deleteSlotType(ctx context.Context, id int) error {
-	return s.db.WithContext(ctx).Delete(&PromptSlotType{}, "id = ?", id).Error
+func (s *Service) DeleteSlotType(ctx context.Context, id int) error {
+	if _, err := s.repo.SlotTypeByID(ctx, id); err != nil {
+		return err
+	}
+	return s.repo.DeleteSlotType(ctx, id)
 }
 
-// ---------------------
-// Slot Variants (Admin)
-// ---------------------
-
-func (s *service) listSlotVariants(ctx context.Context) ([]PromptSlotVariantRead, error) {
-	var rows []PromptSlotVariant
-	if err := s.db.WithContext(ctx).Preload("PromptSlotType").Order("id desc").Find(&rows).Error; err != nil {
+func (s *Service) ListSlotVariants(ctx context.Context) ([]PromptSlotVariantRead, error) {
+	rows, err := s.repo.ListSlotVariants(ctx)
+	if err != nil {
 		return nil, err
 	}
 	out := make([]PromptSlotVariantRead, 0, len(rows))
@@ -132,29 +144,35 @@ func (s *service) listSlotVariants(ctx context.Context) ([]PromptSlotVariantRead
 	return out, nil
 }
 
-func (s *service) getSlotVariant(ctx context.Context, id int) (*PromptSlotVariantRead, error) {
-	var row PromptSlotVariant
-	if err := s.db.WithContext(ctx).Preload("PromptSlotType").First(&row, "id = ?", id).Error; err != nil {
+func (s *Service) GetSlotVariant(ctx context.Context, id int) (*PromptSlotVariantRead, error) {
+	row, err := s.repo.SlotVariantByID(ctx, id)
+	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 		return nil, err
 	}
-	v := toSlotVariantRead(&row)
+	v := toSlotVariantRead(row)
 	return &v, nil
 }
 
-func (s *service) createSlotVariant(ctx context.Context, payload slotVariantCreate) (*PromptSlotVariantRead, error) {
-	if !existsByID[PromptSlotType](s.db.WithContext(ctx), payload.PromptSlotTypeID) {
+func (s *Service) CreateSlotVariant(ctx context.Context, payload slotVariantCreate) (*PromptSlotVariantRead, error) {
+	exists, err := s.repo.SlotTypeExists(ctx, payload.PromptSlotTypeID)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
 		return nil, gorm.ErrRecordNotFound
 	}
 	llm := strings.TrimSpace(payload.LLM)
 	if llm == "" || !s.isValidLLM(llm) {
 		return nil, errInvalidLLM
 	}
-	var cnt int64
-	s.db.WithContext(ctx).Model(&PromptSlotVariant{}).Where("name = ?", payload.Name).Count(&cnt)
-	if cnt > 0 {
+	exists, err = s.repo.SlotVariantNameExists(ctx, payload.Name, nil)
+	if err != nil {
+		return nil, err
+	}
+	if exists {
 		return nil, conflictError{Detail: "PromptSlotVariant name already exists"}
 	}
 	row := PromptSlotVariant{
@@ -165,24 +183,32 @@ func (s *service) createSlotVariant(ctx context.Context, payload slotVariantCrea
 		ExampleImageFilename: payload.ExampleImageFilename,
 		LLM:                  llm,
 	}
-	if err := s.db.WithContext(ctx).Create(&row).Error; err != nil {
+	if err := s.repo.CreateSlotVariant(ctx, &row); err != nil {
 		return nil, err
 	}
-	_ = s.db.WithContext(ctx).Preload("PromptSlotType").First(&row, row.ID).Error
-	v := toSlotVariantRead(&row)
+	created, err := s.repo.SlotVariantByID(ctx, row.ID)
+	if err != nil {
+		return nil, err
+	}
+	v := toSlotVariantRead(created)
 	return &v, nil
 }
 
-func (s *service) updateSlotVariant(ctx context.Context, id int, payload slotVariantUpdate) (*PromptSlotVariantRead, error) {
-	var existing PromptSlotVariant
-	if err := s.db.WithContext(ctx).First(&existing, "id = ?", id).Error; err != nil {
+func (s *Service) UpdateSlotVariant(ctx context.Context, id int, payload slotVariantUpdate) (*PromptSlotVariantRead, error) {
+	existing, err := s.repo.SlotVariantByID(ctx, id)
+	if err != nil {
 		return nil, err
 	}
 	if payload.PromptSlotTypeID != nil && *payload.PromptSlotTypeID != existing.PromptSlotTypeID {
-		if !existsByID[PromptSlotType](s.db.WithContext(ctx), *payload.PromptSlotTypeID) {
+		ok, err := s.repo.SlotTypeExists(ctx, *payload.PromptSlotTypeID)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
 			return nil, gorm.ErrRecordNotFound
 		}
 		existing.PromptSlotTypeID = *payload.PromptSlotTypeID
+		existing.PromptSlotType = nil
 	}
 	if payload.LLM != nil {
 		llm := strings.TrimSpace(*payload.LLM)
@@ -192,9 +218,11 @@ func (s *service) updateSlotVariant(ctx context.Context, id int, payload slotVar
 		existing.LLM = llm
 	}
 	if payload.Name != nil && *payload.Name != existing.Name {
-		var cnt int64
-		s.db.WithContext(ctx).Model(&PromptSlotVariant{}).Where("name = ? AND id <> ?", *payload.Name, existing.ID).Count(&cnt)
-		if cnt > 0 {
+		ok, err := s.repo.SlotVariantNameExists(ctx, *payload.Name, &existing.ID)
+		if err != nil {
+			return nil, err
+		}
+		if ok {
 			return nil, conflictError{Detail: "PromptSlotVariant name already exists"}
 		}
 		existing.Name = *payload.Name
@@ -212,57 +240,59 @@ func (s *service) updateSlotVariant(ctx context.Context, id int, payload slotVar
 		}
 		existing.ExampleImageFilename = payload.ExampleImageFilename
 	}
-	if err := s.db.WithContext(ctx).Save(&existing).Error; err != nil {
+	if err := s.repo.SaveSlotVariant(ctx, existing); err != nil {
 		return nil, err
 	}
-	_ = s.db.WithContext(ctx).Preload("PromptSlotType").First(&existing, existing.ID).Error
-	v := toSlotVariantRead(&existing)
+	updated, err := s.repo.SlotVariantByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	v := toSlotVariantRead(updated)
 	return &v, nil
 }
 
-func (s *service) deleteSlotVariant(ctx context.Context, id int) error {
-	var existing PromptSlotVariant
-	if err := s.db.WithContext(ctx).First(&existing, "id = ?", id).Error; err != nil {
+func (s *Service) DeleteSlotVariant(ctx context.Context, id int) error {
+	existing, err := s.repo.SlotVariantByID(ctx, id)
+	if err != nil {
 		return err
 	}
 	if existing.ExampleImageFilename != nil {
 		safeDeletePublicImage(*existing.ExampleImageFilename, "slot-variant")
 	}
-	return s.db.WithContext(ctx).Delete(&PromptSlotVariant{}, existing.ID).Error
+	return s.repo.DeleteSlotVariant(ctx, id)
 }
 
-func (s *service) isValidLLM(llm string) bool {
-	_, ok := s.allowedLLMs[llm]
-	return ok
-}
-
-// ---------------
-// Categories Admin
-// ---------------
-
-func (s *service) listCategories(ctx context.Context) ([]PromptCategoryRead, error) {
-	var rows []PromptCategory
-	if err := s.db.WithContext(ctx).Order("id desc").Find(&rows).Error; err != nil {
+func (s *Service) ListCategories(ctx context.Context) ([]PromptCategoryRead, error) {
+	rows, err := s.repo.ListCategories(ctx)
+	if err != nil {
 		return nil, err
 	}
 	out := make([]PromptCategoryRead, 0, len(rows))
 	for i := range rows {
-		pc := rows[i]
+		cat := &rows[i]
+		promptsCount, err := s.repo.CountPromptsByCategory(ctx, cat.ID)
+		if err != nil {
+			return nil, err
+		}
+		subcatCount, err := s.repo.CountSubCategoriesByCategory(ctx, cat.ID)
+		if err != nil {
+			return nil, err
+		}
 		out = append(out, PromptCategoryRead{
-			ID:                 pc.ID,
-			Name:               pc.Name,
-			PromptsCount:       s.countPromptsByCategory(ctx, pc.ID),
-			SubcategoriesCount: s.countSubCategoriesByCategory(ctx, pc.ID),
-			CreatedAt:          timePtr(pc.CreatedAt),
-			UpdatedAt:          timePtr(pc.UpdatedAt),
+			ID:                 cat.ID,
+			Name:               cat.Name,
+			PromptsCount:       promptsCount,
+			SubcategoriesCount: subcatCount,
+			CreatedAt:          timePtr(cat.CreatedAt),
+			UpdatedAt:          timePtr(cat.UpdatedAt),
 		})
 	}
 	return out, nil
 }
 
-func (s *service) createCategory(ctx context.Context, name string) (*PromptCategoryRead, error) {
+func (s *Service) CreateCategory(ctx context.Context, name string) (*PromptCategoryRead, error) {
 	row := PromptCategory{Name: name}
-	if err := s.db.WithContext(ctx).Create(&row).Error; err != nil {
+	if err := s.repo.CreateCategory(ctx, &row); err != nil {
 		return nil, err
 	}
 	v := PromptCategoryRead{
@@ -276,86 +306,114 @@ func (s *service) createCategory(ctx context.Context, name string) (*PromptCateg
 	return &v, nil
 }
 
-func (s *service) updateCategory(ctx context.Context, id int, name *string) (*PromptCategoryRead, error) {
-	var existing PromptCategory
-	if err := s.db.WithContext(ctx).First(&existing, "id = ?", id).Error; err != nil {
+func (s *Service) UpdateCategory(ctx context.Context, id int, name *string) (*PromptCategoryRead, error) {
+	existing, err := s.repo.CategoryByID(ctx, id)
+	if err != nil {
 		return nil, err
 	}
 	if name != nil {
 		existing.Name = *name
 	}
-	if err := s.db.WithContext(ctx).Save(&existing).Error; err != nil {
+	if err := s.repo.SaveCategory(ctx, existing); err != nil {
+		return nil, err
+	}
+	promptsCount, err := s.repo.CountPromptsByCategory(ctx, existing.ID)
+	if err != nil {
+		return nil, err
+	}
+	subcatCount, err := s.repo.CountSubCategoriesByCategory(ctx, existing.ID)
+	if err != nil {
 		return nil, err
 	}
 	v := PromptCategoryRead{
 		ID:                 existing.ID,
 		Name:               existing.Name,
-		PromptsCount:       s.countPromptsByCategory(ctx, existing.ID),
-		SubcategoriesCount: s.countSubCategoriesByCategory(ctx, existing.ID),
+		PromptsCount:       promptsCount,
+		SubcategoriesCount: subcatCount,
 		CreatedAt:          timePtr(existing.CreatedAt),
 		UpdatedAt:          timePtr(existing.UpdatedAt),
 	}
 	return &v, nil
 }
 
-func (s *service) deleteCategory(ctx context.Context, id int) error {
-	var existing PromptCategory
-	if err := s.db.WithContext(ctx).First(&existing, "id = ?", id).Error; err != nil {
+func (s *Service) DeleteCategory(ctx context.Context, id int) error {
+	if _, err := s.repo.CategoryByID(ctx, id); err != nil {
 		return err
 	}
-	return s.db.WithContext(ctx).Delete(&PromptCategory{}, existing.ID).Error
+	return s.repo.DeleteCategory(ctx, id)
 }
 
-// ------------------
-// Subcategories Admin
-// ------------------
-
-func (s *service) listSubCategories(ctx context.Context) ([]PromptSubCategoryRead, error) {
-	var rows []PromptSubCategory
-	if err := s.db.WithContext(ctx).Order("id desc").Find(&rows).Error; err != nil {
+func (s *Service) ListSubCategories(ctx context.Context) ([]PromptSubCategoryRead, error) {
+	rows, err := s.repo.ListSubCategories(ctx)
+	if err != nil {
 		return nil, err
 	}
 	out := make([]PromptSubCategoryRead, 0, len(rows))
 	for i := range rows {
-		out = append(out, toSubCategoryRead(s.db, &rows[i]))
+		count, err := s.repo.CountPromptsBySubCategory(ctx, rows[i].ID)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, toSubCategoryRead(&rows[i], count))
 	}
 	return out, nil
 }
 
-func (s *service) listSubCategoriesByCategory(ctx context.Context, categoryID int) ([]PromptSubCategoryRead, error) {
-	var rows []PromptSubCategory
-	if err := s.db.WithContext(ctx).Where("prompt_category_id = ?", categoryID).Order("id desc").Find(&rows).Error; err != nil {
+func (s *Service) ListSubCategoriesByCategory(ctx context.Context, categoryID int) ([]PromptSubCategoryRead, error) {
+	rows, err := s.repo.ListSubCategoriesByCategory(ctx, categoryID)
+	if err != nil {
 		return nil, err
 	}
 	out := make([]PromptSubCategoryRead, 0, len(rows))
 	for i := range rows {
-		out = append(out, toSubCategoryRead(s.db, &rows[i]))
+		count, err := s.repo.CountPromptsBySubCategory(ctx, rows[i].ID)
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, toSubCategoryRead(&rows[i], count))
 	}
 	return out, nil
 }
 
-func (s *service) createSubCategory(ctx context.Context, payload subcatCreate) (*PromptSubCategoryRead, error) {
-	if !existsByID[PromptCategory](s.db.WithContext(ctx), payload.PromptCategoryID) {
+func (s *Service) CreateSubCategory(ctx context.Context, payload subcatCreate) (*PromptSubCategoryRead, error) {
+	exists, err := s.repo.CategoryExists(ctx, payload.PromptCategoryID)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
 		return nil, gorm.ErrRecordNotFound
 	}
-	row := PromptSubCategory{PromptCategoryID: payload.PromptCategoryID, Name: payload.Name, Description: payload.Description}
-	if err := s.db.WithContext(ctx).Create(&row).Error; err != nil {
+	row := PromptSubCategory{
+		PromptCategoryID: payload.PromptCategoryID,
+		Name:             payload.Name,
+		Description:      payload.Description,
+	}
+	if err := s.repo.CreateSubCategory(ctx, &row); err != nil {
 		return nil, err
 	}
-	v := toSubCategoryRead(s.db, &row)
+	count, err := s.repo.CountPromptsBySubCategory(ctx, row.ID)
+	if err != nil {
+		return nil, err
+	}
+	v := toSubCategoryRead(&row, count)
 	return &v, nil
 }
 
-func (s *service) updateSubCategory(ctx context.Context, id int, payload subcatUpdate) (*PromptSubCategoryRead, error) {
-	var existing PromptSubCategory
-	if err := s.db.WithContext(ctx).First(&existing, "id = ?", id).Error; err != nil {
+func (s *Service) UpdateSubCategory(ctx context.Context, id int, payload subcatUpdate) (*PromptSubCategoryRead, error) {
+	existing, err := s.repo.SubCategoryByID(ctx, id)
+	if err != nil {
 		return nil, err
 	}
-	if payload.PromptCategoryID != nil {
-		if !existsByID[PromptCategory](s.db.WithContext(ctx), *payload.PromptCategoryID) {
+	if payload.PromptCategoryID != nil && *payload.PromptCategoryID != existing.PromptCategoryID {
+		exists, err := s.repo.CategoryExists(ctx, *payload.PromptCategoryID)
+		if err != nil {
+			return nil, err
+		}
+		if !exists {
 			return nil, gorm.ErrRecordNotFound
 		}
 		existing.PromptCategoryID = *payload.PromptCategoryID
+		existing.PromptCategory = nil
 	}
 	if payload.Name != nil {
 		existing.Name = *payload.Name
@@ -363,67 +421,71 @@ func (s *service) updateSubCategory(ctx context.Context, id int, payload subcatU
 	if payload.Description != nil {
 		existing.Description = payload.Description
 	}
-	if err := s.db.WithContext(ctx).Save(&existing).Error; err != nil {
+	if err := s.repo.SaveSubCategory(ctx, existing); err != nil {
 		return nil, err
 	}
-	v := toSubCategoryRead(s.db, &existing)
+	count, err := s.repo.CountPromptsBySubCategory(ctx, existing.ID)
+	if err != nil {
+		return nil, err
+	}
+	v := toSubCategoryRead(existing, count)
 	return &v, nil
 }
 
-func (s *service) deleteSubCategory(ctx context.Context, id int) error {
-	return s.db.WithContext(ctx).Delete(&PromptSubCategory{}, "id = ?", id).Error
+func (s *Service) DeleteSubCategory(ctx context.Context, id int) error {
+	return s.repo.DeleteSubCategory(ctx, id)
 }
 
-// ---------
-// Prompts
-// ---------
-
-func (s *service) listPrompts(ctx context.Context) ([]PromptRead, error) {
-	rows, err := allPromptsWithRelations(s.db.WithContext(ctx))
+func (s *Service) ListPrompts(ctx context.Context) ([]PromptRead, error) {
+	rows, err := s.repo.ListPrompts(ctx)
 	if err != nil {
 		return nil, err
 	}
 	out := make([]PromptRead, 0, len(rows))
 	for i := range rows {
-		out = append(out, toPromptRead(s.db, &rows[i]))
+		out = append(out, toPromptRead(&rows[i]))
 	}
 	return out, nil
 }
 
-func (s *service) getPrompt(ctx context.Context, id int) (*PromptRead, error) {
-	row, err := loadPromptWithRelations(s.db.WithContext(ctx), id)
+func (s *Service) GetPrompt(ctx context.Context, id int) (*PromptRead, error) {
+	row, err := s.repo.PromptByID(ctx, id)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
-	if row == nil {
-		return nil, nil
-	}
-	v := toPromptRead(s.db, row)
+	v := toPromptRead(row)
 	return &v, nil
 }
 
-func (s *service) createPrompt(ctx context.Context, payload promptCreate) (*PromptRead, error) {
-	// Validate relationships
-	if payload.CategoryID != nil && !existsByID[PromptCategory](s.db.WithContext(ctx), *payload.CategoryID) {
-		return nil, gorm.ErrRecordNotFound
+func (s *Service) CreatePrompt(ctx context.Context, payload promptCreate) (*PromptRead, error) {
+	if payload.CategoryID != nil {
+		exists, err := s.repo.CategoryExists(ctx, *payload.CategoryID)
+		if err != nil {
+			return nil, err
+		}
+		if !exists {
+			return nil, gorm.ErrRecordNotFound
+		}
 	}
 	if payload.SubcategoryID != nil {
-		var sc PromptSubCategory
-		if err := s.db.WithContext(ctx).First(&sc, "id = ?", *payload.SubcategoryID).Error; err != nil {
+		sc, err := s.repo.SubCategoryByID(ctx, *payload.SubcategoryID)
+		if err != nil {
 			return nil, err
 		}
 		if payload.CategoryID != nil && sc.PromptCategoryID != *payload.CategoryID {
 			return nil, errors.New("subcategory does not belong to the specified category")
 		}
 	}
-	// Validate slots
 	slotIDs := uniqueSlotIDs(payload.Slots)
 	if len(slotIDs) > 0 {
-		var cnt int64
-		if err := s.db.WithContext(ctx).Model(&PromptSlotVariant{}).Where("id IN ?", slotIDs).Count(&cnt).Error; err != nil {
+		exists, err := s.repo.SlotVariantsExist(ctx, slotIDs)
+		if err != nil {
 			return nil, err
 		}
-		if cnt != int64(len(slotIDs)) {
+		if !exists {
 			return nil, gorm.ErrRecordNotFound
 		}
 	}
@@ -435,7 +497,6 @@ func (s *service) createPrompt(ctx context.Context, payload promptCreate) (*Prom
 		Active:               true,
 		ExampleImageFilename: payload.ExampleImageFilename,
 	}
-	// Handle cost calculation: create or update price row when provided
 	if payload.CostCalculation != nil {
 		priceID, err := s.createOrUpdatePrice(ctx, nil, payload.CostCalculation)
 		if err != nil {
@@ -443,46 +504,54 @@ func (s *service) createPrompt(ctx context.Context, payload promptCreate) (*Prom
 		}
 		row.PriceID = &priceID
 	} else if payload.PriceID != nil && *payload.PriceID > 0 {
-		// Validate referenced price if provided without calculation
-		var pr article.Price
-		if err := s.priceTable(ctx).First(&pr, "id = ?", *payload.PriceID).Error; err != nil {
+		price, err := s.repo.PriceByID(ctx, *payload.PriceID)
+		if err != nil {
 			return nil, err
 		}
-		if pr.ArticleID != nil {
+		if price.ArticleID != nil {
 			return nil, conflictError{Detail: "price is already linked to an article"}
 		}
 		row.PriceID = payload.PriceID
 	}
-	if err := s.db.WithContext(ctx).Create(&row).Error; err != nil {
+	if err := s.repo.CreatePrompt(ctx, &row); err != nil {
 		return nil, err
 	}
-	for _, sid := range slotIDs {
-		_ = s.db.WithContext(ctx).Create(&PromptSlotVariantMapping{PromptID: row.ID, SlotID: sid}).Error
+	if len(slotIDs) > 0 {
+		if err := s.repo.ReplacePromptSlotVariantMappings(ctx, row.ID, slotIDs); err != nil {
+			return nil, err
+		}
 	}
-	reloaded, _ := loadPromptWithRelations(s.db.WithContext(ctx), row.ID)
-	v := toPromptRead(s.db, reloaded)
+	created, err := s.repo.PromptByID(ctx, row.ID)
+	if err != nil {
+		return nil, err
+	}
+	v := toPromptRead(created)
 	return &v, nil
 }
 
-func (s *service) updatePrompt(ctx context.Context, id int, payload promptUpdate) (*PromptRead, error) {
-	var existing Prompt
-	if err := s.db.WithContext(ctx).First(&existing, "id = ?", id).Error; err != nil {
+func (s *Service) UpdatePrompt(ctx context.Context, id int, payload promptUpdate) (*PromptRead, error) {
+	existing, err := s.repo.PromptByID(ctx, id)
+	if err != nil {
 		return nil, err
 	}
-	// Validate category/subcategory
-	if payload.CategoryID != nil && !existsByID[PromptCategory](s.db.WithContext(ctx), *payload.CategoryID) {
-		return nil, gorm.ErrRecordNotFound
+	if payload.CategoryID != nil {
+		existsCat, err := s.repo.CategoryExists(ctx, *payload.CategoryID)
+		if err != nil {
+			return nil, err
+		}
+		if !existsCat {
+			return nil, gorm.ErrRecordNotFound
+		}
 	}
 	if payload.SubcategoryID != nil {
-		var sc PromptSubCategory
-		if err := s.db.WithContext(ctx).First(&sc, "id = ?", *payload.SubcategoryID).Error; err != nil {
+		sc, err := s.repo.SubCategoryByID(ctx, *payload.SubcategoryID)
+		if err != nil {
 			return nil, err
 		}
 		if payload.CategoryID != nil && sc.PromptCategoryID != *payload.CategoryID {
 			return nil, errors.New("subcategory does not belong to the specified category")
 		}
 	}
-	// Apply changes
 	if payload.Title != nil {
 		existing.Title = *payload.Title
 	}
@@ -491,16 +560,16 @@ func (s *service) updatePrompt(ctx context.Context, id int, payload promptUpdate
 	}
 	if payload.CategoryID != nil {
 		existing.CategoryID = payload.CategoryID
+		existing.Category = nil
 	}
 	if payload.SubcategoryID != nil {
 		existing.SubcategoryID = payload.SubcategoryID
+		existing.Subcategory = nil
 	}
 	if payload.Active != nil {
 		existing.Active = *payload.Active
 	}
-	// Price linkage and upsert: always accept a price object on updates (client sends it regardless of changes)
 	if payload.CostCalculation != nil {
-		// Require a priceId to target for updates; if missing, create a new price row
 		var target *int
 		if payload.PriceID != nil && *payload.PriceID > 0 {
 			target = payload.PriceID
@@ -513,12 +582,11 @@ func (s *service) updatePrompt(ctx context.Context, id int, payload promptUpdate
 		}
 		existing.PriceID = &priceID
 	} else if payload.PriceID != nil && *payload.PriceID > 0 {
-		// Just relink to a provided price id without content changes
-		var pr article.Price
-		if err := s.priceTable(ctx).First(&pr, "id = ?", *payload.PriceID).Error; err != nil {
+		price, err := s.repo.PriceByID(ctx, *payload.PriceID)
+		if err != nil {
 			return nil, err
 		}
-		if pr.ArticleID != nil {
+		if price.ArticleID != nil {
 			return nil, conflictError{Detail: "price is already linked to an article"}
 		}
 		existing.PriceID = payload.PriceID
@@ -530,72 +598,118 @@ func (s *service) updatePrompt(ctx context.Context, id int, payload promptUpdate
 		}
 		existing.ExampleImageFilename = payload.ExampleImageFilename
 	}
-	if err := s.db.WithContext(ctx).Save(&existing).Error; err != nil {
+	if err := s.repo.SavePrompt(ctx, existing); err != nil {
 		return nil, err
 	}
-	// Update mappings if provided
 	if payload.Slots != nil {
 		newIDs := uniqueSlotIDs(*payload.Slots)
 		if len(newIDs) > 0 {
-			var cnt int64
-			if err := s.db.WithContext(ctx).Model(&PromptSlotVariant{}).Where("id IN ?", newIDs).Count(&cnt).Error; err != nil {
+			existsSlots, err := s.repo.SlotVariantsExist(ctx, newIDs)
+			if err != nil {
 				return nil, err
 			}
-			if cnt != int64(len(newIDs)) {
+			if !existsSlots {
 				return nil, gorm.ErrRecordNotFound
 			}
 		}
-		if err := s.db.WithContext(ctx).Where("prompt_id = ?", existing.ID).Delete(&PromptSlotVariantMapping{}).Error; err != nil {
+		if err := s.repo.ReplacePromptSlotVariantMappings(ctx, existing.ID, newIDs); err != nil {
 			return nil, err
 		}
-		for _, sid := range newIDs {
-			_ = s.db.WithContext(ctx).Create(&PromptSlotVariantMapping{PromptID: existing.ID, SlotID: sid}).Error
-		}
 	}
-	reloaded, _ := loadPromptWithRelations(s.db.WithContext(ctx), existing.ID)
-	v := toPromptRead(s.db, reloaded)
+	updated, err := s.repo.PromptByID(ctx, existing.ID)
+	if err != nil {
+		return nil, err
+	}
+	v := toPromptRead(updated)
 	return &v, nil
 }
 
-// createOrUpdatePrice creates a new prices row (when priceID is nil) or updates the given priceID
-// using the provided costCalculation request. Returns the price id.
-func (s *service) createOrUpdatePrice(ctx context.Context, priceID *int, req *costCalculationRequest) (int, error) {
+func (s *Service) DeletePrompt(ctx context.Context, id int) error {
+	existing, err := s.repo.PromptByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if existing.ExampleImageFilename != nil {
+		safeDeletePublicImage(*existing.ExampleImageFilename, "prompt")
+	}
+	if err := s.repo.ReplacePromptSlotVariantMappings(ctx, existing.ID, nil); err != nil {
+		return err
+	}
+	return s.repo.DeletePrompt(ctx, existing.ID)
+}
+
+func (s *Service) ListPublicPrompts(ctx context.Context) ([]PublicPromptRead, error) {
+	rows, err := s.repo.ListPublicPrompts(ctx)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]PublicPromptRead, 0, len(rows))
+	for i := range rows {
+		out = append(out, toPublicPromptRead(&rows[i]))
+	}
+	return out, nil
+}
+
+func (s *Service) BatchPromptSummaries(ctx context.Context, ids []int) ([]PromptSummaryRead, error) {
+	if len(ids) == 0 {
+		return []PromptSummaryRead{}, nil
+	}
+	rows, err := s.repo.PromptsByIDs(ctx, ids)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]PromptSummaryRead, 0, len(rows))
+	for i := range rows {
+		out = append(out, PromptSummaryRead{ID: rows[i].ID, Title: rows[i].Title})
+	}
+	return out, nil
+}
+
+func (s *Service) createOrUpdatePrice(ctx context.Context, priceID *int, req *costCalculationRequest) (int, error) {
 	if req == nil {
 		return 0, errors.New("missing costCalculation")
 	}
-	// Optional VAT validation
-	if req.PurchaseVatRateId != nil && !existsByID[vat.ValueAddedTax](s.db.WithContext(ctx), *req.PurchaseVatRateId) {
-		return 0, gorm.ErrRecordNotFound
+	if req.PurchaseVatRateId != nil {
+		exists, err := s.repo.VatExists(ctx, *req.PurchaseVatRateId)
+		if err != nil {
+			return 0, err
+		}
+		if !exists {
+			return 0, gorm.ErrRecordNotFound
+		}
 	}
-	if req.SalesVatRateId != nil && !existsByID[vat.ValueAddedTax](s.db.WithContext(ctx), *req.SalesVatRateId) {
-		return 0, gorm.ErrRecordNotFound
+	if req.SalesVatRateId != nil {
+		exists, err := s.repo.VatExists(ctx, *req.SalesVatRateId)
+		if err != nil {
+			return 0, err
+		}
+		if !exists {
+			return 0, gorm.ErrRecordNotFound
+		}
 	}
-
 	if priceID == nil {
 		row := article.Price{}
-		// ArticleID left nil for prompt-linked prices
 		s.applyCostCalculation(&row, req)
-		if err := s.priceTable(ctx).Create(&row).Error; err != nil {
+		if err := s.repo.CreatePrice(ctx, &row); err != nil {
 			return 0, err
 		}
 		return row.ID, nil
 	}
-
-	var row article.Price
-	if err := s.priceTable(ctx).First(&row, "id = ?", *priceID).Error; err != nil {
+	row, err := s.repo.PriceByID(ctx, *priceID)
+	if err != nil {
 		return 0, err
 	}
 	if row.ArticleID != nil {
 		return 0, conflictError{Detail: "price is already linked to an article"}
 	}
-	s.applyCostCalculation(&row, req)
-	if err := s.priceTable(ctx).Save(&row).Error; err != nil {
+	s.applyCostCalculation(row, req)
+	if err := s.repo.SavePrice(ctx, row); err != nil {
 		return 0, err
 	}
 	return row.ID, nil
 }
 
-func (s *service) applyCostCalculation(row *article.Price, req *costCalculationRequest) {
+func (s *Service) applyCostCalculation(row *article.Price, req *costCalculationRequest) {
 	row.PurchasePriceNet = req.PurchasePriceNet
 	row.PurchasePriceTax = req.PurchasePriceTax
 	row.PurchasePriceGross = req.PurchasePriceGross
@@ -621,8 +735,6 @@ func (s *service) applyCostCalculation(row *article.Price, req *costCalculationR
 	row.SalesTotalGross = req.SalesTotalGross
 	row.SalesPriceUnit = req.SalesPriceUnit
 	row.SalesCalculationMode = req.SalesCalculationMode
-	// Map checkbox booleans to DB enum strings (NET/GROSS)
-	// Fallback to existing value or NET when creating
 	if req.PurchasePriceCorresponds != nil {
 		if *req.PurchasePriceCorresponds {
 			row.PurchasePriceCorresponds = "NET"
@@ -643,71 +755,4 @@ func (s *service) applyCostCalculation(row *article.Price, req *costCalculationR
 	}
 	row.PurchaseActiveRow = req.PurchaseActiveRow
 	row.SalesActiveRow = req.SalesActiveRow
-}
-
-func (s *service) deletePrompt(ctx context.Context, id int) error {
-	var existing Prompt
-	if err := s.db.WithContext(ctx).First(&existing, "id = ?", id).Error; err != nil {
-		return err
-	}
-	if existing.ExampleImageFilename != nil {
-		safeDeletePublicImage(*existing.ExampleImageFilename, "prompt")
-	}
-	_ = s.db.WithContext(ctx).Where("prompt_id = ?", existing.ID).Delete(&PromptSlotVariantMapping{}).Error
-	return s.db.WithContext(ctx).Delete(&Prompt{}, existing.ID).Error
-}
-
-// --------------
-// Public queries
-// --------------
-
-func (s *service) listPublicPrompts(ctx context.Context) ([]PublicPromptRead, error) {
-	var rows []Prompt
-	if err := s.db.WithContext(ctx).Where("active = ?", true).
-		Preload("Category").
-		Preload("Subcategory").
-		Preload("Price").
-		Preload("PromptSlotVariantMappings").
-		Preload("PromptSlotVariantMappings.PromptSlotVariant").
-		Preload("PromptSlotVariantMappings.PromptSlotVariant.PromptSlotType").
-		Order("id desc").
-		Find(&rows).Error; err != nil {
-		return nil, err
-	}
-	out := make([]PublicPromptRead, 0, len(rows))
-	for i := range rows {
-		out = append(out, toPublicPromptRead(&rows[i]))
-	}
-	return out, nil
-}
-
-func (s *service) batchPromptSummaries(ctx context.Context, ids []int) ([]PromptSummaryRead, error) {
-	if len(ids) == 0 {
-		return []PromptSummaryRead{}, nil
-	}
-	var rows []Prompt
-	if err := s.db.WithContext(ctx).Where("id IN ?", ids).Find(&rows).Error; err != nil {
-		return nil, err
-	}
-	out := make([]PromptSummaryRead, 0, len(rows))
-	for i := range rows {
-		out = append(out, PromptSummaryRead{ID: rows[i].ID, Title: rows[i].Title})
-	}
-	return out, nil
-}
-
-// ---------
-// Internals
-// ---------
-
-func (s *service) countPromptsByCategory(ctx context.Context, categoryID int) int {
-	var cnt int64
-	s.db.WithContext(ctx).Model(&Prompt{}).Where("category_id = ?", categoryID).Count(&cnt)
-	return int(cnt)
-}
-
-func (s *service) countSubCategoriesByCategory(ctx context.Context, categoryID int) int {
-	var cnt int64
-	s.db.WithContext(ctx).Model(&PromptSubCategory{}).Where("prompt_category_id = ?", categoryID).Count(&cnt)
-	return int(cnt)
 }

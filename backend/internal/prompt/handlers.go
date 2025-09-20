@@ -6,8 +6,7 @@ import (
 )
 
 // RegisterRoutes mounts prompt admin and public routes.
-func RegisterRoutes(r *gin.Engine, db *gorm.DB, allowedLLMs []string) {
-	svc := newService(db, allowedLLMs)
+func RegisterRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	// Admin
 	registerAdminSlotTypeRoutes(r, db, svc)
 	registerAdminSlotVariantRoutes(r, db, svc)

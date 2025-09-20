@@ -19,12 +19,12 @@ type categoryUpdate struct {
 	Name *string `json:"name"`
 }
 
-func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
+func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 	grp := r.Group("/api/admin/prompts/categories")
 	grp.Use(auth.RequireAdmin(db))
 
 	grp.GET("/", func(c *gin.Context) {
-		rows, err := svc.listCategories(c.Request.Context())
+		rows, err := svc.ListCategories(c.Request.Context())
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch categories"})
 			return
@@ -38,7 +38,7 @@ func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		created, err := svc.createCategory(c.Request.Context(), payload.Name)
+		created, err := svc.CreateCategory(c.Request.Context(), payload.Name)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create category"})
 			return
@@ -53,7 +53,7 @@ func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
-		updated, err := svc.updateCategory(c.Request.Context(), id, payload.Name)
+		updated, err := svc.UpdateCategory(c.Request.Context(), id, payload.Name)
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.JSON(http.StatusNotFound, gin.H{"detail": "PromptCategory not found"})
@@ -67,7 +67,7 @@ func registerAdminCategoryRoutes(r *gin.Engine, db *gorm.DB, svc *service) {
 
 	grp.DELETE("/:id", func(c *gin.Context) {
 		id, _ := strconvAtoi(c.Param("id"))
-		if err := svc.deleteCategory(c.Request.Context(), id); err != nil {
+		if err := svc.DeleteCategory(c.Request.Context(), id); err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				c.Status(http.StatusNoContent)
 				return

@@ -1,27 +1,23 @@
 package prompt
 
 import (
-	"errors"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
-	"gorm.io/gorm"
-
 	"voenix/backend/internal/article"
 	img "voenix/backend/internal/image"
 )
 
-// Small wrapper to reduce repetition.
-func errorsIsNotFound(err error) bool { return errors.Is(err, gorm.ErrRecordNotFound) }
-
-// Assemblers
 func toSlotTypeRead(t *PromptSlotType) PromptSlotTypeRead {
 	return PromptSlotTypeRead{
-		ID: t.ID, Name: t.Name, Position: t.Position,
-		CreatedAt: timePtr(t.CreatedAt), UpdatedAt: timePtr(t.UpdatedAt),
+		ID:        t.ID,
+		Name:      t.Name,
+		Position:  t.Position,
+		CreatedAt: timePtr(t.CreatedAt),
+		UpdatedAt: timePtr(t.UpdatedAt),
 	}
 }
 
@@ -45,27 +41,32 @@ func toSlotVariantRead(v *PromptSlotVariant) PromptSlotVariantRead {
 	}
 }
 
-func toPromptRead(db *gorm.DB, p *Prompt) PromptRead {
+func toPromptRead(p *Prompt) PromptRead {
 	var cat *PromptCategoryRead
 	if p.Category != nil {
 		pc := p.Category
 		cat = &PromptCategoryRead{
-			ID: pc.ID, Name: pc.Name,
-			PromptsCount: 0, SubcategoriesCount: 0,
-			CreatedAt: timePtr(pc.CreatedAt), UpdatedAt: timePtr(pc.UpdatedAt),
+			ID:                 pc.ID,
+			Name:               pc.Name,
+			PromptsCount:       0,
+			SubcategoriesCount: 0,
+			CreatedAt:          timePtr(pc.CreatedAt),
+			UpdatedAt:          timePtr(pc.UpdatedAt),
 		}
 	}
 	var subcat *PromptSubCategoryRead
 	if p.Subcategory != nil {
 		sc := p.Subcategory
 		subcat = &PromptSubCategoryRead{
-			ID: sc.ID, PromptCategoryID: sc.PromptCategoryID,
-			Name: sc.Name, Description: sc.Description,
-			PromptsCount: 0,
-			CreatedAt:    timePtr(sc.CreatedAt), UpdatedAt: timePtr(sc.UpdatedAt),
+			ID:               sc.ID,
+			PromptCategoryID: sc.PromptCategoryID,
+			Name:             sc.Name,
+			Description:      sc.Description,
+			PromptsCount:     0,
+			CreatedAt:        timePtr(sc.CreatedAt),
+			UpdatedAt:        timePtr(sc.UpdatedAt),
 		}
 	}
-
 	slots := make([]PromptSlotVariantRead, 0, len(p.PromptSlotVariantMappings))
 	for i := range p.PromptSlotVariantMappings {
 		m := p.PromptSlotVariantMappings[i]
@@ -73,78 +74,10 @@ func toPromptRead(db *gorm.DB, p *Prompt) PromptRead {
 			slots = append(slots, toSlotVariantRead(m.PromptSlotVariant))
 		}
 	}
-	// Load price if linked
 	var price *costCalculationRequest
 	if p.Price != nil {
-		pr := p.Price
-		price = &costCalculationRequest{
-			PurchasePriceNet:         pr.PurchasePriceNet,
-			PurchasePriceTax:         pr.PurchasePriceTax,
-			PurchasePriceGross:       pr.PurchasePriceGross,
-			PurchaseCostNet:          pr.PurchaseCostNet,
-			PurchaseCostTax:          pr.PurchaseCostTax,
-			PurchaseCostGross:        pr.PurchaseCostGross,
-			PurchaseCostPercent:      pr.PurchaseCostPercent,
-			PurchaseTotalNet:         pr.PurchaseTotalNet,
-			PurchaseTotalTax:         pr.PurchaseTotalTax,
-			PurchaseTotalGross:       pr.PurchaseTotalGross,
-			PurchasePriceUnit:        pr.PurchasePriceUnit,
-			PurchaseVatRateId:        pr.PurchaseVatRateID,
-			PurchaseVatRatePercent:   pr.PurchaseVatRatePercent,
-			PurchaseCalculationMode:  pr.PurchaseCalculationMode,
-			SalesVatRateId:           pr.SalesVatRateID,
-			SalesVatRatePercent:      pr.SalesVatRatePercent,
-			SalesMarginNet:           pr.SalesMarginNet,
-			SalesMarginTax:           pr.SalesMarginTax,
-			SalesMarginGross:         pr.SalesMarginGross,
-			SalesMarginPercent:       pr.SalesMarginPercent,
-			SalesTotalNet:            pr.SalesTotalNet,
-			SalesTotalTax:            pr.SalesTotalTax,
-			SalesTotalGross:          pr.SalesTotalGross,
-			SalesPriceUnit:           pr.SalesPriceUnit,
-			SalesCalculationMode:     pr.SalesCalculationMode,
-			PurchasePriceCorresponds: strToBoolPtr(pr.PurchasePriceCorresponds),
-			SalesPriceCorresponds:    strToBoolPtr(pr.SalesPriceCorresponds),
-			PurchaseActiveRow:        pr.PurchaseActiveRow,
-			SalesActiveRow:           pr.SalesActiveRow,
-		}
-	} else if p.PriceID != nil {
-		var pr article.Price
-		if err := db.Table("prices").First(&pr, "id = ?", *p.PriceID).Error; err == nil {
-			price = &costCalculationRequest{
-				PurchasePriceNet:         pr.PurchasePriceNet,
-				PurchasePriceTax:         pr.PurchasePriceTax,
-				PurchasePriceGross:       pr.PurchasePriceGross,
-				PurchaseCostNet:          pr.PurchaseCostNet,
-				PurchaseCostTax:          pr.PurchaseCostTax,
-				PurchaseCostGross:        pr.PurchaseCostGross,
-				PurchaseCostPercent:      pr.PurchaseCostPercent,
-				PurchaseTotalNet:         pr.PurchaseTotalNet,
-				PurchaseTotalTax:         pr.PurchaseTotalTax,
-				PurchaseTotalGross:       pr.PurchaseTotalGross,
-				PurchasePriceUnit:        pr.PurchasePriceUnit,
-				PurchaseVatRateId:        pr.PurchaseVatRateID,
-				PurchaseVatRatePercent:   pr.PurchaseVatRatePercent,
-				PurchaseCalculationMode:  pr.PurchaseCalculationMode,
-				SalesVatRateId:           pr.SalesVatRateID,
-				SalesVatRatePercent:      pr.SalesVatRatePercent,
-				SalesMarginNet:           pr.SalesMarginNet,
-				SalesMarginTax:           pr.SalesMarginTax,
-				SalesMarginGross:         pr.SalesMarginGross,
-				SalesMarginPercent:       pr.SalesMarginPercent,
-				SalesTotalNet:            pr.SalesTotalNet,
-				SalesTotalTax:            pr.SalesTotalTax,
-				SalesTotalGross:          pr.SalesTotalGross,
-				SalesPriceUnit:           pr.SalesPriceUnit,
-				SalesCalculationMode:     pr.SalesCalculationMode,
-				PurchasePriceCorresponds: strToBoolPtr(pr.PurchasePriceCorresponds),
-				SalesPriceCorresponds:    strToBoolPtr(pr.SalesPriceCorresponds),
-				PurchaseActiveRow:        pr.PurchaseActiveRow,
-				SalesActiveRow:           pr.SalesActiveRow,
-			}
-		}
+		price = priceToCostCalculation(p.Price)
 	}
-
 	return PromptRead{
 		ID:              p.ID,
 		Title:           p.Title,
@@ -207,61 +140,55 @@ func toPublicPromptRead(p *Prompt) PublicPromptRead {
 	}
 }
 
-func loadPromptWithRelations(db *gorm.DB, id int) (*Prompt, error) {
-	var row Prompt
-	err := db.Where("id = ?", id).
-		Preload("Category").
-		Preload("Subcategory").
-		Preload("Price", func(tx *gorm.DB) *gorm.DB {
-			return tx.Table("prices")
-		}).
-		Preload("PromptSlotVariantMappings").
-		Preload("PromptSlotVariantMappings.PromptSlotVariant").
-		Preload("PromptSlotVariantMappings.PromptSlotVariant.PromptSlotType").
-		First(&row).Error
-	if err != nil {
-		if errorsIsNotFound(err) {
-			return nil, nil
-		}
-		return nil, err
-	}
-	return &row, nil
-}
-
-func allPromptsWithRelations(db *gorm.DB) ([]Prompt, error) {
-	var rows []Prompt
-	err := db.
-		Preload("Category").
-		Preload("Subcategory").
-		Preload("Price", func(tx *gorm.DB) *gorm.DB {
-			return tx.Table("prices")
-		}).
-		Preload("PromptSlotVariantMappings").
-		Preload("PromptSlotVariantMappings.PromptSlotVariant").
-		Preload("PromptSlotVariantMappings.PromptSlotVariant.PromptSlotType").
-		Order("id desc").
-		Find(&rows).Error
-	return rows, err
-}
-
-// Category count helpers moved into Service for centralized DB access.
-
-func countPromptsBySubcategory(db *gorm.DB, subcategoryID int) int {
-	var cnt int64
-	db.Model(&Prompt{}).Where("subcategory_id = ?", subcategoryID).Count(&cnt)
-	return int(cnt)
-}
-
-func toSubCategoryRead(db *gorm.DB, sc *PromptSubCategory) PromptSubCategoryRead {
+func toSubCategoryRead(sc *PromptSubCategory, promptsCount int) PromptSubCategoryRead {
 	return PromptSubCategoryRead{
-		ID: sc.ID, PromptCategoryID: sc.PromptCategoryID,
-		Name: sc.Name, Description: sc.Description,
-		PromptsCount: countPromptsBySubcategory(db, sc.ID),
-		CreatedAt:    timePtr(sc.CreatedAt), UpdatedAt: timePtr(sc.UpdatedAt),
+		ID:               sc.ID,
+		PromptCategoryID: sc.PromptCategoryID,
+		Name:             sc.Name,
+		Description:      sc.Description,
+		PromptsCount:     promptsCount,
+		CreatedAt:        timePtr(sc.CreatedAt),
+		UpdatedAt:        timePtr(sc.UpdatedAt),
 	}
 }
 
-// Utility: parse ids=1,2 or repeated ids params
+func priceToCostCalculation(pr *article.Price) *costCalculationRequest {
+	if pr == nil {
+		return nil
+	}
+	return &costCalculationRequest{
+		PurchasePriceNet:         pr.PurchasePriceNet,
+		PurchasePriceTax:         pr.PurchasePriceTax,
+		PurchasePriceGross:       pr.PurchasePriceGross,
+		PurchaseCostNet:          pr.PurchaseCostNet,
+		PurchaseCostTax:          pr.PurchaseCostTax,
+		PurchaseCostGross:        pr.PurchaseCostGross,
+		PurchaseCostPercent:      pr.PurchaseCostPercent,
+		PurchaseTotalNet:         pr.PurchaseTotalNet,
+		PurchaseTotalTax:         pr.PurchaseTotalTax,
+		PurchaseTotalGross:       pr.PurchaseTotalGross,
+		PurchasePriceUnit:        pr.PurchasePriceUnit,
+		PurchaseVatRateId:        pr.PurchaseVatRateID,
+		PurchaseVatRatePercent:   pr.PurchaseVatRatePercent,
+		PurchaseCalculationMode:  pr.PurchaseCalculationMode,
+		SalesVatRateId:           pr.SalesVatRateID,
+		SalesVatRatePercent:      pr.SalesVatRatePercent,
+		SalesMarginNet:           pr.SalesMarginNet,
+		SalesMarginTax:           pr.SalesMarginTax,
+		SalesMarginGross:         pr.SalesMarginGross,
+		SalesMarginPercent:       pr.SalesMarginPercent,
+		SalesTotalNet:            pr.SalesTotalNet,
+		SalesTotalTax:            pr.SalesTotalTax,
+		SalesTotalGross:          pr.SalesTotalGross,
+		SalesPriceUnit:           pr.SalesPriceUnit,
+		SalesCalculationMode:     pr.SalesCalculationMode,
+		PurchasePriceCorresponds: strToBoolPtr(pr.PurchasePriceCorresponds),
+		SalesPriceCorresponds:    strToBoolPtr(pr.SalesPriceCorresponds),
+		PurchaseActiveRow:        pr.PurchaseActiveRow,
+		SalesActiveRow:           pr.SalesActiveRow,
+	}
+}
+
 func parseIDs(repeated []string, commaSep string) []int {
 	vals := []string{}
 	for _, v := range repeated {
@@ -272,8 +199,9 @@ func parseIDs(repeated []string, commaSep string) []int {
 	if commaSep != "" {
 		parts := strings.Split(commaSep, ",")
 		for _, p := range parts {
-			if strings.TrimSpace(p) != "" {
-				vals = append(vals, strings.TrimSpace(p))
+			trimmed := strings.TrimSpace(p)
+			if trimmed != "" {
+				vals = append(vals, trimmed)
 			}
 		}
 	}
@@ -305,13 +233,6 @@ func uniqueSlotIDs(slots []promptSlotRef) []int {
 	return out
 }
 
-// Generic exists by id helper
-func existsByID[T any](db *gorm.DB, id int) bool {
-	var cnt int64
-	db.Model(new(T)).Where("id = ?", id).Count(&cnt)
-	return cnt > 0
-}
-
 func publicPromptExampleURL(filename *string) string {
 	if filename == nil || *filename == "" {
 		return ""
@@ -326,7 +247,6 @@ func publicSlotVariantExampleURL(filename *string) string {
 	return "/public/images/prompt-slot-variant-example-images/" + filepath.Base(*filename)
 }
 
-// Delete a public image (best-effort). kind: "prompt" | "slot-variant"
 func safeDeletePublicImage(filename, kind string) {
 	loc, err := img.NewStorageLocations()
 	if err != nil || strings.TrimSpace(filename) == "" {
@@ -344,6 +264,7 @@ func safeDeletePublicImage(filename, kind string) {
 }
 
 func timePtr(t time.Time) *time.Time { return &t }
+
 func strPtrOrNil(s string) *string {
 	if s == "" {
 		return nil
@@ -351,10 +272,8 @@ func strPtrOrNil(s string) *string {
 	return &s
 }
 
-// tiny wrappers to avoid importing strconv in many files
 func strconvAtoi(s string) (int, error) { return strconv.Atoi(s) }
 
-// util: DB stores "NET"/"GROSS" but UI sends booleans
 func strToBoolPtr(s string) *bool {
 	var b bool
 	switch strings.ToUpper(strings.TrimSpace(s)) {
