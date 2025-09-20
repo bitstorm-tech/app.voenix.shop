@@ -4,11 +4,13 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
 	"voenix/backend/internal/auth"
+	"voenix/backend/internal/country"
 )
 
 type SupplierCreateRequest struct {
@@ -85,6 +87,63 @@ func (payload SupplierUpdateRequest) ToDomain() Supplier {
 	return domainSupplier
 }
 
+type supplierResponse struct {
+	ID           int              `json:"id"`
+	Name         *string          `json:"name"`
+	Title        *string          `json:"title"`
+	FirstName    *string          `json:"firstName"`
+	LastName     *string          `json:"lastName"`
+	Street       *string          `json:"street"`
+	HouseNumber  *string          `json:"houseNumber"`
+	City         *string          `json:"city"`
+	PostalCode   *int             `json:"postalCode"`
+	CountryID    *int             `json:"countryId"`
+	Country      *country.Country `json:"country"`
+	PhoneNumber1 *string          `json:"phoneNumber1"`
+	PhoneNumber2 *string          `json:"phoneNumber2"`
+	PhoneNumber3 *string          `json:"phoneNumber3"`
+	Email        *string          `json:"email"`
+	Website      *string          `json:"website"`
+	CreatedAt    time.Time        `json:"createdAt"`
+	UpdatedAt    time.Time        `json:"updatedAt"`
+}
+
+func newSupplierResponseFromDomain(domainSupplier *Supplier) supplierResponse {
+	if domainSupplier == nil {
+		return supplierResponse{}
+	}
+
+	return supplierResponse{
+		ID:           domainSupplier.ID,
+		Name:         domainSupplier.Name,
+		Title:        domainSupplier.Title,
+		FirstName:    domainSupplier.FirstName,
+		LastName:     domainSupplier.LastName,
+		Street:       domainSupplier.Street,
+		HouseNumber:  domainSupplier.HouseNumber,
+		City:         domainSupplier.City,
+		PostalCode:   domainSupplier.PostalCode,
+		CountryID:    domainSupplier.CountryID,
+		Country:      domainSupplier.Country,
+		PhoneNumber1: domainSupplier.PhoneNumber1,
+		PhoneNumber2: domainSupplier.PhoneNumber2,
+		PhoneNumber3: domainSupplier.PhoneNumber3,
+		Email:        domainSupplier.Email,
+		Website:      domainSupplier.Website,
+		CreatedAt:    domainSupplier.CreatedAt,
+		UpdatedAt:    domainSupplier.UpdatedAt,
+	}
+}
+
+func newSupplierResponseListFromDomain(domainSupplierList []Supplier) []supplierResponse {
+	supplierResponses := make([]supplierResponse, len(domainSupplierList))
+	for index := range domainSupplierList {
+		domainSupplierValue := domainSupplierList[index]
+		supplierResponses[index] = newSupplierResponseFromDomain(&domainSupplierValue)
+	}
+	return supplierResponses
+}
+
 // RegisterRoutes mounts Supplier admin routes under /api/admin/suppliers.
 func RegisterRoutes(router *gin.Engine, database *gorm.DB, service *Service) {
 	supplierGroup := router.Group("/api/admin/suppliers")
@@ -96,7 +155,7 @@ func RegisterRoutes(router *gin.Engine, database *gorm.DB, service *Service) {
 			ginContext.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch suppliers"})
 			return
 		}
-		ginContext.JSON(http.StatusOK, supplierList)
+		ginContext.JSON(http.StatusOK, newSupplierResponseListFromDomain(supplierList))
 	})
 
 	supplierGroup.GET("/:id", func(ginContext *gin.Context) {
@@ -114,7 +173,7 @@ func RegisterRoutes(router *gin.Engine, database *gorm.DB, service *Service) {
 			ginContext.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to fetch supplier"})
 			return
 		}
-		ginContext.JSON(http.StatusOK, supplierValue)
+		ginContext.JSON(http.StatusOK, newSupplierResponseFromDomain(supplierValue))
 	})
 
 	supplierGroup.POST("", func(ginContext *gin.Context) {
@@ -130,7 +189,7 @@ func RegisterRoutes(router *gin.Engine, database *gorm.DB, service *Service) {
 			ginContext.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to create supplier"})
 			return
 		}
-		ginContext.JSON(http.StatusCreated, createdSupplier)
+		ginContext.JSON(http.StatusCreated, newSupplierResponseFromDomain(createdSupplier))
 	})
 
 	supplierGroup.PUT("/:id", func(ginContext *gin.Context) {
@@ -155,7 +214,7 @@ func RegisterRoutes(router *gin.Engine, database *gorm.DB, service *Service) {
 			ginContext.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to update supplier"})
 			return
 		}
-		ginContext.JSON(http.StatusOK, updatedSupplier)
+		ginContext.JSON(http.StatusOK, newSupplierResponseFromDomain(updatedSupplier))
 	})
 
 	supplierGroup.DELETE("/:id", func(ginContext *gin.Context) {
