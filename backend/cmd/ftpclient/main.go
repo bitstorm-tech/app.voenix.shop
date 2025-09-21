@@ -2,147 +2,154 @@ package main
 
 import (
 	"bytes"
-	"crypto/tls"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
+	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
-	ftp "github.com/jlaffaye/ftp"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/knownhosts"
 )
 
 const (
-	ftpServer                = "ftps://example.com:21"
-	ftpUser                  = "username"
-	ftpPassword              = "password"
-	ftpRemotePath            = "/remote/path/sample.pdf"
-	ftpTimeoutSeconds        = 10
-	ftpExplicitTLS           = true
-	ftpInsecureSkipVerifyTLS = false
-	localFilePath            = ""
+	sftpServer                          = ""
+	sftpUser                            = ""
+	sftpPassword                        = ""
+	sftpRemotePath                      = ""
+	sftpTimeoutSeconds                  = 10
+	sftpInsecureSkipHostKeyVerification = true
+	localFilePath                       = ""
 )
 
-var inlinePayload = []byte("%PDF-1.4\n% Debug FTP client sample PDF\n1 0 obj<<>>endobj\nstartxref\n0\n%%EOF\n")
+var inlinePayload = []byte("%PDF-1.4\n% Debug SFTP client sample PDF\n1 0 obj<<>>endobj\nstartxref\n0\n%%EOF\n")
 
 type clientConfig struct {
-	server                string
-	user                  string
-	password              string
-	remotePath            string
-	timeout               time.Duration
-	explicitTLS           bool
-	insecureSkipVerifyTLS bool
-	localFile             string
+	server                          string
+	user                            string
+	password                        string
+	remotePath                      string
+	timeout                         time.Duration
+	insecureSkipHostKeyVerification bool
+	localFile                       string
 }
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lmicroseconds | log.Lshortfile)
-	cfg := clientConfig{
-		server:                ftpServer,
-		user:                  ftpUser,
-		password:              ftpPassword,
-		remotePath:            ftpRemotePath,
-		timeout:               time.Duration(ftpTimeoutSeconds) * time.Second,
-		explicitTLS:           ftpExplicitTLS,
-		insecureSkipVerifyTLS: ftpInsecureSkipVerifyTLS,
-		localFile:             localFilePath,
+	configuration := clientConfig{
+		server:                          sftpServer,
+		user:                            sftpUser,
+		password:                        sftpPassword,
+		remotePath:                      sftpRemotePath,
+		timeout:                         time.Duration(sftpTimeoutSeconds) * time.Second,
+		insecureSkipHostKeyVerification: sftpInsecureSkipHostKeyVerification,
+		localFile:                       localFilePath,
 	}
-	log.Printf("starting ftp debug client with config: server=%q user=%q password_len=%d remotePath=%q timeout=%s explicitTLS=%t insecureSkipVerifyTLS=%t localFile=%q",
-		cfg.server, cfg.user, len(cfg.password), cfg.remotePath, cfg.timeout, cfg.explicitTLS, cfg.insecureSkipVerifyTLS, cfg.localFile)
 
-	if err := run(cfg); err != nil {
-		log.Fatalf("ftp debug client failed: %v", err)
+	log.Printf("starting sftp debug client with config: server=%q user=%q password_len=%d remotePath=%q timeout=%s insecureSkipHostKeyVerification=%t localFile=%q",
+		configuration.server, configuration.user, len(configuration.password), configuration.remotePath, configuration.timeout, configuration.insecureSkipHostKeyVerification, configuration.localFile)
+
+	if err := run(configuration); err != nil {
+		log.Fatalf("sftp debug client failed: %v", err)
 	}
-	log.Println("ftp debug client finished successfully")
+	log.Println("sftp debug client finished successfully")
 }
 
-func run(cfg clientConfig) error {
-	addr, secure, host, err := normalizeFTPServer(cfg.server)
+func run(configuration clientConfig) error {
+	address, host, err := normalizeSFTPServer(configuration.server)
 	if err != nil {
-		return fmt.Errorf("normalize ftp server: %w", err)
+		return fmt.Errorf("normalize sftp server: %w", err)
 	}
-	log.Printf("normalized server: addr=%q secure=%t host=%q", addr, secure, host)
+	log.Printf("normalized server: addr=%q host=%q", address, host)
 
-	if cfg.explicitTLS {
-		secure = true
-	}
-	log.Printf("effective secure setting: %t", secure)
-
-	tlsConfig := (*tls.Config)(nil)
-	if secure {
-		tlsConfig = &tls.Config{MinVersion: tls.VersionTLS12, ServerName: host, InsecureSkipVerify: cfg.insecureSkipVerifyTLS}
-		log.Printf("constructed TLS config: minVersion=TLS1.2 serverName=%q insecureSkipVerify=%t", tlsConfig.ServerName, tlsConfig.InsecureSkipVerify)
-	}
-
-	timeout := cfg.timeout
-	if timeout <= 0 {
-		timeout = 10 * time.Second
-		log.Printf("timeout not provided or invalid, defaulting to %s", timeout)
-	}
-
-	dialOptions := []ftp.DialOption{ftp.DialWithTimeout(timeout)}
-	if secure {
-		dialOptions = append(dialOptions, ftp.DialWithExplicitTLS(tlsConfig))
-	}
-	log.Printf("dial options configured: count=%d", len(dialOptions))
-
-	log.Println("dialing ftp server...")
-	client, err := ftp.Dial(addr, dialOptions...)
+	sshConfiguration, err := buildSSHClientConfig(configuration)
 	if err != nil {
-		return fmt.Errorf("ftp dial: %w", err)
+		return fmt.Errorf("build ssh config: %w", err)
 	}
-	log.Println("ftp dial successful")
+
+	log.Println("dialing sftp server...")
+	sshClient, err := ssh.Dial("tcp", address, sshConfiguration)
+	if err != nil {
+		return fmt.Errorf("ssh dial: %w", err)
+	}
+	log.Println("ssh dial successful")
 	defer func() {
-		log.Println("closing ftp connection")
-		if quitErr := client.Quit(); quitErr != nil {
-			log.Printf("ftp quit error: %v", quitErr)
+		log.Println("closing ssh client")
+		if closeError := sshClient.Close(); closeError != nil {
+			log.Printf("ssh close error: %v", closeError)
 		} else {
-			log.Println("ftp connection closed cleanly")
+			log.Println("ssh client closed cleanly")
 		}
 	}()
 
-	log.Println("attempting login")
-	if err := client.Login(cfg.user, cfg.password); err != nil {
-		return fmt.Errorf("ftp login: %w", err)
+	sftpClient, err := sftp.NewClient(sshClient)
+	if err != nil {
+		return fmt.Errorf("create sftp client: %w", err)
 	}
-	log.Println("login successful")
+	log.Println("sftp client created successfully")
+	defer func() {
+		log.Println("closing sftp client")
+		if closeError := sftpClient.Close(); closeError != nil {
+			log.Printf("sftp close error: %v", closeError)
+		} else {
+			log.Println("sftp client closed cleanly")
+		}
+	}()
 
-	if err := dumpServerInfo(client); err != nil {
+	if err := dumpServerInfo(sftpClient); err != nil {
 		log.Printf("failed to gather server info: %v", err)
 	}
 
-	payload, description, err := loadPayload(cfg)
+	payload, description, err := loadPayload(configuration)
 	if err != nil {
 		return fmt.Errorf("load payload: %w", err)
 	}
 	log.Printf("payload ready: %s (%d bytes)", description, len(payload))
 
 	reader := bytes.NewReader(payload)
-	log.Printf("starting upload to remote path %q", cfg.remotePath)
-	if err := client.Stor(cfg.remotePath, reader); err != nil {
-		return fmt.Errorf("ftp stor: %w", err)
+	remoteFilePath, err := resolveRemoteFilePath(sftpClient, configuration)
+	if err != nil {
+		return fmt.Errorf("resolve remote file path: %w", err)
+	}
+	log.Printf("resolved remote file path: %q", remoteFilePath)
+
+	remoteFile, err := sftpClient.OpenFile(remoteFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC)
+	if err != nil {
+		return fmt.Errorf("sftp open remote file %q: %w", remoteFilePath, err)
+	}
+
+	_, copyError := io.Copy(remoteFile, reader)
+	if closeError := remoteFile.Close(); closeError != nil {
+		log.Printf("remote file close error: %v", closeError)
+	}
+	if copyError != nil {
+		return fmt.Errorf("sftp copy payload: %w", copyError)
 	}
 	log.Println("upload completed successfully")
 
-	if err := client.NoOp(); err != nil {
-		log.Printf("noop command failed: %v", err)
+	uploadedInfo, err := sftpClient.Stat(remoteFilePath)
+	if err != nil {
+		log.Printf("stat uploaded file failed: %v", err)
 	} else {
-		log.Println("noop command succeeded, server responsive")
+		log.Printf("uploaded file size: %d bytes modified: %s", uploadedInfo.Size(), uploadedInfo.ModTime().Format(time.RFC3339))
 	}
 
 	return nil
 }
 
-func loadPayload(cfg clientConfig) ([]byte, string, error) {
-	if strings.TrimSpace(cfg.localFile) == "" {
+func loadPayload(configuration clientConfig) ([]byte, string, error) {
+	if strings.TrimSpace(configuration.localFile) == "" {
 		log.Println("no local file configured, using inline payload")
 		return inlinePayload, "inline payload", nil
 	}
 
-	path := strings.TrimSpace(cfg.localFile)
+	path := strings.TrimSpace(configuration.localFile)
 	log.Printf("loading local file payload from %q", path)
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -151,66 +158,196 @@ func loadPayload(cfg clientConfig) ([]byte, string, error) {
 	return data, fmt.Sprintf("file %s", path), nil
 }
 
-func dumpServerInfo(client *ftp.ServerConn) error {
+func dumpServerInfo(client *sftp.Client) error {
 	if client == nil {
-		return errors.New("nil ftp client")
+		return errors.New("nil sftp client")
 	}
 
 	log.Println("retrieving current directory")
-	dir, err := client.CurrentDir()
+	directory, err := client.Getwd()
 	if err != nil {
-		return fmt.Errorf("current dir: %w", err)
+		return fmt.Errorf("get working directory: %w", err)
 	}
-	log.Printf("current directory: %q", dir)
+	log.Printf("current directory: %q", directory)
 
 	log.Println("listing entries in current directory")
-	entries, err := client.List(".")
+	entries, err := client.ReadDir(directory)
 	if err != nil {
-		return fmt.Errorf("list current directory: %w", err)
+		return fmt.Errorf("read directory: %w", err)
 	}
+
 	limit := len(entries)
 	if limit > 20 {
 		limit = 20
 	}
 	for index := 0; index < limit; index++ {
 		entry := entries[index]
-		log.Printf("entry[%d]: name=%q type=%v size=%d time=%s target=%q", index, entry.Name, entry.Type, entry.Size, entry.Time.Format(time.RFC3339), entry.Target)
+		entryType := "file"
+		if entry.IsDir() {
+			entryType = "directory"
+		} else if entry.Mode()&os.ModeSymlink != 0 {
+			entryType = "symlink"
+		}
+		log.Printf("entry[%d]: name=%q type=%s size=%d mode=%v modTime=%s", index, entry.Name(), entryType, entry.Size(), entry.Mode(), entry.ModTime().Format(time.RFC3339))
 	}
 	log.Printf("total directory entries retrieved: %d", len(entries))
 
-	log.Println("sending NOOP command for responsiveness check")
-	if err := client.NoOp(); err != nil {
-		return fmt.Errorf("noop: %w", err)
+	log.Println("statting working directory for responsiveness check")
+	if _, err := client.Stat(directory); err != nil {
+		return fmt.Errorf("stat working directory: %w", err)
 	}
-	log.Println("noop succeeded during server info collection")
+	log.Println("stat succeeded during server info collection")
 
 	return nil
 }
 
-func normalizeFTPServer(server string) (addr string, secure bool, host string, err error) {
+func normalizeSFTPServer(server string) (string, string, error) {
 	trimmed := strings.TrimSpace(server)
 	lower := strings.ToLower(trimmed)
-	secure = false
+
 	switch {
-	case strings.HasPrefix(lower, "ftps://"):
-		secure = true
+	case strings.HasPrefix(lower, "sftp://"):
 		trimmed = trimmed[7:]
-	case strings.HasPrefix(lower, "ftp://"):
+	case strings.HasPrefix(lower, "ssh://"):
 		trimmed = trimmed[6:]
 	}
 
 	if trimmed == "" {
-		return "", false, "", errors.New("ftp server host is empty")
+		return "", "", errors.New("sftp server host is empty")
 	}
 
 	if !strings.Contains(trimmed, ":") {
-		trimmed += ":21"
+		trimmed += ":22"
 	}
 
-	host, _, splitErr := net.SplitHostPort(trimmed)
-	if splitErr != nil {
-		return "", false, "", fmt.Errorf("invalid ftp server: %w", splitErr)
+	host, _, splitError := net.SplitHostPort(trimmed)
+	if splitError != nil {
+		return "", "", fmt.Errorf("invalid sftp server: %w", splitError)
 	}
 
-	return trimmed, secure, host, nil
+	return trimmed, host, nil
+}
+
+func buildSSHClientConfig(configuration clientConfig) (*ssh.ClientConfig, error) {
+	hostKeyCallback, err := selectHostKeyCallback(configuration.insecureSkipHostKeyVerification)
+	if err != nil {
+		return nil, err
+	}
+
+	sshConfiguration := &ssh.ClientConfig{
+		User:            configuration.user,
+		Auth:            []ssh.AuthMethod{ssh.Password(configuration.password)},
+		HostKeyCallback: hostKeyCallback,
+		Timeout:         configuration.timeout,
+		BannerCallback: func(message string) error {
+			log.Printf("ssh banner: %s", message)
+			return nil
+		},
+	}
+
+	return sshConfiguration, nil
+}
+
+func resolveRemoteFilePath(client *sftp.Client, configuration clientConfig) (string, error) {
+	if client == nil {
+		return "", errors.New("nil sftp client when resolving remote path")
+	}
+
+	trimmedRemote := strings.TrimSpace(configuration.remotePath)
+	remoteIndicatesDirectory := strings.HasSuffix(trimmedRemote, "/")
+
+	defaultFileName := deriveRemoteFileName(configuration)
+	if trimmedRemote == "" {
+		return defaultFileName, nil
+	}
+
+	cleanRemote := path.Clean(trimmedRemote)
+	if cleanRemote == "." {
+		cleanRemote = defaultFileName
+	}
+
+	info, statError := client.Stat(cleanRemote)
+	switch {
+	case statError == nil:
+		if info.IsDir() {
+			remoteIndicatesDirectory = true
+		}
+	case isNotExistError(statError):
+		// The path does not exist; ensure parent directories exist before returning the path.
+		directory := path.Dir(cleanRemote)
+		if directory != "." && directory != "/" && directory != "" {
+			if err := client.MkdirAll(directory); err != nil {
+				return "", fmt.Errorf("ensure remote directory %q: %w", directory, err)
+			}
+		}
+	default:
+		return "", fmt.Errorf("stat remote path %q: %w", cleanRemote, statError)
+	}
+
+	if remoteIndicatesDirectory {
+		directory := strings.TrimSuffix(cleanRemote, "/")
+		if directory == "" || directory == "." {
+			return defaultFileName, nil
+		}
+		if err := client.MkdirAll(directory); err != nil {
+			return "", fmt.Errorf("ensure remote directory %q: %w", directory, err)
+		}
+		return path.Join(directory, defaultFileName), nil
+	}
+
+	// Ensure the directory hierarchy for the file path exists.
+	containingDirectory := path.Dir(cleanRemote)
+	if containingDirectory != "." && containingDirectory != "/" && containingDirectory != "" {
+		if err := client.MkdirAll(containingDirectory); err != nil {
+			return "", fmt.Errorf("ensure remote directory %q: %w", containingDirectory, err)
+		}
+	}
+
+	return cleanRemote, nil
+}
+
+func deriveRemoteFileName(configuration clientConfig) string {
+	trimmedLocal := strings.TrimSpace(configuration.localFile)
+	if trimmedLocal != "" {
+		baseName := filepath.Base(trimmedLocal)
+		if baseName != "." && baseName != string(os.PathSeparator) && baseName != "" {
+			return baseName
+		}
+	}
+	return fmt.Sprintf("payload-%d.bin", time.Now().Unix())
+}
+
+func isNotExistError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if errors.Is(err, os.ErrNotExist) {
+		return true
+	}
+	var statusError *sftp.StatusError
+	if errors.As(err, &statusError) {
+		return statusError.FxCode() == sftp.ErrSSHFxNoSuchFile
+	}
+	return false
+}
+
+func selectHostKeyCallback(skipVerification bool) (ssh.HostKeyCallback, error) {
+	if skipVerification {
+		log.Println("host key verification disabled; using insecure ignore host key callback")
+		return ssh.InsecureIgnoreHostKey(), nil
+	}
+
+	userHomeDirectory, err := os.UserHomeDir()
+	if err != nil {
+		return nil, fmt.Errorf("determine user home directory: %w", err)
+	}
+
+	knownHostsPath := filepath.Join(userHomeDirectory, ".ssh", "known_hosts")
+	callback, err := knownhosts.New(knownHostsPath)
+	if err != nil {
+		return nil, fmt.Errorf("load known hosts from %q: %w", knownHostsPath, err)
+	}
+
+	log.Printf("using known_hosts file %q for host key verification", knownHostsPath)
+	return callback, nil
 }

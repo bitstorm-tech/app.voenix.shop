@@ -2,144 +2,290 @@ package utility
 
 import (
 	"bytes"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"net"
+	"os"
+	"path"
+	"path/filepath"
 	"strings"
 	"time"
 
-	ftp "github.com/jlaffaye/ftp"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
+	"golang.org/x/crypto/ssh/knownhosts"
 )
 
-const defaultFTPTimeout = 10 * time.Second
+const defaultSFTPTimeout = 10 * time.Second
 
-// FTPUploadOptions controls optional behaviours for UploadPDFToFTP.
+// FTPUploadOptions controls behaviours for UploadPDFToFTP.
 type FTPUploadOptions struct {
-	// Timeout overrides the default dial and command timeout. Zero or negative uses default.
-	Timeout time.Duration
-	// RemotePath is the destination path (including filename) on the FTP server.
-	RemotePath string
-	// ExplicitTLS forces an explicit TLS upgrade even if the server string is not ftps://.
-	ExplicitTLS bool
-	// TLSConfig optionally provides a custom TLS configuration for explicit TLS connections.
-	TLSConfig *tls.Config
+	Timeout                         time.Duration
+	RemotePath                      string
+	InsecureSkipHostKeyVerification bool
+	KnownHostsPath                  string
+	FallbackFileName                string
 }
 
-type ftpClient interface {
-	Login(user, password string) error
-	Stor(path string, r io.Reader) error
-	Quit() error
+type sftpClient interface {
+	Stat(string) (os.FileInfo, error)
+	MkdirAll(string) error
+	OpenFile(string, int) (io.WriteCloser, error)
+	Close() error
 }
 
-type ftpConnector interface {
-	Connect(addr string, timeout time.Duration, secure bool, tlsConfig *tls.Config) (ftpClient, error)
-}
+var newSFTPClient = func(address string, config *ssh.ClientConfig) (sftpClient, error) {
+	sshClient, err := ssh.Dial("tcp", address, config)
+	if err != nil {
+		return nil, fmt.Errorf("ssh dial failed: %w", err)
+	}
 
-type realFTPDialer struct{}
-
-func (realFTPDialer) Connect(addr string, timeout time.Duration, secure bool, tlsConfig *tls.Config) (ftpClient, error) {
-	options := []ftp.DialOption{ftp.DialWithTimeout(timeout)}
-	if secure {
-		cfg := tlsConfig
-		if cfg == nil {
-			cfg = &tls.Config{MinVersion: tls.VersionTLS12}
+	client, err := sftp.NewClient(sshClient)
+	if err != nil {
+		closeErr := sshClient.Close()
+		if closeErr != nil {
+			err = fmt.Errorf("create sftp client failed: %w (closing ssh: %v)", err, closeErr)
+		} else {
+			err = fmt.Errorf("create sftp client failed: %w", err)
 		}
-		options = append(options, ftp.DialWithExplicitTLS(cfg))
+		return nil, err
 	}
-	return ftp.Dial(addr, options...)
+
+	return &realSFTPClient{client: client, sshClient: sshClient}, nil
 }
 
-var ftpDialer ftpConnector = realFTPDialer{}
+type realSFTPClient struct {
+	client    *sftp.Client
+	sshClient *ssh.Client
+}
 
-// UploadPDFToFTP uploads the provided PDF bytes to the configured FTP/FTPS server.
-// The upload occurs synchronously and returns an error when the transfer fails.
+func (c *realSFTPClient) Stat(path string) (os.FileInfo, error) {
+	return c.client.Stat(path)
+}
+
+func (c *realSFTPClient) MkdirAll(path string) error {
+	return c.client.MkdirAll(path)
+}
+
+func (c *realSFTPClient) OpenFile(path string, flag int) (io.WriteCloser, error) {
+	return c.client.OpenFile(path, flag)
+}
+
+func (c *realSFTPClient) Close() error {
+	sftpErr := c.client.Close()
+	sshErr := c.sshClient.Close()
+	if sftpErr != nil {
+		return sftpErr
+	}
+	return sshErr
+}
+
+// UploadPDFToFTP uploads the provided PDF bytes to an SFTP server.
 func UploadPDFToFTP(pdf []byte, server, user, password string, opts *FTPUploadOptions) error {
-	trimmed := strings.TrimSpace(server)
-	if trimmed == "" {
-		return errors.New("ftp server is required")
+	trimmedServer := strings.TrimSpace(server)
+	if trimmedServer == "" {
+		return errors.New("sftp server is required")
 	}
 
-	cfg := FTPUploadOptions{}
+	if user = strings.TrimSpace(user); user == "" {
+		return errors.New("sftp user is required")
+	}
+	if password = strings.TrimSpace(password); password == "" {
+		return errors.New("sftp password is required")
+	}
+
+	configuration := FTPUploadOptions{}
 	if opts != nil {
-		cfg = *opts
+		configuration = *opts
 	}
 
-	path := strings.TrimSpace(cfg.RemotePath)
-	if path == "" {
-		return errors.New("ftp remote path is required")
+	remotePath := strings.TrimSpace(configuration.RemotePath)
+	if remotePath == "" {
+		return errors.New("sftp remote path is required")
 	}
 
-	timeout := cfg.Timeout
+	timeout := configuration.Timeout
 	if timeout <= 0 {
-		timeout = defaultFTPTimeout
+		timeout = defaultSFTPTimeout
 	}
 
-	addr, secure, host, err := normalizeFTPServer(trimmed)
+	address, host, err := normalizeSFTPServer(trimmedServer)
 	if err != nil {
 		return err
 	}
-	if cfg.ExplicitTLS {
-		secure = true
-	}
 
-	tlsConfig := cfg.TLSConfig
-	if secure {
-		if tlsConfig == nil {
-			tlsConfig = &tls.Config{MinVersion: tls.VersionTLS12, ServerName: host}
-		} else if tlsConfig.ServerName == "" {
-			// Provide ServerName when missing to avoid handshake failures on SNI servers.
-			dup := tlsConfig.Clone()
-			dup.ServerName = host
-			tlsConfig = dup
-		}
-	}
-
-	client, err := ftpDialer.Connect(addr, timeout, secure, tlsConfig)
+	sshConfig, err := buildSSHClientConfig(user, password, host, timeout, configuration)
 	if err != nil {
-		return fmt.Errorf("ftp connect failed: %w", err)
+		return err
+	}
+
+	client, err := newSFTPClient(address, sshConfig)
+	if err != nil {
+		return err
 	}
 	defer func() {
-		_ = client.Quit()
+		_ = client.Close()
 	}()
 
-	if err := client.Login(user, password); err != nil {
-		return fmt.Errorf("ftp login failed: %w", err)
+	defaultFileName := strings.TrimSpace(configuration.FallbackFileName)
+	if defaultFileName == "" {
+		defaultFileName = fmt.Sprintf("upload-%d.pdf", time.Now().Unix())
 	}
 
-	reader := bytes.NewReader(pdf)
-	if err := client.Stor(path, reader); err != nil {
-		return fmt.Errorf("ftp upload failed: %w", err)
+	remoteFilePath, err := resolveRemoteFilePath(client, remotePath, defaultFileName)
+	if err != nil {
+		return err
+	}
+
+	remoteFile, err := client.OpenFile(remoteFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC)
+	if err != nil {
+		return fmt.Errorf("open remote file %q: %w", remoteFilePath, err)
+	}
+
+	_, copyErr := io.Copy(remoteFile, bytes.NewReader(pdf))
+	closeErr := remoteFile.Close()
+	if copyErr != nil {
+		return fmt.Errorf("write remote file %q: %w", remoteFilePath, copyErr)
+	}
+	if closeErr != nil {
+		return fmt.Errorf("close remote file %q: %w", remoteFilePath, closeErr)
 	}
 
 	return nil
 }
 
-func normalizeFTPServer(server string) (addr string, secure bool, host string, err error) {
+func normalizeSFTPServer(server string) (string, string, error) {
 	trimmed := strings.TrimSpace(server)
 	lower := strings.ToLower(trimmed)
-	secure = false
+
 	switch {
-	case strings.HasPrefix(lower, "ftps://"):
-		secure = true
+	case strings.HasPrefix(lower, "sftp://"):
 		trimmed = trimmed[7:]
-	case strings.HasPrefix(lower, "ftp://"):
+	case strings.HasPrefix(lower, "ssh://"):
 		trimmed = trimmed[6:]
 	}
 
 	if trimmed == "" {
-		return "", false, "", errors.New("ftp server host is empty")
+		return "", "", errors.New("sftp server host is empty")
 	}
 
 	if !strings.Contains(trimmed, ":") {
-		trimmed += ":21"
+		trimmed += ":22"
 	}
 
 	host, _, splitErr := net.SplitHostPort(trimmed)
 	if splitErr != nil {
-		return "", false, "", fmt.Errorf("invalid ftp server: %w", splitErr)
+		return "", "", fmt.Errorf("invalid sftp server: %w", splitErr)
 	}
 
-	return trimmed, secure, host, nil
+	return trimmed, host, nil
 }
+
+func buildSSHClientConfig(user, password, host string, timeout time.Duration, opts FTPUploadOptions) (*ssh.ClientConfig, error) {
+	hostKeyCallback, err := selectHostKeyCallback(opts)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ssh.ClientConfig{
+		User:            user,
+		Auth:            []ssh.AuthMethod{ssh.Password(password)},
+		HostKeyCallback: hostKeyCallback,
+		Timeout:         timeout,
+	}, nil
+}
+
+func selectHostKeyCallback(opts FTPUploadOptions) (ssh.HostKeyCallback, error) {
+	if opts.InsecureSkipHostKeyVerification {
+		return ssh.InsecureIgnoreHostKey(), nil
+	}
+
+	knownHostsPath := strings.TrimSpace(opts.KnownHostsPath)
+	if knownHostsPath == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return nil, fmt.Errorf("determine user home directory: %w", err)
+		}
+		knownHostsPath = filepath.Join(home, ".ssh", "known_hosts")
+	}
+
+	callback, err := knownhosts.New(knownHostsPath)
+	if err != nil {
+		return nil, fmt.Errorf("load known hosts from %q: %w", knownHostsPath, err)
+	}
+
+	return callback, nil
+}
+
+func resolveRemoteFilePath(client sftpClient, remotePath string, fallbackFileName string) (string, error) {
+	if client == nil {
+		return "", errors.New("nil sftp client when resolving remote path")
+	}
+
+	trimmedRemote := strings.TrimSpace(remotePath)
+	pathLooksLikeDirectory := strings.HasSuffix(trimmedRemote, "/")
+
+	cleanRemote := path.Clean(trimmedRemote)
+	if cleanRemote == "." {
+		cleanRemote = ""
+	}
+
+	remoteIndicatesDirectory := pathLooksLikeDirectory || cleanRemote == ""
+	if cleanRemote == "/" {
+		remoteIndicatesDirectory = true
+	}
+
+	if !remoteIndicatesDirectory {
+		info, err := client.Stat(cleanRemote)
+		switch {
+		case err == nil:
+			if info.IsDir() {
+				remoteIndicatesDirectory = true
+			}
+		case isNotExistError(err):
+			// Directory will be created later.
+		default:
+			return "", fmt.Errorf("stat remote path %q: %w", cleanRemote, err)
+		}
+	}
+
+	if remoteIndicatesDirectory {
+		if fallbackFileName == "" {
+			return "", fmt.Errorf("remote path %q refers to a directory and no fallback file name provided", remotePath)
+		}
+		directory := strings.TrimSuffix(cleanRemote, "/")
+		if directory == "" || directory == "." {
+			return fallbackFileName, nil
+		}
+		if err := client.MkdirAll(directory); err != nil {
+			return "", fmt.Errorf("ensure remote directory %q: %w", directory, err)
+		}
+		return path.Join(directory, fallbackFileName), nil
+	}
+
+	directory := path.Dir(cleanRemote)
+	if directory != "." && directory != "/" && directory != "" {
+		if err := client.MkdirAll(directory); err != nil {
+			return "", fmt.Errorf("ensure remote directory %q: %w", directory, err)
+		}
+	}
+
+	return cleanRemote, nil
+}
+
+func isNotExistError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if errors.Is(err, os.ErrNotExist) {
+		return true
+	}
+	var statusError *sftp.StatusError
+	if errors.As(err, &statusError) {
+		return statusError.FxCode() == sftp.ErrSSHFxNoSuchFile
+	}
+	return false
+}
+
+var _ sftpClient = (*realSFTPClient)(nil)

@@ -17,11 +17,14 @@ var (
 )
 
 type orderPDFFTPConfig struct {
-	Server   string
-	Folder   string
-	User     string
-	Password string
-	Timeout  time.Duration
+	Server                          string
+	Folder                          string
+	User                            string
+	Password                        string
+	Timeout                         time.Duration
+	InsecureSkipHostKeyVerification bool
+	KnownHostsPath                  string
+	FallbackFileName                string
 }
 
 func loadOrderPDFFTPConfig(getenv func(string) string) (orderPDFFTPConfig, error) {
@@ -52,13 +55,27 @@ func loadOrderPDFFTPConfig(getenv func(string) string) (orderPDFFTPConfig, error
 		cfg.Timeout = time.Duration(seconds) * time.Second
 	}
 
+	if skip := strings.TrimSpace(getenv("ORDER_PDF_FTP_SKIP_HOST_KEY_VERIFICATION")); skip != "" {
+		value, err := strconv.ParseBool(skip)
+		if err != nil {
+			return orderPDFFTPConfig{}, fmt.Errorf("invalid ORDER_PDF_FTP_SKIP_HOST_KEY_VERIFICATION: %w", err)
+		}
+		cfg.InsecureSkipHostKeyVerification = value
+	}
+
+	cfg.KnownHostsPath = strings.TrimSpace(getenv("ORDER_PDF_FTP_KNOWN_HOSTS_PATH"))
+	cfg.FallbackFileName = strings.TrimSpace(getenv("ORDER_PDF_FTP_FALLBACK_FILENAME"))
+
 	return cfg, nil
 }
 
 func (cfg orderPDFFTPConfig) options(remotePath string) *utility.FTPUploadOptions {
 	return &utility.FTPUploadOptions{
-		RemotePath: remotePath,
-		Timeout:    cfg.Timeout,
+		RemotePath:                      remotePath,
+		Timeout:                         cfg.Timeout,
+		InsecureSkipHostKeyVerification: cfg.InsecureSkipHostKeyVerification,
+		KnownHostsPath:                  cfg.KnownHostsPath,
+		FallbackFileName:                cfg.FallbackFileName,
 	}
 }
 

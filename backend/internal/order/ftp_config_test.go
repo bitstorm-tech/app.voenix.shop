@@ -19,6 +19,12 @@ func TestLoadOrderPDFFTPConfigSuccess(t *testing.T) {
 			return "pass"
 		case "ORDER_PDF_FTP_TIMEOUT":
 			return "12"
+		case "ORDER_PDF_FTP_SKIP_HOST_KEY_VERIFICATION":
+			return "true"
+		case "ORDER_PDF_FTP_KNOWN_HOSTS_PATH":
+			return "/tmp/known_hosts"
+		case "ORDER_PDF_FTP_FALLBACK_FILENAME":
+			return "fallback.pdf"
 		default:
 			return ""
 		}
@@ -31,6 +37,15 @@ func TestLoadOrderPDFFTPConfigSuccess(t *testing.T) {
 	}
 	if cfg.Timeout != 12*time.Second {
 		t.Fatalf("expected timeout 12s, got %v", cfg.Timeout)
+	}
+	if !cfg.InsecureSkipHostKeyVerification {
+		t.Fatalf("expected insecure skip host key verification to be true")
+	}
+	if cfg.KnownHostsPath != "/tmp/known_hosts" {
+		t.Fatalf("unexpected known hosts path: %s", cfg.KnownHostsPath)
+	}
+	if cfg.FallbackFileName != "fallback.pdf" {
+		t.Fatalf("unexpected fallback filename: %s", cfg.FallbackFileName)
 	}
 }
 
@@ -58,6 +73,26 @@ func TestLoadOrderPDFFTPConfigInvalidTimeout(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatal("expected error for invalid timeout")
+	}
+}
+
+func TestLoadOrderPDFFTPConfigInvalidSkipHostKey(t *testing.T) {
+	_, err := loadOrderPDFFTPConfig(func(key string) string {
+		switch key {
+		case "ORDER_PDF_FTP_SERVER":
+			return "ftp.example.com"
+		case "ORDER_PDF_FTP_USER":
+			return "user"
+		case "ORDER_PDF_FTP_PASSWORD":
+			return "pass"
+		case "ORDER_PDF_FTP_SKIP_HOST_KEY_VERIFICATION":
+			return "notabool"
+		default:
+			return ""
+		}
+	})
+	if err == nil {
+		t.Fatal("expected error for invalid skip host key flag")
 	}
 }
 
