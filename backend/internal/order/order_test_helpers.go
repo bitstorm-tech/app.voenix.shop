@@ -13,17 +13,18 @@ import (
 
 type fakeRepository struct {
 	activeCarts   map[int]*cart.Cart
-	orders        map[string]Order
-	ordersByCart  map[int]string
+	orders        map[int64]Order
+	ordersByCart  map[int]int64
 	generated     map[int]string
 	nextOrderCode int
+	nextOrderID   int64
 }
 
 func newFakeRepository() *fakeRepository {
 	return &fakeRepository{
 		activeCarts:  make(map[int]*cart.Cart),
-		orders:       make(map[string]Order),
-		ordersByCart: make(map[int]string),
+		orders:       make(map[int64]Order),
+		ordersByCart: make(map[int]int64),
 		generated:    make(map[int]string),
 	}
 }
@@ -53,6 +54,10 @@ func (f *fakeRepository) CreateOrder(_ context.Context, ord *Order) error {
 		f.nextOrderCode++
 		ord.OrderNumber = time.Now().Format("20060102") + "-" + padInt(f.nextOrderCode)
 	}
+	if ord.ID == 0 {
+		f.nextOrderID++
+		ord.ID = f.nextOrderID
+	}
 	now := time.Now()
 	if ord.CreatedAt.IsZero() {
 		ord.CreatedAt = now
@@ -65,7 +70,7 @@ func (f *fakeRepository) CreateOrder(_ context.Context, ord *Order) error {
 	return nil
 }
 
-func (f *fakeRepository) OrderByIDForUser(_ context.Context, userID int, orderID string) (*Order, error) {
+func (f *fakeRepository) OrderByIDForUser(_ context.Context, userID int, orderID int64) (*Order, error) {
 	ord, ok := f.orders[orderID]
 	if !ok || ord.UserID != userID {
 		return nil, ErrNotFound
@@ -132,6 +137,9 @@ func (f *fakeRepository) addOrder(ord Order) {
 	clone.Items = append([]OrderItem(nil), ord.Items...)
 	f.orders[ord.ID] = clone
 	f.ordersByCart[ord.CartID] = ord.ID
+	if ord.ID > f.nextOrderID {
+		f.nextOrderID = ord.ID
+	}
 }
 
 func (f *fakeRepository) setGenerated(id int, filename string) {

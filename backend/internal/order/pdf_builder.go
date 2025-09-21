@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/google/uuid"
 
@@ -12,7 +13,7 @@ import (
 // buildOrderPdfData constructs the pdf.OrderPdfData from Order and related records.
 func buildOrderPdfData(ctx context.Context, articleSvc ArticleService, repo Repository, o *Order) (pdf.OrderPdfData, error) {
 	out := pdf.OrderPdfData{
-		ID:          o.ID,
+		ID:          strconv.FormatInt(o.ID, 10),
 		OrderNumber: &o.OrderNumber,
 		UserID:      o.UserID,
 		Items:       make([]pdf.OrderItemPdfData, 0, len(o.Items)),

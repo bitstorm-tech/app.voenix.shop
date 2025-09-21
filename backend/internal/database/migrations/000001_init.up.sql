@@ -707,7 +707,7 @@ create index if not exists idx_cart_items_prompt_id
 
 create table if not exists orders
 (
-    id                        uuid                     default gen_random_uuid()                                       not null,
+    id                        bigserial                not null,
     order_number              varchar(50)              default ('ORD-'::text || nextval('order_number_seq'::regclass)) not null,
     user_id                   bigint                                                                                   not null,
     customer_email            varchar(255)                                                                             not null,
@@ -765,8 +765,8 @@ create index if not exists idx_orders_cart_id
 
 create table if not exists order_items
 (
-    id                 uuid                     default gen_random_uuid() not null,
-    order_id           uuid                                               not null,
+    id                 bigserial                not null,
+    order_id           bigint                                             not null,
     article_id         bigint                                             not null,
     variant_id         bigint                                             not null,
     quantity           integer                                            not null,

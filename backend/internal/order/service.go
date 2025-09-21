@@ -8,8 +8,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/google/uuid"
-
 	"voenix/backend/internal/article"
 	"voenix/backend/internal/pdf"
 )
@@ -64,7 +62,6 @@ func (s *Service) CreateOrderFromCart(ctx context.Context, userID int, req Creat
 	}
 
 	ord := &Order{
-		ID:              uuid.New().String(),
 		UserID:          userID,
 		CustomerEmail:   req.CustomerEmail,
 		CustomerFirst:   req.CustomerFirstName,
@@ -95,8 +92,6 @@ func (s *Service) CreateOrderFromCart(ctx context.Context, userID int, req Creat
 	for _, ci := range c.Items {
 		cd := canonicalizeJSON(ci.CustomData)
 		item := OrderItem{
-			ID:               uuid.New().String(),
-			OrderID:          ord.ID,
 			ArticleID:        ci.ArticleID,
 			VariantID:        ci.VariantID,
 			Quantity:         ci.Quantity,
@@ -122,7 +117,7 @@ func (s *Service) ListOrders(ctx context.Context, userID int, page, size int) (O
 }
 
 // GetOrder fetches a single order for a user.
-func (s *Service) GetOrder(ctx context.Context, userID int, orderID string) (*Order, error) {
+func (s *Service) GetOrder(ctx context.Context, userID int, orderID int64) (*Order, error) {
 	o, err := s.repo.OrderByIDForUser(ctx, userID, orderID)
 	if err != nil {
 		if errors.Is(err, ErrNotFound) {
@@ -183,7 +178,7 @@ func (s *Service) buildOrderResponse(ctx context.Context, o Order, baseURL strin
 		})
 	}
 
-	pdfURL := fmt.Sprintf("%s/api/user/orders/%s/pdf", strings.TrimRight(baseURL, "/"), o.ID)
+	pdfURL := fmt.Sprintf("%s/api/user/orders/%d/pdf", strings.TrimRight(baseURL, "/"), o.ID)
 	return OrderResponse{
 		ID:              o.ID,
 		OrderNumber:     o.OrderNumber,

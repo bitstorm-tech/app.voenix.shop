@@ -8,7 +8,7 @@ const (
 
 // Order captures the domain representation of a customer order.
 type Order struct {
-	ID              string
+	ID              int64
 	OrderNumber     string
 	UserID          int
 	CustomerEmail   string
@@ -41,8 +41,8 @@ type Order struct {
 
 // OrderItem represents a purchased item within an order.
 type OrderItem struct {
-	ID                     string
-	OrderID                string
+	ID                     int64
+	OrderID                int64
 	ArticleID              int
 	VariantID              int
 	Quantity               int

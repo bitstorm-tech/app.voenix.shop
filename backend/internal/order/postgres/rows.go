@@ -7,7 +7,7 @@ import (
 )
 
 type OrderRow struct {
-	ID              string         `gorm:"primaryKey;column:id;size:36"`
+	ID              int64          `gorm:"primaryKey;column:id"`
 	OrderNumber     string         `gorm:"column:order_number;size:50;uniqueIndex;->"`
 	UserID          int            `gorm:"column:user_id;not null"`
 	CustomerEmail   string         `gorm:"column:customer_email;size:255;not null"`
@@ -41,8 +41,8 @@ type OrderRow struct {
 func (OrderRow) TableName() string { return "orders" }
 
 type OrderItemRow struct {
-	ID               string    `gorm:"primaryKey;column:id;size:36"`
-	OrderID          string    `gorm:"column:order_id;size:36;not null;index"`
+	ID               int64     `gorm:"primaryKey;column:id"`
+	OrderID          int64     `gorm:"column:order_id;not null;index"`
 	ArticleID        int       `gorm:"column:article_id;not null"`
 	VariantID        int       `gorm:"column:variant_id;not null"`
 	Quantity         int       `gorm:"column:quantity;not null"`

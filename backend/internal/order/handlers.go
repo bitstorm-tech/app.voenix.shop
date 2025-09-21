@@ -46,7 +46,7 @@ type CreateOrderRequest struct {
 }
 
 type OrderItemResponse struct {
-	ID                     string                  `json:"id"`
+	ID                     int64                   `json:"id"`
 	Article                article.ArticleResponse `json:"article"`
 	Variant                *article.MugVariant     `json:"variant"`
 	Quantity               int                     `json:"quantity"`
@@ -60,7 +60,7 @@ type OrderItemResponse struct {
 }
 
 type OrderResponse struct {
-	ID              string              `json:"id"`
+	ID              int64               `json:"id"`
 	OrderNumber     string              `json:"orderNumber"`
 	CustomerEmail   string              `json:"customerEmail"`
 	CustomerFirst   string              `json:"customerFirstName"`
@@ -163,7 +163,12 @@ func getOrderHandler(svc *Service) gin.HandlerFunc {
 		if !ok {
 			return
 		}
-		orderID := c.Param("orderId")
+		orderIDParam := c.Param("orderId")
+		orderID, parseErr := strconv.ParseInt(orderIDParam, 10, 64)
+		if parseErr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid order id"})
+			return
+		}
 		ord, err := svc.GetOrder(c.Request.Context(), u.ID, orderID)
 		if err != nil {
 			if errors.Is(err, ErrNotFound) {
@@ -188,7 +193,12 @@ func downloadOrderPDFHandler(svc *Service) gin.HandlerFunc {
 		if !ok {
 			return
 		}
-		orderID := c.Param("orderId")
+		orderIDParam := c.Param("orderId")
+		orderID, parseErr := strconv.ParseInt(orderIDParam, 10, 64)
+		if parseErr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid order id"})
+			return
+		}
 		ord, err := svc.GetOrder(c.Request.Context(), u.ID, orderID)
 		if err != nil {
 			if errors.Is(err, ErrNotFound) {

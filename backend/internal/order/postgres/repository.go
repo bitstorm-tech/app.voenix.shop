@@ -49,19 +49,22 @@ func (r *Repository) CreateOrder(ctx context.Context, ord *order.Order) error {
 	if ord == nil {
 		return errors.New("order is nil")
 	}
-	row := orderRowFromDomain(*ord)
+	orderRow := orderRowFromDomain(*ord)
+	orderItemRows := make([]OrderItemRow, len(orderRow.Items))
+	copy(orderItemRows, orderRow.Items)
+	orderRow.Items = nil
 	err := r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if row.ID == "" {
-			return errors.New("order ID missing")
-		}
-		if err := tx.Omit("Items.*").Create(&row).Error; err != nil {
+		if err := tx.Omit("Items.*").Create(&orderRow).Error; err != nil {
 			return err
 		}
-		if len(row.Items) > 0 {
-			for idx := range row.Items {
-				row.Items[idx].OrderID = row.ID
+		if len(orderItemRows) > 0 {
+			for i := range orderItemRows {
+				if orderItemRows[i].OrderID != 0 && orderItemRows[i].OrderID != orderRow.ID {
+					return errors.New("order item order ID mismatch")
+				}
+				orderItemRows[i].OrderID = orderRow.ID
 			}
-			if err := tx.Create(&row.Items).Error; err != nil {
+			if err := tx.Create(&orderItemRows).Error; err != nil {
 				return err
 			}
 		}
@@ -78,7 +81,7 @@ func (r *Repository) CreateOrder(ctx context.Context, ord *order.Order) error {
 	var refreshed OrderRow
 	if err := r.db.WithContext(ctx).
 		Preload("Items").
-		First(&refreshed, "id = ?", row.ID).Error; err != nil {
+		First(&refreshed, "id = ?", orderRow.ID).Error; err != nil {
 		return err
 	}
 	domain := refreshed.toDomain()
@@ -86,7 +89,7 @@ func (r *Repository) CreateOrder(ctx context.Context, ord *order.Order) error {
 	return nil
 }
 
-func (r *Repository) OrderByIDForUser(ctx context.Context, userID int, orderID string) (*order.Order, error) {
+func (r *Repository) OrderByIDForUser(ctx context.Context, userID int, orderID int64) (*order.Order, error) {
 	var row OrderRow
 	err := r.db.WithContext(ctx).
 		Preload("Items").

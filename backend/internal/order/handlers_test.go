@@ -6,12 +6,12 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"voenix/backend/internal/article"
 	"voenix/backend/internal/auth"
@@ -33,7 +33,8 @@ func seedOrderForPDF(t *testing.T, repo *fakeRepository, articleSvc *fakeArticle
 	generatedID := 301
 
 	now := time.Now()
-	orderID := uuid.New().String()
+	orderID := int64(1001)
+	orderItemID := int64(5001)
 	order := Order{
 		ID:              orderID,
 		OrderNumber:     "ORD-1001",
@@ -56,7 +57,7 @@ func seedOrderForPDF(t *testing.T, repo *fakeRepository, articleSvc *fakeArticle
 		UpdatedAt:       now,
 		Items: []OrderItem{
 			{
-				ID:               uuid.New().String(),
+				ID:               orderItemID,
 				OrderID:          orderID,
 				ArticleID:        articleID,
 				VariantID:        variantID,
@@ -120,12 +121,13 @@ func TestDownloadOrderPDFHandler_UploadsBeforeResponding(t *testing.T) {
 	t.Setenv("ORDER_PDF_FTP_PASSWORD", "ftp-pass")
 	t.Setenv("ORDER_PDF_FTP_TIMEOUT", "15")
 
-	req := httptest.NewRequest(http.MethodGet, "/api/user/orders/"+ord.ID+"/pdf", nil)
+	orderIDStr := strconv.FormatInt(ord.ID, 10)
+	req := httptest.NewRequest(http.MethodGet, "/api/user/orders/"+orderIDStr+"/pdf", nil)
 	w := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(w)
 	ctx.Request = req
 	ctx.Set("currentUser", &auth.User{ID: userID})
-	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: ord.ID}}
+	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: orderIDStr}}
 
 	handler := downloadOrderPDFHandler(svc)
 	handler(ctx)
@@ -175,8 +177,9 @@ func TestDownloadOrderPDFHandler_MissingConfig(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(w)
-	ctx.Request = httptest.NewRequest(http.MethodGet, "/api/user/orders/"+ord.ID+"/pdf", nil)
-	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: ord.ID}}
+	orderIDStr := strconv.FormatInt(ord.ID, 10)
+	ctx.Request = httptest.NewRequest(http.MethodGet, "/api/user/orders/"+orderIDStr+"/pdf", nil)
+	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: orderIDStr}}
 	ctx.Set("currentUser", &auth.User{ID: userID})
 
 	handler := downloadOrderPDFHandler(svc)
@@ -214,8 +217,9 @@ func TestDownloadOrderPDFHandler_UploadFailure(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(w)
-	ctx.Request = httptest.NewRequest(http.MethodGet, "/api/user/orders/"+ord.ID+"/pdf", nil)
-	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: ord.ID}}
+	orderIDStr := strconv.FormatInt(ord.ID, 10)
+	ctx.Request = httptest.NewRequest(http.MethodGet, "/api/user/orders/"+orderIDStr+"/pdf", nil)
+	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: orderIDStr}}
 	ctx.Set("currentUser", &auth.User{ID: userID})
 
 	handler := downloadOrderPDFHandler(svc)
