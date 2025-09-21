@@ -8,7 +8,6 @@ import (
 	"gorm.io/gorm"
 
 	"voenix/backend/internal/cart"
-	"voenix/backend/internal/prompt"
 )
 
 const defaultCartExpiryDays = 30
@@ -169,28 +168,6 @@ func (r *Repository) FetchPromptTitles(ctx context.Context, ids []int) (map[int]
 		result[r.ID] = r.Title
 	}
 	return result, nil
-}
-
-func (r *Repository) PromptExists(ctx context.Context, id int) (bool, error) {
-	if id == 0 {
-		return false, nil
-	}
-	var count int64
-	if err := r.db.WithContext(ctx).Model(&prompt.Prompt{}).Where("id = ?", id).Count(&count).Error; err != nil {
-		return false, err
-	}
-	return count > 0, nil
-}
-
-func (r *Repository) LoadPrompt(ctx context.Context, id int) (*prompt.Prompt, error) {
-	if id == 0 {
-		return nil, gorm.ErrRecordNotFound
-	}
-	var row prompt.Prompt
-	if err := r.db.WithContext(ctx).First(&row, "id = ?", id).Error; err != nil {
-		return nil, err
-	}
-	return &row, nil
 }
 
 func (r *Repository) WithTx(ctx context.Context, fn func(cart.Repository) error) error {

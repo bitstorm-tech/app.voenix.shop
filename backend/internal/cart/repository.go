@@ -1,10 +1,6 @@
 package cart
 
-import (
-	"context"
-
-	"voenix/backend/internal/prompt"
-)
+import "context"
 
 type Repository interface {
 	GetOrCreateActiveCart(ctx context.Context, userID int) (*Cart, error)
@@ -16,7 +12,5 @@ type Repository interface {
 	ReloadCart(ctx context.Context, cartID int) (*Cart, error)
 	FetchGeneratedImageFilenames(ctx context.Context, ids []int) (map[int]string, error)
 	FetchPromptTitles(ctx context.Context, ids []int) (map[int]string, error)
-	PromptExists(ctx context.Context, id int) (bool, error)
-	LoadPrompt(ctx context.Context, id int) (*prompt.Prompt, error)
 	WithTx(ctx context.Context, fn func(Repository) error) error
 }

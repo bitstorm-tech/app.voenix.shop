@@ -173,7 +173,8 @@ func TestCartResponseIncludesPromptPricing(t *testing.T) {
 		t.Fatalf("save cart: %v", err)
 	}
 
-	svc := cartpkg.NewService(repo, &stubArticleService{db: db})
+	promptSvc := prompt.NewService(promptRepo, []string{"test-llm"})
+	svc := cartpkg.NewService(repo, &stubArticleService{db: db}, promptSvc)
 	detail, err := svc.GetCart(context.Background(), user.ID)
 	if err != nil {
 		t.Fatalf("load cart: %v", err)
@@ -279,7 +280,8 @@ func TestGetCartSummaryIncludesPromptPrice(t *testing.T) {
 		t.Fatalf("save cart: %v", err)
 	}
 
-	summary, err := cartpkg.NewService(repo, &stubArticleService{db: db}).GetCartSummary(context.Background(), user.ID)
+	promptSvc := prompt.NewService(promptRepo, []string{"test-llm"})
+	summary, err := cartpkg.NewService(repo, &stubArticleService{db: db}, promptSvc).GetCartSummary(context.Background(), user.ID)
 	if err != nil {
 		t.Fatalf("get summary: %v", err)
 	}

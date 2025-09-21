@@ -101,12 +101,12 @@ func main() {
 	authSvc := auth.NewService(authRepo)
 	articleSvc := article.NewService(articleRepo)
 	imageSvc := image.NewService(imageRepo)
-	cartSvc := cart.NewService(cartRepo, articleSvc)
 	countrySvc := country.NewService(countryRepo)
 	supplierSvc := supplier.NewService(supplierRepo)
 	orderSvc := order.NewService(orderRepo, articleSvc)
 	vatSvc := vat.NewService(vatRepo)
 	promptSvc := prompt.NewService(promptRepo, ai.ProviderLLMIDs())
+	cartSvc := cart.NewService(cartRepo, articleSvc, promptSvc)
 
 	// Routes
 	auth.RegisterRoutes(r, authSvc)

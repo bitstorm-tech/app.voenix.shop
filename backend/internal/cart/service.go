@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"voenix/backend/internal/prompt"
 
 	"gorm.io/gorm"
 )
@@ -26,13 +27,19 @@ func isValidationError(err error) bool {
 	return errors.As(err, &v)
 }
 
+// PromptService exposes the prompt lookups that cart workflows depend on.
+type PromptService interface {
+	GetPrompt(ctx context.Context, id int) (*prompt.PromptRead, error)
+}
+
 type Service struct {
 	repo       Repository
 	articleSvc ArticleService
+	promptSvc  PromptService
 }
 
-func NewService(repo Repository, articleSvc ArticleService) *Service {
-	return &Service{repo: repo, articleSvc: articleSvc}
+func NewService(repo Repository, articleSvc ArticleService, promptSvc PromptService) *Service {
+	return &Service{repo: repo, articleSvc: articleSvc, promptSvc: promptSvc}
 }
 
 func (s *Service) GetCart(ctx context.Context, userID int) (*CartDetail, error) {
@@ -72,7 +79,7 @@ func (s *Service) AddItem(ctx context.Context, userID int, input AddItemInput) (
 	if err := validateArticleAndVariant(ctx, s.articleSvc, input.ArticleID, input.VariantID); err != nil {
 		return nil, err
 	}
-	if err := validatePromptIfProvided(ctx, s.repo, input.PromptID); err != nil {
+	if err := validatePromptIfProvided(ctx, s.promptSvc, input.PromptID); err != nil {
 		return nil, err
 	}
 	cart, err := s.repo.GetOrCreateActiveCart(ctx, userID)
@@ -85,7 +92,7 @@ func (s *Service) AddItem(ctx context.Context, userID int, input AddItemInput) (
 	}
 	promptPriceAtTime := 0
 	if input.PromptID != nil {
-		promptPriceAtTime, err = promptCurrentGrossPrice(ctx, s.repo, s.articleSvc, *input.PromptID)
+		promptPriceAtTime, err = promptCurrentGrossPrice(ctx, s.promptSvc, s.articleSvc, *input.PromptID)
 		if err != nil {
 			return nil, err
 		}
@@ -212,7 +219,7 @@ func (s *Service) RefreshPrices(ctx context.Context, userID int) (*CartDetail, e
 		}
 		promptCurrent := 0
 		if cart.Items[i].PromptID != nil {
-			promptCurrent, err = promptCurrentGrossPrice(ctx, s.repo, s.articleSvc, *cart.Items[i].PromptID)
+			promptCurrent, err = promptCurrentGrossPrice(ctx, s.promptSvc, s.articleSvc, *cart.Items[i].PromptID)
 			if err != nil {
 				return nil, err
 			}
@@ -335,15 +342,15 @@ func validateArticleAndVariant(ctx context.Context, articleSvc ArticleService, a
 	return nil
 }
 
-func validatePromptIfProvided(ctx context.Context, repo Repository, promptID *int) error {
+func validatePromptIfProvided(ctx context.Context, promptSvc PromptService, promptID *int) error {
 	if promptID == nil {
 		return nil
 	}
-	exists, err := repo.PromptExists(ctx, *promptID)
+	promptRead, err := promptSvc.GetPrompt(ctx, *promptID)
 	if err != nil {
 		return err
 	}
-	if !exists {
+	if promptRead == nil {
 		return newValidationError("prompt not found")
 	}
 	return nil
@@ -363,19 +370,19 @@ func currentGrossPrice(ctx context.Context, articleSvc ArticleService, articleID
 	return cc.SalesTotalGross, nil
 }
 
-func promptCurrentGrossPrice(ctx context.Context, repo Repository, articleSvc ArticleService, promptID int) (int, error) {
-	p, err := repo.LoadPrompt(ctx, promptID)
+func promptCurrentGrossPrice(ctx context.Context, promptSvc PromptService, articleSvc ArticleService, promptID int) (int, error) {
+	promptRead, err := promptSvc.GetPrompt(ctx, promptID)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return 0, nil
-		}
 		return 0, err
 	}
-	if p.Price != nil {
-		return p.Price.SalesTotalGross, nil
+	if promptRead == nil {
+		return 0, nil
 	}
-	if p.PriceID != nil {
-		cc, err := articleSvc.GetCostCalculationByID(ctx, *p.PriceID)
+	if promptRead.CostCalculation != nil {
+		return promptRead.CostCalculation.SalesTotalGross, nil
+	}
+	if promptRead.PriceID != nil {
+		cc, err := articleSvc.GetCostCalculationByID(ctx, *promptRead.PriceID)
 		if err != nil {
 			return 0, err
 		}
