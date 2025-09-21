@@ -32,10 +32,12 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv/autoload"
 )
 
 func main() {
+	loadEnvFromSecretFile()
 	db, err := database.Open()
 	if err != nil {
 		log.Fatalf("failed to open DB: %v", err)
@@ -135,6 +137,22 @@ func main() {
 		log.Fatalf("server error: %v", err)
 	}
 
+}
+
+func loadEnvFromSecretFile() {
+	secretFilePath, secretFileExists := os.LookupEnv("SECRET_FILE")
+	if !secretFileExists {
+		return
+	}
+
+	secretFilePath = strings.TrimSpace(secretFilePath)
+	if secretFilePath == "" {
+		return
+	}
+
+	if err := godotenv.Overload(secretFilePath); err != nil {
+		log.Printf("warning: failed to load SECRET_FILE from %s: %v", secretFilePath, err)
+	}
 }
 
 func serveFrontend(r *gin.Engine) {
