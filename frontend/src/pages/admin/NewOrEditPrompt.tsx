@@ -110,23 +110,24 @@ export default function NewOrEditPrompt() {
       // Set selected slot IDs
       if (prompt.slots) {
         setSelectedSlotIds(prompt.slots.map((slot) => slot.id));
-        if (prompt.slots.length > 0 && prompt.slots[0].llm) {
-          const slotLlm = prompt.slots[0].llm;
-          setSelectedLlm(slotLlm);
-          setLlmOptions((current) => {
-            if (current.some((option) => option.llm === slotLlm)) {
-              return current;
-            }
-            return [
-              ...current,
-              {
-                llm: slotLlm,
-                provider: 'Unknown',
-                friendlyName: slotLlm,
-              },
-            ];
-          });
-        }
+      }
+
+      const promptLlm = prompt.llm || (prompt.slots && prompt.slots.length > 0 ? prompt.slots[0].llm : '');
+      if (promptLlm) {
+        setSelectedLlm(promptLlm);
+        setLlmOptions((current) => {
+          if (current.some((option) => option.llm === promptLlm)) {
+            return current;
+          }
+          return [
+            ...current,
+            {
+              llm: promptLlm,
+              provider: 'Unknown',
+              friendlyName: promptLlm,
+            },
+          ];
+        });
       }
 
       // Set example image if exists
@@ -212,6 +213,12 @@ export default function NewOrEditPrompt() {
       return;
     }
 
+    if (!selectedLlm) {
+      setError(t('prompt.errors.llmRequired'));
+      setActiveTab('prompt');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -248,6 +255,7 @@ export default function NewOrEditPrompt() {
         const promptPart: UpdatePromptRequest = {
           title: formData.title,
           promptText: formData.promptText || undefined,
+          llm: selectedLlm,
           categoryId: formData.categoryId,
           subcategoryId: formData.subcategoryId || undefined,
           active: formData.active,
@@ -261,6 +269,7 @@ export default function NewOrEditPrompt() {
         const promptPart: CreatePromptRequest = {
           title: formData.title,
           promptText: formData.promptText || undefined,
+          llm: selectedLlm,
           categoryId: formData.categoryId,
           subcategoryId: formData.subcategoryId || undefined,
           active: formData.active,

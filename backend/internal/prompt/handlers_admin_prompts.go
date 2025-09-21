@@ -25,6 +25,7 @@ type promptCreate struct {
 	PriceID              *int                    `json:"priceId"`
 	ExampleImageFilename *string                 `json:"exampleImageFilename"`
 	Slots                []promptSlotRef         `json:"slots"`
+	LLM                  string                  `json:"llm"`
 	CostCalculation      *costCalculationRequest `json:"costCalculation"`
 }
 
@@ -37,6 +38,7 @@ type promptUpdate struct {
 	PriceID              *int                    `json:"priceId"`
 	ExampleImageFilename *string                 `json:"exampleImageFilename"`
 	Slots                *[]promptSlotRef        `json:"slots"`
+	LLM                  *string                 `json:"llm"`
 	CostCalculation      *costCalculationRequest `json:"costCalculation"`
 }
 
@@ -69,7 +71,7 @@ func registerAdminPromptRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 
 	grp.POST("", func(c *gin.Context) {
 		var payload promptCreate
-		if err := c.ShouldBindJSON(&payload); err != nil || strings.TrimSpace(payload.Title) == "" {
+		if err := c.ShouldBindJSON(&payload); err != nil || strings.TrimSpace(payload.Title) == "" || strings.TrimSpace(payload.LLM) == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}
@@ -93,6 +95,10 @@ func registerAdminPromptRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {
 		id, _ := strconv.Atoi(c.Param("id"))
 		var payload promptUpdate
 		if err := c.ShouldBindJSON(&payload); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
+			return
+		}
+		if payload.LLM != nil && strings.TrimSpace(*payload.LLM) == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Invalid payload"})
 			return
 		}

@@ -232,6 +232,7 @@ type PromptRow struct {
 	Price                     *article.Price                `gorm:"foreignKey:PriceID;references:ID"`
 	Active                    bool                          `gorm:"not null;default:true"`
 	ExampleImageFilename      *string                       `gorm:"size:500"`
+	LLM                       *string                       `gorm:"size:255"`
 	PromptSlotVariantMappings []PromptSlotVariantMappingRow `gorm:"foreignKey:PromptID;references:ID"`
 	CreatedAt                 time.Time
 	UpdatedAt                 time.Time
@@ -270,6 +271,7 @@ func (r PromptRow) toDomain(includeMappings bool) prompt.Prompt {
 		Price:                     r.Price,
 		Active:                    r.Active,
 		ExampleImageFilename:      r.ExampleImageFilename,
+		LLM:                       r.LLM,
 		PromptSlotVariantMappings: mappings,
 		CreatedAt:                 r.CreatedAt,
 		UpdatedAt:                 r.UpdatedAt,
@@ -299,6 +301,7 @@ func promptRowFromDomain(v *prompt.Prompt) PromptRow {
 		Price:                     v.Price,
 		Active:                    v.Active,
 		ExampleImageFilename:      v.ExampleImageFilename,
+		LLM:                       v.LLM,
 		PromptSlotVariantMappings: promptSlotVariantMappingRowsFromDomain(v.PromptSlotVariantMappings),
 		CreatedAt:                 v.CreatedAt,
 		UpdatedAt:                 v.UpdatedAt,

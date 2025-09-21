@@ -69,6 +69,7 @@ type Prompt struct {
 	Price                     *article.Price
 	Active                    bool
 	ExampleImageFilename      *string
+	LLM                       *string
 	PromptSlotVariantMappings []PromptSlotVariantMapping
 	CreatedAt                 time.Time
 	UpdatedAt                 time.Time

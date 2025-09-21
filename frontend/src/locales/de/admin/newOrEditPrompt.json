@@ -41,6 +41,7 @@
     "save": "Prompt konnte nicht gespeichert werden. Bitte erneut versuchen.",
     "titleRequired": "Titel ist erforderlich",
     "categoryRequired": "Kategorie ist erforderlich",
+    "llmRequired": "LLM ist erforderlich",
     "invalidImage": "Bitte wählen Sie eine gültige Bilddatei aus",
     "imageTooLarge": "Dateigröße überschreitet das maximale Limit von 10 MB",
     "uploadImage": "Bild konnte nicht hochgeladen werden: {{message}}"

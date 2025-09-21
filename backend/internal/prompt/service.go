@@ -479,6 +479,10 @@ func (s *Service) CreatePrompt(ctx context.Context, payload promptCreate) (*Prom
 			return nil, errors.New("subcategory does not belong to the specified category")
 		}
 	}
+	llm := strings.TrimSpace(payload.LLM)
+	if llm == "" || !s.isValidLLM(llm) {
+		return nil, errInvalidLLM
+	}
 	slotIDs := uniqueSlotIDs(payload.Slots)
 	if len(slotIDs) > 0 {
 		exists, err := s.repo.SlotVariantsExist(ctx, slotIDs)
@@ -497,6 +501,8 @@ func (s *Service) CreatePrompt(ctx context.Context, payload promptCreate) (*Prom
 		Active:               true,
 		ExampleImageFilename: payload.ExampleImageFilename,
 	}
+	llmValue := llm
+	row.LLM = &llmValue
 	if payload.CostCalculation != nil {
 		priceID, err := s.createOrUpdatePrice(ctx, nil, payload.CostCalculation)
 		if err != nil {
@@ -551,6 +557,14 @@ func (s *Service) UpdatePrompt(ctx context.Context, id int, payload promptUpdate
 		if payload.CategoryID != nil && sc.PromptCategoryID != *payload.CategoryID {
 			return nil, errors.New("subcategory does not belong to the specified category")
 		}
+	}
+	if payload.LLM != nil {
+		llm := strings.TrimSpace(*payload.LLM)
+		if llm == "" || !s.isValidLLM(llm) {
+			return nil, errInvalidLLM
+		}
+		llmValue := llm
+		existing.LLM = &llmValue
 	}
 	if payload.Title != nil {
 		existing.Title = *payload.Title

@@ -82,6 +82,7 @@ func toPromptRead(p *Prompt) PromptRead {
 		ID:              p.ID,
 		Title:           p.Title,
 		PromptText:      p.PromptText,
+		LLM:             p.LLM,
 		CategoryID:      p.CategoryID,
 		Category:        cat,
 		SubcategoryID:   p.SubcategoryID,

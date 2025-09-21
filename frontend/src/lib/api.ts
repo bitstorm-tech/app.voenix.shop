@@ -157,6 +157,7 @@ export interface PromptSlotUpdate {
 export interface CreatePromptRequest {
   title: string;
   promptText?: string;
+  llm: string;
   categoryId: number;
   subcategoryId?: number;
   active: boolean;
@@ -169,6 +170,7 @@ export interface CreatePromptRequest {
 export interface UpdatePromptRequest {
   title?: string;
   promptText?: string;
+  llm?: string;
   categoryId?: number;
   subcategoryId?: number;
   active?: boolean;

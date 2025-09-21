@@ -48,6 +48,7 @@ type PromptRead struct {
 	ID              int                     `json:"id"`
 	Title           string                  `json:"title"`
 	PromptText      *string                 `json:"promptText"`
+	LLM             *string                 `json:"llm"`
 	CategoryID      *int                    `json:"categoryId"`
 	Category        *PromptCategoryRead     `json:"category"`
 	SubcategoryID   *int                    `json:"subcategoryId"`

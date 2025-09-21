@@ -41,6 +41,7 @@
     "save": "Failed to save prompt. Please try again.",
     "titleRequired": "Title is required",
     "categoryRequired": "Category is required",
+    "llmRequired": "LLM is required",
     "invalidImage": "Please select a valid image file",
     "imageTooLarge": "File size exceeds maximum allowed size of 10MB",
     "uploadImage": "Failed to upload image: {{message}}"

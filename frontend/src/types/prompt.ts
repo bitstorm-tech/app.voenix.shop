@@ -25,6 +25,7 @@ export interface Prompt {
   id: number;
   title: string;
   promptText?: string;
+  llm?: string;
   createdAt?: string;
   updatedAt?: string;
   categoryId?: number;
