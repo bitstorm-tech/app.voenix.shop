@@ -149,13 +149,13 @@ func loadPayload(configuration clientConfig) ([]byte, string, error) {
 		return inlinePayload, "inline payload", nil
 	}
 
-	path := strings.TrimSpace(configuration.localFile)
-	log.Printf("loading local file payload from %q", path)
-	data, err := os.ReadFile(path)
+	localFilePath := strings.TrimSpace(configuration.localFile)
+	log.Printf("loading local file payload from %q", localFilePath)
+	data, err := os.ReadFile(localFilePath)
 	if err != nil {
-		return nil, "", fmt.Errorf("read file %q: %w", path, err)
+		return nil, "", fmt.Errorf("read file %q: %w", localFilePath, err)
 	}
-	return data, fmt.Sprintf("file %s", path), nil
+	return data, fmt.Sprintf("file %s", localFilePath), nil
 }
 
 func dumpServerInfo(client *sftp.Client) error {

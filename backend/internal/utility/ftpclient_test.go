@@ -152,15 +152,12 @@ func TestUploadPDFToSFTPRemoteDirectoryWithoutFallback(t *testing.T) {
 }
 
 func TestNormalizeSFTPServerDefaultsPort(t *testing.T) {
-	addr, host, err := normalizeSFTPServer("sftp.example.com")
+	addr, err := normalizeSFTPServer("sftp.example.com")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if addr != "sftp.example.com:22" {
 		t.Fatalf("expected address sftp.example.com:22, got %s", addr)
-	}
-	if host != "sftp.example.com" {
-		t.Fatalf("expected host sftp.example.com, got %s", host)
 	}
 }
 

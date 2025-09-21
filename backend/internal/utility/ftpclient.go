@@ -110,12 +110,12 @@ func UploadPDFToFTP(pdf []byte, server, user, password string, opts *FTPUploadOp
 		timeout = defaultSFTPTimeout
 	}
 
-	address, host, err := normalizeSFTPServer(trimmedServer)
+	address, err := normalizeSFTPServer(trimmedServer)
 	if err != nil {
 		return err
 	}
 
-	sshConfig, err := buildSSHClientConfig(user, password, host, timeout, configuration)
+	sshConfig, err := buildSSHClientConfig(user, password, timeout, configuration)
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func UploadPDFToFTP(pdf []byte, server, user, password string, opts *FTPUploadOp
 	return nil
 }
 
-func normalizeSFTPServer(server string) (string, string, error) {
+func normalizeSFTPServer(server string) (string, error) {
 	trimmed := strings.TrimSpace(server)
 	lower := strings.ToLower(trimmed)
 
@@ -167,22 +167,22 @@ func normalizeSFTPServer(server string) (string, string, error) {
 	}
 
 	if trimmed == "" {
-		return "", "", errors.New("sftp server host is empty")
+		return "", errors.New("sftp server host is empty")
 	}
 
 	if !strings.Contains(trimmed, ":") {
 		trimmed += ":22"
 	}
 
-	host, _, splitErr := net.SplitHostPort(trimmed)
+	_, _, splitErr := net.SplitHostPort(trimmed)
 	if splitErr != nil {
-		return "", "", fmt.Errorf("invalid sftp server: %w", splitErr)
+		return "", fmt.Errorf("invalid sftp server: %w", splitErr)
 	}
 
-	return trimmed, host, nil
+	return trimmed, nil
 }
 
-func buildSSHClientConfig(user, password, host string, timeout time.Duration, opts FTPUploadOptions) (*ssh.ClientConfig, error) {
+func buildSSHClientConfig(user, password string, timeout time.Duration, opts FTPUploadOptions) (*ssh.ClientConfig, error) {
 	hostKeyCallback, err := selectHostKeyCallback(opts)
 	if err != nil {
 		return nil, err
@@ -283,7 +283,7 @@ func isNotExistError(err error) bool {
 	}
 	var statusError *sftp.StatusError
 	if errors.As(err, &statusError) {
-		return statusError.FxCode() == sftp.ErrSSHFxNoSuchFile
+		return errors.Is(statusError.FxCode(), sftp.ErrSSHFxNoSuchFile)
 	}
 	return false
 }
