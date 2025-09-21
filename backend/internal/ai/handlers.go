@@ -20,6 +20,10 @@ import (
 	"voenix/backend/internal/prompt"
 )
 
+type promptReader interface {
+	GetPrompt(ctx context.Context, id int) (*prompt.PromptRead, error)
+}
+
 // Accepts: OPENAI|GOOGLE|FLUX (case-insensitive). Defaults to GOOGLE=>Gemini for broader coverage.
 func providerFromParam(p string) (Provider, bool) {
 	// In test mode, always use the mock provider regardless of input.
@@ -62,7 +66,7 @@ type createImageEditRequest struct {
 	N          int    `json:"n"`
 }
 
-func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service) {
+func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, promptService promptReader) {
 	// Admin AI routes
 	admin := r.Group("/api/admin/ai")
 	admin.Use(auth.RequireAdmin(db))
@@ -129,7 +133,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service) {
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(c.Request.Context(), 60*time.Second)
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 120*time.Second)
 		defer cancel()
 		images, err := gen.Edit(ctx, data, finalPrompt, 1)
 		if err != nil || len(images) == 0 {
@@ -255,7 +259,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service) {
 			c.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 			return
 		}
-		ctx, cancel := context.WithTimeout(c.Request.Context(), 60*time.Second)
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 120*time.Second)
 		defer cancel()
 		images, err := gen.Edit(ctx, data, req.Prompt, req.N)
 		if err != nil || len(images) == 0 {
@@ -324,16 +328,26 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service) {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid promptId"})
 			return
 		}
-		// Load prompt text/title (best-effort)
-		var p prompt.Prompt
-		_ = db.First(&p, "id = ?", int(pid64)).Error
-		promptText := strings.TrimSpace(derefPtr(p.PromptText))
+		if promptService == nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Prompt service unavailable"})
+			return
+		}
+		promptRead, promptLookupError := promptService.GetPrompt(c.Request.Context(), int(pid64))
+		if promptLookupError != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to load prompt"})
+			return
+		}
+		if promptRead == nil {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Prompt not found"})
+			return
+		}
+		promptText := strings.TrimSpace(derefPtr(promptRead.PromptText))
 		if promptText == "" {
-			promptText = strings.TrimSpace(p.Title)
+			promptText = strings.TrimSpace(promptRead.Title)
 		}
 		if promptText == "" {
-			// As a last resort
-			promptText = ""
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Prompt content is empty", "detail": "The requested prompt has no text configured"})
+			return
 		}
 
 		// Optional crop params
@@ -424,7 +438,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service) {
 		}
 		// Use the same (cropped) data as source for edits
 		n := 4
-		ctx, cancel := context.WithTimeout(c.Request.Context(), 60*time.Second)
+		ctx, cancel := context.WithTimeout(c.Request.Context(), 120*time.Second)
 		defer cancel()
 		images, err := gen.Edit(ctx, data, promptText, n)
 		if err != nil || len(images) == 0 {

@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -15,7 +16,14 @@ import (
 	authpg "voenix/backend/internal/auth/postgres"
 	img "voenix/backend/internal/image"
 	imagepg "voenix/backend/internal/image/postgres"
+	"voenix/backend/internal/prompt"
 )
+
+type fakePromptService struct{}
+
+func (fakePromptService) GetPrompt(context.Context, int) (*prompt.PromptRead, error) {
+	return nil, nil
+}
 
 func TestAdminLLMsEndpoint(t *testing.T) {
 	gin.SetMode(gin.TestMode)
@@ -51,7 +59,7 @@ func TestAdminLLMsEndpoint(t *testing.T) {
 
 	router := gin.New()
 	auth.RegisterRoutes(router, authService)
-	RegisterRoutes(router, db, imageService)
+	RegisterRoutes(router, db, imageService, fakePromptService{})
 
 	req := httptest.NewRequest(http.MethodGet, "/api/admin/ai/llms", nil)
 	req.AddCookie(&http.Cookie{Name: "session_id", Value: sessionRow.ID})
