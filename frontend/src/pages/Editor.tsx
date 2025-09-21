@@ -6,6 +6,7 @@ import MugSelectionStep from '@/components/editor/components/steps/3-MugSelectio
 import UserDataStep from '@/components/editor/components/steps/4-UserDataStep';
 import ImageGenerationStep from '@/components/editor/components/steps/5-ImageGenerationStep';
 import PreviewStep from '@/components/editor/components/steps/6-PreviewStep';
+import { AppFooter } from '@/components/layout/AppFooter';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { usePublicPrompts } from '@/hooks/queries/usePublicPrompts';
 import { useAuthWizardSync } from '@/hooks/useAuthWizardSync';
@@ -95,6 +96,10 @@ export default function Editor() {
           {currentStep === 'preview' && <PreviewStep />}
         </div>
       </div>
+
+      <AppFooter />
+
+      <div className="h-32" />
 
       {/* Sticky navigation for all devices */}
       <div className="fixed right-0 bottom-0 left-0 p-4">
