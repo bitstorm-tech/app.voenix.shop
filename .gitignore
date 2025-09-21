@@ -64,5 +64,7 @@ storage
 
 # Environment variables
 .env
+.env.prod
+.env.test
 .env.local
 .env.*.local
