@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -32,11 +31,11 @@ func providerFromParam(p string) (Provider, bool) {
 		return ProviderMock, true
 	}
 	switch strings.ToUpper(strings.TrimSpace(p)) {
-	case "GOOGLE", "GEMINI", "gemini-2.5-flash-image-preview", string(ProviderGemini):
+	case "GOOGLE", "GEMINI", "GEMINI-2.5-FLASH-IMAGE-PREVIEW", string(ProviderGemini):
 		return ProviderGemini, true
 	case "FLUX", string(ProviderFlux):
 		return ProviderFlux, false // not implemented
-	case "OPENAI", "GPT", "gpt-image-1", string(ProviderGPT):
+	case "OPENAI", "GPT", "GPT-IMAGE-1", string(ProviderGPT):
 		return ProviderGPT, true
 	case "MOCK", "TEST", string(ProviderMock):
 		return ProviderMock, true
@@ -106,6 +105,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 		size := strings.TrimSpace(c.PostForm("size"))
 
 		finalPrompt := strings.TrimSpace(strings.Join([]string{master, specific}, " "))
+		effectivePrompt := CombinePrompt(finalPrompt, nil)
 
 		// TODO query param was removed
 		provStr := c.DefaultQuery("provider", c.PostForm("provider"))
@@ -138,7 +138,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 120*time.Second)
 		defer cancel()
-		images, err := gen.Edit(ctx, data, finalPrompt, 1)
+		images, err := gen.Edit(ctx, data, effectivePrompt, 1)
 		if err != nil || len(images) == 0 {
 			var sb *SafetyBlockedError
 			if errors.As(err, &sb) {
@@ -179,12 +179,12 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 			"responseFormat": "b64_json",
 			"masterPrompt":   master,
 			"specificPrompt": specific,
-			"combinedPrompt": finalPrompt,
+			"combinedPrompt": effectivePrompt,
 			"quality":        quality,
 			"background":     background,
 			"provider":       strings.ToUpper(provStr),
 		}
-		c.JSON(http.StatusOK, testPromptResponse{ImageURL: imageURL, Filename: filename, FinalPrompt: finalPrompt, RequestParams: reqParams})
+		c.JSON(http.StatusOK, testPromptResponse{ImageURL: imageURL, Filename: filename, FinalPrompt: effectivePrompt, RequestParams: reqParams})
 	})
 
 	admin.POST("/image-edit", func(c *gin.Context) {
@@ -265,7 +265,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 		}
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 120*time.Second)
 		defer cancel()
-		images, err := gen.Edit(ctx, data, req.Prompt, req.N)
+		effectivePrompt := CombinePrompt(req.Prompt, nil)
+		images, err := gen.Edit(ctx, data, effectivePrompt, req.N)
 		if err != nil || len(images) == 0 {
 			var sb *SafetyBlockedError
 			if errors.As(err, &sb) {
@@ -353,6 +354,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Prompt content is empty", "detail": "The requested prompt has no text configured"})
 			return
 		}
+		combinedPrompt := CombinePrompt(promptText, promptRead.Slots)
 
 		// Optional crop params
 		cropX, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropX")), 64)
@@ -362,7 +364,6 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 		hasCrop := cropW != 0 && cropH != 0
 
 		prov, ok := providerFromParam(*promptRead.LLM)
-		log.Printf("Selected provider :%s", prov)
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "Provider not implemented"})
 			return
@@ -440,7 +441,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 		n := 4
 		ctx, cancel := context.WithTimeout(c.Request.Context(), 120*time.Second)
 		defer cancel()
-		images, err := gen.Edit(ctx, data, promptText, n)
+		images, err := gen.Edit(ctx, data, combinedPrompt, n)
 		if err != nil || len(images) == 0 {
 			var sb *SafetyBlockedError
 			if errors.As(err, &sb) {
