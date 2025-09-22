@@ -36,7 +36,7 @@ func Create(provider Provider) (ImageGenerator, error) {
 	case ProviderGemini:
 		return NewGeminiGeneratorFromEnv(), nil
 	case ProviderFlux:
-		return nil, errors.New("Flux image generator is not implemented yet")
+		return nil, errors.New("flux image generator is not implemented yet")
 	case ProviderGPT:
 		return NewGPTImageGeneratorFromEnv(), nil
 	case ProviderMock:

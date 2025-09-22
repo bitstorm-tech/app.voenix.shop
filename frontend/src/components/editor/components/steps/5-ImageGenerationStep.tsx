@@ -40,7 +40,7 @@ export default function ImageGenerationStep() {
       hasStartedGeneration.current = true;
       const performGeneration = async () => {
         setProcessing(true);
-        const result = await generateImages(uploadedImage, selectedPrompt.id, cropData || undefined, 'OPENAI');
+        const result = await generateImages(uploadedImage, selectedPrompt.id, cropData || undefined);
         if (result) {
           // Combine URLs and IDs into GeneratedImageInfo objects
           const imagesInfo = result.urls.map((url, index) => ({

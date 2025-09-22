@@ -509,12 +509,7 @@ export interface RegisterGuestRequest {
 // User API endpoints
 export const userApi = {
   // Generate images using authenticated endpoint
-  generateImage: async (
-    image: File,
-    promptId: number,
-    cropData?: CropData,
-    provider: 'OPENAI' | 'GOOGLE' | 'FLUX' = 'OPENAI',
-  ): Promise<PublicImageGenerationResponse> => {
+  generateImage: async (image: File, promptId: number, cropData?: CropData): Promise<PublicImageGenerationResponse> => {
     const formData = new FormData();
     formData.append('image', image);
     formData.append('promptId', promptId.toString());
@@ -527,7 +522,7 @@ export const userApi = {
       formData.append('cropHeight', cropData.croppedAreaPixels.height.toString());
     }
 
-    const url = `/api/user/ai/images/generate?provider=${encodeURIComponent(provider)}`;
+    const url = '/api/user/ai/images/generate';
     const response = await fetch(url, {
       method: 'POST',
       body: formData,
@@ -624,12 +619,7 @@ export const publicApi = {
     });
     return handleResponse<Prompt[]>(response);
   },
-  generateImage: async (
-    image: File,
-    promptId: number,
-    cropData?: CropData,
-    provider: 'OPENAI' | 'GOOGLE' | 'FLUX' = 'OPENAI',
-  ): Promise<PublicImageGenerationResponse> => {
+  generateImage: async (image: File, promptId: number, cropData?: CropData): Promise<PublicImageGenerationResponse> => {
     const formData = new FormData();
     formData.append('image', image);
     formData.append('promptId', promptId.toString());
@@ -642,7 +632,7 @@ export const publicApi = {
       formData.append('cropHeight', cropData.croppedAreaPixels.height.toString());
     }
 
-    const url = `/api/public/images/generate?provider=${encodeURIComponent(provider)}`;
+    const url = '/api/public/images/generate';
     const response = await fetch(url, {
       method: 'POST',
       body: formData,

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -31,11 +32,11 @@ func providerFromParam(p string) (Provider, bool) {
 		return ProviderMock, true
 	}
 	switch strings.ToUpper(strings.TrimSpace(p)) {
-	case "GOOGLE", "GEMINI", string(ProviderGemini):
+	case "GOOGLE", "GEMINI", "gemini-2.5-flash-image-preview", string(ProviderGemini):
 		return ProviderGemini, true
 	case "FLUX", string(ProviderFlux):
 		return ProviderFlux, false // not implemented
-	case "OPENAI", "GPT", string(ProviderGPT):
+	case "OPENAI", "GPT", "gpt-image-1", string(ProviderGPT):
 		return ProviderGPT, true
 	case "MOCK", "TEST", string(ProviderMock):
 		return ProviderMock, true
@@ -105,6 +106,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 		size := strings.TrimSpace(c.PostForm("size"))
 
 		finalPrompt := strings.TrimSpace(strings.Join([]string{master, specific}, " "))
+
+		// TODO query param was removed
 		provStr := c.DefaultQuery("provider", c.PostForm("provider"))
 		if provStr == "" {
 			provStr = "GOOGLE"
@@ -244,6 +247,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 			return
 		}
 
+		// TODO query param was removed
 		provStr := c.DefaultQuery("provider", c.PostForm("provider"))
 		if provStr == "" {
 			provStr = "GOOGLE"
@@ -318,13 +322,13 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 		}
 
 		// promptId (required)
-		pidStr := strings.TrimSpace(c.PostForm("promptId"))
-		if pidStr == "" {
+		promptIdString := strings.TrimSpace(c.PostForm("promptId"))
+		if promptIdString == "" {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "Missing promptId"})
 			return
 		}
-		pid64, err := strconv.ParseInt(pidStr, 10, 64)
-		if err != nil || pid64 <= 0 {
+		promptId, err := strconv.ParseInt(promptIdString, 10, 64)
+		if err != nil || promptId <= 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid promptId"})
 			return
 		}
@@ -332,7 +336,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 			c.JSON(http.StatusInternalServerError, gin.H{"message": "Prompt service unavailable"})
 			return
 		}
-		promptRead, promptLookupError := promptService.GetPrompt(c.Request.Context(), int(pid64))
+		promptRead, promptLookupError := promptService.GetPrompt(c.Request.Context(), int(promptId))
 		if promptLookupError != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to load prompt"})
 			return
@@ -357,12 +361,8 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 		cropH, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropHeight")), 64)
 		hasCrop := cropW != 0 && cropH != 0
 
-		// Provider
-		provStr := c.DefaultQuery("provider", c.PostForm("provider"))
-		if provStr == "" {
-			provStr = "GOOGLE"
-		}
-		prov, ok := providerFromParam(provStr)
+		prov, ok := providerFromParam(*promptRead.LLM)
+		log.Printf("Selected provider :%s", prov)
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "Provider not implemented"})
 			return
@@ -472,7 +472,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 			gi := imgsvc.GeneratedImage{
 				UUID:            genUUID,
 				Filename:        justName,
-				PromptID:        int(pid64),
+				PromptID:        int(promptId),
 				UserID:          &u.ID,
 				UploadedImageID: &uploaded.ID,
 				CreatedAt:       time.Now().UTC(),
