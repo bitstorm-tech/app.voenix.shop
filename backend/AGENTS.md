@@ -32,6 +32,7 @@
   - As a thumb rule, keep variable names as short as possible, but don't use complete abbreviations like `mv` or `imgW`. 
   - Don't add unnecessary extra information to a variable name: `orderIDParam := c.Param("orderId")` use `orderID` instead of `orderIDParam` -> `Param` is unnecessary
 - No one-line functions: never write single-line function definitions like `func a() int { return 1 }`; always use a multi-line body for readability.
+- Write short functions with clear responsibility; split large functions into smaller helpers.
 - Prefer unexported identifiers: keep functions, types, variables, and constants private (lowercase) unless they must be used from another package. Minimize the public API surface and export only when necessary.
 
 ## Dependencies & Libraries
