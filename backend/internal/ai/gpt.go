@@ -94,6 +94,7 @@ func (g *GPTImageGenerator) Edit(ctx context.Context, image []byte, prompt strin
 	var buf bytes.Buffer
 	mw := multipart.NewWriter(&buf)
 
+	_ = mw.WriteField("size", "1536x1024")
 	// model
 	_ = mw.WriteField("model", model)
 	// prompt
