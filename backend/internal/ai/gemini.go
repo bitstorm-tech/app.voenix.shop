@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -58,158 +59,216 @@ func (g *GeminiGenerator) Edit(ctx context.Context, image []byte, prompt string,
 		return nil, errors.New("model is not configured")
 	}
 
-	// Prepare payload
-	mime := "image/png"
-	if mt := http.DetectContentType(image); strings.HasPrefix(mt, "image/") {
-		mime = mt
+	mimeType := "image/png"
+	if detectedMimeType := http.DetectContentType(image); strings.HasPrefix(detectedMimeType, "image/") {
+		mimeType = detectedMimeType
 	}
-	cand := n
-	if cand <= 0 {
-		cand = g.DefaultCandidates
-		if cand <= 0 {
-			cand = 1
+
+	requestedImageCount := n
+	if requestedImageCount <= 0 {
+		requestedImageCount = g.DefaultCandidates
+		if requestedImageCount <= 0 {
+			requestedImageCount = 1
 		}
 	}
 
-	// Inline image as base64 per Gemini API schema
-	encoded := base64.StdEncoding.EncodeToString(image)
+	encodedImage := base64.StdEncoding.EncodeToString(image)
 
+	contextWithCancel, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	type generationResult struct {
+		images [][]byte
+		err    error
+	}
+
+	resultsChannel := make(chan generationResult, requestedImageCount)
+	var waitGroup sync.WaitGroup
+
+	for requestIndex := 0; requestIndex < requestedImageCount; requestIndex++ {
+		waitGroup.Add(1)
+		go func() {
+			defer waitGroup.Done()
+			imagesPerRequest, requestErr := g.generateGeminiImages(contextWithCancel, model, mimeType, encodedImage, prompt)
+			if requestErr != nil {
+				resultsChannel <- generationResult{err: requestErr}
+				return
+			}
+			resultsChannel <- generationResult{images: imagesPerRequest}
+		}()
+	}
+
+	go func() {
+		waitGroup.Wait()
+		close(resultsChannel)
+	}()
+
+	var allImages [][]byte
+	var firstError error
+	for result := range resultsChannel {
+		if result.err != nil {
+			if firstError == nil {
+				firstError = result.err
+				cancel()
+			}
+			continue
+		}
+		if firstError != nil {
+			continue
+		}
+		allImages = append(allImages, result.images...)
+	}
+
+	if firstError != nil {
+		return nil, firstError
+	}
+
+	return allImages, nil
+}
+
+func (g *GeminiGenerator) generateGeminiImages(ctx context.Context, model string, mimeType string, encodedImage string, prompt string) ([][]byte, error) {
+	body := createBody(mimeType, encodedImage, prompt, 1)
+
+	generationConfig, ok := body["generationConfig"].(map[string]any)
+	if !ok || generationConfig == nil {
+		generationConfig = map[string]any{}
+		body["generationConfig"] = generationConfig
+	}
+	if g.DefaultMaxTokens != nil {
+		generationConfig["maxOutputTokens"] = *g.DefaultMaxTokens
+	}
+	if g.DefaultTemperature != nil {
+		generationConfig["temperature"] = *g.DefaultTemperature
+	}
+
+	requestURL := fmt.Sprintf("%s/%s:generateContent?key=%s", geminiBaseURL, model, g.APIKey)
+	payloadBytes, err := json.Marshal(body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	client := g.HTTPClient
+	if client == nil {
+		client = &http.Client{}
+	}
+
+	requestContext := ctx
+	var cancel context.CancelFunc
+	if _, hasDeadline := requestContext.Deadline(); !hasDeadline && g.DefaultTimeout > 0 {
+		requestContext, cancel = context.WithTimeout(requestContext, g.DefaultTimeout)
+	}
+	if cancel != nil {
+		defer cancel()
+	}
+
+	request, err := http.NewRequestWithContext(requestContext, http.MethodPost, requestURL, bytes.NewReader(payloadBytes))
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set("Content-Type", "application/json")
+
+	response, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = response.Body.Close() }()
+
+	var responseJSON map[string]any
+	if err := json.NewDecoder(response.Body).Decode(&responseJSON); err != nil {
+		return nil, err
+	}
+	if response.StatusCode < 200 || response.StatusCode >= 300 {
+		if errorPayload, ok := responseJSON["error"].(map[string]any); ok {
+			log.Printf("Gemini API error: http=%s code=%v status=%v message=%v", response.Status, errorPayload["code"], errorPayload["status"], errorPayload["message"])
+			return nil, fmt.Errorf("gemini API error: code=%v status=%v message=%v", errorPayload["code"], errorPayload["status"], errorPayload["message"])
+		}
+		responseBytes, _ := json.Marshal(responseJSON)
+		if len(responseBytes) > 1024 {
+			responseBytes = responseBytes[:1024]
+		}
+		log.Printf("Gemini HTTP error: %s body=%s", response.Status, string(responseBytes))
+		return nil, fmt.Errorf("gemini HTTP error: %s", response.Status)
+	}
+
+	if errorField, ok := responseJSON["error"]; ok && errorField != nil {
+		if errorDetails, ok := errorField.(map[string]any); ok {
+			return nil, fmt.Errorf("gemini API error: code=%v status=%v message=%v", errorDetails["code"], errorDetails["status"], errorDetails["message"])
+		}
+		return nil, fmt.Errorf("gemini API error: %v", errorField)
+	}
+
+	images := make([][]byte, 0, 1)
+	var finishReasons []string
+	if candidateList, ok := responseJSON["candidates"].([]any); ok {
+		for _, candidate := range candidateList {
+			candidateMap, _ := candidate.(map[string]any)
+			if finishReason, _ := candidateMap["finishReason"].(string); finishReason != "" {
+				finishReasons = append(finishReasons, finishReason)
+			}
+			contentMap, _ := candidateMap["content"].(map[string]any)
+			partList, _ := contentMap["parts"].([]any)
+			for _, part := range partList {
+				partMap, _ := part.(map[string]any)
+				inlineData, _ := partMap["inlineData"].(map[string]any)
+				if inlineData == nil {
+					inlineData, _ = partMap["inline_data"].(map[string]any)
+				}
+				if inlineData == nil {
+					continue
+				}
+				mimeValue := inlineData["mimeType"]
+				if mimeValue == nil {
+					mimeValue = inlineData["mime_type"]
+				}
+				mimeValueString, _ := mimeValue.(string)
+				if !strings.HasPrefix(mimeValueString, "image/") {
+					continue
+				}
+				encodedData, _ := inlineData["data"].(string)
+				if encodedData == "" {
+					continue
+				}
+				decodedImage, decodeErr := base64.StdEncoding.DecodeString(encodedData)
+				if decodeErr != nil {
+					return nil, fmt.Errorf("failed to decode image data: %w", decodeErr)
+				}
+				images = append(images, decodedImage)
+			}
+		}
+	}
+
+	if len(images) == 0 {
+		for _, finishReason := range finishReasons {
+			if strings.EqualFold(finishReason, "PROHIBITED_CONTENT") || strings.EqualFold(finishReason, "SAFETY") {
+				return nil, &SafetyBlockedError{Provider: ProviderGemini, Reason: finishReason}
+			}
+		}
+		responseBytes, _ := json.Marshal(responseJSON)
+		if len(responseBytes) > 2048 {
+			responseBytes = responseBytes[:2048]
+		}
+		log.Printf("Gemini response had no image inlineData; model=%s candidateCount=%d respSnippet=%s", model, 1, string(responseBytes))
+		return nil, errors.New("gemini response contained no image inlineData")
+	}
+
+	return images, nil
+}
+
+func createBody(mimeType string, encoded string, prompt string, candidateCount int) map[string]any {
 	body := map[string]any{
 		"contents": []any{
 			map[string]any{
 				"parts": []any{
 					// Use snake_case for inline_data per REST examples
-					map[string]any{"inline_data": map[string]any{"mime_type": mime, "data": encoded}},
+					map[string]any{"inline_data": map[string]any{"mime_type": mimeType, "data": encoded}},
 					map[string]any{"text": prompt},
 				},
 			},
 		},
 		"generationConfig": map[string]any{
 			// Only set canonical fields to avoid oneof conflicts
-			"candidateCount": cand,
+			"candidateCount": candidateCount,
 		},
 	}
-	// Safely access generationConfig map without unchecked type assertions
-	cfg, ok := body["generationConfig"].(map[string]any)
-	if !ok || cfg == nil {
-		cfg = map[string]any{}
-		body["generationConfig"] = cfg
-	}
-	if g.DefaultMaxTokens != nil {
-		cfg["maxOutputTokens"] = *g.DefaultMaxTokens
-	}
-	if g.DefaultTemperature != nil {
-		cfg["temperature"] = *g.DefaultTemperature
-	}
-
-	// Request
-	url := fmt.Sprintf("%s/%s:generateContent?key=%s", geminiBaseURL, model, g.APIKey)
-	b, err := json.Marshal(body)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request body: %w", err)
-	}
-
-	// Use provided context; honor per-request timeout if specified
-	client := g.HTTPClient
-	if client == nil {
-		client = &http.Client{}
-	}
-	// If caller hasn't provided a deadline, apply generator default timeout
-	if _, hasDeadline := ctx.Deadline(); !hasDeadline && g.DefaultTimeout > 0 {
-		var cancel context.CancelFunc
-		ctx, cancel = context.WithTimeout(ctx, g.DefaultTimeout)
-		defer cancel()
-	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(b))
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer func() { _ = resp.Body.Close() }()
-
-	var respJSON map[string]any
-	if err := json.NewDecoder(resp.Body).Decode(&respJSON); err != nil {
-		return nil, err
-	}
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		// Surface HTTP error with any error payload and log a snippet for diagnostics
-		if e, ok := respJSON["error"].(map[string]any); ok {
-			log.Printf("Gemini API error: http=%s code=%v status=%v message=%v", resp.Status, e["code"], e["status"], e["message"])
-			return nil, fmt.Errorf("gemini API error: code=%v status=%v message=%v", e["code"], e["status"], e["message"])
-		}
-		b, _ := json.Marshal(respJSON)
-		if len(b) > 1024 {
-			b = b[:1024]
-		}
-		log.Printf("Gemini HTTP error: %s body=%s", resp.Status, string(b))
-		return nil, fmt.Errorf("gemini HTTP error: %s", resp.Status)
-	}
-
-	// Extract images from candidates[].content.parts[].inlineData
-	images := make([][]byte, 0, cand)
-	var finishReasons []string
-	if e, ok := respJSON["error"]; ok && e != nil {
-		if em, ok := e.(map[string]any); ok {
-			return nil, fmt.Errorf("gemini API error: code=%v status=%v message=%v", em["code"], em["status"], em["message"])
-		}
-		return nil, fmt.Errorf("gemini API error: %v", e)
-	}
-	if cands, ok := respJSON["candidates"].([]any); ok {
-		for _, c := range cands {
-			cm, _ := c.(map[string]any)
-			if fr, _ := cm["finishReason"].(string); fr != "" {
-				finishReasons = append(finishReasons, fr)
-			}
-			content, _ := cm["content"].(map[string]any)
-			parts, _ := content["parts"].([]any)
-			for _, p := range parts {
-				pm, _ := p.(map[string]any)
-				inline, _ := pm["inlineData"].(map[string]any)
-				if inline == nil {
-					inline, _ = pm["inline_data"].(map[string]any)
-				}
-				if inline == nil {
-					continue
-				}
-				mimeAny := inline["mimeType"]
-				if mimeAny == nil {
-					mimeAny = inline["mime_type"]
-				}
-				mimeStr, _ := mimeAny.(string)
-				if !strings.HasPrefix(mimeStr, "image/") {
-					continue
-				}
-				data64, _ := inline["data"].(string)
-				if data64 == "" {
-					continue
-				}
-				b, err := base64.StdEncoding.DecodeString(data64)
-				if err != nil {
-					return nil, fmt.Errorf("failed to decode image data: %w", err)
-				}
-				images = append(images, b)
-			}
-		}
-	}
-	if len(images) == 0 {
-		// Map known safety finishes to a typed error for better UX
-		for _, fr := range finishReasons {
-			if strings.EqualFold(fr, "PROHIBITED_CONTENT") || strings.EqualFold(fr, "SAFETY") {
-				return nil, &SafetyBlockedError{Provider: ProviderGemini, Reason: fr}
-			}
-		}
-		// Log diagnostic snippet of response when no images were returned
-		b, _ := json.Marshal(respJSON)
-		if len(b) > 2048 {
-			b = b[:2048]
-		}
-		log.Printf("Gemini response had no image inlineData; model=%s candidateCount=%d respSnippet=%s", model, cand, string(b))
-		return nil, errors.New("gemini response contained no image inlineData")
-	}
-	return images, nil
+	return body
 }
