@@ -115,11 +115,12 @@ func TestDownloadOrderPDFHandler_UploadsBeforeResponding(t *testing.T) {
 	}
 	t.Cleanup(func() { uploadPDFToFTP = uploadPDFToFTPSave })
 
-	t.Setenv("ORDER_PDF_FTP_SERVER", "ftp.example.com")
-	t.Setenv("ORDER_PDF_FTP_FOLDER", "orders")
-	t.Setenv("ORDER_PDF_FTP_USER", "ftp-user")
-	t.Setenv("ORDER_PDF_FTP_PASSWORD", "ftp-pass")
-	t.Setenv("ORDER_PDF_FTP_TIMEOUT", "15")
+	t.Setenv("ORDER_PDF_FTP_CONFIGS", "primary")
+	t.Setenv("ORDER_PDF_FTP_SERVER_PRIMARY", "ftp.example.com")
+	t.Setenv("ORDER_PDF_FTP_FOLDER_PRIMARY", "orders")
+	t.Setenv("ORDER_PDF_FTP_USER_PRIMARY", "ftp-user")
+	t.Setenv("ORDER_PDF_FTP_PASSWORD_PRIMARY", "ftp-pass")
+	t.Setenv("ORDER_PDF_FTP_TIMEOUT_PRIMARY", "15")
 
 	orderIDStr := strconv.FormatInt(ord.ID, 10)
 	req := httptest.NewRequest(http.MethodGet, "/api/user/orders/"+orderIDStr+"/pdf", nil)
@@ -156,6 +157,63 @@ func TestDownloadOrderPDFHandler_UploadsBeforeResponding(t *testing.T) {
 	}
 }
 
+func TestDownloadOrderPDFHandler_MultipleConfigs(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := newFakeRepository()
+	articleSvc := newFakeArticleService()
+	service := NewService(repo, articleSvc)
+	userID := 600
+	order := seedOrderForPDF(t, repo, articleSvc, userID)
+
+	var calls []ftpCall
+	uploadPDFToFTPSave := uploadPDFToFTP
+	uploadPDFToFTP = func(pdf []byte, server, user, password string, opts *utility.FTPUploadOptions) error {
+		calls = append(calls, ftpCall{server: server, user: user, pass: password, path: opts.RemotePath})
+		return nil
+	}
+	t.Cleanup(func() { uploadPDFToFTP = uploadPDFToFTPSave })
+
+	t.Setenv("ORDER_PDF_FTP_CONFIGS", "primary, backup")
+	t.Setenv("ORDER_PDF_FTP_SERVER_PRIMARY", "ftp-primary.example.com")
+	t.Setenv("ORDER_PDF_FTP_USER_PRIMARY", "primary-user")
+	t.Setenv("ORDER_PDF_FTP_PASSWORD_PRIMARY", "primary-pass")
+	t.Setenv("ORDER_PDF_FTP_FOLDER_PRIMARY", "primary/orders")
+	t.Setenv("ORDER_PDF_FTP_SERVER_BACKUP", "ftp-backup.example.com")
+	t.Setenv("ORDER_PDF_FTP_USER_BACKUP", "backup-user")
+	t.Setenv("ORDER_PDF_FTP_PASSWORD_BACKUP", "backup-pass")
+	t.Setenv("ORDER_PDF_FTP_FOLDER_BACKUP", "backup/orders")
+
+	orderIDStr := strconv.FormatInt(order.ID, 10)
+	req := httptest.NewRequest(http.MethodGet, "/api/user/orders/"+orderIDStr+"/pdf", nil)
+	resp := httptest.NewRecorder()
+	ctx, _ := gin.CreateTestContext(resp)
+	ctx.Request = req
+	ctx.Set("currentUser", &auth.User{ID: userID})
+	ctx.Params = gin.Params{gin.Param{Key: "orderId", Value: orderIDStr}}
+
+	handler := downloadOrderPDFHandler(service)
+	handler(ctx)
+
+	if resp.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", resp.Code)
+	}
+	if len(calls) != 2 {
+		t.Fatalf("expected two FTP uploads, got %d", len(calls))
+	}
+	if calls[0].server != "ftp-primary.example.com" || calls[0].user != "primary-user" || calls[0].pass != "primary-pass" {
+		t.Fatalf("unexpected primary call: %+v", calls[0])
+	}
+	if !strings.HasPrefix(calls[0].path, "primary/orders/") {
+		t.Fatalf("unexpected primary remote path: %s", calls[0].path)
+	}
+	if calls[1].server != "ftp-backup.example.com" || calls[1].user != "backup-user" || calls[1].pass != "backup-pass" {
+		t.Fatalf("unexpected backup call: %+v", calls[1])
+	}
+	if !strings.HasPrefix(calls[1].path, "backup/orders/") {
+		t.Fatalf("unexpected backup remote path: %s", calls[1].path)
+	}
+}
+
 func TestDownloadOrderPDFHandler_MissingConfig(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := newFakeRepository()
@@ -171,9 +229,10 @@ func TestDownloadOrderPDFHandler_MissingConfig(t *testing.T) {
 	}
 	t.Cleanup(func() { uploadPDFToFTP = uploadPDFToFTPSave })
 
-	t.Setenv("ORDER_PDF_FTP_SERVER", "")
-	t.Setenv("ORDER_PDF_FTP_USER", "")
-	t.Setenv("ORDER_PDF_FTP_PASSWORD", "")
+	t.Setenv("ORDER_PDF_FTP_CONFIGS", "primary")
+	t.Setenv("ORDER_PDF_FTP_SERVER_PRIMARY", "")
+	t.Setenv("ORDER_PDF_FTP_USER_PRIMARY", "")
+	t.Setenv("ORDER_PDF_FTP_PASSWORD_PRIMARY", "")
 
 	w := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(w)
@@ -211,9 +270,10 @@ func TestDownloadOrderPDFHandler_UploadFailure(t *testing.T) {
 	}
 	t.Cleanup(func() { uploadPDFToFTP = uploadPDFToFTPSave })
 
-	t.Setenv("ORDER_PDF_FTP_SERVER", "ftp.example.com")
-	t.Setenv("ORDER_PDF_FTP_USER", "ftp-user")
-	t.Setenv("ORDER_PDF_FTP_PASSWORD", "ftp-pass")
+	t.Setenv("ORDER_PDF_FTP_CONFIGS", "primary")
+	t.Setenv("ORDER_PDF_FTP_SERVER_PRIMARY", "ftp.example.com")
+	t.Setenv("ORDER_PDF_FTP_USER_PRIMARY", "ftp-user")
+	t.Setenv("ORDER_PDF_FTP_PASSWORD_PRIMARY", "ftp-pass")
 
 	w := httptest.NewRecorder()
 	ctx, _ := gin.CreateTestContext(w)

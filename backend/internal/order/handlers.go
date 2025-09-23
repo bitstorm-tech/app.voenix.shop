@@ -221,22 +221,24 @@ func downloadOrderPDFHandler(svc *Service) gin.HandlerFunc {
 		}
 		filename := pdf.FilenameFromOrderNumber(ord.OrderNumber)
 
-		cfg, cfgErr := loadOrderPDFFTPConfig(os.Getenv)
-		if cfgErr != nil {
-			if errors.Is(cfgErr, errOrderPDFFTPConfigMissing) {
+		configs, configErr := loadOrderPDFFTPConfigs(os.Getenv)
+		if configErr != nil {
+			if errors.Is(configErr, errOrderPDFFTPConfigMissing) {
 				c.JSON(http.StatusInternalServerError, gin.H{"detail": "FTP configuration missing"})
 				return
 			}
-			log.Printf("order pdf ftp configuration error: %v", cfgErr)
+			log.Printf("order pdf ftp configuration error: %v", configErr)
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Invalid FTP configuration"})
 			return
 		}
 
-		remotePath := remoteOrderPDFPath(cfg.Folder, filename)
-		if err := uploadPDFToFTP(pdfBytes, cfg.Server, cfg.User, cfg.Password, cfg.options(remotePath)); err != nil {
-			log.Printf("order pdf ftp upload failed for %s: %v", remotePath, err)
-			c.JSON(http.StatusBadGateway, gin.H{"detail": "Failed to upload order PDF"})
-			return
+		for _, config := range configs {
+			remotePath := remoteOrderPDFPath(config.Folder, filename)
+			if err := uploadPDFToFTP(pdfBytes, config.Server, config.User, config.Password, config.options(remotePath)); err != nil {
+				log.Printf("order pdf ftp upload failed for config %s at %s: %v", config.Name, remotePath, err)
+				c.JSON(http.StatusBadGateway, gin.H{"detail": "Failed to upload order PDF"})
+				return
+			}
 		}
 		c.Header("Content-Disposition", "attachment; filename=\""+filename+"\"")
 		c.Data(http.StatusOK, "application/pdf", pdfBytes)
