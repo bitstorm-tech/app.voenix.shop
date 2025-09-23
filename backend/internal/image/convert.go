@@ -8,7 +8,6 @@ import (
 	"image/png"
 	"io"
 	"os"
-	"path/filepath"
 )
 
 // ConvertImageToPNGBytes converts an input image (bytes, reader, or file path) to PNG bytes.
@@ -41,25 +40,6 @@ func ConvertImageToPNGBytes(input any) ([]byte, error) {
 		return nil, err
 	}
 	return buf.Bytes(), nil
-}
-
-// ConvertImageToPNGFile converts an image at inputPath into a PNG file.
-// If outputPath is empty, writes alongside input with .png extension.
-func ConvertImageToPNGFile(inputPath string, outputPath string, overwrite bool) (string, error) {
-	if outputPath == "" {
-		outputPath = inputPath[:len(inputPath)-len(filepath.Ext(inputPath))] + ".png"
-	}
-	if _, err := os.Stat(outputPath); err == nil && !overwrite {
-		return "", os.ErrExist
-	}
-	b, err := ConvertImageToPNGBytes(inputPath)
-	if err != nil {
-		return "", err
-	}
-	if err := os.WriteFile(outputPath, b, 0o644); err != nil {
-		return "", err
-	}
-	return outputPath, nil
 }
 
 // CropImageBytes crops an image from bytes and returns PNG bytes.
