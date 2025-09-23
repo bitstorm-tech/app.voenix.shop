@@ -60,6 +60,7 @@ type OrderItemPdfData struct {
 	Article                ArticlePdfData
 	VariantID              int
 	VariantName            *string
+	CroppedAreaPixels      *CroppedAreaPixels
 }
 
 type ArticlePdfData struct {
@@ -84,4 +85,12 @@ func FilenameFromOrderNumber(orderNumber string) string {
 	// Use a compact timestamp for cross-language parity
 	ts := time.Now().Format("20060102_150405")
 	return "order_" + orderNumber + "_" + ts + ".pdf"
+}
+
+type CroppedAreaPixels struct {
+	X      float64
+	Y      float64
+	Width  float64
+	Height float64
+	Unit   string
 }

@@ -2,6 +2,7 @@ package order
 
 import (
 	"context"
+	"encoding/json"
 	"strconv"
 
 	"github.com/google/uuid"
@@ -69,6 +70,7 @@ func buildOrderPdfData(ctx context.Context, articleSvc ArticleService, repo Repo
 		a := articles[it.ArticleID]
 		v := variants[it.VariantID]
 		md, hasMD := mugDetails[it.ArticleID]
+		croppedAreaPixels := parseOrderItemCroppedArea(it.CustomData)
 
 		var mdPtr *pdf.MugDetailsPdfData
 		if hasMD {
@@ -103,9 +105,46 @@ func buildOrderPdfData(ctx context.Context, articleSvc ArticleService, repo Repo
 				SupplierArticleName:   a.SupplierArticleName,
 				SupplierArticleNumber: a.SupplierArticleNumber,
 			},
-			VariantID:   it.VariantID,
-			VariantName: variantName,
+			VariantID:         it.VariantID,
+			VariantName:       variantName,
+			CroppedAreaPixels: croppedAreaPixels,
 		})
 	}
 	return out, nil
+}
+
+type orderItemCustomData struct {
+	CropData *struct {
+		CroppedAreaPixels *struct {
+			X      float64 `json:"x"`
+			Y      float64 `json:"y"`
+			Unit   string  `json:"unit"`
+			Width  float64 `json:"width"`
+			Height float64 `json:"height"`
+		} `json:"croppedAreaPixels"`
+	} `json:"cropData"`
+}
+
+func parseOrderItemCroppedArea(customData string) *pdf.CroppedAreaPixels {
+	if customData == "" {
+		return nil
+	}
+	var data orderItemCustomData
+	if err := json.Unmarshal([]byte(customData), &data); err != nil {
+		return nil
+	}
+	if data.CropData == nil || data.CropData.CroppedAreaPixels == nil {
+		return nil
+	}
+	cropped := data.CropData.CroppedAreaPixels
+	if cropped.Width <= 0 || cropped.Height <= 0 {
+		return nil
+	}
+	return &pdf.CroppedAreaPixels{
+		X:      cropped.X,
+		Y:      cropped.Y,
+		Width:  cropped.Width,
+		Height: cropped.Height,
+		Unit:   cropped.Unit,
+	}
 }

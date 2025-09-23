@@ -3,6 +3,7 @@ package order
 import (
 	"errors"
 	"fmt"
+	"log/slog"
 	"path"
 	"strconv"
 	"strings"
@@ -32,7 +33,8 @@ type orderPDFFTPConfig struct {
 func loadOrderPDFFTPConfigs(getenv func(string) string) ([]orderPDFFTPConfig, error) {
 	configNamesValue := strings.TrimSpace(getenv("ORDER_PDF_FTP_CONFIGS"))
 	if configNamesValue == "" {
-		return nil, errOrderPDFFTPConfigMissing
+		slog.Warn("No order pdf ftp server configured")
+		return []orderPDFFTPConfig{}, nil
 	}
 
 	configNames := splitAndClean(configNamesValue)

@@ -10,6 +10,8 @@ import (
 	"math"
 	"strings"
 
+	_ "image/jpeg"
+
 	"github.com/signintech/gopdf"
 	gobold "golang.org/x/image/font/gofont/gobold"
 	goregular "golang.org/x/image/font/gofont/goregular"
@@ -236,6 +238,12 @@ func (service *PDFService) drawCenteredImage(document *gopdf.GoPdf, data OrderPd
 		imageBytes = DefaultPlaceholderPNG()
 	}
 
+	if item.CroppedAreaPixels != nil {
+		if croppedBytes, err := cropImageToArea(imageBytes, item.CroppedAreaPixels); err == nil && len(croppedBytes) > 0 {
+			imageBytes = croppedBytes
+		}
+	}
+
 	// Normalize PNGs to 8-bit depth to avoid decoder limitations
 	imageBytes = normalizePNGTo8Bit(imageBytes)
 
@@ -251,6 +259,48 @@ func (service *PDFService) drawCenteredImage(document *gopdf.GoPdf, data OrderPd
 	xPosition := (pageWidth - imageWidth) / 2
 	yPosition := (pageHeight - imageHeight) / 2
 	return document.ImageByHolder(imageHolder, xPosition, yPosition, &gopdf.Rect{W: imageWidth, H: imageHeight})
+}
+
+func cropImageToArea(imageBytes []byte, area *CroppedAreaPixels) ([]byte, error) {
+	if area == nil {
+		return imageBytes, nil
+	}
+	decodedImage, _, err := image.Decode(bytes.NewReader(imageBytes))
+	if err != nil {
+		return nil, err
+	}
+	bounds := decodedImage.Bounds()
+	left := int(math.Floor(area.X))
+	top := int(math.Floor(area.Y))
+	right := int(math.Ceil(area.X + area.Width))
+	bottom := int(math.Ceil(area.Y + area.Height))
+	if right <= left || bottom <= top {
+		return nil, errors.New("invalid cropped area dimensions")
+	}
+	if left < bounds.Min.X {
+		left = bounds.Min.X
+	}
+	if top < bounds.Min.Y {
+		top = bounds.Min.Y
+	}
+	if right > bounds.Max.X {
+		right = bounds.Max.X
+	}
+	if bottom > bounds.Max.Y {
+		bottom = bounds.Max.Y
+	}
+	cropRectangle := image.Rect(left, top, right, bottom)
+	cropRectangle = cropRectangle.Intersect(bounds)
+	if cropRectangle.Empty() {
+		return nil, errors.New("cropped area outside image bounds")
+	}
+	croppedImage := image.NewRGBA(image.Rect(0, 0, cropRectangle.Dx(), cropRectangle.Dy()))
+	draw.Draw(croppedImage, croppedImage.Bounds(), decodedImage, cropRectangle.Min, draw.Src)
+	var buffer bytes.Buffer
+	if err := png.Encode(&buffer, croppedImage); err != nil {
+		return nil, err
+	}
+	return buffer.Bytes(), nil
 }
 
 // normalizePNGTo8Bit attempts to decode PNG bytes and re-encode as 8-bit RGBA PNG.
