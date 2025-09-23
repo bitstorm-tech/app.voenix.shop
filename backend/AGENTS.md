@@ -38,6 +38,7 @@
 ## Dependencies & Libraries
 - Prefer the Go standard library whenever possible before adding a third‑party dependency or writing custom implementations.
 - Priority order: Go standard library > 3rd‑party library > self implementation.
+- Use the standard library's `log/slog` package for logging and add focused log entries where they help us debug issues without creating noise.
 
 ## Testing Guidelines
 - Place tests alongside code as `*_test.go` using the standard `testing` package.

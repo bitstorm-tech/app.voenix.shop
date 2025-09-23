@@ -70,6 +70,16 @@ func CropImageBytes(imageBytes []byte, x, y, width, height float64) []byte {
 		return imageBytes
 	}
 	b := img.Bounds()
+	imageWidth := float64(b.Dx())
+	imageHeight := float64(b.Dy())
+	if width <= 0 || height <= 0 {
+		return imageBytes
+	}
+	cropRight := x + width
+	cropBottom := y + height
+	if x >= imageWidth || y >= imageHeight || cropRight <= 0 || cropBottom <= 0 {
+		return imageBytes
+	}
 	ix := clampInt(int(x), 0, b.Dx()-1)
 	iy := clampInt(int(y), 0, b.Dy()-1)
 	iw := clampInt(int(width), 1, b.Dx()-ix)

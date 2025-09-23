@@ -1,7 +1,6 @@
 package order
 
 import (
-	"errors"
 	"testing"
 	"time"
 )
@@ -59,9 +58,12 @@ func TestLoadOrderPDFFTPConfigsSingleSuccess(t *testing.T) {
 }
 
 func TestLoadOrderPDFFTPConfigsMissingList(t *testing.T) {
-	_, err := loadOrderPDFFTPConfigs(func(string) string { return "" })
-	if !errors.Is(err, errOrderPDFFTPConfigMissing) {
-		t.Fatalf("expected missing config error, got %v", err)
+	configs, err := loadOrderPDFFTPConfigs(func(string) string { return "" })
+	if err != nil {
+		t.Fatalf("expected no error when configs missing, got %v", err)
+	}
+	if len(configs) != 0 {
+		t.Fatalf("expected no configs, got %d", len(configs))
 	}
 }
 
