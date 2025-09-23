@@ -129,9 +129,27 @@ export default function ImageCropper({
   };
 
   const handleCropComplete = (pixelCrop: PixelCrop) => {
-    if (imageDimensions) {
-      onCropComplete(pixelCrop, imageDimensions);
+    if (!imageDimensions) {
+      return;
     }
+
+    const {
+      natural: { width: naturalWidth, height: naturalHeight },
+      displayed: { width: displayedWidth, height: displayedHeight },
+    } = imageDimensions;
+
+    const scaleX = displayedWidth ? naturalWidth / displayedWidth : 1;
+    const scaleY = displayedHeight ? naturalHeight / displayedHeight : 1;
+
+    const scaledCrop: PixelCrop = {
+      unit: 'px',
+      x: pixelCrop.x * scaleX,
+      y: pixelCrop.y * scaleY,
+      width: pixelCrop.width * scaleX,
+      height: pixelCrop.height * scaleY,
+    };
+
+    onCropComplete(scaledCrop, imageDimensions);
   };
 
   return (
