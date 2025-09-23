@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"voenix/backend/internal/utility"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -145,7 +146,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 				c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Request blocked by AI safety filters", "detail": sb.Reason})
 				return
 			}
-			c.JSON(http.StatusBadGateway, gin.H{"message": "Image generation failed", "detail": safeErr(err)})
+			c.JSON(http.StatusBadGateway, gin.H{"message": "Image generation failed", "detail": utility.SafeError(err)})
 			return
 		}
 
@@ -273,7 +274,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 				c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Request blocked by AI safety filters", "detail": sb.Reason})
 				return
 			}
-			c.JSON(http.StatusBadGateway, gin.H{"message": "Image edit failed", "detail": safeErr(err)})
+			c.JSON(http.StatusBadGateway, gin.H{"message": "Image edit failed", "detail": utility.SafeError(err)})
 			return
 		}
 
@@ -346,7 +347,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 			c.JSON(http.StatusNotFound, gin.H{"message": "Prompt not found"})
 			return
 		}
-		promptText := strings.TrimSpace(derefPtr(promptRead.PromptText))
+		promptText := strings.TrimSpace(utility.DerefPointer(promptRead.PromptText, ""))
 		if promptText == "" {
 			promptText = strings.TrimSpace(promptRead.Title)
 		}
@@ -363,7 +364,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 		cropH, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropHeight")), 64)
 		hasCrop := cropW != 0 && cropH != 0
 
-		llmValue := strings.TrimSpace(derefPtr(promptRead.LLM))
+		llmValue := strings.TrimSpace(utility.DerefPointer(promptRead.LLM, ""))
 		if llmValue == "" {
 			c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Prompt provider is missing", "detail": "The requested prompt is not linked to an LLM"})
 			return
@@ -453,7 +454,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 				c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Request blocked by AI safety filters", "detail": sb.Reason})
 				return
 			}
-			c.JSON(http.StatusBadGateway, gin.H{"message": "Image generation failed", "detail": safeErr(err)})
+			c.JSON(http.StatusBadGateway, gin.H{"message": "Image generation failed", "detail": utility.SafeError(err)})
 			return
 		}
 
@@ -482,7 +483,7 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 				UserID:          &u.ID,
 				UploadedImageID: &uploaded.ID,
 				CreatedAt:       time.Now().UTC(),
-				IPAddress:       stringPtrNonEmpty(ip),
+				IPAddress:       utility.StringPointerNonEmpty(ip),
 			}
 			if err := imageService.CreateGeneratedImage(c.Request.Context(), &gi); err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to persist generated image"})
@@ -500,27 +501,4 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 	pub.POST("/generate", func(c *gin.Context) {
 		c.JSON(http.StatusNotImplemented, gin.H{"message": "Public image generation not implemented in Go backend"})
 	})
-}
-
-// ---- helpers ----
-
-func derefPtr(p *string) string {
-	if p == nil {
-		return ""
-	}
-	return *p
-}
-
-func safeErr(err error) string {
-	if err == nil {
-		return ""
-	}
-	return err.Error()
-}
-
-func stringPtrNonEmpty(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
 }
