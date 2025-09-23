@@ -13,8 +13,10 @@ import (
 	_ "image/jpeg"
 
 	"github.com/signintech/gopdf"
-	gobold "golang.org/x/image/font/gofont/gobold"
-	goregular "golang.org/x/image/font/gofont/goregular"
+	"golang.org/x/image/font/gofont/gobold"
+	"golang.org/x/image/font/gofont/goregular"
+
+	img "voenix/backend/internal/image"
 )
 
 // PDFService implements Service using a PDF backend.
@@ -239,9 +241,13 @@ func (service *PDFService) drawCenteredImage(document *gopdf.GoPdf, data OrderPd
 	}
 
 	if item.CroppedAreaPixels != nil {
-		if croppedBytes, err := cropImageToArea(imageBytes, item.CroppedAreaPixels); err == nil && len(croppedBytes) > 0 {
-			imageBytes = croppedBytes
-		}
+		imageBytes = img.CropImageBytes(
+			imageBytes,
+			item.CroppedAreaPixels.X,
+			item.CroppedAreaPixels.Y,
+			item.CroppedAreaPixels.Width,
+			item.CroppedAreaPixels.Height,
+		)
 	}
 
 	// Normalize PNGs to 8-bit depth to avoid decoder limitations
@@ -261,60 +267,18 @@ func (service *PDFService) drawCenteredImage(document *gopdf.GoPdf, data OrderPd
 	return document.ImageByHolder(imageHolder, xPosition, yPosition, &gopdf.Rect{W: imageWidth, H: imageHeight})
 }
 
-func cropImageToArea(imageBytes []byte, area *CroppedAreaPixels) ([]byte, error) {
-	if area == nil {
-		return imageBytes, nil
-	}
-	decodedImage, _, err := image.Decode(bytes.NewReader(imageBytes))
-	if err != nil {
-		return nil, err
-	}
-	bounds := decodedImage.Bounds()
-	left := int(math.Floor(area.X))
-	top := int(math.Floor(area.Y))
-	right := int(math.Ceil(area.X + area.Width))
-	bottom := int(math.Ceil(area.Y + area.Height))
-	if right <= left || bottom <= top {
-		return nil, errors.New("invalid cropped area dimensions")
-	}
-	if left < bounds.Min.X {
-		left = bounds.Min.X
-	}
-	if top < bounds.Min.Y {
-		top = bounds.Min.Y
-	}
-	if right > bounds.Max.X {
-		right = bounds.Max.X
-	}
-	if bottom > bounds.Max.Y {
-		bottom = bounds.Max.Y
-	}
-	cropRectangle := image.Rect(left, top, right, bottom)
-	cropRectangle = cropRectangle.Intersect(bounds)
-	if cropRectangle.Empty() {
-		return nil, errors.New("cropped area outside image bounds")
-	}
-	croppedImage := image.NewRGBA(image.Rect(0, 0, cropRectangle.Dx(), cropRectangle.Dy()))
-	draw.Draw(croppedImage, croppedImage.Bounds(), decodedImage, cropRectangle.Min, draw.Src)
-	var buffer bytes.Buffer
-	if err := png.Encode(&buffer, croppedImage); err != nil {
-		return nil, err
-	}
-	return buffer.Bytes(), nil
-}
-
 // normalizePNGTo8Bit attempts to decode PNG bytes and re-encode as 8-bit RGBA PNG.
 // If data is not PNG or decoding fails, returns the original bytes unchanged.
 func normalizePNGTo8Bit(data []byte) []byte {
 	// Fast path: try to decode as PNG
-	img, err := png.Decode(bytes.NewReader(data))
+	decodedImage, err := png.Decode(bytes.NewReader(data))
 	if err != nil {
 		return data
 	}
 	// Convert to 8-bit RGBA
-	b := img.Bounds()
+	b := decodedImage.Bounds()
 	rgba := image.NewRGBA(b)
-	draw.Draw(rgba, b, img, b.Min, draw.Src)
+	draw.Draw(rgba, b, decodedImage, b.Min, draw.Src)
 	var buf bytes.Buffer
 	if err := png.Encode(&buf, rgba); err != nil {
 		return data
