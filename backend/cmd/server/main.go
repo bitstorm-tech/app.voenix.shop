@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -37,6 +38,7 @@ import (
 )
 
 func main() {
+	setupLogger()
 	loadEnvFromSecretFile()
 	db, err := database.Open()
 	if err != nil {
@@ -220,8 +222,17 @@ func contains(arr []string, v string) bool {
 
 func checkIfTestMode() {
 	if ai.IsTestMode() {
-		log.Printf("️===========================")
-		log.Printf("⚠️ RUNNING IN TEST MODE ⚠️")
-		log.Printf("️===========================")
+		slog.Info("️===========================")
+		slog.Info("⚠️ RUNNING IN TEST MODE ⚠️")
+		slog.Info("️===========================")
 	}
+}
+
+func setupLogger() {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource:   true,
+		Level:       slog.LevelDebug,
+		ReplaceAttr: nil,
+	}))
+	slog.SetDefault(logger)
 }
