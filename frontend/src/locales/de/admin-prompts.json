@@ -33,6 +33,7 @@
       "actions": "Aktionen",
       "active": "Aktiv",
       "category": "Kategorie",
+      "llm": "LLM",
       "name": "Name",
       "prompt": "Prompt"
     },

@@ -25,6 +25,7 @@
       "description": "Description",
       "example": "Example",
       "id": "ID",
+      "llm": "LLM",
       "name": "Name",
       "prompt": "Prompt",
       "slotType": "Slot Type"

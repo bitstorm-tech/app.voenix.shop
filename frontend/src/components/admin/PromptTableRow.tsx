@@ -13,6 +13,7 @@ interface PromptTableRowProps {
 
 export default function PromptTableRow({ prompt, onEdit, onDelete, onTest }: PromptTableRowProps) {
   const { t } = useTranslation('adminPrompts');
+  const llmDisplay = prompt.llm || prompt.slots?.[0]?.llm;
 
   return (
     <TableRow>
@@ -26,6 +27,9 @@ export default function PromptTableRow({ prompt, onEdit, onDelete, onTest }: Pro
       </TableCell>
       <TableCell>
         <span>{prompt.category?.name || '-'}</span>
+      </TableCell>
+      <TableCell>
+        <span>{llmDisplay || '-'}</span>
       </TableCell>
       <TableCell>
         <span className="block max-w-md truncate" title={prompt.promptText || ''}>

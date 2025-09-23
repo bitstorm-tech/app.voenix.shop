@@ -107,6 +107,7 @@ export default function SlotVariants() {
               <TableHead>{t('table.headers.id')}</TableHead>
               <TableHead>{t('table.headers.name')}</TableHead>
               <TableHead>{t('table.headers.slotType')}</TableHead>
+              <TableHead>{t('table.headers.llm')}</TableHead>
               <TableHead>{t('table.headers.prompt')}</TableHead>
               <TableHead>{t('table.headers.description')}</TableHead>
               <TableHead>{t('table.headers.example')}</TableHead>
@@ -117,13 +118,13 @@ export default function SlotVariants() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-gray-500">
+                <TableCell colSpan={9} className="text-center text-gray-500">
                   {t('table.loading')}
                 </TableCell>
               </TableRow>
             ) : slotVariants.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-gray-500">
+                <TableCell colSpan={9} className="text-center text-gray-500">
                   {t('table.empty')}
                 </TableCell>
               </TableRow>
@@ -133,6 +134,7 @@ export default function SlotVariants() {
                   <TableCell className="font-medium">{slot.id}</TableCell>
                   <TableCell>{slot.name}</TableCell>
                   <TableCell>{slot.promptSlotType?.name || '-'}</TableCell>
+                  <TableCell>{slot.llm || '-'}</TableCell>
                   <TableCell className="max-w-xs">
                     <span className="text-sm text-gray-600" title={slot.prompt}>
                       {truncatePrompt(slot.prompt)}

@@ -21,6 +21,7 @@ export default function PromptTable({ prompts, onEdit, onDelete, onTest }: Promp
             <TableHead>{t('table.headers.active')}</TableHead>
             <TableHead>{t('table.headers.name')}</TableHead>
             <TableHead>{t('table.headers.category')}</TableHead>
+            <TableHead>{t('table.headers.llm')}</TableHead>
             <TableHead>{t('table.headers.prompt')}</TableHead>
             <TableHead className="text-right">{t('table.headers.actions')}</TableHead>
           </TableRow>
