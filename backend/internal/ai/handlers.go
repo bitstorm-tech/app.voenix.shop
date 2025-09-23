@@ -363,7 +363,12 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 		cropH, _ := strconv.ParseFloat(strings.TrimSpace(c.PostForm("cropHeight")), 64)
 		hasCrop := cropW != 0 && cropH != 0
 
-		prov, ok := providerFromParam(*promptRead.LLM)
+		llmValue := strings.TrimSpace(derefPtr(promptRead.LLM))
+		if llmValue == "" {
+			c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Prompt provider is missing", "detail": "The requested prompt is not linked to an LLM"})
+			return
+		}
+		prov, ok := providerFromParam(llmValue)
 		if !ok {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "Provider not implemented"})
 			return
