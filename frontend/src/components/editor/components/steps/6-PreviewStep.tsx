@@ -1,12 +1,12 @@
 import { useDebounce } from '@/hooks/useDebounce';
+import { getCroppedImgFromArea } from '@/lib/imageCropUtils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { CheckCircle } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { PixelCrop } from 'react-image-crop';
 import { GeneratedImageCropData } from '../../types';
 import ImageCropper from '../shared/ImageCropper';
-import MugPreview from '../shared/MugPreview';
 
 export default function PreviewStep() {
   const { t } = useTranslation('editor');
@@ -18,18 +18,8 @@ export default function PreviewStep() {
 
   const [localCropData, setLocalCropData] = useState<GeneratedImageCropData | null>(generatedImageCropData);
   const debouncedCropData = useDebounce(localCropData, 200);
-
-  if (!selectedMug || !selectedGeneratedImage) {
-    return (
-      <div className="py-8 text-center text-gray-500">
-        <p>{t('steps.preview.missing.title')}</p>
-        <p className="mt-2 text-sm">
-          {!selectedMug && `${t('steps.preview.missing.mug')} `}
-          {!selectedGeneratedImage && `${t('steps.preview.missing.image')} `}
-        </p>
-      </div>
-    );
-  }
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
 
   const handleCropComplete = (pixelCrop: PixelCrop) => {
     const newCropData = {
@@ -45,12 +35,66 @@ export default function PreviewStep() {
   // - data: URLs are used as-is
   // - URLs starting with /api/ are already complete (e.g., /api/public/images/...)
   // - Otherwise, assume it's just a filename and construct the full URL
-  const imageUrl =
-    selectedGeneratedImage.startsWith('data:') || selectedGeneratedImage.startsWith('/api/')
+  const imageUrl = selectedGeneratedImage
+    ? selectedGeneratedImage.startsWith('data:') || selectedGeneratedImage.startsWith('/api/')
       ? selectedGeneratedImage
-      : `/api/images/${selectedGeneratedImage}`;
+      : `/api/images/${selectedGeneratedImage}`
+    : null;
 
   const formatPrice = (value: number) => t('currency', { value: value.toFixed(2) });
+
+  useEffect(() => {
+    if (!imageUrl) {
+      setPreviewUrl(null);
+      setIsGeneratingPreview(false);
+      return;
+    }
+
+    let isCancelled = false;
+
+    const generatePreview = async () => {
+      setIsGeneratingPreview(true);
+      try {
+        const crop = debouncedCropData?.croppedAreaPixels || generatedImageCropData?.croppedAreaPixels;
+
+        if (crop) {
+          const croppedImage = await getCroppedImgFromArea(imageUrl, crop);
+          if (!isCancelled) {
+            setPreviewUrl(croppedImage);
+          }
+        } else if (!isCancelled) {
+          setPreviewUrl(imageUrl);
+        }
+      } catch (error) {
+        console.error('Error generating preview image:', error);
+        if (!isCancelled) {
+          setPreviewUrl(imageUrl);
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsGeneratingPreview(false);
+        }
+      }
+    };
+
+    generatePreview();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [imageUrl, debouncedCropData, generatedImageCropData]);
+
+  if (!selectedMug || !selectedGeneratedImage || !imageUrl) {
+    return (
+      <div className="py-8 text-center text-gray-500">
+        <p>{t('steps.preview.missing.title')}</p>
+        <p className="mt-2 text-sm">
+          {!selectedMug && `${t('steps.preview.missing.mug')} `}
+          {!selectedGeneratedImage && `${t('steps.preview.missing.image')} `}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -78,7 +122,40 @@ export default function PreviewStep() {
 
         {/* Preview on the right */}
         <div className="flex flex-col items-center justify-center">
-          <MugPreview mug={selectedMug} imageUrl={imageUrl} cropData={debouncedCropData || generatedImageCropData} />
+          <div className="w-full max-w-md">
+            <div className="aspect-square w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-50 shadow-inner">
+              {isGeneratingPreview ? (
+                <div className="flex h-full items-center justify-center">
+                  <div
+                    className="border-t-primary h-12 w-12 animate-spin rounded-full border-4 border-gray-300"
+                    aria-label={t('steps.preview.generatingPreview', { defaultValue: 'Generating preview…' })}
+                  ></div>
+                </div>
+              ) : previewUrl ? (
+                <img
+                  src={previewUrl}
+                  alt={t('steps.preview.previewAlt', { product: selectedMug.name, defaultValue: `${selectedMug.name} preview` })}
+                  className="h-full w-full object-contain"
+                />
+              ) : (
+                <div className="flex h-full items-center justify-center px-4 text-center text-sm text-gray-500">
+                  {t('steps.preview.previewUnavailable', {
+                    defaultValue: 'Preview will appear here once an image is selected.',
+                  })}
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 text-center">
+              <h4 className="text-lg font-semibold">{selectedMug.name}</h4>
+              <p className="mt-1 text-sm text-gray-600">{selectedMug.capacity}</p>
+              {selectedMug.special && (
+                <span className="mt-2 inline-block rounded-full bg-yellow-100 px-3 py-1 text-sm font-medium text-yellow-800">
+                  {selectedMug.special}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

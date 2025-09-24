@@ -169,7 +169,6 @@
     "preview": {
       "title": "Perfect Your Design",
       "subtitle": "Position and scale your design on the left, and see the live preview on the right",
-      "controlsHint": "Drag to rotate • Scroll to zoom",
       "cropper": {
         "title": "Position and scale your design",
         "description": "Drag to move your image and use the slider to zoom in or out",

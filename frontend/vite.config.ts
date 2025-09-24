@@ -54,7 +54,6 @@ export default defineConfig({
             'tailwind-merge',
             'class-variance-authority',
           ],
-          'vendor-3d': ['three', '@react-three/fiber', '@react-three/drei'],
           'vendor-query': ['@tanstack/react-query', '@tanstack/react-query-devtools'],
           'vendor-dnd': ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
           // Feature-based chunks
