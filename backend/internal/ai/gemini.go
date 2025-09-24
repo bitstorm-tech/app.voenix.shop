@@ -13,6 +13,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	img "voenix/backend/internal/image"
 )
 
 const (
@@ -58,6 +60,12 @@ func (g *GeminiGenerator) Edit(ctx context.Context, image []byte, prompt string,
 	if model == "" {
 		return nil, errors.New("model is not configured")
 	}
+
+	scaledImage, err := img.ScaleImageBytesToSixteenByNine(image)
+	if err != nil {
+		return nil, fmt.Errorf("failed to scale image to sixteen by nine: %w", err)
+	}
+	image = scaledImage
 
 	mimeType := "image/png"
 	if detectedMimeType := http.DetectContentType(image); strings.HasPrefix(detectedMimeType, "image/") {

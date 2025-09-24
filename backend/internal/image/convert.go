@@ -3,6 +3,7 @@ package image
 import (
 	"bytes"
 	"image"
+	"image/draw"
 	_ "image/gif"
 	_ "image/jpeg"
 	"image/png"
@@ -37,6 +38,51 @@ func ConvertImageToPNGBytes(input any) ([]byte, error) {
 	// Encode as PNG
 	var buf bytes.Buffer
 	if err := png.Encode(&buf, img); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+// ScaleImageBytesToSixteenByNine ensures an input image fits inside a 16:9 canvas
+// by centering it on a transparent background if padding is required. The output
+// is returned as PNG bytes. When the input already matches the target aspect
+// ratio, the original bytes are returned unchanged.
+func ScaleImageBytesToSixteenByNine(imageBytes []byte) ([]byte, error) {
+	const aspectWidth = 16
+	const aspectHeight = 9
+
+	img, _, err := image.Decode(bytes.NewReader(imageBytes))
+	if err != nil {
+		return nil, err
+	}
+
+	bounds := img.Bounds()
+	originalWidth := bounds.Dx()
+	originalHeight := bounds.Dy()
+	if originalWidth <= 0 || originalHeight <= 0 {
+		return nil, ErrUnsupportedInput
+	}
+
+	if originalWidth*aspectHeight == originalHeight*aspectWidth {
+		return imageBytes, nil
+	}
+
+	targetWidth := originalWidth
+	targetHeight := originalHeight
+
+	if originalWidth*aspectHeight > originalHeight*aspectWidth {
+		targetHeight = (originalWidth*aspectHeight + aspectWidth - 1) / aspectWidth
+	} else {
+		targetWidth = (originalHeight*aspectWidth + aspectHeight - 1) / aspectHeight
+	}
+
+	destination := image.NewRGBA(image.Rect(0, 0, targetWidth, targetHeight))
+	offsetX := (targetWidth - originalWidth) / 2
+	offsetY := (targetHeight - originalHeight) / 2
+	draw.Draw(destination, image.Rect(offsetX, offsetY, offsetX+originalWidth, offsetY+originalHeight), img, bounds.Min, draw.Src)
+
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, destination); err != nil {
 		return nil, err
 	}
 	return buf.Bytes(), nil
