@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net"
 	"os"
 	"path"
@@ -19,7 +20,7 @@ import (
 
 const defaultSFTPTimeout = 10 * time.Second
 
-// FTPUploadOptions controls behaviours for UploadPDFToFTP.
+// FTPUploadOptions controls behaviors for UploadPDFToFTP.
 type FTPUploadOptions struct {
 	Timeout                         time.Duration
 	RemotePath                      string
@@ -110,22 +111,34 @@ func UploadPDFToFTP(pdf []byte, server, user, password string, opts *FTPUploadOp
 		timeout = defaultSFTPTimeout
 	}
 
+	slog.Info("uploading pdf via sftp", slog.String("server", trimmedServer), slog.String("user", user), slog.Duration("timeout", timeout), slog.Bool("insecureHostKey", configuration.InsecureSkipHostKeyVerification), slog.String("remotePath", remotePath))
+
 	address, err := normalizeSFTPServer(trimmedServer)
 	if err != nil {
+		slog.Error("failed to normalize sftp server", slog.String("server", trimmedServer), slog.Any("error", err))
 		return err
 	}
 
+	slog.Debug("normalized sftp server", slog.String("address", address))
+
 	sshConfig, err := buildSSHClientConfig(user, password, timeout, configuration)
 	if err != nil {
+		slog.Error("failed to build ssh configuration", slog.String("server", address), slog.Any("error", err))
 		return err
 	}
 
 	client, err := newSFTPClient(address, sshConfig)
 	if err != nil {
+		slog.Error("failed to create sftp client", slog.String("address", address), slog.Any("error", err))
 		return err
 	}
 	defer func() {
-		_ = client.Close()
+		closeError := client.Close()
+		if closeError != nil {
+			slog.Warn("failed to close sftp client", slog.String("address", address), slog.Any("error", closeError))
+		} else {
+			slog.Debug("closed sftp client", slog.String("address", address))
+		}
 	}()
 
 	defaultFileName := strings.TrimSpace(configuration.FallbackFileName)
@@ -135,22 +148,30 @@ func UploadPDFToFTP(pdf []byte, server, user, password string, opts *FTPUploadOp
 
 	remoteFilePath, err := resolveRemoteFilePath(client, remotePath, defaultFileName)
 	if err != nil {
+		slog.Error("failed to resolve remote file path", slog.String("remotePath", remotePath), slog.String("fallbackFileName", defaultFileName), slog.Any("error", err))
 		return err
 	}
 
+	slog.Info("resolved remote file path", slog.String("remoteFilePath", remoteFilePath))
+
 	remoteFile, err := client.OpenFile(remoteFilePath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC)
 	if err != nil {
+		slog.Error("failed to open remote file", slog.String("remoteFilePath", remoteFilePath), slog.Any("error", err))
 		return fmt.Errorf("open remote file %q: %w", remoteFilePath, err)
 	}
 
 	_, copyErr := io.Copy(remoteFile, bytes.NewReader(pdf))
 	closeErr := remoteFile.Close()
 	if copyErr != nil {
+		slog.Error("failed to write remote file", slog.String("remoteFilePath", remoteFilePath), slog.Any("error", copyErr))
 		return fmt.Errorf("write remote file %q: %w", remoteFilePath, copyErr)
 	}
 	if closeErr != nil {
+		slog.Error("failed to close remote file", slog.String("remoteFilePath", remoteFilePath), slog.Any("error", closeErr))
 		return fmt.Errorf("close remote file %q: %w", remoteFilePath, closeErr)
 	}
+
+	slog.Info("uploaded pdf to sftp", slog.String("remoteFilePath", remoteFilePath), slog.Int("bytesWritten", len(pdf)))
 
 	return nil
 }
@@ -185,6 +206,7 @@ func normalizeSFTPServer(server string) (string, error) {
 func buildSSHClientConfig(user, password string, timeout time.Duration, opts FTPUploadOptions) (*ssh.ClientConfig, error) {
 	hostKeyCallback, err := selectHostKeyCallback(opts)
 	if err != nil {
+		slog.Error("failed to select host key callback", slog.Any("error", err))
 		return nil, err
 	}
 
@@ -198,6 +220,7 @@ func buildSSHClientConfig(user, password string, timeout time.Duration, opts FTP
 
 func selectHostKeyCallback(opts FTPUploadOptions) (ssh.HostKeyCallback, error) {
 	if opts.InsecureSkipHostKeyVerification {
+		slog.Warn("host key verification disabled for sftp upload")
 		return ssh.InsecureIgnoreHostKey(), nil
 	}
 
@@ -205,6 +228,7 @@ func selectHostKeyCallback(opts FTPUploadOptions) (ssh.HostKeyCallback, error) {
 	if knownHostsPath == "" {
 		home, err := os.UserHomeDir()
 		if err != nil {
+			slog.Error("failed to resolve user home for known hosts", slog.Any("error", err))
 			return nil, fmt.Errorf("determine user home directory: %w", err)
 		}
 		knownHostsPath = filepath.Join(home, ".ssh", "known_hosts")
@@ -212,8 +236,11 @@ func selectHostKeyCallback(opts FTPUploadOptions) (ssh.HostKeyCallback, error) {
 
 	callback, err := knownhosts.New(knownHostsPath)
 	if err != nil {
+		slog.Error("failed to load known hosts", slog.String("knownHostsPath", knownHostsPath), slog.Any("error", err))
 		return nil, fmt.Errorf("load known hosts from %q: %w", knownHostsPath, err)
 	}
+
+	slog.Debug("using known hosts file", slog.String("knownHostsPath", knownHostsPath))
 
 	return callback, nil
 }
@@ -225,6 +252,8 @@ func resolveRemoteFilePath(client sftpClient, remotePath string, fallbackFileNam
 
 	trimmedRemote := strings.TrimSpace(remotePath)
 	pathLooksLikeDirectory := strings.HasSuffix(trimmedRemote, "/")
+
+	slog.Debug("resolving remote path", slog.String("remotePath", remotePath), slog.Bool("pathLooksLikeDirectory", pathLooksLikeDirectory), slog.String("fallbackFileName", fallbackFileName))
 
 	cleanRemote := path.Clean(trimmedRemote)
 	if cleanRemote == "." {
@@ -242,16 +271,20 @@ func resolveRemoteFilePath(client sftpClient, remotePath string, fallbackFileNam
 		case err == nil:
 			if info.IsDir() {
 				remoteIndicatesDirectory = true
+				slog.Debug("remote path is directory", slog.String("cleanRemote", cleanRemote))
 			}
 		case isNotExistError(err):
 			// Directory will be created later.
+			slog.Debug("remote path does not exist", slog.String("cleanRemote", cleanRemote))
 		default:
+			slog.Error("failed to stat remote path", slog.String("cleanRemote", cleanRemote), slog.Any("error", err))
 			return "", fmt.Errorf("stat remote path %q: %w", cleanRemote, err)
 		}
 	}
 
 	if remoteIndicatesDirectory {
 		if fallbackFileName == "" {
+			slog.Error("missing fallback file name for directory remote path", slog.String("remotePath", remotePath))
 			return "", fmt.Errorf("remote path %q refers to a directory and no fallback file name provided", remotePath)
 		}
 		directory := strings.TrimSuffix(cleanRemote, "/")
@@ -259,17 +292,23 @@ func resolveRemoteFilePath(client sftpClient, remotePath string, fallbackFileNam
 			return fallbackFileName, nil
 		}
 		if err := client.MkdirAll(directory); err != nil {
+			slog.Error("failed to ensure remote directory", slog.String("directory", directory), slog.Any("error", err))
 			return "", fmt.Errorf("ensure remote directory %q: %w", directory, err)
 		}
+		slog.Debug("using directory remote path", slog.String("directory", directory))
 		return path.Join(directory, fallbackFileName), nil
 	}
 
 	directory := path.Dir(cleanRemote)
 	if directory != "." && directory != "/" && directory != "" {
 		if err := client.MkdirAll(directory); err != nil {
+			slog.Error("failed to ensure remote directory", slog.String("directory", directory), slog.Any("error", err))
 			return "", fmt.Errorf("ensure remote directory %q: %w", directory, err)
 		}
+		slog.Debug("ensured remote directory", slog.String("directory", directory))
 	}
+
+	slog.Debug("resolved remote path to file", slog.String("cleanRemote", cleanRemote))
 
 	return cleanRemote, nil
 }
