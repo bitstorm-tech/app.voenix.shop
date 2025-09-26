@@ -166,6 +166,10 @@
         "Führe uralte Rituale durch, um Kreativität zu beschwören...",
         "Flüstere den Machine-Learning-Modellen süße Worte zu..."
       ],
+      "promptSection": {
+        "description": "Dieser Prompt wurde für die Bildgenerierung verwendet.",
+        "title": "Prompt anzeigen"
+      },
       "title": "Wähle dein Lieblingsdesign",
       "subtitle": "Wähle die Variante, die deine Idee am besten trifft",
       "selected": "Tolle Wahl! Klicke auf Weiter, um die Vorschau auf deiner Tasse zu sehen."

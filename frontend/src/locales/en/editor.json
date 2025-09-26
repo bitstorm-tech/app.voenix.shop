@@ -162,6 +162,10 @@
         "Performing ancient rituals to summon creativity...",
         "Whispering sweet nothings to the machine learning models..."
       ],
+      "promptSection": {
+        "description": "This is the prompt that was used to create these images.",
+        "title": "View generation prompt"
+      },
       "title": "Choose Your Favorite Design",
       "subtitle": "Select the design that best captures your vision from these AI-generated variations",
       "selected": "Great choice! Click Next to see how it looks on your selected mug."

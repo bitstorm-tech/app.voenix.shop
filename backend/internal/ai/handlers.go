@@ -461,6 +461,13 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 		// Store generated images under the user directory and build URLs/IDs
 		urls := make([]string, 0, len(images))
 		ids := make([]int, 0, len(images))
+		hasAdministratorRole := false
+		for _, role := range u.Roles {
+			if role.Name == "ADMIN" {
+				hasAdministratorRole = true
+				break
+			}
+		}
 		for i, b := range images {
 			outBytes, err := imgsvc.ConvertImageToPNGBytes(b)
 			if err != nil {
@@ -493,7 +500,11 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 			ids = append(ids, gi.ID)
 		}
 
-		c.JSON(http.StatusOK, gin.H{"imageUrls": urls, "generatedImageIds": ids})
+		responsePayload := gin.H{"imageUrls": urls, "generatedImageIds": ids}
+		if hasAdministratorRole {
+			responsePayload["prompt"] = combinedPrompt
+		}
+		c.JSON(http.StatusOK, responsePayload)
 	})
 
 	// Public AI routes (stub)

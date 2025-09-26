@@ -24,6 +24,7 @@ interface WizardStore {
   selectedGeneratedImage: string | null;
   selectedGeneratedImageInfo: GeneratedImageInfo | null;
   generatedImageCropData: GeneratedImageCropData | null;
+  generationPrompt: string | null;
   isProcessing: boolean;
   error: string | null;
 
@@ -55,7 +56,7 @@ interface WizardStore {
 
   // ========== Generation Actions ==========
   setGeneratedImages: (urls: string[]) => void;
-  setGeneratedImagesInfo: (images: GeneratedImageInfo[]) => void;
+  setGeneratedImagesInfo: (images: GeneratedImageInfo[], prompt?: string | null) => void;
   selectGeneratedImage: (url: string) => void;
   selectGeneratedImageInfo: (imageInfo: GeneratedImageInfo) => void;
   updateGeneratedImageCropData: (cropData: GeneratedImageCropData | null) => void;
@@ -149,6 +150,7 @@ export const useWizardStore = create<WizardStore>()(
     selectedGeneratedImage: null,
     selectedGeneratedImageInfo: null,
     generatedImageCropData: null,
+    generationPrompt: null,
     isProcessing: false,
     error: null,
     canGoNext: false,
@@ -217,6 +219,7 @@ export const useWizardStore = create<WizardStore>()(
         state.selectedGeneratedImage = null;
         state.selectedGeneratedImageInfo = null;
         state.generatedImageCropData = null;
+        state.generationPrompt = null;
         state.isProcessing = false;
         state.error = null;
         state.canGoNext = false;
@@ -322,16 +325,18 @@ export const useWizardStore = create<WizardStore>()(
         state.selectedGeneratedImage = null; // Reset selection when new images are generated
         state.selectedGeneratedImageInfo = null;
         state.generatedImageCropData = null; // Reset crop data when new images are generated
+        state.generationPrompt = null;
         state.canGoNext = false;
       });
     },
 
-    setGeneratedImagesInfo: (images) => {
+    setGeneratedImagesInfo: (images, prompt) => {
       set((state) => {
         state.generatedImages = images;
         state.selectedGeneratedImage = null;
         state.selectedGeneratedImageInfo = null;
         state.generatedImageCropData = null;
+        state.generationPrompt = prompt ?? null;
         state.canGoNext = false;
       });
     },

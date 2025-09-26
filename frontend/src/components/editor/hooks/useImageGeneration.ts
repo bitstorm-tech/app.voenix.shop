@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 interface GeneratedImageData {
   urls: string[];
   ids: number[];
+  prompt?: string;
 }
 
 interface UseImageGenerationReturn {
@@ -35,6 +36,7 @@ export function useImageGeneration(): UseImageGenerationReturn {
       return {
         urls: response.imageUrls,
         ids: response.generatedImageIds,
+        prompt: response.prompt,
       };
     } catch (err: unknown) {
       let errorMessage = t('errors.unexpected');

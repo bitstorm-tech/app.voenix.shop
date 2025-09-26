@@ -1,3 +1,4 @@
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/Accordion';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Loader2, Sparkles } from 'lucide-react';
@@ -13,6 +14,7 @@ export default function ImageGenerationStep() {
   const generatedImages = useWizardStore((state) => state.generatedImages);
   const selectedGeneratedImage = useWizardStore((state) => state.selectedGeneratedImage);
   const cropData = useWizardStore((state) => state.cropData);
+  const generationPrompt = useWizardStore((state) => state.generationPrompt);
   const setProcessing = useWizardStore((state) => state.setProcessing);
   const setGeneratedImagesInfo = useWizardStore((state) => state.setGeneratedImagesInfo);
   const selectGeneratedImageInfo = useWizardStore((state) => state.selectGeneratedImageInfo);
@@ -47,7 +49,7 @@ export default function ImageGenerationStep() {
             url,
             generatedImageId: result.ids[index],
           }));
-          setGeneratedImagesInfo(imagesInfo);
+          setGeneratedImagesInfo(imagesInfo, result.prompt ?? null);
         }
         setProcessing(false);
       };
@@ -93,6 +95,20 @@ export default function ImageGenerationStep() {
         <h3 className="mb-2 text-lg font-semibold">{t('steps.imageGeneration.title')}</h3>
         <p className="text-sm text-gray-600">{t('steps.imageGeneration.subtitle')}</p>
       </div>
+
+      {generationPrompt && (
+        <Accordion type="single" collapsible className="rounded-lg border border-gray-200 bg-white shadow-sm">
+          <AccordionItem value="prompt" className="border-0">
+            <AccordionTrigger className="px-4 py-2 text-left text-sm font-semibold text-gray-800">
+              {t('steps.imageGeneration.promptSection.title')}
+            </AccordionTrigger>
+            <AccordionContent className="space-y-2 px-4 pb-4 text-sm text-gray-700">
+              <p>{t('steps.imageGeneration.promptSection.description')}</p>
+              <pre className="rounded-md bg-gray-100 p-3 text-left font-sans text-sm whitespace-pre-wrap text-gray-800">{generationPrompt}</pre>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      )}
 
       <ImageVariantSelector
         variants={generatedImages.map((img) => img.url)}

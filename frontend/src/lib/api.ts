@@ -731,6 +731,7 @@ export interface PdfResponse {
 export interface PublicImageGenerationResponse {
   imageUrls: string[];
   generatedImageIds: number[];
+  prompt?: string;
 }
 
 // Cart API endpoints
