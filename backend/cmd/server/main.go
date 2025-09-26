@@ -33,6 +33,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-cz/devslog"
 	"github.com/joho/godotenv"
 	_ "github.com/joho/godotenv/autoload"
 )
@@ -222,17 +223,22 @@ func contains(arr []string, v string) bool {
 
 func checkIfTestMode() {
 	if ai.IsTestMode() {
-		slog.Info("️===========================")
-		slog.Info("⚠️ RUNNING IN TEST MODE ⚠️")
-		slog.Info("️===========================")
+		message := `
+==========================
+⚠️ RUNNING IN TEST MODE ⚠️
+==========================`
+		slog.Info(message)
 	}
 }
 
 func setupLogger() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		AddSource:   true,
-		Level:       slog.LevelDebug,
-		ReplaceAttr: nil,
-	}))
+
+	handler := devslog.NewHandler(os.Stdout, &devslog.Options{
+		HandlerOptions: &slog.HandlerOptions{
+			AddSource: true,
+			Level:     slog.LevelDebug,
+		},
+	})
+	logger := slog.New(handler)
 	slog.SetDefault(logger)
 }
