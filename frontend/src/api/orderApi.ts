@@ -10,4 +10,7 @@ export const orderApi = {
 
   // Get specific order by ID
   getOrder: (orderId: string): Promise<OrderDto> => api.get<OrderDto>(`/user/orders/${orderId}`),
+
+  // Send order PDF to configured FTP destinations
+  sendOrderPDF: (orderId: string): Promise<void> => api.post<void>(`/user/orders/${orderId}/pdf/send`, {}),
 };

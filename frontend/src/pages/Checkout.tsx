@@ -1,3 +1,4 @@
+import { orderApi } from '@/api/orderApi';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { Alert, AlertDescription } from '@/components/ui/Alert';
 import { Button } from '@/components/ui/Button';
@@ -6,7 +7,6 @@ import { Label } from '@/components/ui/Label';
 import { useSession } from '@/hooks/queries/useAuth';
 import { useCart } from '@/hooks/queries/useCart';
 import { useCreateOrder } from '@/hooks/queries/useOrders';
-import { downloadOrderPDF } from '@/lib/pdfDownload';
 import type { CreateOrderRequest } from '@/types/order';
 import { AlertTriangle, CreditCard, Lock, ShoppingBag, Truck } from 'lucide-react';
 import { ReactNode, useEffect, useState } from 'react';
@@ -177,34 +177,25 @@ export default function CheckoutPage() {
       };
 
       const order = await createOrderMutation.mutateAsync(orderRequest);
-      console.log('Order created successfully:', order);
 
       toast.success(t('toast.orderSuccess.title'), {
         description: t('toast.orderSuccess.description', { orderNumber: order.orderNumber }),
       });
 
-      // Auto-download PDF
-      setTimeout(async () => {
-        const result = await downloadOrderPDF({
-          orderId: order.id,
-          orderNumber: order.orderNumber,
+      try {
+        await orderApi.sendOrderPDF(order.id);
+        toast.success(t('toast.receiptSuccess.title'), {
+          description: t('toast.receiptSuccess.description'),
         });
-
-        if (result.success) {
-          toast.success(t('toast.receiptSuccess.title'), {
-            description: t('toast.receiptSuccess.description'),
-          });
-        } else {
-          toast.error(t('toast.receiptError.title'), {
-            description: t('toast.receiptError.description'),
-          });
-        }
-      }, 500);
+      } catch {
+        toast.error(t('toast.receiptError.title'), {
+          description: t('toast.receiptError.description'),
+        });
+      }
 
       // Navigate to order success page
       navigate(`/order-success/${order.id}`);
     } catch (error) {
-      console.error('Error creating order:', error);
       toast.error(t('toast.orderError.title'), {
         description: error instanceof Error ? error.message : t('toast.orderError.description'),
       });
