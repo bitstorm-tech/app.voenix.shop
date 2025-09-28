@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { getLocaleCurrency } from '@/lib/locale';
 import { Clock, Eye, Package } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -28,14 +29,14 @@ export default function OpenOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { t, i18n } = useTranslation('adminOpenOrders');
-  const locale = i18n.language || 'en';
+  const { locale, currency } = getLocaleCurrency(i18n.language);
   const currencyFormatter = useMemo(
     () =>
       new Intl.NumberFormat(locale, {
         style: 'currency',
-        currency: 'USD',
+        currency,
       }),
-    [locale],
+    [locale, currency],
   );
 
   useEffect(() => {

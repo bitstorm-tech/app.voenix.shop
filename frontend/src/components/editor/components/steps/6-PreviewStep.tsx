@@ -1,15 +1,18 @@
 import { useDebounce } from '@/hooks/useDebounce';
 import { getCroppedImgFromArea } from '@/lib/imageCropUtils';
+import { getLocaleCurrency } from '@/lib/locale';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { CheckCircle } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { PixelCrop } from 'react-image-crop';
 import { GeneratedImageCropData } from '../../types';
 import ImageCropper from '../shared/ImageCropper';
 
 export default function PreviewStep() {
-  const { t } = useTranslation('editor');
+  const { t, i18n } = useTranslation('editor');
+  const { locale, currency } = getLocaleCurrency(i18n.language);
+  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency }), [locale, currency]);
   const selectedMug = useWizardStore((state) => state.selectedMug);
   const selectedGeneratedImage = useWizardStore((state) => state.selectedGeneratedImage);
   const generatedImageCropData = useWizardStore((state) => state.generatedImageCropData);
@@ -41,7 +44,7 @@ export default function PreviewStep() {
       : `/api/images/${selectedGeneratedImage}`
     : null;
 
-  const formatPrice = (value: number) => t('currency', { value: value.toFixed(2) });
+  const formatPrice = (value: number) => currencyFormatter.format(value);
 
   useEffect(() => {
     if (!imageUrl) {

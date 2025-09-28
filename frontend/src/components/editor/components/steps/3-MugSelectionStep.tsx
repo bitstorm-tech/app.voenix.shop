@@ -1,12 +1,16 @@
 import { MugOption, MugVariant } from '@/components/editor/types';
 import { useMugs } from '@/hooks/useMugs';
+import { getLocaleCurrency } from '@/lib/locale';
 import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Check, Loader2, Star } from 'lucide-react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export default function MugSelectionStep() {
-  const { t } = useTranslation('editor');
+  const { t, i18n } = useTranslation('editor');
+  const { locale, currency } = getLocaleCurrency(i18n.language);
+  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency }), [locale, currency]);
   const selectedMug = useWizardStore((state) => state.selectedMug);
   const selectedVariant = useWizardStore((state) => state.selectedVariant);
   const selectMug = useWizardStore((state) => state.selectMug);
@@ -36,7 +40,7 @@ export default function MugSelectionStep() {
     );
   }
 
-  const formatPrice = (price: number) => t('currency', { value: price.toFixed(2) });
+  const formatPrice = (price: number) => currencyFormatter.format(price);
 
   return (
     <div className="space-y-6">

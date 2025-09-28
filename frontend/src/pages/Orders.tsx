@@ -3,6 +3,7 @@ import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { useSession } from '@/hooks/queries/useAuth';
 import { useOrders } from '@/hooks/queries/useOrders';
+import { getLocaleCurrency } from '@/lib/locale';
 import type { OrderDto } from '@/types/order';
 import { AlertTriangle, Package, ShoppingBag } from 'lucide-react';
 import { useEffect, useMemo } from 'react';
@@ -14,8 +15,7 @@ export default function OrdersPage() {
   const { data: session, isLoading: sessionLoading } = useSession();
   const { data: ordersData, isLoading: ordersLoading, error: ordersError } = useOrders();
   const { t, i18n } = useTranslation('orders');
-  const locale = i18n.language.startsWith('de') ? 'de-DE' : 'en-US';
-  const currency = i18n.language.startsWith('de') ? 'EUR' : 'USD';
+  const { locale, currency } = getLocaleCurrency(i18n.language);
 
   const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency }), [locale, currency]);
 

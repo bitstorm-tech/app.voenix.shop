@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { getLocaleCurrency } from '@/lib/locale';
 import { CheckCircle2, Download, Eye, Package2, Search, Truck } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -31,8 +32,12 @@ export default function CompletedOrders() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const { t, i18n } = useTranslation('adminCompletedOrders');
-  const locale = i18n.language || 'en';
-  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }), [locale]);
+  const { locale, currency } = getLocaleCurrency(i18n.language);
+  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency }), [locale, currency]);
+  const currencySymbol = useMemo(
+    () => currencyFormatter.formatToParts(0).find((part) => part.type === 'currency')?.value ?? currency,
+    [currencyFormatter, currency],
+  );
 
   useEffect(() => {
     // Mock data for now - replace with actual API call when orders endpoint is available
@@ -149,7 +154,7 @@ export default function CompletedOrders() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">{t('cards.totalRevenue.title')}</CardTitle>
-            <span className="text-muted-foreground text-sm">$</span>
+            <span className="text-muted-foreground text-sm">{currencySymbol}</span>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(totalRevenue)}</div>

@@ -2,6 +2,7 @@ import { LoadingSpinner } from '@/components/LoadingSpinner';
 import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { useOrder } from '@/hooks/queries/useOrders';
+import { getLocaleCurrency } from '@/lib/locale';
 import { createManualDownloadUrl, downloadOrderPDF } from '@/lib/pdfDownload';
 import { AlertTriangle, CheckCircle, Download, Package, ShoppingBag, Truck } from 'lucide-react';
 import { useMemo, useState } from 'react';
@@ -14,8 +15,7 @@ export default function OrderSuccessPage() {
   const navigate = useNavigate();
   const { data: order, isLoading, error } = useOrder(orderId!);
   const { t, i18n } = useTranslation('orderSuccess');
-  const locale = i18n.language.startsWith('de') ? 'de-DE' : 'en-US';
-  const currency = i18n.language.startsWith('de') ? 'EUR' : 'USD';
+  const { locale, currency } = getLocaleCurrency(i18n.language);
 
   // PDF download states
   const [pdfDownloadStatus, setPdfDownloadStatus] = useState<'idle' | 'downloading' | 'success' | 'error'>('idle');

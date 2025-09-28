@@ -1,20 +1,24 @@
 import { usePublicPrompts } from '@/hooks/queries/usePublicPrompts';
+import { getLocaleCurrency } from '@/lib/locale';
 import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
 import { Check } from 'lucide-react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { usePromptSelection } from '../../hooks/usePromptSelection';
 import PromptCategoryFilter from '../shared/PromptCategoryFilter';
 
 export default function PromptSelectionStep() {
-  const { t } = useTranslation('editor');
+  const { t, i18n } = useTranslation('editor');
+  const { locale, currency } = getLocaleCurrency(i18n.language);
+  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency }), [locale, currency]);
   const { data: prompts = [] } = usePublicPrompts();
   const selectedPrompt = useWizardStore((state) => state.selectedPrompt);
   const selectPrompt = useWizardStore((state) => state.selectPrompt);
   const { selectedCategory, setSelectedCategory, filteredPrompts, categories } = usePromptSelection(prompts);
   const formatPrice = (priceInCents?: number | null) => {
     if (typeof priceInCents !== 'number' || priceInCents <= 0) return null;
-    return t('currency', { value: (priceInCents / 100).toFixed(2) });
+    return currencyFormatter.format(priceInCents / 100);
   };
 
   return (
