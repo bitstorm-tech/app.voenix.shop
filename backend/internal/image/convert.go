@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
 	_ "image/gif"
 	_ "image/jpeg"
@@ -86,6 +87,8 @@ func ScaleImageBytesToAspect(imageBytes []byte, aspectWidth int, aspectHeight in
 	}
 
 	destinationImage := image.NewRGBA(image.Rect(0, 0, targetWidth, targetHeight))
+	backgroundColor := color.RGBA{R: 0xff, G: 0x00, B: 0xff, A: 0xff}
+	draw.Draw(destinationImage, destinationImage.Bounds(), image.NewUniform(backgroundColor), image.Point{}, draw.Src)
 	horizontalOffset := (targetWidth - originalWidth) / 2
 	verticalOffset := (targetHeight - originalHeight) / 2
 	draw.Draw(
