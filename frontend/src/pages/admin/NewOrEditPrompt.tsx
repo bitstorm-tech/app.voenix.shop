@@ -219,6 +219,12 @@ export default function NewOrEditPrompt() {
       return;
     }
 
+    if (!exampleImageFile && !exampleImageFilename) {
+      setError(t('prompt.errors.exampleImageRequired'));
+      setActiveTab('prompt');
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
@@ -533,7 +539,7 @@ export default function NewOrEditPrompt() {
 
         {/* Global action bar visible for both tabs */}
         <div className="mt-6 flex gap-4">
-          <Button type="submit" form="prompt-form" disabled={loading}>
+          <Button type="submit" form="prompt-form" disabled={loading || (!exampleImageFile && !exampleImageFilename)}>
             {loading ? t('common.status.saving') : isEditing ? t('prompt.actions.update') : t('prompt.actions.create')}
           </Button>
           <Button type="button" variant="outline" onClick={handleCancel}>

@@ -29,8 +29,8 @@
     "statusHint": "Make this prompt available for use"
   },
   "exampleImage": {
-    "label": "Example Image (optional)",
-    "hint": "PNG, JPG, GIF, or WEBP (automatically converted to WebP)",
+    "label": "Example Image",
+    "hint": "PNG, JPG, GIF, or WEBP (automatically converted to WebP, required)",
     "alt": "Prompt example"
   },
   "errors": {
@@ -43,6 +43,7 @@
     "categoryRequired": "Category is required",
     "llmRequired": "LLM is required",
     "invalidImage": "Please select a valid image file",
+    "exampleImageRequired": "Example image is required",
     "imageTooLarge": "File size exceeds maximum allowed size of 10MB",
     "uploadImage": "Failed to upload image: {{message}}"
   },

@@ -29,8 +29,8 @@
     "statusHint": "Diesen Prompt zur Nutzung freigeben"
   },
   "exampleImage": {
-    "label": "Beispielbild (optional)",
-    "hint": "PNG, JPG, GIF oder WEBP (wird automatisch in WebP umgewandelt)",
+    "label": "Beispielbild",
+    "hint": "PNG, JPG, GIF oder WEBP (wird automatisch in WebP umgewandelt, erforderlich)",
     "alt": "Prompt-Beispiel"
   },
   "errors": {
@@ -43,6 +43,7 @@
     "categoryRequired": "Kategorie ist erforderlich",
     "llmRequired": "LLM ist erforderlich",
     "invalidImage": "Bitte wählen Sie eine gültige Bilddatei aus",
+    "exampleImageRequired": "Beispielbild ist erforderlich",
     "imageTooLarge": "Dateigröße überschreitet das maximale Limit von 10 MB",
     "uploadImage": "Bild konnte nicht hochgeladen werden: {{message}}"
   },
