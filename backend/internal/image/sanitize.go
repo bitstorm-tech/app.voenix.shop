@@ -11,7 +11,7 @@ var filenameRe = regexp.MustCompile(`^[A-Za-z0-9._\-]+$`)
 // or an error if invalid.
 func SafeFilename(name string) (string, error) {
 	if !filenameRe.MatchString(name) {
-		return "", errors.New("Invalid filename")
+		return "", errors.New("invalid filename")
 	}
 	return name, nil
 }

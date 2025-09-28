@@ -80,13 +80,6 @@ func ScanUserImages(userID int) ([]UserImageItem, error) {
 	return items, nil
 }
 
-func looksLikeUUID(value string) bool {
-	if len(value) == 36 && strings.Count(value, "-") == 4 {
-		return true
-	}
-	return false
-}
-
 func stringPtrOrNil(value string) *string {
 	if value == "" {
 		return nil

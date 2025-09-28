@@ -12,7 +12,7 @@ func ParseUploadRequest(requestJSON string, imageTypeField string, cropX, cropY,
 	if requestJSON != "" {
 		var m map[string]any
 		if err := json.Unmarshal([]byte(requestJSON), &m); err != nil {
-			return UploadRequest{}, errors.New("Invalid JSON in 'request' part")
+			return UploadRequest{}, errors.New("invalid JSON in 'request' part")
 		}
 		var imageType string
 		if v, ok := m["imageType"].(string); ok && v != "" {
@@ -34,7 +34,7 @@ func ParseUploadRequest(requestJSON string, imageTypeField string, cropX, cropY,
 	}
 
 	if imageTypeField == "" {
-		return UploadRequest{}, errors.New("Missing imageType")
+		return UploadRequest{}, errors.New("missing imageType")
 	}
 
 	var crop *CropArea
