@@ -13,7 +13,7 @@ interface GeneratedImageData {
 interface UseImageGenerationReturn {
   isGenerating: boolean;
   error: string | null;
-  generateImages: (file: File, promptId: number, cropData?: CropData) => Promise<GeneratedImageData | null>;
+  generateImages: (file: File, promptId: number, mugId: number, cropData?: CropData) => Promise<GeneratedImageData | null>;
 }
 
 export function useImageGeneration(): UseImageGenerationReturn {
@@ -22,15 +22,15 @@ export function useImageGeneration(): UseImageGenerationReturn {
   const isAuthenticated = useWizardStore((state) => state.isAuthenticated);
   const { t } = useTranslation('editor');
 
-  const generateImages = async (file: File, promptId: number, cropData?: CropData): Promise<GeneratedImageData | null> => {
+  const generateImages = async (file: File, promptId: number, mugId: number, cropData?: CropData): Promise<GeneratedImageData | null> => {
     setIsGenerating(true);
     setError(null);
 
     try {
       // Use authenticated endpoint if user is logged in
       const response = isAuthenticated
-        ? await userApi.generateImage(file, promptId, cropData)
-        : await publicApi.generateImage(file, promptId, cropData);
+        ? await userApi.generateImage(file, promptId, mugId, cropData)
+        : await publicApi.generateImage(file, promptId, mugId, cropData);
 
       // Return both URLs and IDs
       return {

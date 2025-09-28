@@ -12,6 +12,7 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 
+	"voenix/backend/internal/article"
 	"voenix/backend/internal/auth"
 	authpg "voenix/backend/internal/auth/postgres"
 	img "voenix/backend/internal/image"
@@ -22,6 +23,12 @@ import (
 type fakePromptService struct{}
 
 func (fakePromptService) GetPrompt(context.Context, int) (*prompt.PromptRead, error) {
+	return nil, nil
+}
+
+type fakeArticleService struct{}
+
+func (fakeArticleService) GetMugDetails(context.Context, int) (*article.MugDetails, error) {
 	return nil, nil
 }
 
@@ -59,7 +66,7 @@ func TestAdminLLMsEndpoint(t *testing.T) {
 
 	router := gin.New()
 	auth.RegisterRoutes(router, authService)
-	RegisterRoutes(router, db, imageService, fakePromptService{})
+	RegisterRoutes(router, db, imageService, fakePromptService{}, fakeArticleService{})
 
 	req := httptest.NewRequest(http.MethodGet, "/api/admin/ai/llms", nil)
 	req.AddCookie(&http.Cookie{Name: "session_id", Value: sessionRow.ID})

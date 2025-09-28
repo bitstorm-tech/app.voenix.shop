@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 
+	"voenix/backend/internal/article"
 	"voenix/backend/internal/auth"
 	imgsvc "voenix/backend/internal/image"
 	"voenix/backend/internal/prompt"
@@ -23,6 +24,10 @@ import (
 
 type promptReader interface {
 	GetPrompt(ctx context.Context, id int) (*prompt.PromptRead, error)
+}
+
+type mugDetailsReader interface {
+	GetMugDetails(ctx context.Context, articleID int) (*article.MugDetails, error)
 }
 
 // Accepts: OPENAI|GOOGLE|FLUX (case-insensitive). Defaults to GOOGLE=>Gemini for broader coverage.
@@ -67,7 +72,7 @@ type createImageEditRequest struct {
 	N          int    `json:"n"`
 }
 
-func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, promptService promptReader) {
+func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, promptService promptReader, mugDetailsService mugDetailsReader) {
 	// Admin AI routes
 	admin := r.Group("/api/admin/ai")
 	admin.Use(auth.RequireAdmin(db))
@@ -375,6 +380,38 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 			return
 		}
 
+		mugIDString := strings.TrimSpace(c.PostForm("mugId"))
+		if mugIDString == "" {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Missing mugId"})
+			return
+		}
+		mugID, err := strconv.Atoi(mugIDString)
+		if err != nil || mugID <= 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid mugId"})
+			return
+		}
+
+		var mugDetails *article.MugDetails
+		if prov == ProviderGemini {
+			if mugDetailsService == nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "Article service unavailable"})
+				return
+			}
+			mugDetails, err = mugDetailsService.GetMugDetails(c.Request.Context(), mugID)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to load mug details"})
+				return
+			}
+			if mugDetails == nil {
+				c.JSON(http.StatusNotFound, gin.H{"message": "Mug details not found"})
+				return
+			}
+			if mugDetails.PrintTemplateWidthMm <= 0 || mugDetails.PrintTemplateHeightMm <= 0 {
+				c.JSON(http.StatusUnprocessableEntity, gin.H{"message": "Invalid mug print template dimensions"})
+				return
+			}
+		}
+
 		// Read file bytes
 		f, err := fileHeader.Open()
 		if err != nil {
@@ -442,6 +479,10 @@ func RegisterRoutes(r *gin.Engine, db *gorm.DB, imageService *imgsvc.Service, pr
 		if err != nil {
 			c.JSON(http.StatusBadGateway, gin.H{"message": err.Error()})
 			return
+		}
+		if geminiGenerator, isGemini := gen.(*GeminiGenerator); isGemini && mugDetails != nil {
+			geminiGenerator.TargetAspectWidth = mugDetails.PrintTemplateWidthMm
+			geminiGenerator.TargetAspectHeight = mugDetails.PrintTemplateHeightMm
 		}
 		// Use the same (cropped) data as source for edits
 		n := 4

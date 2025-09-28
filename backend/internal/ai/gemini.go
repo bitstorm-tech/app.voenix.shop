@@ -31,6 +31,8 @@ type GeminiGenerator struct {
 	DefaultTemperature *float64
 	DefaultTimeout     time.Duration
 	HTTPClient         *http.Client
+	TargetAspectWidth  int
+	TargetAspectHeight int
 }
 
 // NewGeminiGeneratorFromEnv constructs a GeminiGenerator using environment variables.
@@ -61,9 +63,16 @@ func (g *GeminiGenerator) Edit(ctx context.Context, image []byte, prompt string,
 		return nil, errors.New("model is not configured")
 	}
 
-	scaledImage, err := img.ScaleImageBytesToSixteenByNine(image)
+	aspectWidth := g.TargetAspectWidth
+	aspectHeight := g.TargetAspectHeight
+	if aspectWidth <= 0 || aspectHeight <= 0 {
+		aspectWidth = 16
+		aspectHeight = 9
+	}
+
+	scaledImage, err := img.ScaleImageBytesToAspect(image, aspectWidth, aspectHeight)
 	if err != nil {
-		return nil, fmt.Errorf("failed to scale image to sixteen by nine: %w", err)
+		return nil, fmt.Errorf("failed to scale image to %d:%d aspect ratio: %w", aspectWidth, aspectHeight, err)
 	}
 	image = scaledImage
 

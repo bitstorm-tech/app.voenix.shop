@@ -11,6 +11,7 @@ export default function ImageGenerationStep() {
   const { t } = useTranslation('editor');
   const uploadedImage = useWizardStore((state) => state.uploadedImage);
   const selectedPrompt = useWizardStore((state) => state.selectedPrompt);
+  const selectedMug = useWizardStore((state) => state.selectedMug);
   const generatedImages = useWizardStore((state) => state.generatedImages);
   const selectedGeneratedImage = useWizardStore((state) => state.selectedGeneratedImage);
   const cropData = useWizardStore((state) => state.cropData);
@@ -38,11 +39,11 @@ export default function ImageGenerationStep() {
   }, [funnyMessages.length]);
 
   useEffect(() => {
-    if (!generatedImages && uploadedImage && selectedPrompt?.id && !hasStartedGeneration.current) {
+    if (!generatedImages && uploadedImage && selectedPrompt?.id && selectedMug?.id && !hasStartedGeneration.current) {
       hasStartedGeneration.current = true;
       const performGeneration = async () => {
         setProcessing(true);
-        const result = await generateImages(uploadedImage, selectedPrompt.id, cropData || undefined);
+        const result = await generateImages(uploadedImage, selectedPrompt.id, selectedMug.id, cropData || undefined);
         if (result) {
           // Combine URLs and IDs into GeneratedImageInfo objects
           const imagesInfo = result.urls.map((url, index) => ({
@@ -55,7 +56,7 @@ export default function ImageGenerationStep() {
       };
       performGeneration();
     }
-  }, [uploadedImage, selectedPrompt?.id, generatedImages, generateImages, setProcessing, setGeneratedImagesInfo, cropData]);
+  }, [uploadedImage, selectedPrompt?.id, selectedMug?.id, generatedImages, generateImages, setProcessing, setGeneratedImagesInfo, cropData]);
 
   if (isGenerating) {
     return (

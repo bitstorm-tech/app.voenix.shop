@@ -119,7 +119,7 @@ func main() {
 	country.RegisterRoutes(r, countrySvc)
 	supplier.RegisterRoutes(r, db, supplierSvc)
 	image.RegisterRoutes(r, db, imageSvc)
-	ai.RegisterRoutes(r, db, imageSvc, promptSvc)
+	ai.RegisterRoutes(r, db, imageSvc, promptSvc, articleSvc)
 	prompt.RegisterRoutes(r, db, promptSvc)
 	article.RegisterRoutes(r, auth.RequireRoles(db, "ADMIN"), articleSvc)
 	cart.RegisterRoutes(r, auth.RequireRoles(db, "ADMIN", "USER"), cartSvc)

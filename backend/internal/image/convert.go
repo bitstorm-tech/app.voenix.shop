@@ -2,6 +2,7 @@ package image
 
 import (
 	"bytes"
+	"fmt"
 	"image"
 	"image/draw"
 	_ "image/gif"
@@ -44,21 +45,29 @@ func ConvertImageToPNGBytes(input any) ([]byte, error) {
 }
 
 // ScaleImageBytesToSixteenByNine ensures an input image fits inside a 16:9 canvas
-// by centering it on a transparent background if padding is required. The output
-// is returned as PNG bytes. When the input already matches the target aspect
-// ratio, the original bytes are returned unchanged.
+// by delegating to ScaleImageBytesToAspect with a 16:9 target.
 func ScaleImageBytesToSixteenByNine(imageBytes []byte) ([]byte, error) {
-	const aspectWidth = 16
-	const aspectHeight = 9
+	return ScaleImageBytesToAspect(imageBytes, 16, 9)
+}
 
-	img, _, err := image.Decode(bytes.NewReader(imageBytes))
+// ScaleImageBytesToAspect ensures an input image fits inside a canvas matching
+// the provided aspect ratio by centering it on a transparent background when
+// padding is required. The output is returned as PNG bytes. When the input
+// already matches the target aspect ratio, the original bytes are returned
+// unchanged.
+func ScaleImageBytesToAspect(imageBytes []byte, aspectWidth int, aspectHeight int) ([]byte, error) {
+	if aspectWidth <= 0 || aspectHeight <= 0 {
+		return nil, fmt.Errorf("aspect dimensions must be positive: width=%d height=%d", aspectWidth, aspectHeight)
+	}
+
+	originalImage, _, err := image.Decode(bytes.NewReader(imageBytes))
 	if err != nil {
 		return nil, err
 	}
 
-	bounds := img.Bounds()
-	originalWidth := bounds.Dx()
-	originalHeight := bounds.Dy()
+	imageBounds := originalImage.Bounds()
+	originalWidth := imageBounds.Dx()
+	originalHeight := imageBounds.Dy()
 	if originalWidth <= 0 || originalHeight <= 0 {
 		return nil, ErrUnsupportedInput
 	}
@@ -76,16 +85,22 @@ func ScaleImageBytesToSixteenByNine(imageBytes []byte) ([]byte, error) {
 		targetWidth = (originalHeight*aspectWidth + aspectHeight - 1) / aspectHeight
 	}
 
-	destination := image.NewRGBA(image.Rect(0, 0, targetWidth, targetHeight))
-	offsetX := (targetWidth - originalWidth) / 2
-	offsetY := (targetHeight - originalHeight) / 2
-	draw.Draw(destination, image.Rect(offsetX, offsetY, offsetX+originalWidth, offsetY+originalHeight), img, bounds.Min, draw.Src)
+	destinationImage := image.NewRGBA(image.Rect(0, 0, targetWidth, targetHeight))
+	horizontalOffset := (targetWidth - originalWidth) / 2
+	verticalOffset := (targetHeight - originalHeight) / 2
+	draw.Draw(
+		destinationImage,
+		image.Rect(horizontalOffset, verticalOffset, horizontalOffset+originalWidth, verticalOffset+originalHeight),
+		originalImage,
+		imageBounds.Min,
+		draw.Src,
+	)
 
-	var buf bytes.Buffer
-	if err := png.Encode(&buf, destination); err != nil {
+	var buffer bytes.Buffer
+	if err := png.Encode(&buffer, destinationImage); err != nil {
 		return nil, err
 	}
-	return buf.Bytes(), nil
+	return buffer.Bytes(), nil
 }
 
 // CropImageBytes crops an image from bytes and returns PNG bytes.

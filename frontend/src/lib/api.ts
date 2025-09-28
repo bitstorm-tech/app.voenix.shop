@@ -509,10 +509,11 @@ export interface RegisterGuestRequest {
 // User API endpoints
 export const userApi = {
   // Generate images using authenticated endpoint
-  generateImage: async (image: File, promptId: number, cropData?: CropData): Promise<PublicImageGenerationResponse> => {
+  generateImage: async (image: File, promptId: number, mugId: number, cropData?: CropData): Promise<PublicImageGenerationResponse> => {
     const formData = new FormData();
     formData.append('image', image);
     formData.append('promptId', promptId.toString());
+    formData.append('mugId', mugId.toString());
 
     // Add crop data if provided
     if (cropData) {
@@ -619,10 +620,11 @@ export const publicApi = {
     });
     return handleResponse<Prompt[]>(response);
   },
-  generateImage: async (image: File, promptId: number, cropData?: CropData): Promise<PublicImageGenerationResponse> => {
+  generateImage: async (image: File, promptId: number, mugId: number, cropData?: CropData): Promise<PublicImageGenerationResponse> => {
     const formData = new FormData();
     formData.append('image', image);
     formData.append('promptId', promptId.toString());
+    formData.append('mugId', mugId.toString());
 
     // Add crop data if provided
     if (cropData) {
