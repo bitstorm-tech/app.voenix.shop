@@ -44,11 +44,6 @@ func (s *StorageLocations) PromptExample() string {
 	return filepath.Join(s.PublicImages(), "prompt-example-images")
 }
 
-// PromptSlotVariantExample returns {root}/public/images/prompt-slot-variant-example-images
-func (s *StorageLocations) PromptSlotVariantExample() string {
-	return filepath.Join(s.PublicImages(), "prompt-slot-variant-example-images")
-}
-
 // MugVariantExample returns {root}/public/images/articles/mugs/variant-example-images
 func (s *StorageLocations) MugVariantExample() string {
 	return filepath.Join(s.PublicImages(), "articles", "mugs", "variant-example-images")
@@ -73,8 +68,6 @@ func (s *StorageLocations) ResolveAdminDir(imageType string) (string, error) {
 	switch key {
 	case "PROMPT_EXAMPLE":
 		return s.PromptExample(), nil
-	case "PROMPT_SLOT_VARIANT_EXAMPLE":
-		return s.PromptSlotVariantExample(), nil
 	case "MUG_VARIANT_EXAMPLE":
 		return s.MugVariantExample(), nil
 	case "SHIRT_VARIANT_EXAMPLE":

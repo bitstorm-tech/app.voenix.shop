@@ -246,8 +246,6 @@ func safeDeletePublicImage(filename, kind string) {
 	}
 	var dir string
 	switch kind {
-	case "slot-variant":
-		dir = loc.PromptSlotVariantExample()
 	default:
 		dir = loc.PromptExample()
 	}
