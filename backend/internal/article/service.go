@@ -4,8 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"gorm.io/gorm"
+
+	img "voenix/backend/internal/image"
 )
 
 // Service exposes article domain operations backed by a repository implementation.
@@ -321,7 +326,67 @@ func (s *Service) UpdateArticle(ctx context.Context, art *Article, mugDetails *M
 }
 
 func (s *Service) DeleteArticle(ctx context.Context, id int) error {
-	return s.repo.DeleteArticle(ctx, id)
+	article, err := s.repo.GetArticle(ctx, id)
+	if err != nil {
+		return err
+	}
+	var mugExampleImages []string
+	if article.ArticleType == ArticleTypeMug {
+		mugVariants, err := s.repo.ListMugVariants(ctx, id, false)
+		if err != nil {
+			return err
+		}
+		for i := range mugVariants {
+			if mugVariants[i].ExampleImageFilename == nil {
+				continue
+			}
+			filename := strings.TrimSpace(*mugVariants[i].ExampleImageFilename)
+			if filename == "" {
+				continue
+			}
+			mugExampleImages = append(mugExampleImages, filepath.Base(filename))
+		}
+	}
+	var shirtExampleImages []string
+	if article.ArticleType == ArticleTypeShirt {
+		shirtVariants, err := s.repo.ListShirtVariants(ctx, id, false)
+		if err != nil {
+			return err
+		}
+		for i := range shirtVariants {
+			if shirtVariants[i].ExampleImageFilename == nil {
+				continue
+			}
+			filename := strings.TrimSpace(*shirtVariants[i].ExampleImageFilename)
+			if filename == "" {
+				continue
+			}
+			shirtExampleImages = append(shirtExampleImages, filepath.Base(filename))
+		}
+	}
+	if err := s.repo.DeleteArticle(ctx, id); err != nil {
+		return err
+	}
+	if len(mugExampleImages) == 0 && len(shirtExampleImages) == 0 {
+		return nil
+	}
+	storageLocations, err := img.NewStorageLocations()
+	if err != nil {
+		return nil
+	}
+	for i := range mugExampleImages {
+		if strings.TrimSpace(mugExampleImages[i]) == "" {
+			continue
+		}
+		_ = os.Remove(filepath.Join(storageLocations.MugVariantExample(), mugExampleImages[i]))
+	}
+	for i := range shirtExampleImages {
+		if strings.TrimSpace(shirtExampleImages[i]) == "" {
+			continue
+		}
+		_ = os.Remove(filepath.Join(storageLocations.ShirtVariantExample(), shirtExampleImages[i]))
+	}
+	return nil
 }
 
 func (s *Service) applyArticleSpecificDetails(ctx context.Context, art *Article, mugDetails *MugDetails, shirtDetails *ShirtDetails, mugVariants []MugVariant, shirtVariants []ShirtVariant) error {
@@ -402,7 +467,23 @@ func (s *Service) UpdateMugVariant(ctx context.Context, variant *MugVariant) (Mu
 }
 
 func (s *Service) DeleteMugVariant(ctx context.Context, id int) error {
-	return s.repo.DeleteMugVariant(ctx, id)
+	variant, err := s.repo.GetMugVariant(ctx, id)
+	if err != nil {
+		return err
+	}
+	var exampleImageFilename string
+	if variant.ExampleImageFilename != nil && strings.TrimSpace(*variant.ExampleImageFilename) != "" {
+		exampleImageFilename = filepath.Base(*variant.ExampleImageFilename)
+	}
+	if err := s.repo.DeleteMugVariant(ctx, id); err != nil {
+		return err
+	}
+	if strings.TrimSpace(exampleImageFilename) != "" {
+		if storageLocations, err := img.NewStorageLocations(); err == nil {
+			_ = os.Remove(filepath.Join(storageLocations.MugVariantExample(), exampleImageFilename))
+		}
+	}
+	return nil
 }
 
 func (s *Service) GetMugVariant(ctx context.Context, id int) (MugVariant, error) {

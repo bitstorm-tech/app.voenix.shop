@@ -140,6 +140,10 @@ func registerAdminMugVariantRoutes(r *gin.Engine, adminMiddleware gin.HandlerFun
 			return
 		}
 		if err := svc.DeleteMugVariant(c.Request.Context(), id); err != nil {
+			if errorsIsNotFound(err) {
+				c.JSON(http.StatusNotFound, gin.H{"detail": "Variant not found"})
+				return
+			}
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to delete variant"})
 			return
 		}
