@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -75,6 +76,11 @@ func (g *GeminiGenerator) Edit(ctx context.Context, image []byte, prompt string,
 		return nil, fmt.Errorf("failed to scale image to %d:%d aspect ratio: %w", aspectWidth, aspectHeight, err)
 	}
 	image = scaledImage
+
+	saveScaledImage := strings.ToLower(os.Getenv("GEMINI_SAVE_SCALED_IMAGES")) == "true"
+	if saveScaledImage {
+		g.saveTemporaryImage(image)
+	}
 
 	mimeType := "image/png"
 	if detectedMimeType := http.DetectContentType(image); strings.HasPrefix(detectedMimeType, "image/") {
@@ -288,4 +294,32 @@ func createBody(mimeType string, encoded string, prompt string, candidateCount i
 		},
 	}
 	return body
+}
+
+func (g *GeminiGenerator) saveTemporaryImage(image []byte) {
+	temporaryDirectoryPath := filepath.Join("tmp", "gemini")
+	if err := os.MkdirAll(temporaryDirectoryPath, 0o755); err != nil {
+		log.Printf("Failed to ensure Gemini temporary directory: %v", err)
+		return
+	}
+	temporaryFile, err := os.CreateTemp(temporaryDirectoryPath, "scaled-image-*.png")
+	if err != nil {
+		log.Printf("Failed to create Gemini temporary image file: %v", err)
+		return
+	}
+	defer func() {
+		if closeError := temporaryFile.Close(); closeError != nil {
+			log.Printf("Failed to close Gemini temporary image file: %v", closeError)
+		}
+	}()
+	if _, err := temporaryFile.Write(image); err != nil {
+		log.Printf("Failed to write Gemini temporary image: %v", err)
+		return
+	}
+	absoluteTemporaryPath, err := filepath.Abs(temporaryFile.Name())
+	if err != nil {
+		log.Printf("Gemini temporary image saved to %s", temporaryFile.Name())
+		return
+	}
+	log.Printf("Gemini temporary image saved to %s", absoluteTemporaryPath)
 }
