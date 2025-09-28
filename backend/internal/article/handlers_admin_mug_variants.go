@@ -199,7 +199,7 @@ func registerAdminMugVariantRoutes(r *gin.Engine, adminMiddleware gin.HandlerFun
 		if crop != nil {
 			data = img.CropImageBytes(data, crop.X, crop.Y, crop.Width, crop.Height)
 		}
-		pngBytes, err := img.ConvertImageToPNGBytes(data)
+		imageBytes, err := img.ConvertImageToWebPBytes(data)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"detail": "Failed to process image"})
 			return
@@ -210,7 +210,7 @@ func registerAdminMugVariantRoutes(r *gin.Engine, adminMiddleware gin.HandlerFun
 			return
 		}
 		dir := loc.MugVariantExample()
-		path, err := img.StoreImageBytes(pngBytes, dir, "", "png", false)
+		path, err := img.StoreImageBytes(imageBytes, dir, "", "webp", false)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"detail": "Failed to store image"})
 			return
