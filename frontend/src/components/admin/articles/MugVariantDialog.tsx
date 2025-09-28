@@ -289,6 +289,14 @@ export default function MugVariantDialog({
 
       // Upload image if a new file was selected
       if (imageState.file && response.id) {
+        if (isEditing && variant?.exampleImageFilename) {
+          try {
+            await articlesApi.removeMugVariantImage(variant.id);
+          } catch (error) {
+            console.error('Failed to remove previous mug variant image:', error);
+          }
+        }
+
         const imageResponse = await uploadImage(response.id);
         // Update the response with the data returned from the backend
         response.exampleImageFilename = imageResponse.exampleImageFilename;
