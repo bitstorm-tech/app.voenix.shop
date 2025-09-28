@@ -3,7 +3,7 @@ import ConfirmationDialog from '@/components/ui/ConfirmationDialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
 import { promptSlotVariantsApi } from '@/lib/api';
 import type { PromptSlotVariant } from '@/types/promptSlotVariant';
-import { Edit, Image, Plus, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -110,7 +110,6 @@ export default function SlotVariants() {
               <TableHead>{t('table.headers.llm')}</TableHead>
               <TableHead>{t('table.headers.prompt')}</TableHead>
               <TableHead>{t('table.headers.description')}</TableHead>
-              <TableHead>{t('table.headers.example')}</TableHead>
               <TableHead>{t('table.headers.createdAt')}</TableHead>
               <TableHead className="text-right">{t('table.headers.actions')}</TableHead>
             </TableRow>
@@ -118,13 +117,13 @@ export default function SlotVariants() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center text-gray-500">
+                <TableCell colSpan={8} className="text-center text-gray-500">
                   {t('table.loading')}
                 </TableCell>
               </TableRow>
             ) : slotVariants.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="text-center text-gray-500">
+                <TableCell colSpan={8} className="text-center text-gray-500">
                   {t('table.empty')}
                 </TableCell>
               </TableRow>
@@ -144,15 +143,6 @@ export default function SlotVariants() {
                     <span className="text-sm text-gray-600" title={slot.description || ''}>
                       {slot.description ? truncatePrompt(slot.description, 30) : '-'}
                     </span>
-                  </TableCell>
-                  <TableCell>
-                    {slot.exampleImageUrl ? (
-                      <div className="flex items-center justify-center">
-                        <Image className="h-4 w-4 text-green-600" />
-                      </div>
-                    ) : (
-                      <div className="text-center text-gray-400">-</div>
-                    )}
                   </TableCell>
                   <TableCell>{slot.createdAt ? new Date(slot.createdAt).toLocaleDateString(locale) : '-'}</TableCell>
                   <TableCell className="text-right">

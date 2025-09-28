@@ -5,10 +5,9 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import type { CreatePromptSlotVariantRequest, UpdatePromptSlotVariantRequest } from '@/lib/api';
-import { imagesApi, promptLlmsApi, promptSlotTypesApi, promptSlotVariantsApi } from '@/lib/api';
+import { promptLlmsApi, promptSlotTypesApi, promptSlotVariantsApi } from '@/lib/api';
 import type { PromptSlotType, ProviderLLM } from '@/types/promptSlotVariant';
-import { Trash2, Upload } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -23,7 +22,6 @@ export default function NewOrEditPromptSlotVariant() {
     promptSlotTypeId: 0,
     prompt: '',
     description: '',
-    exampleImageFilename: undefined,
     llm: '',
   });
   const [promptSlotTypes, setPromptSlotTypes] = useState<PromptSlotType[]>([]);
@@ -32,10 +30,6 @@ export default function NewOrEditPromptSlotVariant() {
   const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [llmError, setLlmError] = useState<string | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const blobUrlRef = useRef<string | null>(null);
 
   const fetchPromptSlotTypes = useCallback(async () => {
     try {
@@ -68,7 +62,6 @@ export default function NewOrEditPromptSlotVariant() {
         promptSlotTypeId: slot.promptSlotTypeId,
         prompt: slot.prompt,
         description: slot.description || '',
-        exampleImageFilename: slot.exampleImageUrl ? slot.exampleImageUrl.split('/').pop() : undefined,
         llm: slot.llm || '',
       });
       if (slot.llm) {
@@ -85,9 +78,6 @@ export default function NewOrEditPromptSlotVariant() {
             },
           ];
         });
-      }
-      if (slot.exampleImageUrl) {
-        setCurrentImageUrl(slot.exampleImageUrl);
       }
     } catch (error) {
       console.error('Error fetching slot:', error);
@@ -122,15 +112,6 @@ export default function NewOrEditPromptSlotVariant() {
     };
   }, [fetchPromptSlotTypes, fetchLlmOptions, fetchSlot, isEditing]);
 
-  // Cleanup blob URLs
-  useEffect(() => {
-    return () => {
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current);
-      }
-    };
-  }, []);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -158,23 +139,6 @@ export default function NewOrEditPromptSlotVariant() {
       setLoading(true);
       setError(null);
 
-      let finalImageFilename = formData.exampleImageFilename;
-
-      // Upload image if there's a new file selected
-      if (imageFile) {
-        try {
-          setUploadingImage(true);
-          const response = await imagesApi.upload(imageFile, 'PROMPT_SLOT_VARIANT_EXAMPLE');
-          finalImageFilename = response.filename;
-        } catch (error) {
-          console.error('Error uploading image:', error);
-          setError(t('promptSlotVariant.errors.uploadImage'));
-          return;
-        } finally {
-          setUploadingImage(false);
-        }
-      }
-
       if (isEditing) {
         const updateData: UpdatePromptSlotVariantRequest = {
           name: formData.name,
@@ -182,8 +146,6 @@ export default function NewOrEditPromptSlotVariant() {
           prompt: formData.prompt,
           description: formData.description,
           llm: formData.llm,
-          // Send null to explicitly remove image, undefined to not change it
-          exampleImageFilename: finalImageFilename === 'pending' ? undefined : (finalImageFilename ?? null),
         };
         await promptSlotVariantsApi.update(parseInt(id), updateData);
       } else {
@@ -193,8 +155,6 @@ export default function NewOrEditPromptSlotVariant() {
           prompt: formData.prompt,
           description: formData.description,
           llm: formData.llm,
-          // Send null to explicitly have no image, undefined to not set it
-          exampleImageFilename: finalImageFilename === 'pending' ? undefined : (finalImageFilename ?? null),
         };
         await promptSlotVariantsApi.create(createData);
       }
@@ -210,52 +170,6 @@ export default function NewOrEditPromptSlotVariant() {
 
   const handleCancel = () => {
     navigate('/admin/slot-variants');
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError(t('promptSlotVariant.errors.invalidImage'));
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError(t('promptSlotVariant.errors.imageTooLarge'));
-      return;
-    }
-
-    setError(null);
-
-    // Store the file for later upload
-    setImageFile(file);
-
-    // Create a blob URL for preview
-    if (blobUrlRef.current) {
-      URL.revokeObjectURL(blobUrlRef.current);
-    }
-    const blobUrl = URL.createObjectURL(file);
-    blobUrlRef.current = blobUrl;
-    setCurrentImageUrl(blobUrl);
-
-    // Set a placeholder filename (will be replaced with actual filename after upload)
-    setFormData({ ...formData, exampleImageFilename: 'pending' });
-  };
-
-  const handleRemoveImage = () => {
-    // Clean up blob URL if it exists
-    if (blobUrlRef.current) {
-      URL.revokeObjectURL(blobUrlRef.current);
-      blobUrlRef.current = null;
-    }
-
-    // Reset image-related state
-    setImageFile(null);
-    setFormData({ ...formData, exampleImageFilename: undefined });
-    setCurrentImageUrl(null);
   };
 
   if (initialLoading) {
@@ -354,41 +268,9 @@ export default function NewOrEditPromptSlotVariant() {
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="exampleImage">{t('promptSlotVariant.form.exampleImage')}</Label>
-              <div className="space-y-4">
-                {currentImageUrl ? (
-                  <div className="relative inline-block">
-                    <img src={currentImageUrl} alt={t('promptSlotVariant.form.exampleAlt')} className="h-32 w-32 rounded-lg border object-cover" />
-                    <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-8 w-8" onClick={handleRemoveImage}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-4">
-                    <Input id="exampleImage" type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
-                    <Label
-                      htmlFor="exampleImage"
-                      className="flex cursor-pointer items-center gap-2 rounded-lg border-2 border-dashed px-4 py-2 hover:border-gray-400"
-                    >
-                      <Upload className="h-4 w-4" />
-                      {t('common.actions.uploadImage')}
-                    </Label>
-                    <span className="text-sm text-gray-500">{t('promptSlotVariant.form.exampleHint')}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-
             <div className="flex gap-4">
-              <Button type="submit" disabled={loading || uploadingImage}>
-                {uploadingImage
-                  ? t('common.status.uploadingImage')
-                  : loading
-                    ? t('common.status.saving')
-                    : isEditing
-                      ? t('promptSlotVariant.actions.update')
-                      : t('promptSlotVariant.actions.create')}
+              <Button type="submit" disabled={loading}>
+                {loading ? t('common.status.saving') : isEditing ? t('promptSlotVariant.actions.update') : t('promptSlotVariant.actions.create')}
               </Button>
               <Button type="button" variant="outline" onClick={handleCancel}>
                 {t('common.actions.cancel')}

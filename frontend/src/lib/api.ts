@@ -440,7 +440,6 @@ export interface CreatePromptSlotVariantRequest {
   name: string;
   prompt: string;
   description?: string;
-  exampleImageFilename?: string | null;
   llm: string;
 }
 
@@ -449,7 +448,6 @@ export interface UpdatePromptSlotVariantRequest {
   name?: string;
   prompt?: string;
   description?: string;
-  exampleImageFilename?: string | null;
   llm?: string;
 }
 

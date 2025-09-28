@@ -13,21 +13,19 @@ import (
 )
 
 type slotVariantCreate struct {
-	PromptSlotTypeID     int     `json:"promptSlotTypeId"`
-	Name                 string  `json:"name"`
-	Prompt               *string `json:"prompt"`
-	Description          *string `json:"description"`
-	ExampleImageFilename *string `json:"exampleImageFilename"`
-	LLM                  string  `json:"llm"`
+	PromptSlotTypeID int     `json:"promptSlotTypeId"`
+	Name             string  `json:"name"`
+	Prompt           *string `json:"prompt"`
+	Description      *string `json:"description"`
+	LLM              string  `json:"llm"`
 }
 
 type slotVariantUpdate struct {
-	PromptSlotTypeID     *int    `json:"promptSlotTypeId"`
-	Name                 *string `json:"name"`
-	Prompt               *string `json:"prompt"`
-	Description          *string `json:"description"`
-	ExampleImageFilename *string `json:"exampleImageFilename"`
-	LLM                  *string `json:"llm"`
+	PromptSlotTypeID *int    `json:"promptSlotTypeId"`
+	Name             *string `json:"name"`
+	Prompt           *string `json:"prompt"`
+	Description      *string `json:"description"`
+	LLM              *string `json:"llm"`
 }
 
 func registerAdminSlotVariantRoutes(r *gin.Engine, db *gorm.DB, svc *Service) {

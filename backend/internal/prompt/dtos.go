@@ -19,7 +19,6 @@ type PromptSlotVariantRead struct {
 	Name             string              `json:"name"`
 	Prompt           *string             `json:"prompt"`
 	Description      *string             `json:"description"`
-	ExampleImageURL  *string             `json:"exampleImageUrl"`
 	LLM              string              `json:"llm"`
 	CreatedAt        *time.Time          `json:"createdAt"`
 	UpdatedAt        *time.Time          `json:"updatedAt"`
@@ -81,11 +80,10 @@ type PublicPromptSlotTypeRead struct {
 }
 
 type PublicPromptSlotRead struct {
-	ID              int                       `json:"id"`
-	Name            string                    `json:"name"`
-	Description     *string                   `json:"description"`
-	ExampleImageURL *string                   `json:"exampleImageUrl"`
-	SlotType        *PublicPromptSlotTypeRead `json:"slotType"`
+	ID          int                       `json:"id"`
+	Name        string                    `json:"name"`
+	Description *string                   `json:"description"`
+	SlotType    *PublicPromptSlotTypeRead `json:"slotType"`
 }
 
 type PublicPromptRead struct {

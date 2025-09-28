@@ -36,16 +36,15 @@ type PromptSlotType struct {
 }
 
 type PromptSlotVariant struct {
-	ID                   int
-	PromptSlotTypeID     int
-	PromptSlotType       *PromptSlotType
-	Name                 string
-	Prompt               *string
-	Description          *string
-	ExampleImageFilename *string
-	LLM                  string
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
+	ID               int
+	PromptSlotTypeID int
+	PromptSlotType   *PromptSlotType
+	Name             string
+	Prompt           *string
+	Description      *string
+	LLM              string
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 // Association between prompts and slot variants.

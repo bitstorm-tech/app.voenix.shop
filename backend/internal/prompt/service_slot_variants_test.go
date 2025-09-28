@@ -45,10 +45,6 @@ func (m *mockRepository) cloneVariant(v PromptSlotVariant) PromptSlotVariant {
 		d := *v.Description
 		clone.Description = &d
 	}
-	if v.ExampleImageFilename != nil {
-		f := *v.ExampleImageFilename
-		clone.ExampleImageFilename = &f
-	}
 	if v.PromptSlotType != nil {
 		st := *v.PromptSlotType
 		clone.PromptSlotType = &st
@@ -298,12 +294,11 @@ func TestCreateSlotVariantPersistsLLM(t *testing.T) {
 	slotType := repo.addSlotType("Primary", 1)
 	promptText := "Example prompt"
 	payload := slotVariantCreate{
-		PromptSlotTypeID:     slotType.ID,
-		Name:                 "Variant A",
-		Prompt:               &promptText,
-		Description:          nil,
-		ExampleImageFilename: nil,
-		LLM:                  "gemini-2.5-flash-image-preview",
+		PromptSlotTypeID: slotType.ID,
+		Name:             "Variant A",
+		Prompt:           &promptText,
+		Description:      nil,
+		LLM:              "gemini-2.5-flash-image-preview",
 	}
 	created, err := svc.CreateSlotVariant(context.Background(), payload)
 	if err != nil {
@@ -325,12 +320,11 @@ func TestCreateSlotVariantRejectsInvalidLLM(t *testing.T) {
 	svc, repo := setupPromptServiceTest(t)
 	slotType := repo.addSlotType("Primary", 1)
 	payload := slotVariantCreate{
-		PromptSlotTypeID:     slotType.ID,
-		Name:                 "Variant B",
-		Prompt:               nil,
-		Description:          nil,
-		ExampleImageFilename: nil,
-		LLM:                  "not-a-real-llm",
+		PromptSlotTypeID: slotType.ID,
+		Name:             "Variant B",
+		Prompt:           nil,
+		Description:      nil,
+		LLM:              "not-a-real-llm",
 	}
 	if _, err := svc.CreateSlotVariant(context.Background(), payload); !errors.Is(err, errInvalidLLM) {
 		t.Fatalf("expected errInvalidLLM, got %v", err)

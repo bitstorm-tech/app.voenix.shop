@@ -34,7 +34,6 @@ func toSlotVariantRead(v *PromptSlotVariant) PromptSlotVariantRead {
 		Name:             v.Name,
 		Prompt:           v.Prompt,
 		Description:      v.Description,
-		ExampleImageURL:  strPtrOrNil(publicSlotVariantExampleURL(v.ExampleImageFilename)),
 		LLM:              v.LLM,
 		CreatedAt:        timePtr(v.CreatedAt),
 		UpdatedAt:        timePtr(v.UpdatedAt),
@@ -118,11 +117,10 @@ func toPublicPromptRead(p *Prompt) PublicPromptRead {
 			st = &PublicPromptSlotTypeRead{ID: v.PromptSlotType.ID, Name: v.PromptSlotType.Name, Position: v.PromptSlotType.Position}
 		}
 		slots = append(slots, PublicPromptSlotRead{
-			ID:              v.ID,
-			Name:            v.Name,
-			Description:     v.Description,
-			ExampleImageURL: strPtrOrNil(publicSlotVariantExampleURL(v.ExampleImageFilename)),
-			SlotType:        st,
+			ID:          v.ID,
+			Name:        v.Name,
+			Description: v.Description,
+			SlotType:    st,
 		})
 	}
 	var pricePtr *int
@@ -239,13 +237,6 @@ func publicPromptExampleURL(filename *string) string {
 		return ""
 	}
 	return "/public/images/prompt-example-images/" + filepath.Base(*filename)
-}
-
-func publicSlotVariantExampleURL(filename *string) string {
-	if filename == nil || *filename == "" {
-		return ""
-	}
-	return "/public/images/prompt-slot-variant-example-images/" + filepath.Base(*filename)
 }
 
 func safeDeletePublicImage(filename, kind string) {

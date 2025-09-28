@@ -176,12 +176,11 @@ func (s *Service) CreateSlotVariant(ctx context.Context, payload slotVariantCrea
 		return nil, conflictError{Detail: "PromptSlotVariant name already exists"}
 	}
 	row := PromptSlotVariant{
-		PromptSlotTypeID:     payload.PromptSlotTypeID,
-		Name:                 payload.Name,
-		Prompt:               payload.Prompt,
-		Description:          payload.Description,
-		ExampleImageFilename: payload.ExampleImageFilename,
-		LLM:                  llm,
+		PromptSlotTypeID: payload.PromptSlotTypeID,
+		Name:             payload.Name,
+		Prompt:           payload.Prompt,
+		Description:      payload.Description,
+		LLM:              llm,
 	}
 	if err := s.repo.CreateSlotVariant(ctx, &row); err != nil {
 		return nil, err
@@ -233,13 +232,6 @@ func (s *Service) UpdateSlotVariant(ctx context.Context, id int, payload slotVar
 	if payload.Description != nil {
 		existing.Description = payload.Description
 	}
-	if payload.ExampleImageFilename != nil {
-		old := existing.ExampleImageFilename
-		if old != nil && (payload.ExampleImageFilename == nil || *old != *payload.ExampleImageFilename) {
-			safeDeletePublicImage(*old, "slot-variant")
-		}
-		existing.ExampleImageFilename = payload.ExampleImageFilename
-	}
 	if err := s.repo.SaveSlotVariant(ctx, existing); err != nil {
 		return nil, err
 	}
@@ -252,12 +244,8 @@ func (s *Service) UpdateSlotVariant(ctx context.Context, id int, payload slotVar
 }
 
 func (s *Service) DeleteSlotVariant(ctx context.Context, id int) error {
-	existing, err := s.repo.SlotVariantByID(ctx, id)
-	if err != nil {
+	if _, err := s.repo.SlotVariantByID(ctx, id); err != nil {
 		return err
-	}
-	if existing.ExampleImageFilename != nil {
-		safeDeletePublicImage(*existing.ExampleImageFilename, "slot-variant")
 	}
 	return s.repo.DeleteSlotVariant(ctx, id)
 }

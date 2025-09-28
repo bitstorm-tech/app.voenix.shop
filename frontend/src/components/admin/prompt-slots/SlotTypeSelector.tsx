@@ -136,13 +136,6 @@ export function SlotTypeSelector({ selectedSlotIds, onSelectionChange, llmFilter
                         <div className="font-medium">{slot.name}</div>
                         <div className="text-sm text-gray-600">{slot.prompt}</div>
                         {slot.description && <div className="text-sm text-gray-500">{slot.description}</div>}
-                        {slot.exampleImageUrl && (
-                          <img
-                            src={slot.exampleImageUrl}
-                            alt={t('prompt.slotSelector.exampleAlt', { name: slot.name })}
-                            className="mt-2 h-20 w-20 rounded object-cover"
-                          />
-                        )}
                       </div>
                     </label>
                   ))}

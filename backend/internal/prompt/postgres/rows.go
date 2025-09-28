@@ -120,16 +120,15 @@ func promptSlotTypeRowFromDomain(v *prompt.PromptSlotType) PromptSlotTypeRow {
 }
 
 type PromptSlotVariantRow struct {
-	ID                   int                `gorm:"primaryKey"`
-	PromptSlotTypeID     int                `gorm:"column:slot_type_id;not null"`
-	PromptSlotType       *PromptSlotTypeRow `gorm:"foreignKey:PromptSlotTypeID;references:ID"`
-	Name                 string             `gorm:"size:255;uniqueIndex;not null"`
-	Prompt               *string            `gorm:"type:text"`
-	Description          *string            `gorm:"type:text"`
-	ExampleImageFilename *string            `gorm:"size:500"`
-	LLM                  string             `gorm:"size:255"`
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
+	ID               int                `gorm:"primaryKey"`
+	PromptSlotTypeID int                `gorm:"column:slot_type_id;not null"`
+	PromptSlotType   *PromptSlotTypeRow `gorm:"foreignKey:PromptSlotTypeID;references:ID"`
+	Name             string             `gorm:"size:255;uniqueIndex;not null"`
+	Prompt           *string            `gorm:"type:text"`
+	Description      *string            `gorm:"type:text"`
+	LLM              string             `gorm:"size:255"`
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 func (PromptSlotVariantRow) TableName() string {
@@ -143,16 +142,15 @@ func (r PromptSlotVariantRow) toDomain() prompt.PromptSlotVariant {
 		slotType = &st
 	}
 	return prompt.PromptSlotVariant{
-		ID:                   r.ID,
-		PromptSlotTypeID:     r.PromptSlotTypeID,
-		PromptSlotType:       slotType,
-		Name:                 r.Name,
-		Prompt:               r.Prompt,
-		Description:          r.Description,
-		ExampleImageFilename: r.ExampleImageFilename,
-		LLM:                  r.LLM,
-		CreatedAt:            r.CreatedAt,
-		UpdatedAt:            r.UpdatedAt,
+		ID:               r.ID,
+		PromptSlotTypeID: r.PromptSlotTypeID,
+		PromptSlotType:   slotType,
+		Name:             r.Name,
+		Prompt:           r.Prompt,
+		Description:      r.Description,
+		LLM:              r.LLM,
+		CreatedAt:        r.CreatedAt,
+		UpdatedAt:        r.UpdatedAt,
 	}
 }
 
@@ -163,16 +161,15 @@ func promptSlotVariantRowFromDomain(v *prompt.PromptSlotVariant) PromptSlotVaria
 		slotType = &st
 	}
 	return PromptSlotVariantRow{
-		ID:                   v.ID,
-		PromptSlotTypeID:     v.PromptSlotTypeID,
-		PromptSlotType:       slotType,
-		Name:                 v.Name,
-		Prompt:               v.Prompt,
-		Description:          v.Description,
-		ExampleImageFilename: v.ExampleImageFilename,
-		LLM:                  v.LLM,
-		CreatedAt:            v.CreatedAt,
-		UpdatedAt:            v.UpdatedAt,
+		ID:               v.ID,
+		PromptSlotTypeID: v.PromptSlotTypeID,
+		PromptSlotType:   slotType,
+		Name:             v.Name,
+		Prompt:           v.Prompt,
+		Description:      v.Description,
+		LLM:              v.LLM,
+		CreatedAt:        v.CreatedAt,
+		UpdatedAt:        v.UpdatedAt,
 	}
 }
 
