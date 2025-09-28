@@ -51,10 +51,6 @@ func ScanUserImages(userID int) ([]UserImageItem, error) {
 			identifier = strings.TrimSuffix(name, filepath.Ext(name))
 		}
 
-		if !looksLikeUUID(identifier) {
-			identifier = randomHex(16)
-		}
-
 		fullPath := filepath.Join(directory, name)
 		information, err := os.Stat(fullPath)
 		if err != nil {
@@ -89,16 +85,6 @@ func looksLikeUUID(value string) bool {
 		return true
 	}
 	return false
-}
-
-func randomHex(length int) string {
-	if randomNameValue, err := randomName(); err == nil {
-		if len(randomNameValue) >= length*2 {
-			return randomNameValue[:length*2]
-		}
-		return randomNameValue
-	}
-	return strconv.FormatInt(time.Now().UnixNano(), 16)
 }
 
 func stringPtrOrNil(value string) *string {

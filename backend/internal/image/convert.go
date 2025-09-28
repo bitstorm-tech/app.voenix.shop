@@ -11,38 +11,57 @@ import (
 	"image/png"
 	"io"
 	"os"
+
+	"github.com/chai2010/webp"
 )
 
 // ConvertImageToPNGBytes converts an input image (bytes, reader, or file path) to PNG bytes.
 func ConvertImageToPNGBytes(input any) ([]byte, error) {
-	var r io.Reader
-	switch v := input.(type) {
-	case []byte:
-		r = bytes.NewReader(v)
-	case io.Reader:
-		r = v
-	case string:
-		f, err := os.Open(v)
-		if err != nil {
-			return nil, err
-		}
-		defer func() { _ = f.Close() }()
-		r = f
-	default:
-		return nil, ErrUnsupportedInput
-	}
-
-	img, _, err := image.Decode(r)
+	decodedImage, err := decodeImageInput(input)
 	if err != nil {
 		return nil, err
 	}
 
-	// Encode as PNG
-	var buf bytes.Buffer
-	if err := png.Encode(&buf, img); err != nil {
+	var buffer bytes.Buffer
+	if err := png.Encode(&buffer, decodedImage); err != nil {
 		return nil, err
 	}
-	return buf.Bytes(), nil
+	return buffer.Bytes(), nil
+}
+
+// ConvertImageToWebPBytes converts an input image (bytes, reader, or file path) to WebP bytes using lossless encoding.
+func ConvertImageToWebPBytes(input any) ([]byte, error) {
+	decodedImage, err := decodeImageInput(input)
+	if err != nil {
+		return nil, err
+	}
+
+	webpBytes, err := webp.EncodeLosslessRGBA(decodedImage)
+	if err != nil {
+		return nil, err
+	}
+	return webpBytes, nil
+}
+
+func decodeImageInput(input any) (image.Image, error) {
+	switch value := input.(type) {
+	case []byte:
+		decodedImage, _, err := image.Decode(bytes.NewReader(value))
+		return decodedImage, err
+	case io.Reader:
+		decodedImage, _, err := image.Decode(value)
+		return decodedImage, err
+	case string:
+		file, err := os.Open(value)
+		if err != nil {
+			return nil, err
+		}
+		defer func() { _ = file.Close() }()
+		decodedImage, _, err := image.Decode(file)
+		return decodedImage, err
+	default:
+		return nil, ErrUnsupportedInput
+	}
 }
 
 // ScaleImageBytesToSixteenByNine ensures an input image fits inside a 16:9 canvas

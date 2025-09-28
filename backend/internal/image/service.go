@@ -41,7 +41,7 @@ func (s *Service) UploadAdminImage(ctx context.Context, fileReader io.Reader, im
 		imageData = CropImageBytes(imageData, cropArea.X, cropArea.Y, cropArea.Width, cropArea.Height)
 	}
 
-	pngBytes, err := ConvertImageToPNGBytes(imageData)
+	webpImageBytes, err := ConvertImageToWebPBytes(imageData)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to process image: %w", err)
 	}
@@ -56,7 +56,7 @@ func (s *Service) UploadAdminImage(ctx context.Context, fileReader io.Reader, im
 		return "", "", fmt.Errorf("failed to resolve target directory: %w", err)
 	}
 
-	storedPath, err := StoreImageBytes(pngBytes, targetDirectory, "", "png", false)
+	storedPath, err := StoreImageBytes(webpImageBytes, targetDirectory, "", "webp", false)
 	if err != nil {
 		return "", "", fmt.Errorf("failed to store image: %w", err)
 	}

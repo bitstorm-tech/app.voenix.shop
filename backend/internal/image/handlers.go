@@ -54,7 +54,7 @@ func RegisterRoutes(router *gin.Engine, database *gorm.DB, service *Service) {
 
 		uploadedFile, err := fileHeader.Open()
 		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"detail": "Failed to read upload"})
+			ctx.JSON(http.StatusBadRequest, gin.H{"detail": "Failed to read upload image"})
 			return
 		}
 		defer func() { _ = uploadedFile.Close() }()

@@ -1,11 +1,11 @@
 package image
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"os"
 	"path/filepath"
+
+	"github.com/google/uuid"
 )
 
 func ensureExt(ext string) string {
@@ -16,14 +16,6 @@ func ensureExt(ext string) string {
 		return "." + ext
 	}
 	return ext
-}
-
-func randomName() (string, error) {
-	var b [16]byte
-	if _, err := rand.Read(b[:]); err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(b[:]), nil
 }
 
 // StoreImageBytes writes image bytes to a directory and returns the full path.
@@ -44,11 +36,7 @@ func StoreImageBytes(data []byte, directory string, filename string, ext string,
 			finalName = name
 		}
 	} else {
-		rn, err := randomName()
-		if err != nil {
-			return "", err
-		}
-		finalName = rn + ensureExt(ext)
+		finalName = uuid.NewString() + ensureExt(ext)
 	}
 
 	dest := filepath.Join(directory, finalName)
