@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { useOrder } from '@/hooks/queries/useOrders';
 import { createManualDownloadUrl, downloadOrderPDF } from '@/lib/pdfDownload';
 import { AlertTriangle, CheckCircle, Download, Package, ShoppingBag, Truck } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -14,12 +14,15 @@ export default function OrderSuccessPage() {
   const navigate = useNavigate();
   const { data: order, isLoading, error } = useOrder(orderId!);
   const { t, i18n } = useTranslation('orderSuccess');
-  const locale = i18n.language === 'de' ? 'de-DE' : 'en-US';
+  const locale = i18n.language.startsWith('de') ? 'de-DE' : 'en-US';
+  const currency = i18n.language.startsWith('de') ? 'EUR' : 'USD';
 
   // PDF download states
   const [pdfDownloadStatus, setPdfDownloadStatus] = useState<'idle' | 'downloading' | 'success' | 'error'>('idle');
   const [pdfDownloadProgress, setPdfDownloadProgress] = useState(0);
   const [pdfDownloadError, setPdfDownloadError] = useState<string | null>(null);
+
+  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency }), [locale, currency]);
 
   // Handle manual PDF download
   const handleDownloadPDF = async () => {
@@ -91,8 +94,6 @@ export default function OrderSuccessPage() {
       </div>
     );
   }
-
-  const currencyFormatter = new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' });
 
   const formatPrice = (priceInCents: number) => {
     return currencyFormatter.format(priceInCents / 100);

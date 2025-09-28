@@ -5,7 +5,7 @@ import { useSession } from '@/hooks/queries/useAuth';
 import { useOrders } from '@/hooks/queries/useOrders';
 import type { OrderDto } from '@/types/order';
 import { AlertTriangle, Package, ShoppingBag } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -14,7 +14,10 @@ export default function OrdersPage() {
   const { data: session, isLoading: sessionLoading } = useSession();
   const { data: ordersData, isLoading: ordersLoading, error: ordersError } = useOrders();
   const { t, i18n } = useTranslation('orders');
-  const locale = i18n.language === 'de' ? 'de-DE' : 'en-US';
+  const locale = i18n.language.startsWith('de') ? 'de-DE' : 'en-US';
+  const currency = i18n.language.startsWith('de') ? 'EUR' : 'USD';
+
+  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency }), [locale, currency]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -36,8 +39,6 @@ export default function OrdersPage() {
   if (!session?.authenticated) {
     return null;
   }
-
-  const currencyFormatter = new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' });
 
   const formatPrice = (priceInCents: number) => {
     return currencyFormatter.format(priceInCents / 100);
