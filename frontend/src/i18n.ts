@@ -21,6 +21,7 @@ import deAdminPromptSlotType from './locales/de/admin/newOrEditPromptSlotType.js
 import deAdminPromptSlotVariant from './locales/de/admin/newOrEditPromptSlotVariant.json';
 import deAdminSupplier from './locales/de/admin/newOrEditSupplier.json';
 import deAdminVat from './locales/de/admin/newOrEditVat.json';
+import deAppHeader from './locales/de/app-header.json';
 import deCart from './locales/de/cart.json';
 import deCheckout from './locales/de/checkout.json';
 import deEditor from './locales/de/editor.json';
@@ -49,6 +50,7 @@ import enAdminPromptSlotType from './locales/en/admin/newOrEditPromptSlotType.js
 import enAdminPromptSlotVariant from './locales/en/admin/newOrEditPromptSlotVariant.json';
 import enAdminSupplier from './locales/en/admin/newOrEditSupplier.json';
 import enAdminVat from './locales/en/admin/newOrEditVat.json';
+import enAppHeader from './locales/en/app-header.json';
 import enCart from './locales/en/cart.json';
 import enCheckout from './locales/en/checkout.json';
 import enEditor from './locales/en/editor.json';
@@ -107,6 +109,7 @@ export const resources = {
     myImages: enMyImages,
     orderSuccess: enOrderSuccess,
     orders: enOrders,
+    appHeader: enAppHeader,
     prompt: enAdminPrompt,
     promptSlotType: enAdminPromptSlotType,
     promptSlotVariant: enAdminPromptSlotVariant,
@@ -138,6 +141,7 @@ export const resources = {
     myImages: deMyImages,
     orderSuccess: deOrderSuccess,
     orders: deOrders,
+    appHeader: deAppHeader,
     prompt: deAdminPrompt,
     promptSlotType: deAdminPromptSlotType,
     promptSlotVariant: deAdminPromptSlotVariant,

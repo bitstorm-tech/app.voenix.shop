@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 export function AppHeader() {
   const { data: session } = useSession();
   const isAuthenticated = session?.authenticated === true;
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation('appHeader');
   const resolvedLanguage = (i18n.resolvedLanguage ?? i18n.language ?? 'en').toLowerCase();
   const languageValue = resolvedLanguage.startsWith('de') ? 'de' : 'en';
 
@@ -26,7 +26,7 @@ export function AppHeader() {
             <Button variant="ghost" size="sm" asChild>
               <Link to="/editor">
                 <Palette className="h-4 w-4" />
-                <span className="ml-2 hidden sm:inline">Design Mug</span>
+                <span className="ml-2 hidden sm:inline">{t('links.designMug')}</span>
               </Link>
             </Button>
           </div>
@@ -38,22 +38,22 @@ export function AppHeader() {
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/my-images">
                     <Images className="h-4 w-4" />
-                    <span className="ml-2 hidden sm:inline">My Images</span>
+                    <span className="ml-2 hidden sm:inline">{t('links.myImages')}</span>
                   </Link>
                 </Button>
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/orders">
                     <Package className="h-4 w-4" />
-                    <span className="ml-2 hidden sm:inline">My Orders</span>
+                    <span className="ml-2 hidden sm:inline">{t('links.myOrders')}</span>
                   </Link>
                 </Button>
               </>
             )}
             <label className="flex items-center" htmlFor="app-language">
-              <span className="sr-only">Language</span>
+              <span className="sr-only">{t('language.label')}</span>
               <select
                 id="app-language"
-                aria-label="Language"
+                aria-label={t('language.aria')}
                 className="rounded border px-2 py-1 text-sm"
                 value={languageValue}
                 onChange={(event) => handleLanguageChange(event.target.value)}
