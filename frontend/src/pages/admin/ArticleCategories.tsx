@@ -186,7 +186,7 @@ export default function ArticleCategories() {
           {categoriesWithSubs.map((category) => (
             <AccordionItem key={category.id} value={`category-${category.id}`} className="rounded-lg border !border-b">
               <div className="flex items-center justify-between px-4">
-                <AccordionTrigger className="flex-1 py-4 hover:no-underline">
+                <AccordionTrigger className="flex-1 flex-row-reverse items-center justify-start gap-3 py-4 hover:no-underline">
                   <div className="flex items-center gap-3">
                     <span className="font-medium">{category.name}</span>
                     <Badge variant="secondary">{t('badges.subcategories', { count: category.subcategories.length })}</Badge>
