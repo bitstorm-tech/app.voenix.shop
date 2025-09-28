@@ -15,6 +15,8 @@ import (
 	"github.com/chai2010/webp"
 )
 
+var webpQualityLevels = []float32{82.0, 74.0, 67.0}
+
 // ConvertImageToPNGBytes converts an input image (bytes, reader, or file path) to PNG bytes.
 func ConvertImageToPNGBytes(input any) ([]byte, error) {
 	decodedImage, err := decodeImageInput(input)
@@ -36,11 +38,37 @@ func ConvertImageToWebPBytes(input any) ([]byte, error) {
 		return nil, err
 	}
 
-	webpBytes, err := webp.EncodeLosslessRGBA(decodedImage)
-	if err != nil {
-		return nil, err
+	originalSize := originalInputSize(input)
+	var lastEncodeError error
+	var bestEncoded []byte
+
+	for index, quality := range webpQualityLevels {
+		encodedBytes, err := webp.EncodeRGBA(decodedImage, quality)
+		if err != nil {
+			lastEncodeError = err
+			continue
+		}
+		bestEncoded = encodedBytes
+		if originalSize <= 0 {
+			return encodedBytes, nil
+		}
+		if len(encodedBytes) < originalSize || index == len(webpQualityLevels)-1 {
+			return encodedBytes, nil
+		}
 	}
-	return webpBytes, nil
+
+	if bestEncoded != nil {
+		return bestEncoded, nil
+	}
+
+	losslessEncodedBytes, losslessEncodeError := webp.EncodeLosslessRGBA(decodedImage)
+	if losslessEncodeError == nil {
+		return losslessEncodedBytes, nil
+	}
+	if lastEncodeError != nil {
+		return nil, lastEncodeError
+	}
+	return nil, losslessEncodeError
 }
 
 func decodeImageInput(input any) (image.Image, error) {
@@ -62,6 +90,33 @@ func decodeImageInput(input any) (image.Image, error) {
 	default:
 		return nil, ErrUnsupportedInput
 	}
+}
+
+func originalInputSize(input any) int {
+	switch value := input.(type) {
+	case []byte:
+		return len(value)
+	case string:
+		info, err := os.Stat(value)
+		if err == nil {
+			return int(info.Size())
+		}
+	case io.Reader:
+		if seeker, ok := value.(io.Seeker); ok {
+			currentOffset, offsetErr := seeker.Seek(0, io.SeekCurrent)
+			if offsetErr != nil {
+				return 0
+			}
+			endOffset, endOffsetErr := seeker.Seek(0, io.SeekEnd)
+			if endOffsetErr != nil {
+				_, _ = seeker.Seek(currentOffset, io.SeekStart)
+				return 0
+			}
+			_, _ = seeker.Seek(currentOffset, io.SeekStart)
+			return int(endOffset - currentOffset)
+		}
+	}
+	return 0
 }
 
 // ScaleImageBytesToSixteenByNine ensures an input image fits inside a 16:9 canvas
