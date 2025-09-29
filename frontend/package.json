@@ -36,6 +36,7 @@
     "@tanstack/react-query-devtools": "^5.83.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "fabric": "^6.7.1",
     "framer-motion": "^12.18.1",
     "globals": "^15.14.0",
     "i18next": "^25.5.2",
