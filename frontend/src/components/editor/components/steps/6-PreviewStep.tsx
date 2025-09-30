@@ -260,6 +260,32 @@ export default function PreviewStep() {
     };
   }, [imageUrl, debouncedCropData, generatedImageCropData]);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const canvas = fabricCanvasRef.current;
+    if (!canvas || !isFabricReady) {
+      return;
+    }
+
+    // Keep Fabric's hit testing in sync after toggling visibility or resizing the container.
+    const recalcOffsets = () => {
+      canvas.calcOffset();
+      canvas.requestRenderAll();
+    };
+
+    if (previewUrl) {
+      recalcOffsets();
+    }
+
+    window.addEventListener('resize', recalcOffsets);
+    return () => {
+      window.removeEventListener('resize', recalcOffsets);
+    };
+  }, [isFabricReady, previewUrl]);
+
   const handleTextInputChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     setTextValue(value);
