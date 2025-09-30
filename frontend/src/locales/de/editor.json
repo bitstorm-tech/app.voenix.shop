@@ -191,6 +191,10 @@
         "placeholder": "Eigenen Text eingeben",
         "color": "Farbe",
         "font": "Schriftart",
+        "formatting": "Formatierung",
+        "bold": "Fett",
+        "italic": "Kursiv",
+        "underline": "Unterstrichen",
         "add": "Text hinzufügen",
         "addAnother": "Weiteren Text hinzufügen",
         "defaultLabel": "Dein Text"

@@ -187,6 +187,10 @@
         "placeholder": "Enter custom text",
         "color": "Color",
         "font": "Font",
+        "formatting": "Formatting",
+        "bold": "Bold",
+        "italic": "Italic",
+        "underline": "Underline",
         "add": "Add text",
         "addAnother": "Add another text",
         "defaultLabel": "Your text"

@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/ToggleGroup';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getCroppedImgFromArea } from '@/lib/imageCropUtils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
@@ -50,6 +51,9 @@ export default function PreviewStep() {
   const [textColor, setTextColor] = useState<string>(DEFAULT_TEXT_COLOR);
   const [fontFamily, setFontFamily] = useState<(typeof TEXT_FONTS)[number]>(DEFAULT_FONT);
   const [isTextSelected, setIsTextSelected] = useState(false);
+  const [isBold, setIsBold] = useState(false);
+  const [isItalic, setIsItalic] = useState(false);
+  const [isUnderline, setIsUnderline] = useState(false);
 
   const handleCropComplete = (pixelCrop: PixelCrop) => {
     const newCropData = {
@@ -81,6 +85,9 @@ export default function PreviewStep() {
       const fill = typeof textbox.fill === 'string' && isHexColor(textbox.fill) ? textbox.fill : DEFAULT_TEXT_COLOR;
       setTextColor(fill);
       setFontFamily(resolveFontFamily(textbox.fontFamily as string | undefined));
+      setIsBold(textbox.fontWeight === 'bold');
+      setIsItalic(textbox.fontStyle === 'italic');
+      setIsUnderline(textbox.underline === true);
       setIsTextSelected(true);
     } else {
       setIsTextSelected(false);
@@ -90,6 +97,9 @@ export default function PreviewStep() {
   const handleSelectionCleared = useCallback(() => {
     setIsTextSelected(false);
     setTextValue('');
+    setIsBold(false);
+    setIsItalic(false);
+    setIsUnderline(false);
   }, []);
 
   useEffect(() => {
@@ -293,6 +303,30 @@ export default function PreviewStep() {
     }
   }, []);
 
+  const handleFormattingChange = useCallback((values: string[]) => {
+    const newBoldState = values.includes('bold');
+    const newItalicState = values.includes('italic');
+    const newUnderlineState = values.includes('underline');
+
+    setIsBold(newBoldState);
+    setIsItalic(newItalicState);
+    setIsUnderline(newUnderlineState);
+
+    const canvas = fabricCanvasRef.current;
+    if (!canvas) {
+      return;
+    }
+
+    const activeObject = canvas.getActiveObject();
+    if (activeObject && activeObject.type === 'textbox') {
+      const textbox = activeObject as FabricTextboxInstance;
+      textbox.set('fontWeight', newBoldState ? 'bold' : 'normal');
+      textbox.set('fontStyle', newItalicState ? 'italic' : 'normal');
+      textbox.set('underline', newUnderlineState);
+      canvas.requestRenderAll();
+    }
+  }, []);
+
   const handleAddText = useCallback(() => {
     const canvas = fabricCanvasRef.current;
     const fabricModule = fabricModuleRef.current;
@@ -311,6 +345,9 @@ export default function PreviewStep() {
       fill: textColor,
       fontFamily,
       fontSize: baseSize,
+      fontWeight: isBold ? 'bold' : 'normal',
+      fontStyle: isItalic ? 'italic' : 'normal',
+      underline: isUnderline,
       originX: 'center',
       originY: 'center',
       left: width / 2,
@@ -329,7 +366,7 @@ export default function PreviewStep() {
     canvas.bringObjectToFront(textbox);
     canvas.requestRenderAll();
     syncActiveTextboxSettings();
-  }, [fontFamily, previewUrl, syncActiveTextboxSettings, t, textColor, textValue]);
+  }, [fontFamily, isBold, isItalic, isUnderline, previewUrl, syncActiveTextboxSettings, t, textColor, textValue]);
 
   const hasPreview = Boolean(previewUrl);
   const shouldShowLoader = (hasPreview && !isFabricReady) || isGeneratingPreview;
@@ -428,6 +465,42 @@ export default function PreviewStep() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="formatting-buttons">{t('steps.preview.text.formatting')}</Label>
+                  <ToggleGroup
+                    id="formatting-buttons"
+                    type="multiple"
+                    value={[...(isBold ? ['bold'] : []), ...(isItalic ? ['italic'] : []), ...(isUnderline ? ['underline'] : [])]}
+                    onValueChange={handleFormattingChange}
+                    variant="outline"
+                  >
+                    <ToggleGroupItem
+                      value="bold"
+                      aria-label={t('steps.preview.text.bold')}
+                      className="font-bold"
+                      disabled={!canAddText && !isTextSelected}
+                    >
+                      B
+                    </ToggleGroupItem>
+                    <ToggleGroupItem
+                      value="italic"
+                      aria-label={t('steps.preview.text.italic')}
+                      className="font-serif italic"
+                      disabled={!canAddText && !isTextSelected}
+                    >
+                      I
+                    </ToggleGroupItem>
+                    <ToggleGroupItem
+                      value="underline"
+                      aria-label={t('steps.preview.text.underline')}
+                      className="underline"
+                      disabled={!canAddText && !isTextSelected}
+                    >
+                      U
+                    </ToggleGroupItem>
+                  </ToggleGroup>
                 </div>
 
                 <div className="flex flex-col gap-1.5">
