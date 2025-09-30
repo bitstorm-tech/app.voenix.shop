@@ -426,7 +426,7 @@ export default function PreviewStep() {
                     </SelectTrigger>
                     <SelectContent>
                       {TEXT_FONTS.map((fontOption) => (
-                        <SelectItem key={fontOption} value={fontOption}>
+                        <SelectItem key={fontOption} value={fontOption} style={{ fontFamily: fontOption }}>
                           {fontOption}
                         </SelectItem>
                       ))}
