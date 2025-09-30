@@ -210,6 +210,11 @@
         "title": "Missing required data. Please complete all previous steps.",
         "mug": "Mug not selected.",
         "image": "Generated image not selected."
+      },
+      "mugInfo": {
+        "price": "Price",
+        "capacity": "Capacity",
+        "color": "Color"
       }
     }
   },

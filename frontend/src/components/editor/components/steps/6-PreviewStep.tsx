@@ -5,8 +5,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/ToggleGroup';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getCroppedImgFromArea } from '@/lib/imageCropUtils';
+import { getLocaleCurrency } from '@/lib/locale';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
-import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { PixelCrop } from 'react-image-crop';
 import { GeneratedImageCropData } from '../../types';
@@ -31,11 +32,15 @@ const resolveFontFamily = (font?: string): (typeof TEXT_FONTS)[number] => {
 };
 
 export default function PreviewStep() {
-  const { t } = useTranslation('editor');
+  const { t, i18n } = useTranslation('editor');
   const selectedMug = useWizardStore((state) => state.selectedMug);
+  const selectedVariant = useWizardStore((state) => state.selectedVariant);
   const selectedGeneratedImage = useWizardStore((state) => state.selectedGeneratedImage);
   const generatedImageCropData = useWizardStore((state) => state.generatedImageCropData);
   const updateGeneratedImageCropData = useWizardStore((state) => state.updateGeneratedImageCropData);
+
+  const { locale, currency } = getLocaleCurrency(i18n.language);
+  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency }), [locale, currency]);
 
   const [localCropData, setLocalCropData] = useState<GeneratedImageCropData | null>(generatedImageCropData);
   const debouncedCropData = useDebounce(localCropData, 200);
@@ -392,15 +397,52 @@ export default function PreviewStep() {
       </div>
 
       <div className="space-y-8">
-        <div className="mx-auto w-full max-w-4xl">
-          <ImageCropper
-            imageUrl={imageUrl}
-            onCropComplete={handleCropComplete}
-            mug={selectedMug}
-            title={t('steps.preview.cropper.title')}
-            description={t('steps.preview.cropper.description')}
-            showGrid={false}
-          />
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 md:flex-row">
+          <div className="flex-1">
+            <ImageCropper
+              imageUrl={imageUrl}
+              onCropComplete={handleCropComplete}
+              mug={selectedMug}
+              title={t('steps.preview.cropper.title')}
+              description={t('steps.preview.cropper.description')}
+              showGrid={false}
+            />
+          </div>
+
+          <div className="flex flex-col gap-4 md:w-1/3">
+            <div className="overflow-hidden rounded-lg border border-gray-200 shadow-md">
+              <img src={selectedMug.image} alt={selectedMug.name} className="h-auto w-full object-contain" style={{ maxHeight: '500px' }} />
+            </div>
+
+            <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+              <h4 className="mb-3 text-lg font-bold text-gray-900">{selectedMug.name}</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600">{t('steps.preview.mugInfo.price')}:</span>
+                  <span className="font-semibold text-gray-900">{currencyFormatter.format(selectedMug.price)}</span>
+                </div>
+                {selectedMug.filling_quantity && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-600">{t('steps.preview.mugInfo.capacity')}:</span>
+                    <span className="text-gray-900">{selectedMug.filling_quantity}</span>
+                  </div>
+                )}
+                {selectedVariant && (
+                  <div className="flex items-center justify-between border-t border-gray-100 pt-2">
+                    <span className="text-gray-600">{t('steps.preview.mugInfo.color')}:</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-900">{selectedVariant.name}</span>
+                      <div
+                        className="h-5 w-5 rounded-full border border-gray-300 shadow-sm"
+                        style={{ backgroundColor: selectedVariant.colorCode }}
+                        title={selectedVariant.colorCode}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col items-center">

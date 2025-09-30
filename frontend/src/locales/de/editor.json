@@ -214,6 +214,11 @@
         "title": "Es fehlen Angaben. Bitte schließe alle vorherigen Schritte ab.",
         "mug": "Tasse nicht ausgewählt.",
         "image": "Generiertes Bild nicht ausgewählt."
+      },
+      "mugInfo": {
+        "price": "Preis",
+        "capacity": "Füllmenge",
+        "color": "Farbe"
       }
     }
   },
