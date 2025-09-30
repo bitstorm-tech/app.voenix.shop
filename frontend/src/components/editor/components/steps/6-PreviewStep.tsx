@@ -320,6 +320,8 @@ export default function PreviewStep() {
       borderColor: '#4f46e5',
       cornerColor: '#4f46e5',
       transparentCorners: false,
+      snapAngle: 90,
+      snapThreshold: 5,
     });
 
     canvas.add(textbox);

@@ -83,7 +83,8 @@
       "Bash(make fmt:*)",
       "Bash(make:*)",
       "Bash(go fmt:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "WebFetch(domain:fabricjs.com)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
