@@ -16,11 +16,11 @@ type countryResponse struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
-// RegisterRoutes mounts public country routes under /api/public/countries.
+// RegisterRoutes mounts public country routes under /api/countries.
 func RegisterRoutes(r *gin.Engine, svc *Service) {
-	grp := r.Group("/api/public/countries")
+	grp := r.Group("/api/countries")
 
-	// GET /api/public/countries -> list all countries (public)
+	// GET /api/countries -> list all countries (public)
 	grp.GET("", func(c *gin.Context) {
 		var req listCountriesRequest
 		if err := c.ShouldBindQuery(&req); err != nil {

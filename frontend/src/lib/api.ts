@@ -598,7 +598,7 @@ export const supplierApi = {
 
 // Country API
 export const countryApi = {
-  getAll: () => api.get<Country[]>('/public/countries'),
+  getAll: () => api.get<Country[]>('/countries'),
 };
 
 // Prices API (admin)
