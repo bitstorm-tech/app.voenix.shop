@@ -81,7 +81,9 @@
       "mcp__playwright__browser_select_option",
       "Bash(make test:*)",
       "Bash(make fmt:*)",
-      "Bash(make:*)"
+      "Bash(make:*)",
+      "Bash(go fmt:*)",
+      "Bash(cd:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"
