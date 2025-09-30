@@ -4,9 +4,8 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getCroppedImgFromArea } from '@/lib/imageCropUtils';
-import { getLocaleCurrency } from '@/lib/locale';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
-import { useCallback, useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { PixelCrop } from 'react-image-crop';
 import { GeneratedImageCropData } from '../../types';
@@ -31,13 +30,10 @@ const resolveFontFamily = (font?: string): (typeof TEXT_FONTS)[number] => {
 };
 
 export default function PreviewStep() {
-  const { t, i18n } = useTranslation('editor');
-  const { locale, currency } = getLocaleCurrency(i18n.language);
-  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency }), [locale, currency]);
+  const { t } = useTranslation('editor');
   const selectedMug = useWizardStore((state) => state.selectedMug);
   const selectedGeneratedImage = useWizardStore((state) => state.selectedGeneratedImage);
   const generatedImageCropData = useWizardStore((state) => state.generatedImageCropData);
-  const userData = useWizardStore((state) => state.userData);
   const updateGeneratedImageCropData = useWizardStore((state) => state.updateGeneratedImageCropData);
 
   const [localCropData, setLocalCropData] = useState<GeneratedImageCropData | null>(generatedImageCropData);
@@ -70,8 +66,6 @@ export default function PreviewStep() {
       ? selectedGeneratedImage
       : `/api/images/${selectedGeneratedImage}`
     : null;
-
-  const formatPrice = (value: number) => currencyFormatter.format(value);
 
   const syncActiveTextboxSettings = useCallback(() => {
     const canvas = fabricCanvasRef.current;
