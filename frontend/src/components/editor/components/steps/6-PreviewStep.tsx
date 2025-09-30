@@ -307,11 +307,7 @@ export default function PreviewStep() {
       return;
     }
 
-    const content =
-      textValue.trim() ||
-      t('steps.preview.text.defaultLabel', {
-        defaultValue: 'Your text',
-      });
+    const content = textValue.trim() || t('steps.preview.text.defaultLabel');
 
     const width = canvas.getWidth() || 400;
     const height = canvas.getHeight() || 400;
@@ -381,9 +377,7 @@ export default function PreviewStep() {
 
               {!hasPreview && !isGeneratingPreview && (
                 <div className="flex h-full min-h-[280px] items-center justify-center px-4 text-center text-sm text-gray-500">
-                  {t('steps.preview.previewUnavailable', {
-                    defaultValue: 'Preview will appear here once an image is selected.',
-                  })}
+                  {t('steps.preview.previewUnavailable')}
                 </div>
               )}
 
@@ -391,38 +385,30 @@ export default function PreviewStep() {
                 <div className="absolute inset-0 flex items-center justify-center bg-white/70">
                   <div
                     className="border-t-primary h-12 w-12 animate-spin rounded-full border-4 border-gray-300"
-                    aria-label={t('steps.preview.generatingPreview', { defaultValue: 'Generating preview…' })}
+                    aria-label={t('steps.preview.generatingPreview')}
                   ></div>
                 </div>
               )}
             </div>
 
             <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-              <h5 className="text-base font-semibold">{t('steps.preview.text.title', { defaultValue: 'Add custom text' })}</h5>
-              <p className="mt-1 text-sm text-gray-600">
-                {isTextSelected
-                  ? t('steps.preview.text.editHint', {
-                      defaultValue: 'You are editing the selected text. Drag the handles to move, resize, or rotate it.',
-                    })
-                  : t('steps.preview.text.addHint', {
-                      defaultValue: 'Set the style and add text to the preview. You can place multiple text boxes.',
-                    })}
-              </p>
+              <h5 className="text-base font-semibold">{t('steps.preview.text.title')}</h5>
+              <p className="mt-1 text-sm text-gray-600">{isTextSelected ? t('steps.preview.text.editHint') : t('steps.preview.text.addHint')}</p>
 
               <div className="mt-4 flex flex-col gap-4 sm:flex-row">
                 <div className="flex flex-1 flex-col gap-1.5">
-                  <Label htmlFor="text-input">{t('steps.preview.text.label', { defaultValue: 'Text' })}</Label>
+                  <Label htmlFor="text-input">{t('steps.preview.text.label')}</Label>
                   <Input
                     id="text-input"
                     type="text"
                     value={textValue}
                     onChange={handleTextInputChange}
-                    placeholder={t('steps.preview.text.placeholder', { defaultValue: 'Enter custom text' })}
+                    placeholder={t('steps.preview.text.placeholder')}
                   />
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="color-input">{t('steps.preview.text.color', { defaultValue: 'Color' })}</Label>
+                  <Label htmlFor="color-input">{t('steps.preview.text.color')}</Label>
                   <input
                     id="color-input"
                     type="color"
@@ -433,7 +419,7 @@ export default function PreviewStep() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="font-select">{t('steps.preview.text.font', { defaultValue: 'Font' })}</Label>
+                  <Label htmlFor="font-select">{t('steps.preview.text.font')}</Label>
                   <Select value={fontFamily} onValueChange={handleFontChange}>
                     <SelectTrigger id="font-select" className="w-[180px]">
                       <SelectValue />
@@ -451,9 +437,7 @@ export default function PreviewStep() {
                 <div className="flex flex-col gap-1.5">
                   <Label className="opacity-0">Action</Label>
                   <Button type="button" onClick={handleAddText} disabled={!canAddText} size="lg">
-                    {isTextSelected
-                      ? t('steps.preview.text.addAnother', { defaultValue: 'Add another text' })
-                      : t('steps.preview.text.add', { defaultValue: 'Add text' })}
+                    {isTextSelected ? t('steps.preview.text.addAnother') : t('steps.preview.text.add')}
                   </Button>
                 </div>
               </div>

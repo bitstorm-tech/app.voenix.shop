@@ -183,6 +183,20 @@
         "mugInfo": "Der Zuschnitt entspricht der bedruckbaren Fläche deiner {{name}} ({{width}} mm × {{height}} mm)",
         "alt": "Zuschnitt-Vorschau"
       },
+      "text": {
+        "title": "Eigenen Text hinzufügen",
+        "addHint": "Lege den Stil fest und füge Text zur Vorschau hinzu. Du kannst mehrere Textfelder platzieren.",
+        "editHint": "Du bearbeitest den ausgewählten Text. Ziehe an den Griffen, um ihn zu verschieben, skalieren oder zu drehen.",
+        "label": "Text",
+        "placeholder": "Eigenen Text eingeben",
+        "color": "Farbe",
+        "font": "Schriftart",
+        "add": "Text hinzufügen",
+        "addAnother": "Weiteren Text hinzufügen",
+        "defaultLabel": "Dein Text"
+      },
+      "previewUnavailable": "Die Vorschau erscheint hier, sobald ein Bild ausgewählt wurde.",
+      "generatingPreview": "Vorschau wird erstellt…",
       "summary": {
         "title": "Bestellübersicht",
         "product": "Produkt:",

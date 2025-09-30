@@ -179,6 +179,20 @@
         "mugInfo": "The crop area matches your {{name}}'s printable area ({{width}}mm × {{height}}mm)",
         "alt": "Crop preview"
       },
+      "text": {
+        "title": "Add custom text",
+        "addHint": "Set the style and add text to the preview. You can place multiple text boxes.",
+        "editHint": "You are editing the selected text. Drag the handles to move, resize, or rotate it.",
+        "label": "Text",
+        "placeholder": "Enter custom text",
+        "color": "Color",
+        "font": "Font",
+        "add": "Add text",
+        "addAnother": "Add another text",
+        "defaultLabel": "Your text"
+      },
+      "previewUnavailable": "Preview will appear here once an image is selected.",
+      "generatingPreview": "Generating preview…",
       "summary": {
         "title": "Order Summary",
         "product": "Product:",
