@@ -178,10 +178,10 @@ export default function PreviewStep() {
         const imageWidth = image.width ?? 400;
         const imageHeight = image.height ?? 400;
 
-        // Scale image to fit within container (max-w-2xl = 672px)
-        const maxWidth = 672;
-        const scale = imageWidth > maxWidth ? maxWidth / imageWidth : 1;
-        const scaledWidth = Math.round(imageWidth * scale);
+        // Always scale image to fill container width (max-w-4xl = 896px)
+        const containerWidth = 896;
+        const scale = containerWidth / imageWidth;
+        const scaledWidth = containerWidth;
         const scaledHeight = Math.round(imageHeight * scale);
 
         canvas.setDimensions({ width: scaledWidth, height: scaledHeight });
@@ -371,8 +371,8 @@ export default function PreviewStep() {
         </div>
 
         <div className="flex flex-col items-center">
-          <div className="w-full max-w-2xl space-y-6">
-            <div className="relative min-h-[280px] w-full overflow-hidden rounded-lg border border-gray-200 bg-gray-50 shadow-inner">
+          <div className="w-full max-w-4xl space-y-6">
+            <div className="relative min-h-[280px] w-full overflow-hidden border border-gray-200 bg-gray-50 shadow-inner">
               <canvas ref={canvasElementRef} className={`h-auto w-full ${hasPreview && isFabricReady ? 'block' : 'hidden'}`} />
 
               {!hasPreview && !isGeneratingPreview && (
