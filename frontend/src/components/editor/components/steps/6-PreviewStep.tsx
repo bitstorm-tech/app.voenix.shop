@@ -1,3 +1,7 @@
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { Label } from '@/components/ui/Label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getCroppedImgFromArea } from '@/lib/imageCropUtils';
 import { getLocaleCurrency } from '@/lib/locale';
@@ -279,8 +283,8 @@ export default function PreviewStep() {
     }
   }, []);
 
-  const handleFontChange = useCallback((event: ChangeEvent<HTMLSelectElement>) => {
-    const selectedFont = resolveFontFamily(event.target.value);
+  const handleFontChange = useCallback((value: string) => {
+    const selectedFont = resolveFontFamily(value);
     setFontFamily(selectedFont);
 
     const canvas = fabricCanvasRef.current;
@@ -405,53 +409,53 @@ export default function PreviewStep() {
                     })}
               </p>
 
-              <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">
-                <label className="flex-1 text-sm font-medium text-gray-700">
-                  {t('steps.preview.text.label', { defaultValue: 'Text' })}
-                  <input
+              <div className="mt-4 flex flex-col gap-4 sm:flex-row">
+                <div className="flex flex-1 flex-col gap-1.5">
+                  <Label htmlFor="text-input">{t('steps.preview.text.label', { defaultValue: 'Text' })}</Label>
+                  <Input
+                    id="text-input"
                     type="text"
                     value={textValue}
                     onChange={handleTextInputChange}
                     placeholder={t('steps.preview.text.placeholder', { defaultValue: 'Enter custom text' })}
-                    className="focus:border-primary focus:ring-primary/50 mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:outline-none"
                   />
-                </label>
+                </div>
 
-                <label className="text-sm font-medium text-gray-700">
-                  {t('steps.preview.text.color', { defaultValue: 'Color' })}
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="color-input">{t('steps.preview.text.color', { defaultValue: 'Color' })}</Label>
                   <input
+                    id="color-input"
                     type="color"
                     value={textColor}
                     onChange={handleColorChange}
-                    className="mt-1 h-10 w-16 cursor-pointer rounded-md border border-gray-300 bg-white p-1"
+                    className="h-9 w-16 cursor-pointer rounded-md border border-gray-300 bg-white p-1"
                   />
-                </label>
+                </div>
 
-                <label className="text-sm font-medium text-gray-700">
-                  {t('steps.preview.text.font', { defaultValue: 'Font' })}
-                  <select
-                    value={fontFamily}
-                    onChange={handleFontChange}
-                    className="focus:border-primary focus:ring-primary/50 mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:ring-2 focus:outline-none"
-                  >
-                    {TEXT_FONTS.map((fontOption) => (
-                      <option key={fontOption} value={fontOption}>
-                        {fontOption}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="font-select">{t('steps.preview.text.font', { defaultValue: 'Font' })}</Label>
+                  <Select value={fontFamily} onValueChange={handleFontChange}>
+                    <SelectTrigger id="font-select" className="w-[180px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TEXT_FONTS.map((fontOption) => (
+                        <SelectItem key={fontOption} value={fontOption}>
+                          {fontOption}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-                <button
-                  type="button"
-                  onClick={handleAddText}
-                  disabled={!canAddText}
-                  className="bg-primary hover:bg-primary/90 inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:bg-gray-300"
-                >
-                  {isTextSelected
-                    ? t('steps.preview.text.addAnother', { defaultValue: 'Add another text' })
-                    : t('steps.preview.text.add', { defaultValue: 'Add text' })}
-                </button>
+                <div className="flex flex-col gap-1.5">
+                  <Label className="opacity-0">Action</Label>
+                  <Button type="button" onClick={handleAddText} disabled={!canAddText} size="lg">
+                    {isTextSelected
+                      ? t('steps.preview.text.addAnother', { defaultValue: 'Add another text' })
+                      : t('steps.preview.text.add', { defaultValue: 'Add text' })}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
