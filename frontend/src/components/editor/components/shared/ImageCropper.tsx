@@ -155,18 +155,24 @@ export default function ImageCropper({
   return (
     <>
       {(title || description || mug) && (
-        <div className="mb-4 text-center">
-          {title && <h3 className="text-lg font-semibold">{title}</h3>}
-          {description && <p className="text-sm text-gray-600">{description}</p>}
-          {mug && mug.print_template_width_mm && mug.print_template_height_mm && (
-            <p className="mt-1 text-xs text-gray-500">
-              {t('steps.preview.cropper.mugInfo', {
-                name: mug.name,
-                width: mug.print_template_width_mm,
-                height: mug.print_template_height_mm,
-              })}
-            </p>
-          )}
+        <div className="mb-2 rounded-t border border-b-0 border-gray-200 bg-gray-50/50 px-3 py-1.5">
+          <p className="text-xs text-gray-500">
+            {title && <span className="font-medium text-gray-600">{title}</span>}
+            {title && description && <span> • </span>}
+            {description && <span>{description}</span>}
+            {mug && mug.print_template_width_mm && mug.print_template_height_mm && (
+              <>
+                {(title || description) && <span> • </span>}
+                <span className="text-gray-400">
+                  {t('steps.preview.cropper.mugInfo', {
+                    name: mug.name,
+                    width: mug.print_template_width_mm,
+                    height: mug.print_template_height_mm,
+                  })}
+                </span>
+              </>
+            )}
+          </p>
         </div>
       )}
 

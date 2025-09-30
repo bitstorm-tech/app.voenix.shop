@@ -354,8 +354,8 @@ export default function PreviewStep() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h3 className="mb-2 text-2xl font-bold">{t('steps.preview.title')}</h3>
-        <p className="text-gray-600">{t('steps.preview.subtitle')}</p>
+        <h3 className="mb-1 text-xl font-bold">{t('steps.preview.title')}</h3>
+        <p className="text-sm text-gray-600">{t('steps.preview.subtitle')}</p>
       </div>
 
       <div className="space-y-8">
@@ -454,56 +454,9 @@ export default function PreviewStep() {
                 </button>
               </div>
             </div>
-
-            <div className="text-center">
-              <h4 className="text-lg font-semibold">{selectedMug.name}</h4>
-              <p className="mt-1 text-sm text-gray-600">{selectedMug.capacity}</p>
-              {selectedMug.special && (
-                <span className="mt-2 inline-block rounded-full bg-yellow-100 px-3 py-1 text-sm font-medium text-yellow-800">
-                  {selectedMug.special}
-                </span>
-              )}
-            </div>
           </div>
         </div>
       </div>
-
-      <div className="mx-auto max-w-md space-y-4 rounded-lg bg-gray-50 p-6">
-        <h4 className="font-semibold">{t('steps.preview.summary.title')}</h4>
-
-        <div className="space-y-2 text-sm">
-          <div className="flex justify-between">
-            <span className="text-gray-600">{t('steps.preview.summary.product')}</span>
-            <span className="font-medium">{selectedMug.name}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-600">{t('steps.preview.summary.capacity')}</span>
-            <span className="font-medium">{selectedMug.capacity}</span>
-          </div>
-          {selectedMug.special && (
-            <div className="flex justify-between">
-              <span className="text-gray-600">{t('steps.preview.summary.special')}</span>
-              <span className="font-medium">{selectedMug.special}</span>
-            </div>
-          )}
-          {userData && (
-            <div className="flex justify-between">
-              <span className="text-gray-600">{t('steps.preview.summary.customer')}</span>
-              <span className="font-medium">
-                {userData.firstName || userData.lastName ? `${userData.firstName || ''} ${userData.lastName || ''}`.trim() : userData.email}
-              </span>
-            </div>
-          )}
-        </div>
-
-        <div className="border-t pt-4">
-          <div className="flex justify-between text-lg font-semibold">
-            <span>{t('steps.preview.summary.total')}</span>
-            <span className="text-primary">{formatPrice(selectedMug.price)}</span>
-          </div>
-        </div>
-      </div>
-
       <p className="text-center text-sm text-gray-500">{t('steps.preview.summary.saved')}</p>
     </div>
   );
