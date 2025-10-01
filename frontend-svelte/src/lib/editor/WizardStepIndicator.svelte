@@ -8,16 +8,10 @@
 
 	let { steps, currentIndex = 0 }: { steps: WizardStepMeta[]; currentIndex?: number } = $props();
 
-	const totalSteps = $derived(steps.length);
-	const clampedIndex = $derived(
-		totalSteps > 0 ? Math.min(Math.max(currentIndex, 0), totalSteps - 1) : 0
-	);
-	const progress = $derived.by(() => {
-		if (totalSteps > 1) {
-			return (clampedIndex / (totalSteps - 1)) * 100;
-		}
-		return clampedIndex > 0 ? 100 : 0;
-	});
+	const totalSteps = steps.length;
+	const clampedIndex = totalSteps > 0 ? Math.min(Math.max(currentIndex, 0), totalSteps - 1) : 0;
+	const progress =
+		totalSteps > 1 ? (clampedIndex / (totalSteps - 1)) * 100 : clampedIndex > 0 ? 100 : 0;
 </script>
 
 <div class="relative" role="list" aria-label="Editor progress">

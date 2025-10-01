@@ -19,22 +19,14 @@
 		nextHref
 	}: Props = $props();
 
-	const effectivePreviousHref = $derived(
-		canGoPrevious && previousHref ? previousHref : undefined
-	);
-	const effectiveNextHref = $derived(canGoNext && nextHref ? nextHref : undefined);
-
-	const previousAttrs = $derived(
-		effectivePreviousHref
-			? ({ href: effectivePreviousHref } as const)
-			: ({ type: 'button' as const, disabled: true })
-	);
-
-	const nextAttrs = $derived(
-		effectiveNextHref
-			? ({ href: effectiveNextHref } as const)
-			: ({ type: 'button' as const, disabled: true })
-	);
+	const effectivePreviousHref = canGoPrevious && previousHref ? previousHref : undefined;
+	const effectiveNextHref = canGoNext && nextHref ? nextHref : undefined;
+	const previousAttrs = effectivePreviousHref
+		? ({ href: effectivePreviousHref } as const)
+		: { type: 'button' as const, disabled: true };
+	const nextAttrs = effectiveNextHref
+		? ({ href: effectiveNextHref } as const)
+		: { type: 'button' as const, disabled: true };
 </script>
 
 <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

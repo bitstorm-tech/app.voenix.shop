@@ -26,7 +26,8 @@
 		...attrs
 	}: CommonProps & AnchorExtras & ButtonExtras = $props();
 
-	const classes = $derived(buttonVariants({ variant, size, class: className }));</script>
+	const classes = $derived(buttonVariants({ variant, size, class: className }));
+</script>
 
 {#if href}
 	<a class={classes} {href} {...attrs}>
