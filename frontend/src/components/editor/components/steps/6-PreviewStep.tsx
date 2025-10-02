@@ -472,7 +472,14 @@ export default function PreviewStep() {
         </div>
 
         <div className="flex flex-col items-center">
-          <div className="w-full max-w-4xl space-y-6">
+          <div className="w-full max-w-4xl space-y-4">
+            <div className="rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2">
+              <p className="text-xs text-gray-500">
+                <span className="font-medium text-gray-600">{t('steps.preview.result.title')}</span>
+                <span> • </span>
+                <span>{t('steps.preview.result.description')}</span>
+              </p>
+            </div>
             <div className="relative min-h-[280px] w-full overflow-hidden border border-gray-200 bg-gray-50 shadow-inner">
               <canvas ref={canvasElementRef} className={`h-auto w-full ${hasPreview && isFabricReady ? 'block' : 'hidden'}`} />
 

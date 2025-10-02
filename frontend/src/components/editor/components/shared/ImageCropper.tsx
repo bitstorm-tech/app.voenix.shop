@@ -153,9 +153,9 @@ export default function ImageCropper({
   };
 
   return (
-    <>
+    <div className="space-y-4">
       {(title || description || mug) && (
-        <div className="mb-2 rounded-t border border-b-0 border-gray-200 bg-gray-50/50 px-3 py-1.5">
+        <div className="rounded-lg border border-gray-200 bg-gray-50/50 px-3 py-2">
           <p className="text-xs text-gray-500">
             {title && <span className="font-medium text-gray-600">{title}</span>}
             {title && description && <span> • </span>}
@@ -187,6 +187,6 @@ export default function ImageCropper({
       >
         <img ref={imgRef} onLoad={onImageLoad} src={imageUrl} alt={t('steps.preview.cropper.alt')} />
       </ReactCrop>
-    </>
+    </div>
   );
 }

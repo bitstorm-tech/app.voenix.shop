@@ -179,6 +179,10 @@
         "mugInfo": "The crop area matches your {{name}}'s printable area ({{width}}mm × {{height}}mm)",
         "alt": "Crop preview"
       },
+      "result": {
+        "title": "Live mug preview",
+        "description": "See how your cropped design looks on the mug and add optional text overlays below."
+      },
       "text": {
         "title": "Add custom text",
         "addHint": "Set the style and add text to the preview. You can place multiple text boxes.",

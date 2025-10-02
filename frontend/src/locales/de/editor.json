@@ -183,6 +183,10 @@
         "mugInfo": "Der Zuschnitt entspricht der bedruckbaren Fläche deiner {{name}} ({{width}} mm × {{height}} mm)",
         "alt": "Zuschnitt-Vorschau"
       },
+      "result": {
+        "title": "Live-Tassenvorschau",
+        "description": "Sieh dir an, wie dein zugeschnittenes Design auf der Tasse wirkt, und füge unten optional Texte hinzu."
+      },
       "text": {
         "title": "Eigenen Text hinzufügen",
         "addHint": "Lege den Stil fest und füge Text zur Vorschau hinzu. Du kannst mehrere Textfelder platzieren.",
