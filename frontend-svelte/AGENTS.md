@@ -1,6 +1,6 @@
 # Repository Guidelines
 
-We standardise on Svelte 5.x for this app; keep dependencies and language features aligned with that major release.
+We standardise on Svelte 5.x and SvelteKit 2.x for this app; keep dependencies and language features aligned with that major release.
 
 ## Project Structure & Module Organization
 
