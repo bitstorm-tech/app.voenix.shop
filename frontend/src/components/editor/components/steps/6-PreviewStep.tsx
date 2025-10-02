@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/Label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/ToggleGroup';
 import { useDebounce } from '@/hooks/useDebounce';
+import { createEuroCurrencyFormatter } from '@/lib/currency';
 import { getCroppedImgFromArea } from '@/lib/imageCropUtils';
 import { getLocaleCurrency } from '@/lib/locale';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
@@ -40,7 +41,7 @@ export default function PreviewStep() {
   const updateGeneratedImageCropData = useWizardStore((state) => state.updateGeneratedImageCropData);
 
   const { locale, currency } = getLocaleCurrency(i18n.language);
-  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency }), [locale, currency]);
+  const { format: formatCurrency } = useMemo(() => createEuroCurrencyFormatter(locale, currency), [locale, currency]);
 
   const [localCropData, setLocalCropData] = useState<GeneratedImageCropData | null>(generatedImageCropData);
   const debouncedCropData = useDebounce(localCropData, 200);
@@ -445,7 +446,7 @@ export default function PreviewStep() {
               <div className="space-y-2 text-sm">
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">{t('steps.preview.mugInfo.price')}:</span>
-                  <span className="font-semibold text-gray-900">{currencyFormatter.format(selectedMug.price)}</span>
+                  <span className="font-semibold text-gray-900">{formatCurrency(selectedMug.price)}</span>
                 </div>
                 {selectedMug.filling_quantity && (
                   <div className="flex items-center justify-between">

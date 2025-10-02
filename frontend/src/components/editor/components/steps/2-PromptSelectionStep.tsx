@@ -1,4 +1,5 @@
 import { usePublicPrompts } from '@/hooks/queries/usePublicPrompts';
+import { createEuroCurrencyFormatter } from '@/lib/currency';
 import { getLocaleCurrency } from '@/lib/locale';
 import { cn } from '@/lib/utils';
 import { useWizardStore } from '@/stores/editor/useWizardStore';
@@ -11,14 +12,14 @@ import PromptCategoryFilter from '../shared/PromptCategoryFilter';
 export default function PromptSelectionStep() {
   const { t, i18n } = useTranslation('editor');
   const { locale, currency } = getLocaleCurrency(i18n.language);
-  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency }), [locale, currency]);
+  const { format: formatCurrency } = useMemo(() => createEuroCurrencyFormatter(locale, currency), [locale, currency]);
   const { data: prompts = [] } = usePublicPrompts();
   const selectedPrompt = useWizardStore((state) => state.selectedPrompt);
   const selectPrompt = useWizardStore((state) => state.selectPrompt);
   const { selectedCategory, setSelectedCategory, filteredPrompts, categories } = usePromptSelection(prompts);
   const formatPrice = (priceInCents?: number | null) => {
     if (typeof priceInCents !== 'number' || priceInCents <= 0) return null;
-    return currencyFormatter.format(priceInCents / 100);
+    return formatCurrency(priceInCents / 100);
   };
 
   return (

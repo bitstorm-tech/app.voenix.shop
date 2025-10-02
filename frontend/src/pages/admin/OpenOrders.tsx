@@ -2,6 +2,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/Table';
+import { createEuroCurrencyFormatter } from '@/lib/currency';
 import { getLocaleCurrency } from '@/lib/locale';
 import { Clock, Eye, Package } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
@@ -30,14 +31,7 @@ export default function OpenOrders() {
   const [isLoading, setIsLoading] = useState(true);
   const { t, i18n } = useTranslation('adminOpenOrders');
   const { locale, currency } = getLocaleCurrency(i18n.language);
-  const currencyFormatter = useMemo(
-    () =>
-      new Intl.NumberFormat(locale, {
-        style: 'currency',
-        currency,
-      }),
-    [locale, currency],
-  );
+  const { format: formatCurrency } = useMemo(() => createEuroCurrencyFormatter(locale, currency), [locale, currency]);
 
   useEffect(() => {
     // Mock data for now - replace with actual API call when orders endpoint is available
@@ -162,7 +156,7 @@ export default function OpenOrders() {
                             <div className="text-sm text-gray-500">{t('table.customer.email', { email: order.customer_email })}</div>
                           </div>
                         </TableCell>
-                        <TableCell>{currencyFormatter.format(order.total)}</TableCell>
+                        <TableCell>{formatCurrency(order.total)}</TableCell>
                         <TableCell>{getStatusBadge(order.status)}</TableCell>
                         <TableCell className="text-sm text-gray-500">{formatDate(order.created_at)}</TableCell>
                         <TableCell className="text-right">
@@ -210,8 +204,8 @@ export default function OpenOrders() {
                           <div className="text-gray-500">{t('items.quantity', { count: item.quantity })}</div>
                         </div>
                         <div className="text-right">
-                          <div>{currencyFormatter.format(item.price * item.quantity)}</div>
-                          <div className="text-xs text-gray-500">{t('items.priceEach', { price: currencyFormatter.format(item.price) })}</div>
+                          <div>{formatCurrency(item.price * item.quantity)}</div>
+                          <div className="text-xs text-gray-500">{t('items.priceEach', { price: formatCurrency(item.price) })}</div>
                         </div>
                       </div>
                     ))}
@@ -221,7 +215,7 @@ export default function OpenOrders() {
                 <div className="border-t pt-4">
                   <div className="flex justify-between font-semibold">
                     <span>{t('details.total')}</span>
-                    <span>{currencyFormatter.format(selectedOrder.total)}</span>
+                    <span>{formatCurrency(selectedOrder.total)}</span>
                   </div>
                 </div>
 

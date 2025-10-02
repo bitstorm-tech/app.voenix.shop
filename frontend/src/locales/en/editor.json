@@ -28,7 +28,7 @@
     "title": "Create Your Custom Mug",
     "subtitle": "Follow the steps below to design your personalized mug"
   },
-  "currency": "${{value}}",
+  "currency": "{{value}} €",
   "navigation": {
     "back": "Back",
     "next": "Next",

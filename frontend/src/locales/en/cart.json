@@ -17,7 +17,7 @@
     "total": "Total",
     "checkout": "Checkout • {{amount}}"
   },
-  "currency": "${{value}}",
+  "currency": "{{value}} €",
   "image": {
     "error": "Image error",
     "failed": "Failed to load",

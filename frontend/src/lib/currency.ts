@@ -103,3 +103,21 @@ export function convertCostCalculationToEuros(costCalc: CostCalculation | null |
     salesVatRateId: costCalc.salesVatRateId,
   };
 }
+
+export function createEuroCurrencyFormatter(locale: string, currency: string) {
+  const baseFormatter = new Intl.NumberFormat(locale, { style: 'currency', currency });
+  const symbol = baseFormatter.formatToParts(0).find((part) => part.type === 'currency')?.value ?? currency;
+
+  const format = (value: number) => {
+    const parts = baseFormatter.formatToParts(value);
+    const numberPortion = parts
+      .filter((part) => part.type !== 'currency')
+      .map((part) => part.value)
+      .join('')
+      .trim();
+
+    return `${numberPortion} ${symbol}`.trim();
+  };
+
+  return { format, symbol };
+}

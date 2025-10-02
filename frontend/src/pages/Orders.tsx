@@ -3,6 +3,7 @@ import { AppHeader } from '@/components/layout/AppHeader';
 import { Button } from '@/components/ui/Button';
 import { useSession } from '@/hooks/queries/useAuth';
 import { useOrders } from '@/hooks/queries/useOrders';
+import { createEuroCurrencyFormatter } from '@/lib/currency';
 import { getLocaleCurrency } from '@/lib/locale';
 import type { OrderDto } from '@/types/order';
 import { AlertTriangle, Package, ShoppingBag } from 'lucide-react';
@@ -16,8 +17,7 @@ export default function OrdersPage() {
   const { data: ordersData, isLoading: ordersLoading, error: ordersError } = useOrders();
   const { t, i18n } = useTranslation('orders');
   const { locale, currency } = getLocaleCurrency(i18n.language);
-
-  const currencyFormatter = useMemo(() => new Intl.NumberFormat(locale, { style: 'currency', currency }), [locale, currency]);
+  const { format: formatCurrency } = useMemo(() => createEuroCurrencyFormatter(locale, currency), [locale, currency]);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -40,9 +40,7 @@ export default function OrdersPage() {
     return null;
   }
 
-  const formatPrice = (priceInCents: number) => {
-    return currencyFormatter.format(priceInCents / 100);
-  };
+  const formatPrice = (priceInCents: number) => formatCurrency(priceInCents / 100);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString(locale, {

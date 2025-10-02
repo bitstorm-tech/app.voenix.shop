@@ -1,5 +1,5 @@
 const DEFAULT_LOCALE = 'en-US';
-const DEFAULT_CURRENCY = 'USD';
+const DEFAULT_CURRENCY = 'EUR';
 
 interface LocaleCurrencyConfig {
   prefix: string;
